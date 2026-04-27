@@ -1,0 +1,24 @@
+# Node / Vite
+node_modules
+dist
+dist-ssr
+*.local
+.vscode
+.idea
+
+# Laravel
+backend/.env
+backend/vendor
+backend/storage/*.key
+backend/storage/framework/cache/data/*
+backend/storage/framework/sessions/*
+backend/storage/framework/testing/*
+backend/storage/framework/views/*
+backend/storage/logs/*
+backend/public/storage
+backend/public/hot
+backend/public/build
+
+# OS files
+.DS_Store
+Thumbs.db
