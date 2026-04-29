@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class DetectionResult extends Model
 {
@@ -14,19 +15,16 @@ class DetectionResult extends Model
         'report_file_id', 'raw_response'
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'raw_response' => 'json',
-        ];
-    }
+    protected $casts = [
+        'raw_response' => 'array',
+    ];
 
-    public function detectionRequest()
+    public function detectionRequest(): BelongsTo
     {
         return $this->belongsTo(DetectionRequest::class);
     }
 
-    public function reportFile()
+    public function reportFile(): BelongsTo
     {
         return $this->belongsTo(File::class, 'report_file_id');
     }

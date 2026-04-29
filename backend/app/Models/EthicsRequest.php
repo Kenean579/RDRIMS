@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class EthicsRequest extends Model
 {
@@ -14,19 +15,16 @@ class EthicsRequest extends Model
         'approval_status_id', 'comments', 'version'
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'submitted_to_irb' => 'boolean',
-        ];
-    }
+    protected $casts = [
+        'submitted_to_irb' => 'boolean',
+    ];
 
-    public function proposal()
+    public function proposal(): BelongsTo
     {
         return $this->belongsTo(Proposal::class);
     }
 
-    public function approvalStatus()
+    public function approvalStatus(): BelongsTo
     {
         return $this->belongsTo(EthicsApprovalStatus::class, 'approval_status_id');
     }

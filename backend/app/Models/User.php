@@ -2,83 +2,85 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class User extends Authenticatable
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable;
+    use HasApiTokens, Notifiable, HasFactory;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
-        'name',
-        'email',
-        'password',
-        'department_id',
-        'profile_image_id',
-        'orcid_id',
-        'google_scholar_id',
-        'scopus_id',
-        'linkedin_url',
-        'is_active',
-        'bio',
+        'name', 'email', 'password', 'department_id', 'profile_image_id',
+        'orcid_id', 'google_scholar_id', 'scopus_id', 'linkedin_url',
+        'is_active', 'bio'
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
-    protected $hidden = [
-        'password',
-        'remember_token',
+    protected $hidden = ['password'];
+
+    protected $casts = [
+        'is_active' => 'boolean',
     ];
 
-    /**
-     * Get the attributes that should be cast.
-     *
-     * @return array<string, string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'email_verified_at' => 'datetime',
-            'password' => 'hashed',
-            'is_active' => 'boolean',
-        ];
-    }
-
-    public function department()
+    public function department(): BelongsTo
     {
         return $this->belongsTo(Department::class);
     }
 
-    public function profileImage()
+    public function profileImage(): BelongsTo
     {
         return $this->belongsTo(File::class, 'profile_image_id');
     }
 
-    public function roles()
+    public function roles(): BelongsToMany
     {
-        return $this->belongsToMany(Role::class, 'user_roles', 'user_id', 'role_id')
-                    ->withPivot(['assigned_by', 'assigned_at']);
+        return $this->belongsToMany(Role::class, 'user_roles')
+                    ->withPivot('assigned_by', 'assigned_at')
+                    ->withTimestamps()
+                    ->using(UserRole::class);
     }
 
-    public function researchCenters()
+    public function researchCenters(): BelongsToMany
     {
-        return $this->belongsToMany(ResearchCenter::class, 'user_research_centers', 'user_id', 'research_center_id')
-                    ->withPivot('center_role_id');
+        return $this->belongsToMany(ResearchCenter::class, 'user_research_centers')
+                    ->withPivot('center_role_id')
+                    ->withTimestamps()
+                    ->using(UserResearchCenter::class);
     }
 
-    public function expertise()
+    public function expertise(): BelongsToMany
     {
-        return $this->belongsToMany(Expertise::class, 'user_expertise', 'user_id', 'expertise_id');
+        return $this->belongsToMany(Expertise::class, 'user_expertise')
+                    ->using(UserExpertise::class);
+    }
+
+    public function languagePreference(): HasOne
+    {
+        return $this->hasOne(LanguagePreference::class);
+    }
+
+    public function submittedProposals(): HasMany
+    {
+        return $this->hasMany(Proposal::class, 'submitted_by');
+    }
+
+    public function approvedProposals(): HasMany
+    {
+        return $this->hasMany(Proposal::class, 'approved_by');
+    }
+
+    public function auditLogs(): HasMany
+    {
+        return $this->hasMany(AuditLog::class);
+    }
+
+    public function notifications(): HasMany
+    {
+        return $this->hasMany(Notification::class);
     }
 }

@@ -4,27 +4,22 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Notification extends Model
 {
     use HasFactory;
 
-    // Standard timestamp but nullable read_at
-    protected $fillable = [
-        'user_id',
-        'type',
-        'message',
-        'read_at'
+    public $timestamps = false; // only created_at and read_at
+
+    protected $fillable = ['user_id', 'type', 'message', 'read_at', 'created_at'];
+
+    protected $casts = [
+        'read_at'    => 'datetime',
+        'created_at' => 'datetime',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'read_at' => 'datetime',
-        ];
-    }
-
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }

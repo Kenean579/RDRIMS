@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ProposalInvestigator extends Model
 {
@@ -14,29 +15,26 @@ class ProposalInvestigator extends Model
         'role_id', 'status_id', 'invited_at'
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'invited_at' => 'datetime',
-        ];
-    }
+    protected $casts = [
+        'invited_at' => 'datetime',
+    ];
 
-    public function proposal()
+    public function proposal(): BelongsTo
     {
         return $this->belongsTo(Proposal::class);
     }
 
-    public function user()
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
-    public function role()
+    public function role(): BelongsTo
     {
         return $this->belongsTo(InvestigatorRole::class, 'role_id');
     }
 
-    public function status()
+    public function status(): BelongsTo
     {
         return $this->belongsTo(InvitationStatus::class, 'status_id');
     }

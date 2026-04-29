@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ProposalReviewScore extends Model
 {
@@ -11,13 +12,13 @@ class ProposalReviewScore extends Model
 
     protected $fillable = ['proposal_reviewer_id', 'criterion_id', 'score', 'comments'];
 
-    public function proposalReviewer()
+    public function proposalReviewer(): BelongsTo
     {
         return $this->belongsTo(ProposalReviewer::class);
     }
 
-    public function criterion()
+    public function criterion(): BelongsTo
     {
-        return $this->belongsTo(ReviewCriterion::class, 'criterion_id');
+        return $this->belongsTo(ReviewCriterion::class);
     }
 }
