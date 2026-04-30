@@ -18,9 +18,11 @@ return new class extends Migration
             // Lookup table reference (no cascade usually for lookups)
             $table->unsignedTinyInteger('status_id')->index();
             $table->foreign('status_id')->references('id')->on('call_statuses')->restrictOnDelete();
-            
-            $table->foreignId('academic_year_id')->nullable()->constrained('academic_years')->nullOnDelete();
-            
+
+            $table->foreignId('academic_year_id')
+                                ->nullable()->constrained('academic_years')
+                                ->nullOnDelete();
+
             // Files might be created later
             $table->unsignedBigInteger('guideline_file_id')->nullable()->index();
             $table->timestamps();
