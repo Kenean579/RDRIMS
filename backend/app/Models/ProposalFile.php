@@ -3,24 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 
-class ProposalFile extends Model
+class ProposalFile extends Pivot
 {
     use HasFactory;
 
-    // No updated_at
-    const UPDATED_AT = null;
-
     protected $fillable = ['proposal_id', 'file_id'];
-
-    public function proposal()
-    {
-        return $this->belongsTo(Proposal::class);
-    }
-
-    public function file()
-    {
-        return $this->belongsTo(File::class);
-    }
 }

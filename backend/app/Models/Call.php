@@ -5,6 +5,8 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Call for Proposals
@@ -37,19 +39,10 @@ class Call extends Model
      * The attributes that are mass assignable.
      */
     protected $fillable = [
-        'title',
-        'description',
-        'deadline',
-        'thematic_areas',
-        'created_by',
-        'status_id',
-        'academic_year_id',
-        'guideline_file_id',
+        'title', 'description', 'deadline', 'thematic_areas', 'created_by',
+        'status_id', 'academic_year_id', 'guideline_file_id'
     ];
 
-    /**
-     * The attributes that should be cast.
-     */
     protected function casts(): array
     {
         return [
@@ -63,26 +56,16 @@ class Call extends Model
     |--------------------------------------------------------------------------
     */
 
-    /**
-     * Scope a query to only include open calls.
-     * Assumes call_statuses: 1=draft, 2=open, 3=closed.
-     */
     public function scopeOpen($query)
     {
         return $query->where('status_id', 2);
     }
 
-    /**
-     * Scope a query to only include draft calls.
-     */
     public function scopeDraft($query)
     {
         return $query->where('status_id', 1);
     }
 
-    /**
-     * Scope a query to only include closed calls.
-     */
     public function scopeClosed($query)
     {
         return $query->where('status_id', 3);
@@ -94,42 +77,27 @@ class Call extends Model
     |--------------------------------------------------------------------------
     */
 
-    /**
-     * Get the user who created this call.
-     */
-    public function creator()
+    public function creator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
-    /**
-     * Get the status of this call.
-     */
-    public function status()
+    public function status(): BelongsTo
     {
         return $this->belongsTo(CallStatus::class, 'status_id');
     }
 
-    /**
-     * Get the academic year associated with this call.
-     */
-    public function academicYear()
+    public function academicYear(): BelongsTo
     {
         return $this->belongsTo(AcademicYear::class);
     }
 
-    /**
-     * Get the guideline file (PDF) for this call.
-     */
-    public function guidelineFile()
+    public function guidelineFile(): BelongsTo
     {
         return $this->belongsTo(File::class, 'guideline_file_id');
     }
 
-    /**
-     * Get all proposals submitted to this call.
-     */
-    public function proposals()
+    public function proposals(): HasMany
     {
         return $this->hasMany(Proposal::class);
     }

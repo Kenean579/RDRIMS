@@ -3,23 +3,11 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\Pivot;
 
-class PatentFile extends Model
+class PatentFile extends Pivot
 {
     use HasFactory;
 
-    const UPDATED_AT = null;
-
     protected $fillable = ['patent_id', 'file_id'];
-
-    public function patent()
-    {
-        return $this->belongsTo(Patent::class);
-    }
-
-    public function file()
-    {
-        return $this->belongsTo(File::class);
-    }
 }

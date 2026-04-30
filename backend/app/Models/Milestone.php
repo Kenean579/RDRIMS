@@ -4,39 +4,32 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Milestone extends Model
 {
     use HasFactory;
 
     protected $fillable = [
-        'project_id',
-        'title',
-        'description',
-        'due_date',
-        'display_order',
-        'status_id'
+        'project_id', 'title', 'description', 'due_date', 'display_order', 'status_id'
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'due_date' => 'date',
-            'display_order' => 'integer'
-        ];
-    }
+    protected $casts = [
+        'due_date' => 'date',
+    ];
 
-    public function project()
+    public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
     }
 
-    public function status()
+    public function status(): BelongsTo
     {
         return $this->belongsTo(MilestoneStatus::class, 'status_id');
     }
 
-    public function tasks()
+    public function tasks(): HasMany
     {
         return $this->hasMany(Task::class);
     }

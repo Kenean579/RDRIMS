@@ -4,28 +4,20 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class MoU extends Model
 {
     use HasFactory;
 
-    protected $table = 'mo_u_s';
+    protected $fillable = ['partner_id', 'start_date', 'end_date'];
 
-    protected $fillable = [
-        'partner_id',
-        'start_date',
-        'end_date'
+    protected $casts = [
+        'start_date' => 'date',
+        'end_date'   => 'date',
     ];
 
-    protected function casts(): array
-    {
-        return [
-            'start_date' => 'date',
-            'end_date' => 'date'
-        ];
-    }
-
-    public function partner()
+    public function partner(): BelongsTo
     {
         return $this->belongsTo(Partner::class);
     }

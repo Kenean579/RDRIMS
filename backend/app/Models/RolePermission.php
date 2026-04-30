@@ -5,9 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\Pivot;
 
-class OutputFile extends Pivot
+class RolePermission extends Pivot
 {
     use HasFactory;
-
-    protected $fillable = ['output_id', 'file_id'];
 }
