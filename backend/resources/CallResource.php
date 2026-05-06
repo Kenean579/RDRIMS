@@ -1,5 +1,3 @@
-
-
 <?php
 // app/Http/Resources/CallResource.php
 

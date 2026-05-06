@@ -15,11 +15,25 @@ class Proposal extends Model
     use HasFactory;
 
     protected $fillable = [
-        'call_id', 'type_id', 'title', 'abstract', 'objectives',
-        'methodology', 'keywords', 'budget', 'budget_allocation',
-        'status_change_comment', 'status_id', 'submitted_by',
-        'submitted_at', 'approved_by', 'approved_at', 'academic_year_id',
-        'file_id', 'ethics_file_id', 'ethics_approval_status_id'
+        'call_id',
+         'type_id',
+         'title',
+        'abstract',
+        'objectives',
+        'methodology',
+        'keywords',
+        'budget',
+         'budget_allocation',
+        'status_change_comment',
+        'status_id',
+         'submitted_by',
+        'submitted_at',
+         'approved_by',
+         'approved_at',
+         'academic_year_id',
+        'file_id',
+         'ethics_file_id',
+         'ethics_approval_status_id'
     ];
 
     protected $casts = [

@@ -1,29 +1,24 @@
 <?php
+// app/Http/Requests/EthicsRequest.php
 
 namespace App\Http\Requests;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
-class StoreEthicsRequestRequest extends FormRequest
+class EthicsRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
-    public function authorize(): bool
+    public function authorize()
     {
-        return false;
+        return $this->user()->hasRole('researcher') || $this->user()->hasRole('admin');
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
-     */
-    public function rules(): array
+    public function rules()
     {
         return [
-            //
+            'submitted_to_irb' => 'boolean',
+            'comments'         => 'nullable|string',
+            // optionally allow file upload for ethics document
+            'ethics_document'  => 'nullable|file|mimes:pdf|max:5120',
         ];
     }
 }

@@ -8,64 +8,50 @@ use App\Http\Requests\StoreCallRequest;
 use App\Http\Requests\UpdateCallRequest;
 use App\Http\Resources\CallResource;
 use App\Models\Call;
+use App\Models\CallStatus;
 use App\Models\File;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Symfony\Component\HttpFoundation\Response;
 
-/**
- * Handles all operations related to Calls for Proposals.
- */
 class CallController extends Controller
 {
-    /**
-     * Display a paginated list of calls.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function index(Request $request)
     {
         $query = Call::with(['creator', 'status', 'academicYear', 'guidelineFile']);
 
-        // Filter by specific status ID (1=draft, 2=open, 3=closed)
-        if ($request->has('status_id')) {
-            $query->where('status_id', $request->status_id);
+        // Dynamic filter by status name (optional)
+        if ($request->has('status_name')) {
+            $statusId = CallStatus::where('name', $request->status_name)->value('id');
+            if ($statusId) {
+                $query->where('status_id', $statusId);
+            }
         }
 
-        // Filter by academic year
-        if ($request->has('academic_year_id')) {
-            $query->where('academic_year_id', $request->academic_year_id);
-        }
-
-        // If the user is not an admin or research admin, show only open calls
+        // Non‑admins see only 'open' calls
         $user = $request->user();
         if (!($user->hasRole('admin') || $user->hasRole('research_admin'))) {
-            $query->open();
+            $openId = CallStatus::where('name', 'open')->value('id');
+            $query->where('status_id', $openId);
         }
 
         $calls = $query->latest()->paginate($request->get('per_page', 15));
-
         return CallResource::collection($calls);
     }
 
-    /**
-     * Store a newly created call.
-     *
-     * @param  \App\Http\Requests\StoreCallRequest  $request
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function store(StoreCallRequest $request)
     {
         try {
             DB::beginTransaction();
 
+            // Resolve status ID dynamically
+            $statusId = CallStatus::where('name', $request->status_name)->firstOrFail()->id;
+
             $data = $request->validated();
             $data['created_by'] = $request->user()->id;
-            $data['status_id'] = $data['status_id'] ?? 1; // default draft
+            $data['status_id'] = $statusId;
 
-            // Handle guideline file upload
             if ($request->hasFile('guideline_file')) {
                 $fileRecord = $this->storeFile($request->file('guideline_file'), $request->user()->id);
                 $data['guideline_file_id'] = $fileRecord->id;
@@ -87,17 +73,12 @@ class CallController extends Controller
         }
     }
 
-    /**
-     * Display the specified call.
-     *
-     * @param  \App\Models\Call  $call
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function show(Call $call)
     {
-        // Draft calls are hidden from non‑admin/research_admin users
         $user = request()->user();
-        if ($call->status_id === 1 && !($user->hasRole('admin') || $user->hasRole('research_admin'))) {
+        $draftId = CallStatus::where('name', 'draft')->value('id');
+
+        if ($call->status_id === $draftId && !($user->hasRole('admin') || $user->hasRole('research_admin'))) {
             return response()->json([
                 'success' => false,
                 'message' => 'You are not authorized to view this call.',
@@ -107,20 +88,12 @@ class CallController extends Controller
         return new CallResource($call->load(['creator', 'status', 'academicYear', 'guidelineFile', 'proposals']));
     }
 
-    /**
-     * Update the specified call.
-     *
-     * @param  \App\Http\Requests\UpdateCallRequest  $request
-     * @param  \App\Models\Call  $call
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function update(UpdateCallRequest $request, Call $call)
     {
-        // Prevent editing if proposals already exist
         if ($call->proposals()->exists() && $request->hasAny(['title', 'description', 'deadline', 'thematic_areas'])) {
             return response()->json([
                 'success' => false,
-                'message' => 'Cannot modify call details because proposals have already been submitted.',
+                'message' => 'Cannot modify call details because proposals exist.',
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
@@ -129,9 +102,13 @@ class CallController extends Controller
 
             $data = $request->validated();
 
-            // Replace guideline file if a new one is uploaded
+            // If status_name is provided, resolve new status_id
+            if (isset($data['status_name'])) {
+                $data['status_id'] = CallStatus::where('name', $data['status_name'])->value('id');
+                unset($data['status_name']);
+            }
+
             if ($request->hasFile('guideline_file')) {
-                // Delete old file
                 if ($call->guideline_file_id) {
                     $this->deleteFileRecord($call->guidelineFile);
                 }
@@ -153,23 +130,15 @@ class CallController extends Controller
         }
     }
 
-    /**
-     * Remove the specified call.
-     *
-     * @param  \App\Models\Call  $call
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function destroy(Call $call)
     {
-        // Prevent deletion if proposals exist
         if ($call->proposals()->exists()) {
             return response()->json([
                 'success' => false,
-                'message' => 'Cannot delete call because proposals have already been submitted.',
+                'message' => 'Cannot delete call because proposals exist.',
             ], Response::HTTP_UNPROCESSABLE_ENTITY);
         }
 
-        // Remove associated guideline file
         if ($call->guideline_file_id) {
             $this->deleteFileRecord($call->guidelineFile);
         }
@@ -182,19 +151,7 @@ class CallController extends Controller
         ], Response::HTTP_OK);
     }
 
-    /*
-    |--------------------------------------------------------------------------
-    | Private Helper Methods
-    |--------------------------------------------------------------------------
-    */
-
-    /**
-     * Store an uploaded file into the `files` table and return the model.
-     *
-     * @param  \Illuminate\Http\UploadedFile  $uploadedFile
-     * @param  int  $userId
-     * @return \App\Models\File
-     */
+    // ---- Helpers (same as before) ----
     private function storeFile($uploadedFile, int $userId): File
     {
         $path = $uploadedFile->store('guidelines', 'public');
@@ -206,12 +163,6 @@ class CallController extends Controller
         ]);
     }
 
-    /**
-     * Delete a file record and its physical file from storage.
-     *
-     * @param  \App\Models\File|null  $file
-     * @return void
-     */
     private function deleteFileRecord(?File $file): void
     {
         if ($file && Storage::disk('public')->exists($file->file_path)) {
