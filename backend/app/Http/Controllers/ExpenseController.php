@@ -2,65 +2,51 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Expense;
 use App\Http\Requests\StoreExpenseRequest;
 use App\Http\Requests\UpdateExpenseRequest;
+use App\Models\Expense;
+use App\Models\Project;
+use Illuminate\Http\JsonResponse;
 
 class ExpenseController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(Project $project): JsonResponse
     {
-        //
+        $this->authorize('view', $project);
+        $expenses = $project->expenses()->with('approvedBy')->latest()->paginate(20);
+        return response()->json($expenses);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function store(StoreExpenseRequest $request, Project $project): JsonResponse
     {
-        //
+        $expense = $project->expenses()->create($request->validated());
+        return response()->json($expense, 201);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreExpenseRequest $request)
+    public function show(Project $project, Expense $expense): JsonResponse
     {
-        //
+        $this->authorize('view', $project);
+        $expense->load('approvedBy');
+        return response()->json($expense);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Expense $expense)
+    public function update(UpdateExpenseRequest $request, Project $project, Expense $expense): JsonResponse
     {
-        //
+        $expense->update($request->validated());
+        return response()->json($expense);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Expense $expense)
+    public function destroy(Project $project, Expense $expense): JsonResponse
     {
-        //
+        $this->authorize('delete', $expense);
+        $expense->delete();
+        return response()->json(null, 204);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateExpenseRequest $request, Expense $expense)
+    public function approve(Expense $expense): JsonResponse
     {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Expense $expense)
-    {
-        //
+        $this->authorize('approve', $expense);
+        $expense->update(['approved_by' => auth()->id(), 'approved_at' => now()]);
+        return response()->json($expense);
     }
 }

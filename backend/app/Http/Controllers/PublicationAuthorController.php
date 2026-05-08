@@ -2,65 +2,37 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PublicationAuthor;
 use App\Http\Requests\StorePublicationAuthorRequest;
 use App\Http\Requests\UpdatePublicationAuthorRequest;
+use App\Models\Publication;
+use App\Models\PublicationAuthor;
+use Illuminate\Http\JsonResponse;
 
 class PublicationAuthorController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(Publication $publication): JsonResponse
     {
-        //
+        $this->authorize('view', $publication);
+        $authors = $publication->authors()->orderBy('author_order')->get();
+        return response()->json($authors);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function store(StorePublicationAuthorRequest $request, Publication $publication): JsonResponse
     {
-        //
+        $author = $publication->authors()->create($request->validated());
+        return response()->json($author, 201);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StorePublicationAuthorRequest $request)
+    public function update(UpdatePublicationAuthorRequest $request, Publication $publication, PublicationAuthor $author): JsonResponse
     {
-        //
+        $author->update($request->validated());
+        return response()->json($author);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(PublicationAuthor $publicationAuthor)
+    public function destroy(Publication $publication, PublicationAuthor $author): JsonResponse
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(PublicationAuthor $publicationAuthor)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdatePublicationAuthorRequest $request, PublicationAuthor $publicationAuthor)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(PublicationAuthor $publicationAuthor)
-    {
-        //
+        $this->authorize('update', $publication);
+        $author->delete();
+        return response()->json(null, 204);
     }
 }

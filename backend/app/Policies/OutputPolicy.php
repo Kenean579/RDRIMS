@@ -4,63 +4,46 @@ namespace App\Policies;
 
 use App\Models\Output;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class OutputPolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
     public function viewAny(User $user): bool
     {
-        return false;
+        return true;
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
     public function view(User $user, Output $output): bool
     {
-        return false;
+        return true;
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
     public function create(User $user): bool
     {
-        return false;
+        return $user->roles()->whereIn('name', ['researcher', 'admin', 'supervisor'])->exists();
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
     public function update(User $user, Output $output): bool
     {
-        return false;
+        if ($user->roles()->where('name', 'admin')->exists()) return true;
+
+        return $output->participants()
+            ->where('user_id', $user->id)
+            ->whereHas('participantType', fn($q) => $q->whereIn('name', ['student', 'supervisor']))
+            ->exists();
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
     public function delete(User $user, Output $output): bool
     {
-        return false;
+        return $user->roles()->where('name', 'admin')->exists();
     }
 
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Output $output): bool
+    public function changeStatus(User $user, Output $output): bool
     {
-        return false;
-    }
+        if ($user->roles()->where('name', 'admin')->exists()) return true;
 
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Output $output): bool
-    {
-        return false;
+        return $output->participants()
+            ->where('user_id', $user->id)
+            ->whereHas('participantType', fn($q) => $q->where('name', 'supervisor'))
+            ->exists();
     }
 }

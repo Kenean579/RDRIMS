@@ -2,65 +2,43 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Event;
 use App\Http\Requests\StoreEventRequest;
 use App\Http\Requests\UpdateEventRequest;
+use App\Models\Event;
+use Illuminate\Http\JsonResponse;
 
 class EventController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(): JsonResponse
     {
-        //
+        $this->authorize('viewAny', Event::class);
+        $events = Event::withCount('registrations')->latest('start_date')->paginate(20);
+        return response()->json($events);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function store(StoreEventRequest $request): JsonResponse
     {
-        //
+        $event = Event::create($request->validated());
+        return response()->json($event, 201);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreEventRequest $request)
+    public function show(Event $event): JsonResponse
     {
-        //
+        $this->authorize('view', $event);
+        $event->load('registrations.user');
+        return response()->json($event);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Event $event)
+    public function update(UpdateEventRequest $request, Event $event): JsonResponse
     {
-        //
+        $event->update($request->validated());
+        return response()->json($event);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Event $event)
+    public function destroy(Event $event): JsonResponse
     {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateEventRequest $request, Event $event)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Event $event)
-    {
-        //
+        $this->authorize('delete', $event);
+        $event->delete();
+        return response()->json(null, 204);
     }
 }

@@ -2,65 +2,43 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Publication;
 use App\Http\Requests\StorePublicationRequest;
 use App\Http\Requests\UpdatePublicationRequest;
+use App\Models\Publication;
+use Illuminate\Http\JsonResponse;
 
 class PublicationController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(): JsonResponse
     {
-        //
+        $this->authorize('viewAny', Publication::class);
+        $publications = Publication::with(['project', 'file'])->latest('publication_date')->paginate(20);
+        return response()->json($publications);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function store(StorePublicationRequest $request): JsonResponse
     {
-        //
+        $publication = Publication::create($request->validated());
+        return response()->json($publication, 201);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StorePublicationRequest $request)
+    public function show(Publication $publication): JsonResponse
     {
-        //
+        $this->authorize('view', $publication);
+        $publication->load(['project', 'authors.user', 'file']);
+        return response()->json($publication);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Publication $publication)
+    public function update(UpdatePublicationRequest $request, Publication $publication): JsonResponse
     {
-        //
+        $publication->update($request->validated());
+        return response()->json($publication);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Publication $publication)
+    public function destroy(Publication $publication): JsonResponse
     {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdatePublicationRequest $request, Publication $publication)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Publication $publication)
-    {
-        //
+        $this->authorize('delete', $publication);
+        $publication->delete();
+        return response()->json(null, 204);
     }
 }

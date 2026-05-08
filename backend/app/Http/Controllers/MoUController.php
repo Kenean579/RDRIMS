@@ -2,65 +2,43 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\MoU;
 use App\Http\Requests\StoreMoURequest;
 use App\Http\Requests\UpdateMoURequest;
+use App\Models\MoU;
+use App\Models\Partner;
+use Illuminate\Http\JsonResponse;
 
 class MoUController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(Partner $partner): JsonResponse
     {
-        //
+        $this->authorize('view', $partner);
+        $moUs = $partner->moUs()->orderBy('start_date', 'desc')->get();
+        return response()->json($moUs);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function store(StoreMoURequest $request, Partner $partner): JsonResponse
     {
-        //
+        $moU = $partner->moUs()->create($request->validated());
+        return response()->json($moU, 201);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreMoURequest $request)
+    public function show(Partner $partner, MoU $moU): JsonResponse
     {
-        //
+        $this->authorize('view', $partner);
+        return response()->json($moU);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(MoU $moU)
+    public function update(UpdateMoURequest $request, Partner $partner, MoU $moU): JsonResponse
     {
-        //
+        $moU->update($request->validated());
+        return response()->json($moU);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(MoU $moU)
+    public function destroy(Partner $partner, MoU $moU): JsonResponse
     {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateMoURequest $request, MoU $moU)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(MoU $moU)
-    {
-        //
+        $this->authorize('update', $partner);
+        $moU->delete();
+        return response()->json(null, 204);
     }
 }

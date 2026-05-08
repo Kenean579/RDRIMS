@@ -2,28 +2,28 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StorePublicationRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
-        return false;
+        return $this->user()->can('create', \App\Models\Publication::class);
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         return [
-            //
+            'project_id'       => 'nullable|exists:projects,id',
+            'title'            => 'required|string|max:255',
+            'abstract'         => 'nullable|string',
+            'keywords'         => 'nullable|string',
+            'journal'          => 'required|string|max:255',
+            'doi'              => 'nullable|string|max:255',
+            'scholar_url'      => 'nullable|string|max:255',
+            'publication_date' => 'required|date',
+            'citation_count'   => 'nullable|integer|min:0',
+            'file_id'          => 'nullable|exists:files,id',
         ];
     }
 }

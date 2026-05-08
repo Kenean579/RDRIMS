@@ -2,28 +2,27 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreTaskRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
-        return false;
+        $milestone = $this->route('milestone');
+        $project = $milestone->project;
+        return $this->user()->can('update', $project);
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         return [
-            //
+            'title'           => 'required|string|max:255',
+            'description'     => 'nullable|string',
+            'estimated_hours' => 'nullable|integer|min:0',
+            'actual_hours'    => 'nullable|integer|min:0',
+            'assigned_to'     => 'nullable|exists:users,id',
+            'due_date'        => 'required|date',
+            'status_id'       => 'nullable|exists:task_statuses,id',
         ];
     }
 }

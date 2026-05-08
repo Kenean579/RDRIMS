@@ -2,65 +2,33 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\OutputFile;
-use App\Http\Requests\StoreOutputFileRequest;
-use App\Http\Requests\UpdateOutputFileRequest;
+use App\Models\Output;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class OutputFileController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function attach(Request $request, Output $output): JsonResponse
     {
-        //
+        $this->authorize('update', $output);
+
+        $request->validate(['file_id' => 'required|exists:files,id']);
+
+        if ($output->files()->where('file_id', $request->file_id)->exists()) {
+            return response()->json(['message' => 'File already attached.'], 422);
+        }
+
+        $output->files()->attach($request->file_id);
+
+        return response()->json(['message' => 'File attached.']);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function detach(Output $output, $fileId): JsonResponse
     {
-        //
-    }
+        $this->authorize('update', $output);
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreOutputFileRequest $request)
-    {
-        //
-    }
+        $output->files()->detach($fileId);
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(OutputFile $outputFile)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(OutputFile $outputFile)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateOutputFileRequest $request, OutputFile $outputFile)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(OutputFile $outputFile)
-    {
-        //
+        return response()->json(['message' => 'File detached.']);
     }
 }

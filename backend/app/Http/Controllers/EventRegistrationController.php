@@ -2,65 +2,57 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\EventRegistration;
-use App\Http\Requests\StoreEventRegistrationRequest;
-use App\Http\Requests\UpdateEventRegistrationRequest;
+use App\Http\Requests\RegisterEventRequest;
+use App\Models\Event;
+use Illuminate\Http\JsonResponse;
 
 class EventRegistrationController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function register(RegisterEventRequest $request, Event $event): JsonResponse
     {
-        //
+        if ($event->registrations()->where('user_id', auth()->id())->exists()) {
+            return response()->json(['message' => 'Already registered.'], 422);
+        }
+
+        if ($event->capacity && $event->registrations()->count() >= $event->capacity) {
+            return response()->json(['message' => 'Event is full.'], 422);
+        }
+
+        if ($event->registration_deadline && now()->gt($event->registration_deadline)) {
+            return response()->json(['message' => 'Registration deadline has passed.'], 422);
+        }
+
+        $registration = $event->registrations()->create([
+            'user_id'  => auth()->id(),
+            'attended' => false,
+        ]);
+
+        return response()->json($registration, 201);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function markAttendance(Event $event): JsonResponse
     {
-        //
+        $this->authorize('update', $event);
+        $userId = request()->input('user_id', auth()->id());
+
+        $registration = $event->registrations()->where('user_id', $userId)->first();
+
+        if (!$registration) {
+            return response()->json(['message' => 'User is not registered for this event.'], 404);
+        }
+
+        $registration->update(['attended' => true]);
+        return response()->json($registration);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreEventRegistrationRequest $request)
+    public function generateCertificates(Event $event): JsonResponse
     {
-        //
-    }
+        $this->authorize('update', $event);
+        $registrations = $event->registrations()->where('attended', true)->get();
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(EventRegistration $eventRegistration)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(EventRegistration $eventRegistration)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateEventRegistrationRequest $request, EventRegistration $eventRegistration)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(EventRegistration $eventRegistration)
-    {
-        //
+        return response()->json([
+            'message' => "Certificates generated for {$registrations->count()} attendees.",
+            'count'   => $registrations->count(),
+        ]);
     }
 }
