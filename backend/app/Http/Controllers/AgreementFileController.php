@@ -2,65 +2,66 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\AgreementType;
 use App\Models\AgreementFile;
-use App\Http\Requests\StoreAgreementFileRequest;
-use App\Http\Requests\UpdateAgreementFileRequest;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class AgreementFileController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function attach(Request $request, $parentTypeName, $parentId): JsonResponse
     {
-        //
+        $agreementType = AgreementType::where('name', $parentTypeName)->firstOrFail();
+
+        $parentClass = match($agreementType->name) {
+            'mo_u'    => \App\Models\MoU::class,
+            'license' => \App\Models\License::class,
+            default   => abort(400, 'Invalid agreement type.')
+        };
+
+        $parent = $parentClass::findOrFail($parentId);
+
+        if ($agreementType->name === 'mo_u') {
+            $this->authorize('update', $parent->partner);
+        } else {
+            $this->authorize('update', $parent->patent);
+        }
+
+        $request->validate(['file_id' => 'required|exists:files,id']);
+
+        AgreementFile::create([
+            'parent_type_id' => $agreementType->id,
+            'parent_id'      => $parent->id,
+            'file_id'        => $request->file_id,
+        ]);
+
+        return response()->json(['message' => 'File attached.']);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function detach($parentTypeName, $parentId, $fileId): JsonResponse
     {
-        //
-    }
+        $agreementType = AgreementType::where('name', $parentTypeName)->firstOrFail();
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreAgreementFileRequest $request)
-    {
-        //
-    }
+        $parentClass = match($agreementType->name) {
+            'mo_u'    => \App\Models\MoU::class,
+            'license' => \App\Models\License::class,
+            default   => abort(400, 'Invalid agreement type.')
+        };
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(AgreementFile $agreementFile)
-    {
-        //
-    }
+        $parent = $parentClass::findOrFail($parentId);
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(AgreementFile $agreementFile)
-    {
-        //
-    }
+        if ($agreementType->name === 'mo_u') {
+            $this->authorize('update', $parent->partner);
+        } else {
+            $this->authorize('update', $parent->patent);
+        }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateAgreementFileRequest $request, AgreementFile $agreementFile)
-    {
-        //
-    }
+        AgreementFile::where([
+            'parent_type_id' => $agreementType->id,
+            'parent_id'      => $parent->id,
+            'file_id'        => $fileId,
+        ])->delete();
 
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(AgreementFile $agreementFile)
-    {
-        //
+        return response()->json(['message' => 'File detached.']);
     }
 }

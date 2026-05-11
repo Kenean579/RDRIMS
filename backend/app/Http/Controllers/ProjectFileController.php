@@ -2,65 +2,33 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ProjectFile;
-use App\Http\Requests\StoreProjectFileRequest;
-use App\Http\Requests\UpdateProjectFileRequest;
+use App\Models\Project;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class ProjectFileController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function attach(Request $request, Project $project): JsonResponse
     {
-        //
+        $this->authorize('update', $project);
+
+        $request->validate(['file_id' => 'required|exists:files,id']);
+
+        if ($project->files()->where('file_id', $request->file_id)->exists()) {
+            return response()->json(['message' => 'File already attached.'], 422);
+        }
+
+        $project->files()->attach($request->file_id);
+
+        return response()->json(['message' => 'File attached.']);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function detach(Project $project, $fileId): JsonResponse
     {
-        //
-    }
+        $this->authorize('update', $project);
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreProjectFileRequest $request)
-    {
-        //
-    }
+        $project->files()->detach($fileId);
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(ProjectFile $projectFile)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(ProjectFile $projectFile)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateProjectFileRequest $request, ProjectFile $projectFile)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(ProjectFile $projectFile)
-    {
-        //
+        return response()->json(['message' => 'File detached.']);
     }
 }

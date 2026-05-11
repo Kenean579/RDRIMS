@@ -2,65 +2,49 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Milestone;
 use App\Http\Requests\StoreMilestoneRequest;
 use App\Http\Requests\UpdateMilestoneRequest;
+use App\Models\Milestone;
+use App\Models\Project;
+use Illuminate\Http\JsonResponse;
 
 class MilestoneController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(Project $project): JsonResponse
     {
-        //
+        $this->authorize('view', $project);
+
+        $milestones = $project->milestones()
+            ->with('status')
+            ->orderBy('display_order')
+            ->get();
+
+        return response()->json($milestones);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function store(StoreMilestoneRequest $request, Project $project): JsonResponse
     {
-        //
+        $milestone = $project->milestones()->create($request->validated());
+        return response()->json($milestone, 201);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreMilestoneRequest $request)
+    public function show(Project $project, Milestone $milestone): JsonResponse
     {
-        //
+        $this->authorize('view', $project);
+        $milestone->load(['status', 'tasks']);
+        return response()->json($milestone);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Milestone $milestone)
+    public function update(UpdateMilestoneRequest $request, Project $project, Milestone $milestone): JsonResponse
     {
-        //
+        $milestone->update($request->validated());
+        return response()->json($milestone);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Milestone $milestone)
+    public function destroy(Project $project, Milestone $milestone): JsonResponse
     {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateMilestoneRequest $request, Milestone $milestone)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Milestone $milestone)
-    {
-        //
+        $this->authorize('update', $project);
+        $milestone->delete();
+        return response()->json(null, 204);
     }
 }

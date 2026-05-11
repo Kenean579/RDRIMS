@@ -4,63 +4,38 @@ namespace App\Policies;
 
 use App\Models\Expense;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class ExpensePolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
     public function viewAny(User $user): bool
     {
-        return false;
+        return true;
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
     public function view(User $user, Expense $expense): bool
     {
-        return false;
+        return $user->id === $expense->project->pi_id || $user->roles()->whereIn('name', ['admin', 'finance_officer'])->exists();
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
     public function create(User $user): bool
     {
-        return false;
+        return $user->roles()->whereIn('name', ['admin', 'researcher'])->exists();
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
     public function update(User $user, Expense $expense): bool
     {
+        if ($user->roles()->whereIn('name', ['admin', 'finance_officer'])->exists()) return true;
+        if ($user->id === $expense->project->pi_id && !$expense->approved_at) return true;
         return false;
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
     public function delete(User $user, Expense $expense): bool
     {
-        return false;
+        return $user->roles()->where('name', 'admin')->exists();
     }
 
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Expense $expense): bool
+    public function approve(User $user, Expense $expense): bool
     {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Expense $expense): bool
-    {
-        return false;
+        return $user->roles()->whereIn('name', ['admin', 'finance_officer'])->exists();
     }
 }

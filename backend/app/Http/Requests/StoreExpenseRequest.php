@@ -2,28 +2,22 @@
 
 namespace App\Http\Requests;
 
-use Illuminate\Contracts\Validation\ValidationRule;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreExpenseRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
-        return false;
+        $project = $this->route('project');
+        return $this->user()->can('update', $project);
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     *
-     * @return array<string, ValidationRule|array<mixed>|string>
-     */
     public function rules(): array
     {
         return [
-            //
+            'amount'          => 'required|numeric|min:0',
+            'budget_category' => 'nullable|string|max:50',
+            'description'     => 'required|string',
         ];
     }
 }

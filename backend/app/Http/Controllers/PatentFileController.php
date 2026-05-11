@@ -2,65 +2,33 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PatentFile;
-use App\Http\Requests\StorePatentFileRequest;
-use App\Http\Requests\UpdatePatentFileRequest;
+use App\Models\Patent;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class PatentFileController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function attach(Request $request, Patent $patent): JsonResponse
     {
-        //
+        $this->authorize('update', $patent);
+
+        $request->validate(['file_id' => 'required|exists:files,id']);
+
+        if ($patent->files()->where('file_id', $request->file_id)->exists()) {
+            return response()->json(['message' => 'File already attached.'], 422);
+        }
+
+        $patent->files()->attach($request->file_id);
+
+        return response()->json(['message' => 'File attached.']);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function detach(Patent $patent, $fileId): JsonResponse
     {
-        //
-    }
+        $this->authorize('update', $patent);
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StorePatentFileRequest $request)
-    {
-        //
-    }
+        $patent->files()->detach($fileId);
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(PatentFile $patentFile)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(PatentFile $patentFile)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdatePatentFileRequest $request, PatentFile $patentFile)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(PatentFile $patentFile)
-    {
-        //
+        return response()->json(['message' => 'File detached.']);
     }
 }

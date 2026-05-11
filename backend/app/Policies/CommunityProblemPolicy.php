@@ -4,63 +4,48 @@ namespace App\Policies;
 
 use App\Models\CommunityProblem;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class CommunityProblemPolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
     public function viewAny(User $user): bool
     {
-        return false;
+        return true;
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
-    public function view(User $user, CommunityProblem $communityProblem): bool
+    public function view(User $user, CommunityProblem $problem): bool
     {
-        return false;
+        return true;
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
     public function create(User $user): bool
     {
-        return false;
+        return true;
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
-    public function update(User $user, CommunityProblem $communityProblem): bool
+    public function update(User $user, CommunityProblem $problem): bool
     {
-        return false;
+        return $user->roles()->where('name', 'admin')->exists() || $user->id === $problem->claimed_by;
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
-    public function delete(User $user, CommunityProblem $communityProblem): bool
+    public function delete(User $user, CommunityProblem $problem): bool
     {
-        return false;
+        return $user->roles()->where('name', 'admin')->exists();
     }
 
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, CommunityProblem $communityProblem): bool
+    public function claim(User $user, CommunityProblem $problem): bool
     {
-        return false;
+        return $user->roles()->whereIn('name', ['researcher', 'admin'])->exists() && !$problem->claimed_by;
     }
 
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, CommunityProblem $communityProblem): bool
+    public function complete(User $user, CommunityProblem $problem): bool
     {
-        return false;
+        return $user->id === $problem->claimed_by || $user->roles()->where('name', 'admin')->exists();
+    }
+
+    public function addFeedback(User $user, CommunityProblem $problem): bool
+    {
+        return $user->id === $problem->submitted_by ||
+               $user->id === $problem->claimed_by ||
+               $user->roles()->where('name', 'admin')->exists();
     }
 }

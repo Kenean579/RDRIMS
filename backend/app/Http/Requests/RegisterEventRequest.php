@@ -8,13 +8,11 @@ class RegisterEventRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true; // any authenticated user can register for an event
+        return true;
     }
 
     public function rules(): array
     {
-        return [
-            // no extra fields – user is taken from auth
-        ];
+        return [];
     }
 }

@@ -4,63 +4,31 @@ namespace App\Policies;
 
 use App\Models\License;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class LicensePolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
     public function viewAny(User $user): bool
     {
-        return false;
+        return $user->roles()->whereIn('name', ['researcher', 'admin', 'tech_transfer_officer'])->exists();
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
     public function view(User $user, License $license): bool
     {
-        return false;
+        return true;
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
     public function create(User $user): bool
     {
-        return false;
+        return $user->roles()->whereIn('name', ['admin', 'tech_transfer_officer'])->exists();
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
     public function update(User $user, License $license): bool
     {
-        return false;
+        return $user->roles()->whereIn('name', ['admin', 'tech_transfer_officer'])->exists();
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
     public function delete(User $user, License $license): bool
     {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, License $license): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, License $license): bool
-    {
-        return false;
+        return $user->roles()->where('name', 'admin')->exists();
     }
 }
