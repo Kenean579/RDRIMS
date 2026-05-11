@@ -1,4 +1,3 @@
-
 <?php
 // app/Http/Resources/ReviewerPivotResource.php
 namespace App\Http\Resources;
