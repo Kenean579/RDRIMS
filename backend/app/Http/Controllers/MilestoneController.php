@@ -12,14 +12,7 @@ class MilestoneController extends Controller
 {
     public function index(Project $project): JsonResponse
     {
-        $this->authorize('view', $project);
-
-        $milestones = $project->milestones()
-            ->with('status')
-            ->orderBy('display_order')
-            ->get();
-
-        return response()->json($milestones);
+        return response()->json($project->milestones()->with('status', 'tasks')->orderBy('display_order')->get());
     }
 
     public function store(StoreMilestoneRequest $request, Project $project): JsonResponse
@@ -28,23 +21,20 @@ class MilestoneController extends Controller
         return response()->json($milestone, 201);
     }
 
-    public function show(Project $project, Milestone $milestone): JsonResponse
+    public function show(Milestone $milestone): JsonResponse
     {
-        $this->authorize('view', $project);
-        $milestone->load(['status', 'tasks']);
-        return response()->json($milestone);
+        return response()->json($milestone->load('tasks'));
     }
 
-    public function update(UpdateMilestoneRequest $request, Project $project, Milestone $milestone): JsonResponse
+    public function update(UpdateMilestoneRequest $request, Milestone $milestone): JsonResponse
     {
         $milestone->update($request->validated());
         return response()->json($milestone);
     }
 
-    public function destroy(Project $project, Milestone $milestone): JsonResponse
+    public function destroy(Milestone $milestone): JsonResponse
     {
-        $this->authorize('update', $project);
         $milestone->delete();
-        return response()->json(null, 204);
+        return response()->json(['message' => 'Milestone deleted.']);
     }
 }

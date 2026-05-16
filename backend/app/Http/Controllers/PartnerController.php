@@ -11,9 +11,7 @@ class PartnerController extends Controller
 {
     public function index(): JsonResponse
     {
-        $this->authorize('viewAny', Partner::class);
-        $partners = Partner::withCount('moUs')->latest()->paginate(20);
-        return response()->json($partners);
+        return response()->json(Partner::with('moUs')->paginate(20));
     }
 
     public function store(StorePartnerRequest $request): JsonResponse
@@ -24,9 +22,7 @@ class PartnerController extends Controller
 
     public function show(Partner $partner): JsonResponse
     {
-        $this->authorize('view', $partner);
-        $partner->load('moUs');
-        return response()->json($partner);
+        return response()->json($partner->load('moUs', 'outputs'));
     }
 
     public function update(UpdatePartnerRequest $request, Partner $partner): JsonResponse
@@ -37,8 +33,7 @@ class PartnerController extends Controller
 
     public function destroy(Partner $partner): JsonResponse
     {
-        $this->authorize('delete', $partner);
         $partner->delete();
-        return response()->json(null, 204);
+        return response()->json(['message' => 'Partner deleted.']);
     }
 }

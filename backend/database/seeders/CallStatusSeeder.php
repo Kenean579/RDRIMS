@@ -9,9 +9,8 @@ class CallStatusSeeder extends Seeder
 {
     public function run(): void
     {
-        $statuses = ['draft', 'open', 'closed'];
-        foreach ($statuses as $status) {
-            CallStatus::updateOrCreate(['name' => $status]);
-        }
+        CallStatus::create(['name' => 'draft']);
+        CallStatus::create(['name' => 'open']);
+        CallStatus::create(['name' => 'closed']);
     }
 }

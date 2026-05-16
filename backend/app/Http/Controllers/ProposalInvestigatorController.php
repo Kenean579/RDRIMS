@@ -2,65 +2,40 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Proposal;
 use App\Models\ProposalInvestigator;
-use App\Http\Requests\StoreProposalInvestigatorRequest;
-use App\Http\Requests\UpdateProposalInvestigatorRequest;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class ProposalInvestigatorController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(Proposal $proposal): JsonResponse
     {
-        //
+        return response()->json($proposal->investigators()->with('user', 'role', 'status')->get());
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function store(Request $request, Proposal $proposal): JsonResponse
     {
-        //
+        $request->validate([
+            'user_id' => 'nullable|exists:users,id',
+            'name' => 'required_without:user_id|string|max:255',
+            'email' => 'required_without:user_id|email|max:255',
+            'institution' => 'nullable|string|max:255',
+            'role_id' => 'required|exists:investigator_roles,id',
+        ]);
+
+        $investigator = $proposal->investigators()->create([
+            ...$request->all(),
+            'status_id' => 1, // pending
+            'invited_at' => now(),
+        ]);
+
+        return response()->json($investigator, 201);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreProposalInvestigatorRequest $request)
+    public function destroy(Proposal $proposal, ProposalInvestigator $investigator): JsonResponse
     {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(ProposalInvestigator $proposalInvestigator)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(ProposalInvestigator $proposalInvestigator)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateProposalInvestigatorRequest $request, ProposalInvestigator $proposalInvestigator)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(ProposalInvestigator $proposalInvestigator)
-    {
-        //
+        $investigator->delete();
+        return response()->json(['message' => 'Investigator removed.']);
     }
 }

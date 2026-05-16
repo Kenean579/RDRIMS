@@ -11,9 +11,7 @@ class PatentController extends Controller
 {
     public function index(): JsonResponse
     {
-        $this->authorize('viewAny', Patent::class);
-        $patents = Patent::with(['status', 'project'])->latest()->paginate(20);
-        return response()->json($patents);
+        return response()->json(Patent::with('status', 'project')->paginate(20));
     }
 
     public function store(StorePatentRequest $request): JsonResponse
@@ -24,13 +22,12 @@ class PatentController extends Controller
 
     public function show(Patent $patent): JsonResponse
     {
-        $this->authorize('view', $patent);
-        $patent->load(['status', 'project', 'licenses', 'files']);
-        return response()->json($patent);
+        return response()->json($patent->load('status', 'project', 'licenses', 'files'));
     }
 
     public function update(UpdatePatentRequest $request, Patent $patent): JsonResponse
     {
+        $this->authorize('update', $patent);
         $patent->update($request->validated());
         return response()->json($patent);
     }
@@ -39,6 +36,6 @@ class PatentController extends Controller
     {
         $this->authorize('delete', $patent);
         $patent->delete();
-        return response()->json(null, 204);
+        return response()->json(['message' => 'Patent deleted.']);
     }
 }

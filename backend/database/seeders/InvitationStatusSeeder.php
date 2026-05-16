@@ -9,9 +9,8 @@ class InvitationStatusSeeder extends Seeder
 {
     public function run(): void
     {
-        $statuses = ['pending', 'accepted', 'declined'];
-        foreach ($statuses as $status) {
-            InvitationStatus::updateOrCreate(['name' => $status]);
-        }
+        InvitationStatus::create(['name' => 'pending']);
+        InvitationStatus::create(['name' => 'accepted']);
+        InvitationStatus::create(['name' => 'declined']);
     }
 }

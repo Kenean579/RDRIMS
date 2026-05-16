@@ -9,9 +9,8 @@ class StudentLevelSeeder extends Seeder
 {
     public function run(): void
     {
-        $levels = ['undergraduate', 'graduate', 'phd'];
-        foreach ($levels as $level) {
-            StudentLevel::updateOrCreate(['name' => $level]);
-        }
+        StudentLevel::create(['name' => 'undergraduate']);
+        StudentLevel::create(['name' => 'graduate']);
+        StudentLevel::create(['name' => 'phd']);
     }
 }

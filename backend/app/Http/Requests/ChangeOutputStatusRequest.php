@@ -15,7 +15,7 @@ class ChangeOutputStatusRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'status' => 'required|string|in:submitted,approved_by_supervisor,approved,rejected',
+            'status_id' => 'required|exists:output_statuses,id',
         ];
     }
 }

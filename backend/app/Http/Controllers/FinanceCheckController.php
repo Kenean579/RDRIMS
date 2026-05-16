@@ -2,65 +2,30 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\FinanceCheck;
 use App\Http\Requests\StoreFinanceCheckRequest;
 use App\Http\Requests\UpdateFinanceCheckRequest;
+use App\Models\FinanceCheck;
+use App\Models\Proposal;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class FinanceCheckController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function store(StoreFinanceCheckRequest $request, Proposal $proposal): JsonResponse
     {
-        //
+        $check = $proposal->financeChecks()->create([
+            ...$request->validated(),
+            'checker_id' => $request->user()->id,
+            'checked_at' => now(),
+        ]);
+
+        return response()->json($check, 201);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function update(UpdateFinanceCheckRequest $request, FinanceCheck $financeCheck): JsonResponse
     {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreFinanceCheckRequest $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(FinanceCheck $financeCheck)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(FinanceCheck $financeCheck)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateFinanceCheckRequest $request, FinanceCheck $financeCheck)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(FinanceCheck $financeCheck)
-    {
-        //
+        $this->authorize('update', $financeCheck);
+        $financeCheck->update($request->validated());
+        return response()->json($financeCheck);
     }
 }

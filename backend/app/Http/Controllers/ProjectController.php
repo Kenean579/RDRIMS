@@ -8,20 +8,20 @@ use App\Models\Project;
 use App\Models\Proposal;
 use App\Services\ProjectService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class ProjectController extends Controller
 {
-    public function __construct(private ProjectService $projectService) {}
+    public function __construct(
+        private ProjectService $projectService,
+    ) {}
 
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $this->authorize('viewAny', Project::class);
-
-        $projects = Project::with(['pi', 'status', 'academicYear'])
-            ->when(!auth()->user()->roles()->where('name', 'admin')->exists(), function ($q) {
-                $q->where('pi_id', auth()->id());
-            })
-            ->latest()
+        $projects = Project::with('status', 'pi', 'academicYear')
+            ->when($request->status, fn($q) => $q->whereHas('status', fn($s) => $s->where('name', $request->status)))
+            ->when($request->search, fn($q) => $q->where('title', 'LIKE', '%' . $request->search . '%'))
+            ->orderBy('created_at', 'desc')
             ->paginate(20);
 
         return response()->json($projects);
@@ -29,25 +29,18 @@ class ProjectController extends Controller
 
     public function store(StoreProjectRequest $request): JsonResponse
     {
-        if ($request->has('proposal_id')) {
-            $proposal = Proposal::findOrFail($request->proposal_id);
-            $project = $this->projectService->createFromProposal($proposal, $request->pi_id);
-        } else {
-            $project = Project::create($request->validated());
-        }
-
+        $project = Project::create($request->validated());
         return response()->json($project, 201);
     }
 
     public function show(Project $project): JsonResponse
     {
-        $this->authorize('view', $project);
-        $project->load(['pi', 'status', 'milestones', 'expenses', 'publications']);
-        return response()->json($project);
+        return response()->json($project->load('status', 'pi', 'milestones.tasks', 'expenses', 'publications', 'patents', 'outputs'));
     }
 
     public function update(UpdateProjectRequest $request, Project $project): JsonResponse
     {
+        $this->authorize('update', $project);
         $project->update($request->validated());
         return response()->json($project);
     }
@@ -56,6 +49,12 @@ class ProjectController extends Controller
     {
         $this->authorize('delete', $project);
         $project->delete();
-        return response()->json(null, 204);
+        return response()->json(['message' => 'Project deleted.']);
+    }
+
+    public function createFromProposal(Proposal $proposal, Request $request): JsonResponse
+    {
+        $project = $this->projectService->createFromProposal($proposal, $request->user());
+        return response()->json($project, 201);
     }
 }

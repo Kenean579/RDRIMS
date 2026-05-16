@@ -9,9 +9,8 @@ class ProposalTypeSeeder extends Seeder
 {
     public function run(): void
     {
-        $types = ['sr', 'sp', 'thesis'];
-        foreach ($types as $type) {
-            ProposalType::updateOrCreate(['name' => $type]);
-        }
+        ProposalType::create(['name' => 'sr']);   // Small Research
+        ProposalType::create(['name' => 'sp']);   // Strategic Project
+        ProposalType::create(['name' => 'thesis']);
     }
 }

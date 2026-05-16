@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
-use App\Models\CommunityProblem;
 use App\Models\User;
+use App\Models\CommunityProblem;
 
 class CommunityProblemPolicy
 {
@@ -12,7 +12,7 @@ class CommunityProblemPolicy
         return true;
     }
 
-    public function view(User $user, CommunityProblem $problem): bool
+    public function view(User $user, CommunityProblem $communityProblem): bool
     {
         return true;
     }
@@ -22,30 +22,13 @@ class CommunityProblemPolicy
         return true;
     }
 
-    public function update(User $user, CommunityProblem $problem): bool
+    public function update(User $user, CommunityProblem $communityProblem): bool
     {
-        return $user->roles()->where('name', 'admin')->exists() || $user->id === $problem->claimed_by;
+        return $user->isAdmin();
     }
 
-    public function delete(User $user, CommunityProblem $problem): bool
+    public function delete(User $user, CommunityProblem $communityProblem): bool
     {
-        return $user->roles()->where('name', 'admin')->exists();
-    }
-
-    public function claim(User $user, CommunityProblem $problem): bool
-    {
-        return $user->roles()->whereIn('name', ['researcher', 'admin'])->exists() && !$problem->claimed_by;
-    }
-
-    public function complete(User $user, CommunityProblem $problem): bool
-    {
-        return $user->id === $problem->claimed_by || $user->roles()->where('name', 'admin')->exists();
-    }
-
-    public function addFeedback(User $user, CommunityProblem $problem): bool
-    {
-        return $user->id === $problem->submitted_by ||
-               $user->id === $problem->claimed_by ||
-               $user->roles()->where('name', 'admin')->exists();
+        return $user->hasRole('super_admin');
     }
 }

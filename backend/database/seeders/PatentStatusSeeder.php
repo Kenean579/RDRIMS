@@ -9,9 +9,8 @@ class PatentStatusSeeder extends Seeder
 {
     public function run(): void
     {
-        $statuses = ['pending', 'granted', 'expired'];
-        foreach ($statuses as $status) {
-            PatentStatus::updateOrCreate(['name' => $status]);
-        }
+        PatentStatus::create(['name' => 'pending']);
+        PatentStatus::create(['name' => 'granted']);
+        PatentStatus::create(['name' => 'expired']);
     }
 }

@@ -2,65 +2,38 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Faculty;
 use App\Http\Requests\StoreFacultyRequest;
 use App\Http\Requests\UpdateFacultyRequest;
+use App\Models\Faculty;
+use Illuminate\Http\JsonResponse;
 
 class FacultyController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(): JsonResponse
     {
-        //
+        return response()->json(Faculty::with('campus')->get());
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function store(StoreFacultyRequest $request): JsonResponse
     {
-        //
+        $faculty = Faculty::create($request->validated());
+        return response()->json($faculty, 201);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreFacultyRequest $request)
+    public function show(Faculty $faculty): JsonResponse
     {
-        //
+        return response()->json($faculty->load('campus', 'departments'));
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Faculty $faculty)
+    public function update(UpdateFacultyRequest $request, Faculty $faculty): JsonResponse
     {
-        //
+        $faculty->update($request->validated());
+        return response()->json($faculty);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Faculty $faculty)
+    public function destroy(Faculty $faculty): JsonResponse
     {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateFacultyRequest $request, Faculty $faculty)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Faculty $faculty)
-    {
-        //
+        $faculty->delete();
+        return response()->json(['message' => 'Faculty deleted.']);
     }
 }

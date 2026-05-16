@@ -9,9 +9,9 @@ class ParticipantTypeSeeder extends Seeder
 {
     public function run(): void
     {
-        $types = ['student', 'co-student', 'supervisor', 'co-supervisor', 'advisor'];
+        $types = ['student', 'co_student', 'supervisor', 'co_supervisor', 'advisor'];
         foreach ($types as $type) {
-            ParticipantType::updateOrCreate(['name' => $type]);
+            ParticipantType::create(['name' => $type]);
         }
     }
 }

@@ -1,108 +1,206 @@
 <?php
 
-use App\Http\Controllers\Api\CallController;
-use App\Http\Controllers\Api\ProposalController;
-use App\Models\Call;
-use App\Models\CallStatus;
-use Illuminate\Http\Request;
+use App\Http\Controllers\AcademicYearController;
+use App\Http\Controllers\AgreementFileController;
+use App\Http\Controllers\AuditLogController;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\CallController;
+use App\Http\Controllers\CampusController;
+use App\Http\Controllers\CommunityProblemController;
+use App\Http\Controllers\DepartmentController;
+use App\Http\Controllers\DetectionController;
+use App\Http\Controllers\EthicsRequestController;
+use App\Http\Controllers\EventController;
+use App\Http\Controllers\EventRegistrationController;
+use App\Http\Controllers\ExpenseController;
+use App\Http\Controllers\ExpertiseController;
+use App\Http\Controllers\FacultyController;
+use App\Http\Controllers\FileController;
+use App\Http\Controllers\FinanceCheckController;
+use App\Http\Controllers\LanguagePreferenceController;
+use App\Http\Controllers\LicenseController;
+use App\Http\Controllers\LookupController;
+use App\Http\Controllers\MilestoneController;
+use App\Http\Controllers\MoUController;
+use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\OutputController;
+use App\Http\Controllers\OutputFileController;
+use App\Http\Controllers\OutputParticipantController;
+use App\Http\Controllers\PartnerController;
+use App\Http\Controllers\PatentController;
+use App\Http\Controllers\PatentFileController;
+use App\Http\Controllers\PermissionController;
+use App\Http\Controllers\ProjectController;
+use App\Http\Controllers\ProjectFileController;
+use App\Http\Controllers\ProposalController;
+use App\Http\Controllers\ProposalFileController;
+use App\Http\Controllers\ProposalInvestigatorController;
+use App\Http\Controllers\ProposalReviewerController;
+use App\Http\Controllers\PublicationAuthorController;
+use App\Http\Controllers\PublicationController;
+use App\Http\Controllers\ReportController;
+use App\Http\Controllers\ResearchCenterController;
+use App\Http\Controllers\ReviewCriterionController;
+use App\Http\Controllers\ReviewerProposalController;
+use App\Http\Controllers\RoleController;
+use App\Http\Controllers\RolePermissionController;
+use App\Http\Controllers\SettingController;
+use App\Http\Controllers\TaskController;
+use App\Http\Controllers\UniversityController;
+use App\Http\Controllers\UserController;
+use App\Http\Controllers\UserExpertiseController;
+use App\Http\Controllers\UserResearchCenterController;
+use App\Http\Controllers\UserRoleController;
 use Illuminate\Support\Facades\Route;
 
-<<<<<<< HEAD
-Route::get('/user', function (Request $request) {
-    return $request->user();
-})->middleware('auth:sanctum');
+// Public routes
+Route::post('register', [AuthController::class, 'register']);
+Route::post('login', [AuthController::class, 'login']);
 
-// Protected routes (require authentication)
+// Lookups (public read)
+Route::get('lookups/{table}', [LookupController::class, 'index']);
+
+// Authenticated routes
 Route::middleware('auth:sanctum')->group(function () {
-    // Calls resourceful endpoints
+    // Auth
+    Route::get('user', [AuthController::class, 'user']);
+    Route::post('logout', [AuthController::class, 'logout']);
+
+    // Language
+    Route::get('language-preference', [LanguagePreferenceController::class, 'show']);
+    Route::put('language-preference', [LanguagePreferenceController::class, 'update']);
+
+    // Notifications
+    Route::get('notifications', [NotificationController::class, 'index']);
+    Route::put('notifications/{id}/read', [NotificationController::class, 'markAsRead']);
+
+    // Audit logs (admin only)
+    Route::get('audit-logs', [AuditLogController::class, 'index'])->middleware('role:super_admin,research_admin,admin');
+
+    // Settings (admin only)
+    Route::apiResource('settings', SettingController::class)->only(['index', 'store', 'update', 'destroy']);
+
+    // Academic hierarchy
+    Route::apiResource('universities', UniversityController::class);
+    Route::apiResource('campuses', CampusController::class);
+    Route::apiResource('faculties', FacultyController::class);
+    Route::apiResource('departments', DepartmentController::class);
+    Route::apiResource('research-centers', ResearchCenterController::class);
+    Route::apiResource('academic-years', AcademicYearController::class);
+    Route::post('academic-years/{academic_year}/set-current', [AcademicYearController::class, 'setCurrent']);
+
+    // Users & Roles (admin only where needed)
+    Route::apiResource('users', UserController::class);
+    Route::post('users/{user}/roles', [UserRoleController::class, 'assign']);
+    Route::delete('users/{user}/roles/{role}', [UserRoleController::class, 'revoke']);
+    Route::post('users/{user}/research-centers', [UserResearchCenterController::class, 'attach']);
+    Route::delete('users/{user}/research-centers/{research_center}', [UserResearchCenterController::class, 'detach']);
+    Route::post('users/{user}/expertise', [UserExpertiseController::class, 'attach']);
+    Route::delete('users/{user}/expertise/{expertise}', [UserExpertiseController::class, 'detach']);
+
+    // Roles & Permissions
+    Route::apiResource('roles', RoleController::class);
+    Route::apiResource('permissions', PermissionController::class);
+    Route::post('roles/{role}/permissions', [RolePermissionController::class, 'sync']);
+
+    // Expertise
+    Route::apiResource('expertise', ExpertiseController::class);
+
+    // Calls
     Route::apiResource('calls', CallController::class);
 
-    // Optional extra endpoint to close a call manually
-    Route::post('/calls/{call}/close', function (Call $call) {
-      $closedId = CallStatus::where('name', 'closed')->value('id');
-     $call->update(['status_id' => $closedId])
-        return response()->json(['success' => true, 'message' => 'Call closed.']);
-    })->middleware('role:admin,research_admin');
-});
-// Proposal CRUD
-    Route::apiResource('proposals', ProposalController::class);
+    // Review criteria
+    Route::apiResource('review-criteria', ReviewCriterionController::class);
 
-    // Proposal workflow
-    Route::post('/proposals/{proposal}/submit', [ProposalController::class, 'submit']);
-    Route::post('/proposals/{proposal}/assign-reviewers', [ProposalController::class, 'assignReviewers']);
-    Route::get('/proposals/{proposal}/suggest-reviewers', [ProposalController::class, 'suggestReviewers']);
-    Route::post('/proposals/{proposal}/approve', [ProposalController::class, 'approve']);
+    // Proposals
+    Route::apiResource('proposals', ProposalController::class);
+    Route::post('proposals/{proposal}/submit', [ProposalController::class, 'submit']);
+    Route::post('proposals/{proposal}/approve', [ProposalController::class, 'approve']);
+    Route::post('proposals/{proposal}/reject', [ProposalController::class, 'reject']);
+    Route::post('proposals/{proposal}/assign-reviewers', [ProposalController::class, 'assignReviewers']);
+    Route::get('proposals/{proposal}/suggest-reviewers', [ProposalController::class, 'suggestReviewers']);
+    Route::apiResource('proposals.investigators', ProposalInvestigatorController::class)->only(['index', 'store', 'destroy']);
+    Route::apiResource('proposals.reviewers', ProposalReviewerController::class)->only(['index', 'store', 'destroy']);
+    Route::post('proposals/{proposal}/files', [ProposalFileController::class, 'attach']);
+    Route::delete('proposals/{proposal}/files/{file}', [ProposalFileController::class, 'detach']);
+
+    // Reviewer endpoints
+    Route::get('reviewer/proposals', [ReviewerProposalController::class, 'index']);
+    Route::get('reviewer/proposals/{proposal}', [ReviewerProposalController::class, 'show']);
+    Route::post('reviewer/proposals/{proposal}/review', [ReviewerProposalController::class, 'storeReview']);
 
     // Finance checks
-    Route::post('/proposals/{proposal}/finance-checks', [ProposalController::class, 'storeFinanceCheck']);
+    Route::post('proposals/{proposal}/finance-checks', [FinanceCheckController::class, 'store']);
+    Route::put('finance-checks/{finance_check}', [FinanceCheckController::class, 'update']);
 
     // Ethics requests
-    Route::post('/proposals/{proposal}/ethics-requests', [ProposalController::class, 'storeEthicsRequest']);
+    Route::post('proposals/{proposal}/ethics-requests', [EthicsRequestController::class, 'store']);
+    Route::put('ethics-requests/{ethics_request}', [EthicsRequestController::class, 'update']);
 
     // Detection
-    Route::post('/proposals/{proposal}/detection', [ProposalController::class, 'requestDetection']);
-    Route::get('/proposals/{proposal}/detection/{detectionRequest}', [ProposalController::class, 'getDetectionResult']);
+    Route::post('detection/requests', [DetectionController::class, 'store']);
+    Route::get('detection/requests/{id}', [DetectionController::class, 'show']);
+
+    // Files
+    Route::post('files/upload', [FileController::class, 'upload']);
+    Route::get('files', [FileController::class, 'index']);
+    Route::get('files/{file}/download', [FileController::class, 'download']);
+    Route::put('files/{file}', [FileController::class, 'update']);
+    Route::delete('files/{file}', [FileController::class, 'destroy']);
+    Route::get('files/{file}/versions', [FileController::class, 'versions']);
+    Route::post('files/{file}/versions', [FileController::class, 'uploadNewVersion']);
+
+    // Projects
+    Route::apiResource('projects', ProjectController::class);
+    Route::post('projects/create-from-proposal/{proposal}', [ProjectController::class, 'createFromProposal']);
+    Route::apiResource('projects.milestones', MilestoneController::class);
+    Route::apiResource('milestones.tasks', TaskController::class);
+    Route::post('projects/{project}/files', [ProjectFileController::class, 'attach']);
+    Route::delete('projects/{project}/files/{file}', [ProjectFileController::class, 'detach']);
+
+    // Outputs
+    Route::apiResource('outputs', OutputController::class);
+    Route::post('outputs/{output}/status', [OutputController::class, 'changeStatus']);
+    Route::apiResource('outputs.participants', OutputParticipantController::class)->only(['index', 'store', 'destroy']);
+    Route::post('outputs/{output}/files', [OutputFileController::class, 'attach']);
+    Route::delete('outputs/{output}/files/{file}', [OutputFileController::class, 'detach']);
+
+    // Patents
+    Route::apiResource('patents', PatentController::class);
+    Route::apiResource('patents.licenses', LicenseController::class);
+    Route::post('patents/{patent}/files', [PatentFileController::class, 'attach']);
+    Route::delete('patents/{patent}/files/{file}', [PatentFileController::class, 'detach']);
+
+    // Partners & MoUs
+    Route::apiResource('partners', PartnerController::class);
+    Route::apiResource('partners.mo-us', MoUController::class);
+
+    // Agreement files
+    Route::post('agreement-files', [AgreementFileController::class, 'attach']);
+    Route::delete('agreement-files/{agreement_file}', [AgreementFileController::class, 'detach']);
+
+    // Expenses
+    Route::apiResource('projects.expenses', ExpenseController::class);
+    Route::put('expenses/{expense}/approve', [ExpenseController::class, 'approve']);
+
+    // Events
+    Route::apiResource('events', EventController::class);
+    Route::post('events/{event}/register', [EventRegistrationController::class, 'register']);
+    Route::put('events/{event}/attendance', [EventRegistrationController::class, 'markAttendance']);
+    Route::post('events/{event}/certificates', [EventRegistrationController::class, 'generateCertificate']);
+
+    // Publications
+    Route::apiResource('publications', PublicationController::class);
+    Route::apiResource('publications.authors', PublicationAuthorController::class)->only(['index', 'store', 'update', 'destroy']);
+
+    // Community Problems
+    Route::apiResource('community-problems', CommunityProblemController::class);
+    Route::post('community-problems/{community_problem}/claim', [CommunityProblemController::class, 'claim']);
+    Route::post('community-problems/{community_problem}/complete', [CommunityProblemController::class, 'complete']);
+    Route::post('community-problems/{community_problem}/feedback', [CommunityProblemController::class, 'addFeedback']);
+
+    // Reports
+    Route::get('reports', [ReportController::class, 'index']);
+    Route::post('reports/generate', [ReportController::class, 'generate']);
+    Route::get('reports/{report}/download', [ReportController::class, 'download']);
 });
-=======
-// ──────────────────────────────────────────
-// HERMELA – Projects, Outputs, TT, Industry,
-//           Financial, Events, Publications,
-//           Community, Reports, Attachments
-// ──────────────────────────────────────────
-// Projects, Milestones, Tasks
-Route::apiResource('projects',                 App\Http\Controllers\ProjectController::class);
-Route::apiResource('projects.milestones',      App\Http\Controllers\MilestoneController::class);
-Route::apiResource('milestones.tasks',         App\Http\Controllers\TaskController::class);
-
-// Outputs
-Route::apiResource('outputs',                  App\Http\Controllers\OutputController::class);
-Route::post('outputs/{output}/status',         [App\Http\Controllers\OutputController::class, 'changeStatus']);
-Route::apiResource('outputs.participants',     App\Http\Controllers\OutputParticipantController::class)
-    ->only(['index', 'store', 'destroy']);
-
-// Patents & Licenses
-Route::apiResource('patents',                  App\Http\Controllers\PatentController::class);
-Route::apiResource('patents.licenses',         App\Http\Controllers\LicenseController::class);
-
-// Partners & MoUs
-Route::apiResource('partners',                 App\Http\Controllers\PartnerController::class);
-Route::apiResource('partners.mo-us',           App\Http\Controllers\MoUController::class);
-
-// Expenses
-Route::apiResource('projects.expenses',        App\Http\Controllers\ExpenseController::class);
-Route::put('expenses/{expense}/approve',       [App\Http\Controllers\ExpenseController::class, 'approve']);
-
-// Events
-Route::apiResource('events',                   App\Http\Controllers\EventController::class);
-Route::post('events/{event}/register',         [App\Http\Controllers\EventRegistrationController::class, 'register']);
-Route::put('events/{event}/attendance',        [App\Http\Controllers\EventRegistrationController::class, 'markAttendance']);
-Route::post('events/{event}/certificates',     [App\Http\Controllers\EventRegistrationController::class, 'generateCertificates']);
-
-// Publications
-Route::apiResource('publications',             App\Http\Controllers\PublicationController::class);
-Route::apiResource('publications.authors',     App\Http\Controllers\PublicationAuthorController::class);
-
-// Community Problems
-Route::apiResource('community-problems',       App\Http\Controllers\CommunityProblemController::class);
-Route::post('community-problems/{problem}/claim',    [App\Http\Controllers\CommunityProblemController::class, 'claim']);
-Route::post('community-problems/{problem}/complete', [App\Http\Controllers\CommunityProblemController::class, 'complete']);
-Route::post('community-problems/{problem}/feedback', [App\Http\Controllers\CommunityProblemController::class, 'addFeedback']);
-
-// Reports
-Route::get('reports',                    [App\Http\Controllers\ReportController::class, 'index']);
-Route::post('reports/generate',          [App\Http\Controllers\ReportController::class, 'generate']);
-Route::get('reports/{report}/download',  [App\Http\Controllers\ReportController::class, 'download']);
-
-// File attachments for project/output/patent/agreement
-Route::post('projects/{project}/files',          [App\Http\Controllers\ProjectFileController::class, 'attach']);
-Route::delete('projects/{project}/files/{file}', [App\Http\Controllers\ProjectFileController::class, 'detach']);
-
-Route::post('outputs/{output}/files',            [App\Http\Controllers\OutputFileController::class, 'attach']);
-Route::delete('outputs/{output}/files/{file}',   [App\Http\Controllers\OutputFileController::class, 'detach']);
-
-Route::post('patents/{patent}/files',            [App\Http\Controllers\PatentFileController::class, 'attach']);
-Route::delete('patents/{patent}/files/{file}',   [App\Http\Controllers\PatentFileController::class, 'detach']);
-
-Route::post('agreements/files/{parentType}/{parent}', [App\Http\Controllers\AgreementFileController::class, 'attach']);
-Route::delete('agreements/files/{parentType}/{parent}/{file}', [App\Http\Controllers\AgreementFileController::class, 'detach']);
->>>>>>> main

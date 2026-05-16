@@ -12,14 +12,7 @@ class TaskController extends Controller
 {
     public function index(Milestone $milestone): JsonResponse
     {
-        $this->authorize('view', $milestone->project);
-
-        $tasks = $milestone->tasks()
-            ->with(['status', 'assignedTo'])
-            ->orderBy('due_date')
-            ->get();
-
-        return response()->json($tasks);
+        return response()->json($milestone->tasks()->with('assignedTo', 'status')->get());
     }
 
     public function store(StoreTaskRequest $request, Milestone $milestone): JsonResponse
@@ -28,23 +21,22 @@ class TaskController extends Controller
         return response()->json($task, 201);
     }
 
-    public function show(Milestone $milestone, Task $task): JsonResponse
+    public function show(Task $task): JsonResponse
     {
-        $this->authorize('view', $milestone->project);
-        $task->load(['status', 'assignedTo']);
-        return response()->json($task);
+        return response()->json($task->load('assignedTo', 'status'));
     }
 
-    public function update(UpdateTaskRequest $request, Milestone $milestone, Task $task): JsonResponse
+    public function update(UpdateTaskRequest $request, Task $task): JsonResponse
     {
+        $this->authorize('update', $task);
         $task->update($request->validated());
         return response()->json($task);
     }
 
-    public function destroy(Milestone $milestone, Task $task): JsonResponse
+    public function destroy(Task $task): JsonResponse
     {
-        $this->authorize('update', $milestone->project);
+        $this->authorize('delete', $task);
         $task->delete();
-        return response()->json(null, 204);
+        return response()->json(['message' => 'Task deleted.']);
     }
 }

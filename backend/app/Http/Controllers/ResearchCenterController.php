@@ -2,65 +2,38 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ResearchCenter;
 use App\Http\Requests\StoreResearchCenterRequest;
 use App\Http\Requests\UpdateResearchCenterRequest;
+use App\Models\ResearchCenter;
+use Illuminate\Http\JsonResponse;
 
 class ResearchCenterController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(): JsonResponse
     {
-        //
+        return response()->json(ResearchCenter::with('director', 'parentUniversity')->get());
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function store(StoreResearchCenterRequest $request): JsonResponse
     {
-        //
+        $center = ResearchCenter::create($request->validated());
+        return response()->json($center, 201);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreResearchCenterRequest $request)
+    public function show(ResearchCenter $researchCenter): JsonResponse
     {
-        //
+        return response()->json($researchCenter->load('director', 'users', 'parentUniversity', 'parentCampus', 'parentFaculty'));
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(ResearchCenter $researchCenter)
+    public function update(UpdateResearchCenterRequest $request, ResearchCenter $researchCenter): JsonResponse
     {
-        //
+        $researchCenter->update($request->validated());
+        return response()->json($researchCenter);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(ResearchCenter $researchCenter)
+    public function destroy(ResearchCenter $researchCenter): JsonResponse
     {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateResearchCenterRequest $request, ResearchCenter $researchCenter)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(ResearchCenter $researchCenter)
-    {
-        //
+        $researchCenter->delete();
+        return response()->json(['message' => 'Research center deleted.']);
     }
 }

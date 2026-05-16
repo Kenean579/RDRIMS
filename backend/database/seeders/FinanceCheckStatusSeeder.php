@@ -9,9 +9,8 @@ class FinanceCheckStatusSeeder extends Seeder
 {
     public function run(): void
     {
-        $statuses = ['pending', 'approved', 'rejected'];
-        foreach ($statuses as $status) {
-            FinanceCheckStatus::updateOrCreate(['name' => $status]);
-        }
+        FinanceCheckStatus::create(['name' => 'pending']);
+        FinanceCheckStatus::create(['name' => 'approved']);
+        FinanceCheckStatus::create(['name' => 'rejected']);
     }
 }

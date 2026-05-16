@@ -13,7 +13,7 @@ class File extends Model
 
     public $timestamps = false; // only created_at
 
-    protected $fillable = ['file_path', 'version', 'uploaded_by', 'is_public', 'created_at'];
+    protected $fillable = ['file_path', 'original_name', 'mime_type', 'size', 'disk', 'version', 'uploaded_by', 'is_public', 'created_at'];
 
     protected $casts = [
         'is_public'  => 'boolean',

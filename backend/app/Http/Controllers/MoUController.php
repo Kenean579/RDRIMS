@@ -12,9 +12,7 @@ class MoUController extends Controller
 {
     public function index(Partner $partner): JsonResponse
     {
-        $this->authorize('view', $partner);
-        $moUs = $partner->moUs()->orderBy('start_date', 'desc')->get();
-        return response()->json($moUs);
+        return response()->json($partner->moUs);
     }
 
     public function store(StoreMoURequest $request, Partner $partner): JsonResponse
@@ -23,22 +21,20 @@ class MoUController extends Controller
         return response()->json($moU, 201);
     }
 
-    public function show(Partner $partner, MoU $moU): JsonResponse
+    public function show(MoU $moU): JsonResponse
     {
-        $this->authorize('view', $partner);
-        return response()->json($moU);
+        return response()->json($moU->load('partner'));
     }
 
-    public function update(UpdateMoURequest $request, Partner $partner, MoU $moU): JsonResponse
+    public function update(UpdateMoURequest $request, MoU $moU): JsonResponse
     {
         $moU->update($request->validated());
         return response()->json($moU);
     }
 
-    public function destroy(Partner $partner, MoU $moU): JsonResponse
+    public function destroy(MoU $moU): JsonResponse
     {
-        $this->authorize('update', $partner);
         $moU->delete();
-        return response()->json(null, 204);
+        return response()->json(['message' => 'MoU deleted.']);
     }
 }

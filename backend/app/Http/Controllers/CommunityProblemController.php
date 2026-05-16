@@ -4,23 +4,23 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreCommunityProblemRequest;
 use App\Http\Requests\UpdateCommunityProblemRequest;
-use App\Http\Requests\CompleteCommunityProblemRequest;
-use App\Http\Requests\FeedbackCommunityProblemRequest;
 use App\Models\CommunityProblem;
-use App\Models\CommunityProblemStatus;
 use App\Services\CommunityProblemService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class CommunityProblemController extends Controller
 {
-    public function __construct(private CommunityProblemService $problemService) {}
+    public function __construct(
+        private CommunityProblemService $communityProblemService,
+    ) {}
 
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $this->authorize('viewAny', CommunityProblem::class);
-
-        $problems = CommunityProblem::with(['status', 'submittedBy', 'claimedBy', 'linkedProject'])
-            ->latest()
+        $problems = CommunityProblem::with('status', 'submittedBy', 'claimedBy', 'linkedProject')
+            ->when($request->status, fn($q) => $q->whereHas('status', fn($s) => $s->where('name', $request->status)))
+            ->when($request->location, fn($q) => $q->where('location', 'LIKE', '%' . $request->location . '%'))
+            ->orderBy('created_at', 'desc')
             ->paginate(20);
 
         return response()->json($problems);
@@ -28,55 +28,54 @@ class CommunityProblemController extends Controller
 
     public function store(StoreCommunityProblemRequest $request): JsonResponse
     {
-        $data = $request->validated();
-        $data['submitted_by'] = $request->is_anonymous ? null : auth()->id();
-        $data['status_id'] = CommunityProblemStatus::where('name', 'open')->first()->id;
+        $problem = CommunityProblem::create([
+            ...$request->validated(),
+            'submitted_by' => $request->user()->id,
+            'status_id' => 1, // open
+        ]);
 
-        $problem = CommunityProblem::create($data);
         return response()->json($problem, 201);
     }
 
-    public function show(CommunityProblem $problem): JsonResponse
+    public function show(CommunityProblem $communityProblem): JsonResponse
     {
-        $this->authorize('view', $problem);
-        $problem->load(['status', 'submittedBy', 'claimedBy', 'linkedProject']);
-        return response()->json($problem);
+        return response()->json($communityProblem->load('status', 'submittedBy', 'claimedBy', 'linkedProject'));
     }
 
-    public function update(UpdateCommunityProblemRequest $request, CommunityProblem $problem): JsonResponse
+    public function update(UpdateCommunityProblemRequest $request, CommunityProblem $communityProblem): JsonResponse
     {
-        $problem->update($request->validated());
-        return response()->json($problem);
+        $this->authorize('update', $communityProblem);
+        $communityProblem->update($request->validated());
+        return response()->json($communityProblem);
     }
 
-    public function destroy(CommunityProblem $problem): JsonResponse
+    public function claim(CommunityProblem $communityProblem, Request $request): JsonResponse
     {
-        $this->authorize('delete', $problem);
-        $problem->delete();
-        return response()->json(null, 204);
+        $this->communityProblemService->claim($communityProblem, $request->user()->id);
+        return response()->json(['message' => 'Problem claimed.']);
     }
 
-    public function claim(CommunityProblem $problem): JsonResponse
+    public function complete(CommunityProblem $communityProblem, Request $request): JsonResponse
     {
-        $this->authorize('claim', $problem);
-        $this->problemService->claim($problem, auth()->id());
-        return response()->json($problem);
+        $this->communityProblemService->complete($communityProblem, $request->user()->id);
+        return response()->json(['message' => 'Problem marked as completed.']);
     }
 
-    public function complete(CompleteCommunityProblemRequest $request, CommunityProblem $problem): JsonResponse
+    public function addFeedback(Request $request, CommunityProblem $communityProblem): JsonResponse
     {
-        $this->problemService->complete($problem);
+        $request->validate([
+            'feedback' => 'required|string',
+            'rating' => 'required|integer|min:1|max:5',
+        ]);
 
-        if ($request->has('linked_project_id')) {
-            $problem->update(['linked_project_id' => $request->linked_project_id]);
-        }
-
-        return response()->json($problem);
+        $this->communityProblemService->addFeedback($communityProblem, $request->feedback, $request->rating);
+        return response()->json(['message' => 'Feedback added.']);
     }
 
-    public function addFeedback(FeedbackCommunityProblemRequest $request, CommunityProblem $problem): JsonResponse
+    public function destroy(CommunityProblem $communityProblem): JsonResponse
     {
-        $this->problemService->addFeedback($problem, $request->feedback, $request->rating);
-        return response()->json($problem);
+        $this->authorize('delete', $communityProblem);
+        $communityProblem->delete();
+        return response()->json(['message' => 'Community problem deleted.']);
     }
 }

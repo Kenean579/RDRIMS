@@ -2,65 +2,33 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Expertise;
 use App\Http\Requests\StoreExpertiseRequest;
 use App\Http\Requests\UpdateExpertiseRequest;
+use App\Models\Expertise;
+use Illuminate\Http\JsonResponse;
 
 class ExpertiseController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(): JsonResponse
     {
-        //
+        return response()->json(Expertise::all());
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function store(StoreExpertiseRequest $request): JsonResponse
     {
-        //
+        $expertise = Expertise::create($request->validated());
+        return response()->json($expertise, 201);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreExpertiseRequest $request)
+    public function update(UpdateExpertiseRequest $request, Expertise $expertise): JsonResponse
     {
-        //
+        $expertise->update($request->validated());
+        return response()->json($expertise);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Expertise $expertise)
+    public function destroy(Expertise $expertise): JsonResponse
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Expertise $expertise)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateExpertiseRequest $request, Expertise $expertise)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Expertise $expertise)
-    {
-        //
+        $expertise->delete();
+        return response()->json(['message' => 'Expertise deleted.']);
     }
 }

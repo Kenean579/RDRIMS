@@ -95,14 +95,14 @@ class Proposal extends Model
 
     public function reviewers(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'proposal_reviewers')
-                    ->withPivot(
-                        'id', 'assigned_by', 'assigned_at', 'submitted_at',
-                        'overall_score', 'overall_comments', 'decision_id'
-                    )
-                    ->withTimestamps()
-                    ->using(ProposalReviewer::class)
-                    ->as('reviewPivot');
+        return $this->belongsToMany(User::class, 'proposal_reviewers', 'proposal_id', 'reviewer_id')
+            ->withPivot(
+                'id', 'assigned_by', 'assigned_at', 'submitted_at',
+                'overall_score', 'overall_comments', 'decision_id'
+            )
+            ->withTimestamps()
+            ->using(ProposalReviewer::class)
+            ->as('reviewPivot');
     }
 
     public function financeChecks(): HasMany

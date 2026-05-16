@@ -9,9 +9,8 @@ class CommunityProblemStatusSeeder extends Seeder
 {
     public function run(): void
     {
-        $statuses = ['open', 'claimed', 'completed'];
-        foreach ($statuses as $status) {
-            CommunityProblemStatus::updateOrCreate(['name' => $status]);
-        }
+        CommunityProblemStatus::create(['name' => 'open']);
+        CommunityProblemStatus::create(['name' => 'claimed']);
+        CommunityProblemStatus::create(['name' => 'completed']);
     }
 }

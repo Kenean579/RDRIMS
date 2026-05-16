@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
-use App\Models\Publication;
 use App\Models\User;
+use App\Models\Publication;
 
 class PublicationPolicy
 {
@@ -19,17 +19,16 @@ class PublicationPolicy
 
     public function create(User $user): bool
     {
-        return $user->roles()->whereIn('name', ['researcher', 'admin'])->exists();
+        return true;
     }
 
     public function update(User $user, Publication $publication): bool
     {
-        if ($user->roles()->where('name', 'admin')->exists()) return true;
-        return $publication->authors()->where('user_id', $user->id)->exists();
+        return $user->isAdmin() || $publication->authors()->where('user_id', $user->id)->exists();
     }
 
     public function delete(User $user, Publication $publication): bool
     {
-        return $user->roles()->where('name', 'admin')->exists();
+        return $user->isAdmin() || $publication->authors()->where('user_id', $user->id)->exists();
     }
 }

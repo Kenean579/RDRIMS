@@ -1,0 +1,93 @@
+[33mcommit 5e5da175e19f4d8c8e77ce29112ab81629eedc31[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/burtinas-feature[m[33m, [m[1;31morigin/HEAD[m[33m)[m
+Author: burtinas <burtinas21@gmail>
+Date:   Mon May 11 01:33:39 2026 -0700
+
+    final update from feature branch
+
+[33mcommit 16b48302456f55ec9e3366c0dbb26db4d9876f26[m
+Merge: d1a4ece d8496a2
+Author: burtinas <burtinas21@gmail>
+Date:   Mon May 11 00:01:56 2026 -0700
+
+    my feature updates
+
+[33mcommit d1a4ecec7638657208d781952bad49d11a91bd58[m
+Author: burtinas <burtinas21@gmail>
+Date:   Sun May 10 23:53:04 2026 -0700
+
+    Added Jobs folder from main branch
+
+[33mcommit d8496a2213573c52be5fecac8aad49a29c71dc0d[m
+Merge: 1866b17 0d935e3
+Author: unknown <hermelatesfaye1010@gmail.com>
+Date:   Thu May 7 23:20:25 2026 -0700
+
+    Merge branch 'main' of https://github.com/Kenean579/RDRIMS
+
+[33mcommit 1866b172d010ccaef00f8ffe7e436353e67cda2d[m
+Author: unknown <hermelatesfaye1010@gmail.com>
+Date:   Thu May 7 23:20:19 2026 -0700
+
+    feat: Hermela backend – services, policies, form requests, controllers, jobs
+
+[33mcommit 3c5e4258a23f96c69ee5433fcd94e265c10beeff[m
+Merge: 5e67a57 0d935e3
+Author: burtinas <burtinas21@gmail>
+Date:   Tue May 5 23:34:32 2026 -0700
+
+    :wqMerge remote-tracking branch 'origin/main' into burtinas-feature
+
+[33mcommit 5e67a57f9afd941e2a6a63325516c51226fac572[m
+Author: burtinas <burtinas21@gmail>
+Date:   Tue May 5 23:32:20 2026 -0700
+
+    Complete Call and Proposal module updates
+
+[33mcommit 0d935e3536b94f348e25fec2a572b993354de160[m
+Author: Kenean Hailu Wolde <hailukenean579@gmail.com>
+Date:   Mon May 4 07:16:06 2026 -0700
+
+    service folder
+
+[33mcommit cf40b090b5b28fa22573cf92d0a8191b3a7a8215[m
+Author: burtinas <burtinas21@gmail>
+Date:   Thu Apr 30 01:01:23 2026 -0700
+
+    Remove tracked env and vendor files
+
+[33mcommit 4f0b35805bda74db24826530dcf2c0bc1cee12ab[m
+Merge: 19a261f 239f79a
+Author: burtinas <burtinas21@gmail>
+Date:   Thu Apr 30 00:54:49 2026 -0700
+
+    Resolved merge conflict in Call model
+
+[33mcommit 19a261f3450369c1e79c8089f319fbc556922eaf[m
+Author: burtinas <burtinas21@gmail>
+Date:   Thu Apr 30 00:23:47 2026 -0700
+
+    call model updated
+
+[33mcommit 239f79a8b739c56e1d56f4720e468d8a38657ad2[m
+Author: Kenean Hailu Wolde <hailukenean579@gmail.com>
+Date:   Wed Apr 29 02:40:28 2026 -0700
+
+    implemented model file code again to feel the missed gap
+
+[33mcommit 00dad86c573a9c4a5211790647725a2327560e64[m
+Author: Kenean Hailu Wolde <hailukenean579@gmail.com>
+Date:   Mon Apr 27 07:24:15 2026 -0700
+
+    Fix PostCSS errors and Tailwind v4 setup
+
+[33mcommit 5de857bd526e1299c31d1735038892fa27a26a08[m
+Author: Kenean Hailu Wolde <hailukenean579@gmail.com>
+Date:   Mon Apr 27 07:01:18 2026 -0700
+
+    Initial commit: Laravel backend + Vue frontend
+
+[33mcommit a9b05ec6bafdaecc75fe15cec91c9bd4407a280d[m[33m ([m[1;32mmaster[m[33m)[m
+Author: Kenean Hailu Wolde <hailukenean579@gmail.com>
+Date:   Mon Apr 27 06:40:20 2026 -0700
+
+    Initial commit: Fixed configuration and connected frontend to backend

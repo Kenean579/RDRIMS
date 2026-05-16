@@ -3,64 +3,58 @@
 namespace App\Http\Controllers;
 
 use App\Models\User;
-use App\Http\Requests\StoreUserRequest;
-use App\Http\Requests\UpdateUserRequest;
+use App\Http\Requests\UserRequest;
+use App\Services\UserService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class UserController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    use AuthorizesRequests;
+
+    public function __construct(private UserService $userService) {}
+
+    public function index(): JsonResponse
     {
-        //
+        $this->authorize('viewAny', User::class);
+        return response()->json(User::with('roles', 'department.faculty')->get());
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function store(UserRequest $request): JsonResponse
     {
-        //
+        $this->authorize('create', User::class);
+        $user = $this->userService->register($request->validated());
+        
+        if ($request->has('roles')) {
+            $user->roles()->sync($request->roles);
+        }
+
+        return response()->json($user, 201);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreUserRequest $request)
+    public function show(User $user): JsonResponse
     {
-        //
+        $this->authorize('view', $user);
+        return response()->json($user->load('roles.permissions', 'department.faculty', 'expertise'));
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(User $user)
+    public function update(UserRequest $request, User $user): JsonResponse
     {
-        //
+        $this->authorize('update', $user);
+        $user->update($request->validated());
+
+        if ($request->has('roles') && $request->user()->isAdmin()) {
+            $user->roles()->sync($request->roles);
+        }
+
+        return response()->json($user->load('roles'));
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(User $user)
+    public function destroy(User $user): JsonResponse
     {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateUserRequest $request, User $user)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(User $user)
-    {
-        //
+        $this->authorize('delete', $user);
+        $user->delete();
+        return response()->json(null, 204);
     }
 }

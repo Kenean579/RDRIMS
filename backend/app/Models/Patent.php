@@ -38,7 +38,7 @@ class Patent extends Model
     public function files(): BelongsToMany
     {
         return $this->belongsToMany(File::class, 'patent_files')
-                    ->withTimestamps()
+                    ->withPivot('created_at')
                     ->using(PatentFile::class);
     }
 }

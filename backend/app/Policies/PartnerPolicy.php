@@ -2,33 +2,33 @@
 
 namespace App\Policies;
 
-use App\Models\Partner;
 use App\Models\User;
+use App\Models\Partner;
 
 class PartnerPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->roles()->whereIn('name', ['admin', 'industry_officer', 'researcher'])->exists();
+        return true;
     }
 
     public function view(User $user, Partner $partner): bool
     {
-        return $this->viewAny($user);
+        return true;
     }
 
     public function create(User $user): bool
     {
-        return $user->roles()->whereIn('name', ['admin', 'industry_officer'])->exists();
+        return $user->isAdmin();
     }
 
     public function update(User $user, Partner $partner): bool
     {
-        return $user->roles()->whereIn('name', ['admin', 'industry_officer'])->exists();
+        return $user->isAdmin();
     }
 
     public function delete(User $user, Partner $partner): bool
     {
-        return $user->roles()->where('name', 'admin')->exists();
+        return $user->hasRole('super_admin');
     }
 }

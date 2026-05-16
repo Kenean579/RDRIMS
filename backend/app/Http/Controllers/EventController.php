@@ -11,8 +11,11 @@ class EventController extends Controller
 {
     public function index(): JsonResponse
     {
-        $this->authorize('viewAny', Event::class);
-        $events = Event::withCount('registrations')->latest('start_date')->paginate(20);
+        $events = Event::with('registrations')
+            ->when(request('upcoming'), fn($q) => $q->where('start_date', '>=', now()))
+            ->orderBy('start_date', 'desc')
+            ->paginate(20);
+
         return response()->json($events);
     }
 
@@ -24,9 +27,7 @@ class EventController extends Controller
 
     public function show(Event $event): JsonResponse
     {
-        $this->authorize('view', $event);
-        $event->load('registrations.user');
-        return response()->json($event);
+        return response()->json($event->load('registrations.user', 'imageFile'));
     }
 
     public function update(UpdateEventRequest $request, Event $event): JsonResponse
@@ -37,8 +38,7 @@ class EventController extends Controller
 
     public function destroy(Event $event): JsonResponse
     {
-        $this->authorize('delete', $event);
         $event->delete();
-        return response()->json(null, 204);
+        return response()->json(['message' => 'Event deleted.']);
     }
 }

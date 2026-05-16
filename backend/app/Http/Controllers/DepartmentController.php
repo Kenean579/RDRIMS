@@ -2,65 +2,38 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Department;
 use App\Http\Requests\StoreDepartmentRequest;
 use App\Http\Requests\UpdateDepartmentRequest;
+use App\Models\Department;
+use Illuminate\Http\JsonResponse;
 
 class DepartmentController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(): JsonResponse
     {
-        //
+        return response()->json(Department::with('faculty')->get());
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function store(StoreDepartmentRequest $request): JsonResponse
     {
-        //
+        $department = Department::create($request->validated());
+        return response()->json($department, 201);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreDepartmentRequest $request)
+    public function show(Department $department): JsonResponse
     {
-        //
+        return response()->json($department->load('faculty', 'users'));
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Department $department)
+    public function update(UpdateDepartmentRequest $request, Department $department): JsonResponse
     {
-        //
+        $department->update($request->validated());
+        return response()->json($department);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Department $department)
+    public function destroy(Department $department): JsonResponse
     {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateDepartmentRequest $request, Department $department)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Department $department)
-    {
-        //
+        $department->delete();
+        return response()->json(['message' => 'Department deleted.']);
     }
 }

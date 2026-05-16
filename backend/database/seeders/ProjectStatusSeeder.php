@@ -9,9 +9,8 @@ class ProjectStatusSeeder extends Seeder
 {
     public function run(): void
     {
-        $statuses = ['active', 'completed', 'suspended'];
-        foreach ($statuses as $status) {
-            ProjectStatus::updateOrCreate(['name' => $status]);
-        }
+        ProjectStatus::create(['name' => 'active']);
+        ProjectStatus::create(['name' => 'completed']);
+        ProjectStatus::create(['name' => 'suspended']);
     }
 }

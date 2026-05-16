@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
-use App\Models\Output;
 use App\Models\User;
+use App\Models\Output;
 
 class OutputPolicy
 {
@@ -19,31 +19,22 @@ class OutputPolicy
 
     public function create(User $user): bool
     {
-        return $user->roles()->whereIn('name', ['researcher', 'admin', 'supervisor'])->exists();
+        return true;
     }
 
     public function update(User $user, Output $output): bool
     {
-        if ($user->roles()->where('name', 'admin')->exists()) return true;
-
-        return $output->participants()
-            ->where('user_id', $user->id)
-            ->whereHas('participantType', fn($q) => $q->whereIn('name', ['student', 'supervisor']))
-            ->exists();
+        $project = $output->project;
+        return $user->isAdmin() || $project->pi_id === $user->id || $output->submitted_by === $user->id;
     }
 
     public function delete(User $user, Output $output): bool
     {
-        return $user->roles()->where('name', 'admin')->exists();
+        return $user->isAdmin() || $output->submitted_by === $user->id;
     }
 
     public function changeStatus(User $user, Output $output): bool
     {
-        if ($user->roles()->where('name', 'admin')->exists()) return true;
-
-        return $output->participants()
-            ->where('user_id', $user->id)
-            ->whereHas('participantType', fn($q) => $q->where('name', 'supervisor'))
-            ->exists();
+        return $user->isAdmin() || $output->submitted_by === $user->id;
     }
 }

@@ -3,64 +3,34 @@
 namespace App\Http\Controllers;
 
 use App\Models\DetectionRequest;
-use App\Http\Requests\StoreDetectionRequestRequest;
-use App\Http\Requests\UpdateDetectionRequestRequest;
+use App\Models\Proposal;
+use App\Http\Requests\DetectionRequestFormRequest;
+use App\Services\DetectionService;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class DetectionRequestController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    use AuthorizesRequests;
+
+    public function __construct(private DetectionService $detectionService) {}
+
+    public function store(DetectionRequestFormRequest $request): JsonResponse
     {
-        //
+        $proposal = Proposal::findOrFail($request->proposal_id);
+        $this->authorize('update', $proposal);
+
+        $detectionRequest = $this->detectionService->submitRequest($proposal, $request->user());
+        return response()->json($detectionRequest, 201);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function update(Request $request, DetectionRequest $detectionRequest): JsonResponse
     {
-        //
-    }
+        $this->authorize('update', $detectionRequest);
+        $request->validate(['similarity_score' => 'required|numeric', 'report_url' => 'nullable|string']);
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreDetectionRequestRequest $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(DetectionRequest $detectionRequest)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(DetectionRequest $detectionRequest)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateDetectionRequestRequest $request, DetectionRequest $detectionRequest)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(DetectionRequest $detectionRequest)
-    {
-        //
+        $this->detectionService->complete($detectionRequest, $request->similarity_score, $request->report_url);
+        return response()->json($detectionRequest);
     }
 }

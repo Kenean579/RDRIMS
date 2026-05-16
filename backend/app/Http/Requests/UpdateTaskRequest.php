@@ -16,6 +16,7 @@ class UpdateTaskRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'milestone_id'    => 'nullable|exists:milestones,id',
             'title'           => 'sometimes|string|max:255',
             'description'     => 'nullable|string',
             'estimated_hours' => 'nullable|integer|min:0',

@@ -9,9 +9,7 @@ class AgreementTypeSeeder extends Seeder
 {
     public function run(): void
     {
-        $types = ['mo_u', 'license'];
-        foreach ($types as $type) {
-            AgreementType::updateOrCreate(['name' => $type]);
-        }
+        AgreementType::create(['name' => 'mo_u']);
+        AgreementType::create(['name' => 'license']);
     }
 }

@@ -9,9 +9,11 @@ class ProposalStatusSeeder extends Seeder
 {
     public function run(): void
     {
-        $statuses = ['draft', 'submitted', 'under_review', 'finance_check', 'approved', 'rejected'];
-        foreach ($statuses as $status) {
-            ProposalStatus::updateOrCreate(['name' => $status]);
-        }
+        ProposalStatus::create(['name' => 'draft']);
+        ProposalStatus::create(['name' => 'submitted']);
+        ProposalStatus::create(['name' => 'under_review']);
+        ProposalStatus::create(['name' => 'finance_check']);
+        ProposalStatus::create(['name' => 'approved']);
+        ProposalStatus::create(['name' => 'rejected']);
     }
 }

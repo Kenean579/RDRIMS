@@ -9,9 +9,7 @@ class OutputCategorySeeder extends Seeder
 {
     public function run(): void
     {
-        $categories = ['research_center', 'student'];
-        foreach ($categories as $category) {
-            OutputCategory::updateOrCreate(['name' => $category]);
-        }
+        OutputCategory::create(['name' => 'research_center']);
+        OutputCategory::create(['name' => 'student']);
     }
 }

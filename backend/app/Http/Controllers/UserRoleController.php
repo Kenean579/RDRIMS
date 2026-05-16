@@ -2,65 +2,38 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\UserRole;
-use App\Http\Requests\StoreUserRoleRequest;
-use App\Http\Requests\UpdateUserRoleRequest;
+use App\Models\User;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class UserRoleController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    use AuthorizesRequests;
+
+    public function index(User $user): JsonResponse
     {
-        //
+        $this->authorize('view', $user);
+        return response()->json($user->roles);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function store(Request $request, User $user): JsonResponse
     {
-        //
+        $this->authorize('update', $user);
+        $request->validate(['role_id' => 'required|exists:roles,id']);
+        
+        $user->roles()->syncWithoutDetaching([$request->role_id => [
+            'assigned_by' => $request->user()->id,
+            'assigned_at' => now(),
+        ]]);
+        
+        return response()->json($user->load('roles'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreUserRoleRequest $request)
+    public function destroy(User $user, int $roleId): JsonResponse
     {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(UserRole $userRole)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(UserRole $userRole)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateUserRoleRequest $request, UserRole $userRole)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(UserRole $userRole)
-    {
-        //
+        $this->authorize('update', $user);
+        $user->roles()->detach($roleId);
+        return response()->json(null, 204);
     }
 }

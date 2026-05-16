@@ -2,65 +2,29 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\EthicsRequest;
 use App\Http\Requests\StoreEthicsRequestRequest;
 use App\Http\Requests\UpdateEthicsRequestRequest;
+use App\Models\EthicsRequest;
+use App\Models\Proposal;
+use App\Services\EthicsService;
+use Illuminate\Http\JsonResponse;
 
 class EthicsRequestController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function __construct(
+        private EthicsService $ethicsService,
+    ) {}
+
+    public function store(StoreEthicsRequestRequest $request, Proposal $proposal): JsonResponse
     {
-        //
+        $ethicsRequest = $this->ethicsService->generatePdf($proposal);
+        return response()->json($ethicsRequest, 201);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function update(UpdateEthicsRequestRequest $request, EthicsRequest $ethicsRequest): JsonResponse
     {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreEthicsRequestRequest $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(EthicsRequest $ethicsRequest)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(EthicsRequest $ethicsRequest)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateEthicsRequestRequest $request, EthicsRequest $ethicsRequest)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(EthicsRequest $ethicsRequest)
-    {
-        //
+        $this->authorize('update', $ethicsRequest);
+        $ethicsRequest->update($request->validated());
+        return response()->json($ethicsRequest);
     }
 }

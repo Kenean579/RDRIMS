@@ -2,65 +2,37 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\UserResearchCenter;
-use App\Http\Requests\StoreUserResearchCenterRequest;
-use App\Http\Requests\UpdateUserResearchCenterRequest;
+use App\Models\User;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class UserResearchCenterController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    use AuthorizesRequests;
+
+    public function index(User $user): JsonResponse
     {
-        //
+        $this->authorize('view', $user);
+        return response()->json($user->researchCenters);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function store(Request $request, User $user): JsonResponse
     {
-        //
+        $this->authorize('update', $user);
+        $request->validate(['research_center_id' => 'required|exists:research_centers,id', 'center_role_id' => 'required|integer']);
+        
+        $user->researchCenters()->syncWithoutDetaching([$request->research_center_id => [
+            'center_role_id' => $request->center_role_id,
+        ]]);
+        
+        return response()->json($user->load('researchCenters'));
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreUserResearchCenterRequest $request)
+    public function destroy(User $user, int $centerId): JsonResponse
     {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(UserResearchCenter $userResearchCenter)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(UserResearchCenter $userResearchCenter)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateUserResearchCenterRequest $request, UserResearchCenter $userResearchCenter)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(UserResearchCenter $userResearchCenter)
-    {
-        //
+        $this->authorize('update', $user);
+        $user->researchCenters()->detach($centerId);
+        return response()->json(null, 204);
     }
 }

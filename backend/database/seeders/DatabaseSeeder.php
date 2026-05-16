@@ -2,48 +2,61 @@
 
 namespace Database\Seeders;
 
-use App\Models\User;
-use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
-    use WithoutModelEvents;
-
-    /**
-     * Seed the application's database.
-     */
     public function run(): void
     {
         $this->call([
+            // Phase 1: Academic structure (no foreign key dependencies)
+            UniversitySeeder::class,
+            CampusSeeder::class,
+            FacultySeeder::class,
+            DepartmentSeeder::class,
+            ResearchCenterSeeder::class,
+            AcademicYearSeeder::class,
+
+            // Phase 2: Core security (roles and permissions)
+            RoleSeeder::class,
+            PermissionSeeder::class,
+            RolePermissionSeeder::class,
             CenterRoleSeeder::class,
-            CallStatusSeeder::class,
-            ProposalTypeSeeder::class,
-            ProposalStatusSeeder::class,
-            ReviewDecisionSeeder::class,
-            FinanceCheckStatusSeeder::class,
-            EthicsApprovalStatusSeeder::class,
-            PatentStatusSeeder::class,
-            CommunityProblemStatusSeeder::class,
-            ProjectStatusSeeder::class,
-            MilestoneStatusSeeder::class,
-            TaskStatusSeeder::class,
-            InvestigatorRoleSeeder::class,
-            InvitationStatusSeeder::class,
+
+            // Phase 3: Create users (needs departments, roles)
+            SuperAdminSeeder::class,
+
+            // Phase 4: All 21 lookup tables (alphabetical order)
             AgreementTypeSeeder::class,
-            OutputCategorySeeder::class,
-            StudentLevelSeeder::class,
-            OutputSubtypeSeeder::class,
+            CallStatusSeeder::class,
+            CommunityProblemStatusSeeder::class,
             DetectionServiceSeeder::class,
             DetectionStatusSeeder::class,
-            ParticipantTypeSeeder::class,
+            EthicsApprovalStatusSeeder::class,
+            FinanceCheckStatusSeeder::class,
+            InvitationStatusSeeder::class,
+            InvestigatorRoleSeeder::class,
+            MilestoneStatusSeeder::class,
+            OutputCategorySeeder::class,
             OutputStatusSeeder::class,
-        ]);
+            OutputSubtypeSeeder::class,
+            ParticipantTypeSeeder::class,
+            PatentStatusSeeder::class,
+            ProjectStatusSeeder::class,
+            ProposalStatusSeeder::class,
+            ProposalTypeSeeder::class,
+            ReviewDecisionSeeder::class,
+            StudentLevelSeeder::class,
+            TaskStatusSeeder::class,
 
-        User::factory()->create([
-            'name' => 'Admin User',
-            'email' => 'admin@rdrims.com',
-            'password' => bcrypt('password'),
+            // Phase 5: Core configuration
+            ExpertiseSeeder::class,
+            ReviewCriteriaSeeder::class,
+            SettingSeeder::class,
+
+            // Phase 6: Sample data for testing
+            SampleUserSeeder::class,
+            UserExpertiseSeeder::class,
         ]);
     }
 }

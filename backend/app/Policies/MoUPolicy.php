@@ -2,33 +2,33 @@
 
 namespace App\Policies;
 
-use App\Models\MoU;
 use App\Models\User;
+use App\Models\MoU;
 
 class MoUPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->roles()->whereIn('name', ['admin', 'industry_officer', 'researcher'])->exists();
+        return true;
     }
 
-    public function view(User $user, MoU $moU): bool
+    public function view(User $user, MoU $mou): bool
     {
-        return $this->viewAny($user);
+        return true;
     }
 
     public function create(User $user): bool
     {
-        return $user->roles()->whereIn('name', ['admin', 'industry_officer'])->exists();
+        return $user->isAdmin();
     }
 
-    public function update(User $user, MoU $moU): bool
+    public function update(User $user, MoU $mou): bool
     {
-        return $user->roles()->whereIn('name', ['admin', 'industry_officer'])->exists();
+        return $user->isAdmin();
     }
 
-    public function delete(User $user, MoU $moU): bool
+    public function delete(User $user, MoU $mou): bool
     {
-        return $user->roles()->where('name', 'admin')->exists();
+        return $user->hasRole('super_admin');
     }
 }

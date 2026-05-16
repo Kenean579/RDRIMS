@@ -2,28 +2,33 @@
 
 namespace App\Policies;
 
-use App\Models\Report;
 use App\Models\User;
+use App\Models\Report;
 
 class ReportPolicy
 {
     public function viewAny(User $user): bool
     {
-        return $user->roles()->whereIn('name', ['admin', 'research_admin', 'department_head'])->exists();
+        return true;
     }
 
     public function view(User $user, Report $report): bool
     {
-        return $this->viewAny($user);
+        return $user->isAdmin() || $report->project->pi_id === $user->id;
     }
 
     public function create(User $user): bool
     {
-        return $user->roles()->whereIn('name', ['admin', 'research_admin'])->exists();
+        return true;
+    }
+
+    public function update(User $user, Report $report): bool
+    {
+        return $user->isAdmin() || $report->project->pi_id === $user->id;
     }
 
     public function delete(User $user, Report $report): bool
     {
-        return $user->roles()->where('name', 'admin')->exists();
+        return $user->isAdmin();
     }
 }

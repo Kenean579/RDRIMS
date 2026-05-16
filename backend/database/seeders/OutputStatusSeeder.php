@@ -9,9 +9,10 @@ class OutputStatusSeeder extends Seeder
 {
     public function run(): void
     {
-        $statuses = ['draft', 'submitted', 'approved_by_supervisor', 'approved', 'rejected'];
-        foreach ($statuses as $status) {
-            OutputStatus::updateOrCreate(['name' => $status]);
-        }
+        OutputStatus::create(['name' => 'draft']);
+        OutputStatus::create(['name' => 'submitted']);
+        OutputStatus::create(['name' => 'approved_by_supervisor']);
+        OutputStatus::create(['name' => 'approved']);
+        OutputStatus::create(['name' => 'rejected']);
     }
 }

@@ -9,9 +9,17 @@ class CenterRoleSeeder extends Seeder
 {
     public function run(): void
     {
-        $roles = ['Director', 'Member', 'Researcher', 'Staff'];
+        $roles = [
+            'Director',
+            'Deputy Director',
+            'Senior Researcher',
+            'Researcher',
+            'Research Assistant',
+            'Administrative Staff',
+        ];
+
         foreach ($roles as $role) {
-            CenterRole::updateOrCreate(['name' => $role]);
+            CenterRole::create(['name' => $role]);
         }
     }
 }

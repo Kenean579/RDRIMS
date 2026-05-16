@@ -11,7 +11,7 @@ class InvestigatorRoleSeeder extends Seeder
     {
         $roles = ['Lead author', 'Co-author', 'Consultant', 'Mentor', 'Supervisor'];
         foreach ($roles as $role) {
-            InvestigatorRole::updateOrCreate(['name' => $role]);
+            InvestigatorRole::create(['name' => $role]);
         }
     }
 }

@@ -2,26 +2,27 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\ChangeOutputStatusRequest;
 use App\Http\Requests\StoreOutputRequest;
 use App\Http\Requests\UpdateOutputRequest;
-use App\Http\Requests\ChangeOutputStatusRequest;
 use App\Models\Output;
 use App\Services\OutputService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class OutputController extends Controller
 {
-    public function __construct(private OutputService $outputService) {}
+    public function __construct(
+        private OutputService $outputService,
+    ) {}
 
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $this->authorize('viewAny', Output::class);
-
-        $outputs = Output::with(['category', 'status', 'participants'])
-            ->when(!auth()->user()->roles()->where('name', 'admin')->exists(), function ($q) {
-                $q->whereHas('participants', fn($p) => $p->where('user_id', auth()->id()));
-            })
-            ->latest()
+        $outputs = Output::with('category', 'status', 'subtype')
+            ->when($request->status, fn($q) => $q->whereHas('status', fn($s) => $s->where('name', $request->status)))
+            ->when($request->category, fn($q) => $q->whereHas('category', fn($c) => $c->where('name', $request->category)))
+            ->when($request->search, fn($q) => $q->where('title', 'LIKE', '%' . $request->search . '%'))
+            ->orderBy('created_at', 'desc')
             ->paginate(20);
 
         return response()->json($outputs);
@@ -29,19 +30,18 @@ class OutputController extends Controller
 
     public function store(StoreOutputRequest $request): JsonResponse
     {
-        $output = Output::create($request->validated());
+        $output = Output::create(['status_id' => 1, ...$request->validated()]); // draft
         return response()->json($output, 201);
     }
 
     public function show(Output $output): JsonResponse
     {
-        $this->authorize('view', $output);
-        $output->load(['category', 'status', 'participants.user', 'files']);
-        return response()->json($output);
+        return response()->json($output->load('category', 'status', 'participants.user', 'files', 'project'));
     }
 
     public function update(UpdateOutputRequest $request, Output $output): JsonResponse
     {
+        $this->authorize('update', $output);
         $output->update($request->validated());
         return response()->json($output);
     }
@@ -50,13 +50,12 @@ class OutputController extends Controller
     {
         $this->authorize('delete', $output);
         $output->delete();
-        return response()->json(null, 204);
+        return response()->json(['message' => 'Output deleted.']);
     }
 
     public function changeStatus(ChangeOutputStatusRequest $request, Output $output): JsonResponse
     {
-        $newStatus = $request->input('status');
-        $this->outputService->changeStatus($output, $newStatus);
-        return response()->json($output->fresh());
+        $this->outputService->changeStatus($output, $request->status_id, $request->user());
+        return response()->json(['message' => 'Status updated.']);
     }
 }

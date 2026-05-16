@@ -2,65 +2,36 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Setting;
 use App\Http\Requests\StoreSettingRequest;
 use App\Http\Requests\UpdateSettingRequest;
+use App\Models\Setting;
+use Illuminate\Http\JsonResponse;
 
 class SettingController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(): JsonResponse
     {
-        //
+        $this->authorize('viewAny', Setting::class);
+        return response()->json(Setting::all());
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function store(StoreSettingRequest $request): JsonResponse
     {
-        //
+        $setting = Setting::create($request->validated());
+        return response()->json($setting, 201);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreSettingRequest $request)
+    public function update(UpdateSettingRequest $request, Setting $setting): JsonResponse
     {
-        //
+        $this->authorize('update', $setting);
+        $setting->update($request->validated());
+        return response()->json($setting);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Setting $setting)
+    public function destroy(Setting $setting): JsonResponse
     {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Setting $setting)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateSettingRequest $request, Setting $setting)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Setting $setting)
-    {
-        //
+        $this->authorize('delete', $setting);
+        $setting->delete();
+        return response()->json(['message' => 'Setting deleted.']);
     }
 }

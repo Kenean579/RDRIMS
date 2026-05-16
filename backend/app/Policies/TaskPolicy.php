@@ -2,8 +2,8 @@
 
 namespace App\Policies;
 
-use App\Models\Task;
 use App\Models\User;
+use App\Models\Task;
 
 class TaskPolicy
 {
@@ -14,24 +14,23 @@ class TaskPolicy
 
     public function view(User $user, Task $task): bool
     {
-        $project = $task->milestone->project;
-        return $user->id === $project->pi_id || $user->roles()->where('name', 'admin')->exists();
+        return true;
     }
 
     public function create(User $user): bool
     {
-        return true;
+        return true; // Any team member can create tasks, or restricted by project
     }
 
     public function update(User $user, Task $task): bool
     {
-        $project = $task->milestone->project;
-        return $user->id === $project->pi_id || $user->roles()->where('name', 'admin')->exists();
+        $project = $task->project;
+        return $user->isAdmin() || $project->pi_id === $user->id || $task->assigned_to === $user->id;
     }
 
     public function delete(User $user, Task $task): bool
     {
-        $project = $task->milestone->project;
-        return $user->id === $project->pi_id || $user->roles()->where('name', 'admin')->exists();
+        $project = $task->project;
+        return $user->isAdmin() || $project->pi_id === $user->id;
     }
 }

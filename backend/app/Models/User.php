@@ -10,10 +10,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use App\Models\Proposal;
+use App\Models\ProposalReviewer;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, Notifiable, HasFactory;
+    use HasApiTokens, Notifiable, HasFactory, \App\Traits\HasRoles;
 
     protected $fillable = [
         'name', 'email', 'password', 'department_id', 'profile_image_id',
@@ -55,7 +57,7 @@ class User extends Authenticatable
 
     public function expertise(): BelongsToMany
     {
-        return $this->belongsToMany(Expertise::class, 'user_expertise')
+        return $this->belongsToMany(Expertise::class, 'user_expertises')
                     ->using(UserExpertise::class);
     }
 
@@ -73,6 +75,19 @@ class User extends Authenticatable
     {
         return $this->hasMany(Proposal::class, 'approved_by');
     }
+    
+    // Proposals reviewed by this user (via proposal_reviewers pivot)
+    public function reviewedProposals(): BelongsToMany
+    {
+        return $this->belongsToMany(Proposal::class, 'proposal_reviewers', 'reviewer_id', 'proposal_id')
+            ->withPivot(
+                'id', 'assigned_by', 'assigned_at', 'submitted_at',
+                'overall_score', 'overall_comments', 'decision_id'
+            )
+            ->withTimestamps()
+            ->using(ProposalReviewer::class)
+            ->as('reviewPivot');
+    }
 
     public function auditLogs(): HasMany
     {
@@ -82,5 +97,10 @@ class User extends Authenticatable
     public function notifications(): HasMany
     {
         return $this->hasMany(Notification::class);
+    }
+
+    public function hasRole(...$roleNames): bool
+    {
+        return $this->roles()->whereIn('name', $roleNames)->exists();
     }
 }

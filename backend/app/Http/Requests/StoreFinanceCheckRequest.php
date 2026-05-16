@@ -1,22 +1,19 @@
 <?php
-// app/Http/Requests/FinanceCheckRequest.php
 
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class FinanceCheckRequest extends FormRequest
+class StoreFinanceCheckRequest extends FormRequest
 {
-    public function authorize()
-    {
-        return $this->user()->hasRole('finance_officer') || $this->user()->hasRole('admin');
-    }
+    public function authorize(): bool { return true; }
 
-    public function rules()
+    public function rules(): array
     {
         return [
-            'status_name' => 'required|string|exists:finance_check_statuses,name',
-            'comments'    => 'nullable|string',
+            'proposal_id' => 'required|exists:proposals,id',
+            'status_id'   => 'required|exists:finance_check_statuses,id',
+            'comments'    => 'nullable|string'
         ];
     }
 }

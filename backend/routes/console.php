@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Foundation\Inspiring;
-use Illuminate\Support\Facades\Artisan;
+use App\Jobs\CheckLicenseExpiryJob;
+use App\Jobs\CheckMoUExpiryJob;
+use Illuminate\Support\Facades\Schedule;
 
-Artisan::command('inspire', function () {
-    $this->comment(Inspiring::quote());
-})->purpose('Display an inspiring quote');
+Schedule::job(CheckMoUExpiryJob::class)->dailyAt('08:00');
+Schedule::job(CheckLicenseExpiryJob::class)->dailyAt('08:30');

@@ -9,9 +9,9 @@ class DetectionStatusSeeder extends Seeder
 {
     public function run(): void
     {
-        $statuses = ['pending', 'processing', 'completed', 'failed'];
-        foreach ($statuses as $status) {
-            DetectionStatus::updateOrCreate(['name' => $status]);
-        }
+        DetectionStatus::create(['name' => 'pending']);
+        DetectionStatus::create(['name' => 'processing']);
+        DetectionStatus::create(['name' => 'completed']);
+        DetectionStatus::create(['name' => 'failed']);
     }
 }

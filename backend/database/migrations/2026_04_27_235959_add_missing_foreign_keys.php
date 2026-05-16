@@ -25,11 +25,11 @@ return new class extends Migration
             $table->foreign('guideline_file_id')->references('id')->on('files')->nullOnDelete();
         });
 
-        // 4. Proposals table constraints
-        Schema::table('proposals', function (Blueprint $table) {
-            $table->foreign('file_id')->references('id')->on('files')->nullOnDelete();
-            $table->foreign('ethics_file_id')->references('id')->on('files')->nullOnDelete();
-        });
+        // 4. Proposals table constraints (Already handled in create_proposals_table)
+        // Schema::table('proposals', function (Blueprint $table) {
+        //     $table->foreign('file_id')->references('id')->on('files')->nullOnDelete();
+        //     $table->foreign('ethics_file_id')->references('id')->on('files')->nullOnDelete();
+        // });
 
         // 5. Detection Requests table constraints
         Schema::table('detection_requests', function (Blueprint $table) {

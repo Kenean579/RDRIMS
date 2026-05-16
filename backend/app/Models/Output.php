@@ -72,7 +72,7 @@ class Output extends Model
     public function files(): BelongsToMany
     {
         return $this->belongsToMany(File::class, 'output_files')
-                    ->withTimestamps()
+                    ->withPivot('created_at')
                     ->using(OutputFile::class);
     }
 }

@@ -12,9 +12,7 @@ class LicenseController extends Controller
 {
     public function index(Patent $patent): JsonResponse
     {
-        $this->authorize('view', $patent);
-        $licenses = $patent->licenses()->get();
-        return response()->json($licenses);
+        return response()->json($patent->licenses);
     }
 
     public function store(StoreLicenseRequest $request, Patent $patent): JsonResponse
@@ -23,22 +21,22 @@ class LicenseController extends Controller
         return response()->json($license, 201);
     }
 
-    public function show(Patent $patent, License $license): JsonResponse
+    public function show(License $license): JsonResponse
     {
-        $this->authorize('view', $patent);
-        return response()->json($license);
+        return response()->json($license->load('patent'));
     }
 
-    public function update(UpdateLicenseRequest $request, Patent $patent, License $license): JsonResponse
+    public function update(UpdateLicenseRequest $request, License $license): JsonResponse
     {
+        $this->authorize('update', $license);
         $license->update($request->validated());
         return response()->json($license);
     }
 
-    public function destroy(Patent $patent, License $license): JsonResponse
+    public function destroy(License $license): JsonResponse
     {
-        $this->authorize('update', $patent);
+        $this->authorize('delete', $license);
         $license->delete();
-        return response()->json(null, 204);
+        return response()->json(['message' => 'License deleted.']);
     }
 }

@@ -9,9 +9,7 @@ class MilestoneStatusSeeder extends Seeder
 {
     public function run(): void
     {
-        $statuses = ['pending', 'done'];
-        foreach ($statuses as $status) {
-            MilestoneStatus::updateOrCreate(['name' => $status]);
-        }
+        MilestoneStatus::create(['name' => 'pending']);
+        MilestoneStatus::create(['name' => 'done']);
     }
 }

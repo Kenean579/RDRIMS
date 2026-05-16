@@ -2,65 +2,23 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\UserExpertise;
-use App\Http\Requests\StoreUserExpertiseRequest;
-use App\Http\Requests\UpdateUserExpertiseRequest;
+use App\Models\User;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class UserExpertiseController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function attach(Request $request, User $user): JsonResponse
     {
-        //
+        $request->validate(['expertise_id' => 'required|exists:expertise,id']);
+        $user->expertise()->attach($request->expertise_id);
+        return response()->json(['message' => 'Expertise attached.']);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function detach(Request $request, User $user): JsonResponse
     {
-        //
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreUserExpertiseRequest $request)
-    {
-        //
-    }
-
-    /**
-     * Display the specified resource.
-     */
-    public function show(UserExpertise $userExpertise)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(UserExpertise $userExpertise)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateUserExpertiseRequest $request, UserExpertise $userExpertise)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(UserExpertise $userExpertise)
-    {
-        //
+        $request->validate(['expertise_id' => 'required|exists:expertise,id']);
+        $user->expertise()->detach($request->expertise_id);
+        return response()->json(['message' => 'Expertise detached.']);
     }
 }

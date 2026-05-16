@@ -2,65 +2,50 @@
 
 namespace App\Policies;
 
-use App\Models\Proposal;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
+use App\Models\Proposal;
 
 class ProposalPolicy
 {
-    /**
-     * Determine whether the user can view any models.
-     */
     public function viewAny(User $user): bool
     {
-        return false;
+        return true;
     }
 
-    /**
-     * Determine whether the user can view the model.
-     */
     public function view(User $user, Proposal $proposal): bool
     {
-        return false;
+        return $user->isAdmin() || 
+               $proposal->submitted_by === $user->id || 
+               $proposal->reviewers()->where('reviewer_id', $user->id)->exists();
     }
 
-    /**
-     * Determine whether the user can create models.
-     */
     public function create(User $user): bool
     {
-        return false;
+        return $user->hasRole('researcher', 'student');
     }
 
-    /**
-     * Determine whether the user can update the model.
-     */
     public function update(User $user, Proposal $proposal): bool
     {
-        return false;
+        return ($proposal->submitted_by === $user->id && $proposal->status_id === 1) || $user->isAdmin();
     }
 
-    /**
-     * Determine whether the user can delete the model.
-     */
     public function delete(User $user, Proposal $proposal): bool
     {
-        return false;
+        return ($proposal->submitted_by === $user->id && $proposal->status_id === 1) || $user->hasRole('super_admin');
     }
 
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Proposal $proposal): bool
+    public function submit(User $user, Proposal $proposal): bool
     {
-        return false;
+        return $proposal->submitted_by === $user->id && $proposal->status_id === 1;
     }
 
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Proposal $proposal): bool
+    public function review(User $user, Proposal $proposal): bool
     {
-        return false;
+        return $proposal->reviewers()->where('reviewer_id', $user->id)->exists();
+    }
+
+    public function assignReviewers(User $user): bool
+    {
+        return $user->isAdmin();
     }
 }

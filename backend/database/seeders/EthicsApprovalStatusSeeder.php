@@ -9,9 +9,8 @@ class EthicsApprovalStatusSeeder extends Seeder
 {
     public function run(): void
     {
-        $statuses = ['pending', 'approved', 'rejected'];
-        foreach ($statuses as $status) {
-            EthicsApprovalStatus::updateOrCreate(['name' => $status]);
-        }
+        EthicsApprovalStatus::create(['name' => 'pending']);
+        EthicsApprovalStatus::create(['name' => 'approved']);
+        EthicsApprovalStatus::create(['name' => 'rejected']);
     }
 }

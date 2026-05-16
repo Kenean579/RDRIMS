@@ -6,13 +6,19 @@ use App\Http\Requests\StorePublicationRequest;
 use App\Http\Requests\UpdatePublicationRequest;
 use App\Models\Publication;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class PublicationController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        $this->authorize('viewAny', Publication::class);
-        $publications = Publication::with(['project', 'file'])->latest('publication_date')->paginate(20);
+        $publications = Publication::with('project', 'authors.user')
+            ->when($request->search, fn($q) => $q->where('title', 'LIKE', '%' . $request->search . '%')
+                ->orWhere('journal', 'LIKE', '%' . $request->search . '%'))
+            ->when($request->year, fn($q) => $q->whereYear('publication_date', $request->year))
+            ->orderBy('publication_date', 'desc')
+            ->paginate(20);
+
         return response()->json($publications);
     }
 
@@ -24,9 +30,7 @@ class PublicationController extends Controller
 
     public function show(Publication $publication): JsonResponse
     {
-        $this->authorize('view', $publication);
-        $publication->load(['project', 'authors.user', 'file']);
-        return response()->json($publication);
+        return response()->json($publication->load('project', 'authors.user', 'file'));
     }
 
     public function update(UpdatePublicationRequest $request, Publication $publication): JsonResponse
@@ -37,8 +41,7 @@ class PublicationController extends Controller
 
     public function destroy(Publication $publication): JsonResponse
     {
-        $this->authorize('delete', $publication);
         $publication->delete();
-        return response()->json(null, 204);
+        return response()->json(['message' => 'Publication deleted.']);
     }
 }

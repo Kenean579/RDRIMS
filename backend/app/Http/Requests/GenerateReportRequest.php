@@ -14,7 +14,7 @@ class GenerateReportRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'report_name' => 'required|string|max:255',
+            'name' => 'required|string|max:255',
             'parameters'  => 'nullable|array',
         ];
     }

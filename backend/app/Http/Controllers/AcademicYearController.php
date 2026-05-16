@@ -2,65 +2,45 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\AcademicYear;
 use App\Http\Requests\StoreAcademicYearRequest;
 use App\Http\Requests\UpdateAcademicYearRequest;
+use App\Models\AcademicYear;
+use Illuminate\Http\JsonResponse;
 
 class AcademicYearController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(): JsonResponse
     {
-        //
+        return response()->json(AcademicYear::orderBy('start_date', 'desc')->get());
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function store(StoreAcademicYearRequest $request): JsonResponse
     {
-        //
+        $year = AcademicYear::create($request->validated());
+        return response()->json($year, 201);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreAcademicYearRequest $request)
+    public function show(AcademicYear $academicYear): JsonResponse
     {
-        //
+        return response()->json($academicYear);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(AcademicYear $academicYear)
+    public function update(UpdateAcademicYearRequest $request, AcademicYear $academicYear): JsonResponse
     {
-        //
+        $academicYear->update($request->validated());
+        return response()->json($academicYear);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(AcademicYear $academicYear)
+    public function destroy(AcademicYear $academicYear): JsonResponse
     {
-        //
+        $academicYear->delete();
+        return response()->json(['message' => 'Academic year deleted.']);
     }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateAcademicYearRequest $request, AcademicYear $academicYear)
+    public function setCurrent(AcademicYear $academicYear): JsonResponse
     {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(AcademicYear $academicYear)
-    {
-        //
+        AcademicYear::query()->update(['is_current' => false]);
+        $academicYear->update(['is_current' => true]);
+        return response()->json(['message' => 'Current academic year set.']);
     }
 }

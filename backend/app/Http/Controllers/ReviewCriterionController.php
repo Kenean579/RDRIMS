@@ -2,65 +2,38 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\ReviewCriterion;
 use App\Http\Requests\StoreReviewCriterionRequest;
 use App\Http\Requests\UpdateReviewCriterionRequest;
+use App\Models\ReviewCriterion;
+use Illuminate\Http\JsonResponse;
 
 class ReviewCriterionController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(): JsonResponse
     {
-        //
+        return response()->json(ReviewCriterion::all());
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function store(StoreReviewCriterionRequest $request): JsonResponse
     {
-        //
+        $criterion = ReviewCriterion::create($request->validated());
+        return response()->json($criterion, 201);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreReviewCriterionRequest $request)
+    public function show(ReviewCriterion $reviewCriterion): JsonResponse
     {
-        //
+        return response()->json($reviewCriterion);
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(ReviewCriterion $reviewCriterion)
+    public function update(UpdateReviewCriterionRequest $request, ReviewCriterion $reviewCriterion): JsonResponse
     {
-        //
+        $reviewCriterion->update($request->validated());
+        return response()->json($reviewCriterion);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(ReviewCriterion $reviewCriterion)
+    public function destroy(ReviewCriterion $reviewCriterion): JsonResponse
     {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateReviewCriterionRequest $request, ReviewCriterion $reviewCriterion)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(ReviewCriterion $reviewCriterion)
-    {
-        //
+        $reviewCriterion->delete();
+        return response()->json(['message' => 'Review criterion deleted.']);
     }
 }

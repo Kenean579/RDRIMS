@@ -2,65 +2,38 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Campus;
 use App\Http\Requests\StoreCampusRequest;
 use App\Http\Requests\UpdateCampusRequest;
+use App\Models\Campus;
+use Illuminate\Http\JsonResponse;
 
 class CampusController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function index(): JsonResponse
     {
-        //
+        return response()->json(Campus::with('university')->get());
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function store(StoreCampusRequest $request): JsonResponse
     {
-        //
+        $campus = Campus::create($request->validated());
+        return response()->json($campus, 201);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StoreCampusRequest $request)
+    public function show(Campus $campus): JsonResponse
     {
-        //
+        return response()->json($campus->load('university', 'faculties'));
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Campus $campus)
+    public function update(UpdateCampusRequest $request, Campus $campus): JsonResponse
     {
-        //
+        $campus->update($request->validated());
+        return response()->json($campus);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Campus $campus)
+    public function destroy(Campus $campus): JsonResponse
     {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdateCampusRequest $request, Campus $campus)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Campus $campus)
-    {
-        //
+        $campus->delete();
+        return response()->json(['message' => 'Campus deleted.']);
     }
 }

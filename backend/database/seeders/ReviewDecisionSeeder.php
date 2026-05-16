@@ -9,9 +9,9 @@ class ReviewDecisionSeeder extends Seeder
 {
     public function run(): void
     {
-        $decisions = ['accept', 'minor', 'major', 'reject'];
-        foreach ($decisions as $decision) {
-            ReviewDecision::updateOrCreate(['name' => $decision]);
-        }
+        ReviewDecision::create(['name' => 'accept']);
+        ReviewDecision::create(['name' => 'minor']);
+        ReviewDecision::create(['name' => 'major']);
+        ReviewDecision::create(['name' => 'reject']);
     }
 }

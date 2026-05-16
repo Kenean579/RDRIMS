@@ -3,64 +3,44 @@
 namespace App\Http\Controllers;
 
 use App\Models\Permission;
-use App\Http\Requests\StorePermissionRequest;
-use App\Http\Requests\UpdatePermissionRequest;
+use App\Http\Requests\PermissionRequest;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Foundation\Auth\Access\AuthorizesRequests;
 
 class PermissionController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    use AuthorizesRequests;
+
+    public function index(): JsonResponse
     {
-        //
+        $this->authorize('viewAny', Permission::class);
+        return response()->json(Permission::all());
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function store(PermissionRequest $request): JsonResponse
     {
-        //
+        $this->authorize('create', Permission::class);
+        $permission = Permission::create($request->validated());
+        return response()->json($permission, 201);
     }
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(StorePermissionRequest $request)
+    public function show(Permission $permission): JsonResponse
     {
-        //
+        $this->authorize('view', $permission);
+        return response()->json($permission->load('roles'));
     }
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Permission $permission)
+    public function update(PermissionRequest $request, Permission $permission): JsonResponse
     {
-        //
+        $this->authorize('update', $permission);
+        $permission->update($request->validated());
+        return response()->json($permission);
     }
 
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(Permission $permission)
+    public function destroy(Permission $permission): JsonResponse
     {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(UpdatePermissionRequest $request, Permission $permission)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(Permission $permission)
-    {
-        //
+        $this->authorize('delete', $permission);
+        $permission->delete();
+        return response()->json(null, 204);
     }
 }
