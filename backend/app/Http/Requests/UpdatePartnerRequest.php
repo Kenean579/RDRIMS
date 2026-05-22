@@ -8,17 +8,15 @@ class UpdatePartnerRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        $partner = $this->route('partner');
-        return $this->user()->can('update', $partner);
+        return true;
     }
 
     public function rules(): array
     {
         return [
-            'name'          => 'sometimes|string|max:255',
-            'sector'        => 'sometimes|string|max:100',
-            'contact_email' => 'sometimes|email|max:255',
-            'website'       => 'nullable|string|max:255',
+            'name' => 'sometimes',
+            'sector' => 'sometimes',
+            'contact_email' => 'sometimes|email',
         ];
     }
 }

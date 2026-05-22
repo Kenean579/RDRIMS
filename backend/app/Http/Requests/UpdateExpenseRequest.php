@@ -8,16 +8,15 @@ class UpdateExpenseRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        $expense = $this->route('expense');
-        return $this->user()->can('update', $expense);
+        return true;
     }
 
     public function rules(): array
     {
         return [
-            'amount'          => 'sometimes|numeric|min:0',
-            'budget_category' => 'nullable|string|max:50',
-            'description'     => 'sometimes|string',
+            'project_id' => 'sometimes|exists:projects,id',
+            'amount' => 'sometimes|numeric',
+            'category' => 'sometimes',
         ];
     }
 }

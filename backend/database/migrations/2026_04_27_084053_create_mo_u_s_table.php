@@ -10,7 +10,12 @@ return new class extends Migration
     {
         Schema::create('mo_u_s', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('partner_id')->constrained('partners')->restrictOnDelete();
+            $table->foreignId('partner_id')->constrained('partners')->cascadeOnDelete();
+            $table->string('title', 255);
+            $table->unsignedTinyInteger('agreement_type_id');
+            $table->foreign('agreement_type_id')->references('id')->on('agreement_types')->restrictOnDelete();
+            $table->unsignedBigInteger('file_id')->nullable();
+            $table->foreign('file_id')->references('id')->on('files')->nullOnDelete();
             $table->date('start_date');
             $table->date('end_date');
             $table->timestamps();

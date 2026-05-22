@@ -12,8 +12,8 @@ return new class extends Migration
             $table->id();
             $table->foreignId('user_id')->constrained('users')->cascadeOnDelete();
             $table->foreignId('role_id')->constrained('roles')->cascadeOnDelete();
-            // Since users table may be created later, using unsignedBigInteger for assigned_by
             $table->unsignedBigInteger('assigned_by')->nullable()->index();
+            $table->foreign('assigned_by')->references('id')->on('users')->nullOnDelete();
             $table->dateTime('assigned_at')->index();
             $table->timestamps();
 

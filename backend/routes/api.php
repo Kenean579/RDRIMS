@@ -7,6 +7,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\CallController;
 use App\Http\Controllers\CampusController;
 use App\Http\Controllers\CommunityProblemController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DepartmentController;
 use App\Http\Controllers\DetectionController;
 use App\Http\Controllers\EthicsRequestController;
@@ -32,6 +33,8 @@ use App\Http\Controllers\PatentFileController;
 use App\Http\Controllers\PermissionController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectFileController;
+use App\Http\Controllers\ProjectInvestigatorController;
+use App\Http\Controllers\PublicController;
 use App\Http\Controllers\ProposalController;
 use App\Http\Controllers\ProposalFileController;
 use App\Http\Controllers\ProposalInvestigatorController;
@@ -43,6 +46,7 @@ use App\Http\Controllers\ResearchCenterController;
 use App\Http\Controllers\ReviewCriterionController;
 use App\Http\Controllers\ReviewerProposalController;
 use App\Http\Controllers\RoleController;
+use App\Http\Controllers\SearchController;
 use App\Http\Controllers\RolePermissionController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\TaskController;
@@ -59,6 +63,14 @@ Route::post('login', [AuthController::class, 'login']);
 
 // Lookups (public read)
 Route::get('lookups/{table}', [LookupController::class, 'index']);
+
+// Public-facing endpoints (no auth required)
+Route::prefix('public')->group(function () {
+    Route::get('projects', [PublicController::class, 'projects']);
+    Route::get('projects/{project}', [PublicController::class, 'projectDetails']);
+    Route::get('publications', [PublicController::class, 'publications']);
+    Route::get('events', [PublicController::class, 'events']);
+});
 
 // Authenticated routes
 Route::middleware('auth:sanctum')->group(function () {
@@ -157,6 +169,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('milestones.tasks', TaskController::class);
     Route::post('projects/{project}/files', [ProjectFileController::class, 'attach']);
     Route::delete('projects/{project}/files/{file}', [ProjectFileController::class, 'detach']);
+    Route::apiResource('projects.investigators', ProjectInvestigatorController::class)->only(['index', 'store', 'destroy']);
 
     // Outputs
     Route::apiResource('outputs', OutputController::class);
@@ -203,4 +216,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('reports', [ReportController::class, 'index']);
     Route::post('reports/generate', [ReportController::class, 'generate']);
     Route::get('reports/{report}/download', [ReportController::class, 'download']);
+
+    // Dashboard
+    Route::get('dashboard', [DashboardController::class, 'index']);
+
+    // Search
+    Route::get('search', [SearchController::class, 'search']);
 });

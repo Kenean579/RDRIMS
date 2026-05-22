@@ -23,7 +23,7 @@ class MoUController extends Controller
 
     public function show(MoU $moU): JsonResponse
     {
-        return response()->json($moU->load('partner'));
+        return response()->json($moU->load('partner', 'agreementType', 'file'));
     }
 
     public function update(UpdateMoURequest $request, MoU $moU): JsonResponse

@@ -16,12 +16,12 @@ return new class extends Migration
             $table->foreignId('submitted_by')->nullable()->constrained('users')->nullOnDelete();
             $table->string('contact_info', 255)->nullable();
             $table->unsignedTinyInteger('status_id');
-            $table->foreign('status_id')->references('id')->on('community_problem_statuses');
+            $table->foreign('status_id')->references('id')->on('community_problem_statuses')->restrictOnDelete();
             $table->foreignId('claimed_by')->nullable()->constrained('users')->nullOnDelete();
             $table->dateTime('claimed_at')->nullable();
             $table->dateTime('completed_at')->nullable();
             $table->foreignId('linked_project_id')->nullable()->constrained('projects')->nullOnDelete();
-            $table->text('feedback')->nullable();
+            $table->text('results_summary')->nullable();
             $table->tinyInteger('rating')->nullable();
             $table->boolean('is_anonymous')->default(false);
             $table->timestamps();

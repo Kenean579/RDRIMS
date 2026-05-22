@@ -8,18 +8,15 @@ class StorePatentRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return $this->user()->can('create', \App\Models\Patent::class);
+        return true;
     }
 
     public function rules(): array
     {
         return [
-            'project_id'    => 'nullable|exists:projects,id',
-            'title'         => 'required|string|max:255',
-            'inventors'     => 'required|string',
-            'filing_date'   => 'required|date',
-            'patent_number' => 'nullable|string|max:100',
-            'status_id'     => 'nullable|exists:patent_statuses,id',
+            'project_id' => 'required|exists:projects,id',
+            'title' => 'required',
+            'application_number' => 'required',
         ];
     }
 }

@@ -13,8 +13,12 @@ class ResearchCenter extends Model
 
     protected $fillable = [
         'name', 'code', 'director_id', 'logo_file_id',
-        'parent_university_id', 'parent_campus_id', 'parent_faculty_id',
-        'description'
+        'university_id', 'campus_id', 'faculty_id', 'department_id',
+        'description', 'established_at'
+    ];
+
+    protected $casts = [
+        'established_at' => 'date',
     ];
 
     public function director(): BelongsTo
@@ -27,19 +31,24 @@ class ResearchCenter extends Model
         return $this->belongsTo(File::class, 'logo_file_id');
     }
 
-    public function parentUniversity(): BelongsTo
+    public function university(): BelongsTo
     {
-        return $this->belongsTo(University::class, 'parent_university_id');
+        return $this->belongsTo(University::class);
     }
 
-    public function parentCampus(): BelongsTo
+    public function campus(): BelongsTo
     {
-        return $this->belongsTo(Campus::class, 'parent_campus_id');
+        return $this->belongsTo(Campus::class);
     }
 
-    public function parentFaculty(): BelongsTo
+    public function faculty(): BelongsTo
     {
-        return $this->belongsTo(Faculty::class, 'parent_faculty_id');
+        return $this->belongsTo(Faculty::class);
+    }
+
+    public function department(): BelongsTo
+    {
+        return $this->belongsTo(Department::class);
     }
 
     public function users(): BelongsToMany

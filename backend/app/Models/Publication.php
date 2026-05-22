@@ -9,12 +9,23 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Publication extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\HasDynamicStatus;
 
     protected $fillable = [
-        'project_id', 'title', 'abstract', 'keywords', 'journal',
-        'doi', 'scholar_url', 'publication_date', 'citation_count', 'file_id'
+        'project_id', 'title', 'abstract', 'keywords', 'journal_name',
+        'doi', 'url', 'publication_date', 'volume', 'issue', 'pages',
+        'access_type_id', 'status_id', 'cover_image_id'
     ];
+
+    public function status(): BelongsTo
+    {
+        return $this->belongsTo(PublicationStatus::class, 'status_id');
+    }
+
+    public function accessType(): BelongsTo
+    {
+        return $this->belongsTo(PublicationAccessType::class, 'access_type_id');
+    }
 
     protected $casts = [
         'publication_date' => 'date',
@@ -25,9 +36,9 @@ class Publication extends Model
         return $this->belongsTo(Project::class);
     }
 
-    public function file(): BelongsTo
+    public function coverImage(): BelongsTo
     {
-        return $this->belongsTo(File::class);
+        return $this->belongsTo(File::class, 'cover_image_id');
     }
 
     public function authors(): HasMany

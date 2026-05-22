@@ -11,16 +11,16 @@ return new class extends Migration
         Schema::create('licenses', function (Blueprint $table) {
             $table->id();
             $table->foreignId('patent_id')->constrained('patents')->cascadeOnDelete();
-            $table->string('company_name', 255);
-            $table->date('start_date');
-            $table->date('end_date');
+            $table->string('licensee_name', 255);
+            $table->date('license_date');
+            $table->date('expiry_date');
             $table->decimal('royalty_rate', 5, 2);
             $table->timestamps();
 
             $table->index('patent_id');
-            $table->index('company_name');
-            $table->index('start_date');
-            $table->index('end_date');
+            $table->index('licensee_name');
+            $table->index('license_date');
+            $table->index('expiry_date');
         });
     }
 

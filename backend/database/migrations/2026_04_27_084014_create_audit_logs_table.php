@@ -10,11 +10,13 @@ return new class extends Migration
     {
         Schema::create('audit_logs', function (Blueprint $table) {
             $table->id();
-            // Since users table might be created after depending on migration order, using unsignedBigInteger
             $table->unsignedBigInteger('user_id')->nullable()->index();
+            $table->foreign('user_id')->references('id')->on('users')->nullOnDelete();
             $table->string('action', 20);
             $table->string('table_name', 50)->index();
             $table->unsignedBigInteger('record_id')->index();
+            $table->json('old_values')->nullable();
+            $table->json('new_values')->nullable();
             $table->string('ip_address', 45);
             $table->timestamp('created_at')->useCurrent()->index();
         });

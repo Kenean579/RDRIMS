@@ -8,15 +8,16 @@ class StoreMoURequest extends FormRequest
 {
     public function authorize(): bool
     {
-        $partner = $this->route('partner');
-        return $this->user()->can('update', $partner);
+        return true;
     }
 
     public function rules(): array
     {
         return [
+            'partner_id' => 'required|exists:partners,id',
+            'title' => 'required',
             'start_date' => 'required|date',
-            'end_date'   => 'required|date|after_or_equal:start_date',
+            'end_date' => 'required|date',
         ];
     }
 }

@@ -8,27 +8,40 @@ return new class extends Migration
 {
     public function up(): void
     {
+        Schema::create('event_statuses', function (Blueprint $table) {
+            $table->tinyIncrements('id');
+            $table->string('name', 50)->unique();
+            $table->string('label', 50)->nullable();
+            $table->timestamps();
+        });
+
         Schema::create('events', function (Blueprint $table) {
             $table->id();
             $table->string('title', 255);
             $table->dateTime('start_date');
             $table->dateTime('end_date');
-            $table->string('venue', 255);
+            $table->string('location', 255);
             $table->text('description');
-            $table->integer('capacity')->nullable();
+            $table->integer('max_participants')->nullable();
+            
+            $table->unsignedTinyInteger('status_id')->default(1)->index();
+            $table->foreign('status_id')->references('id')->on('event_statuses')->restrictOnDelete();
+
+            $table->foreignId('organizer_id')->nullable()->constrained('users')->nullOnDelete();
             $table->dateTime('registration_deadline')->nullable();
-            $table->foreignId('image_file_id')->nullable()->constrained('files')->nullOnDelete();
+            $table->unsignedBigInteger('banner_id')->nullable()->index();
+            $table->foreign('banner_id')->references('id')->on('files')->nullOnDelete();
             $table->timestamps();
 
             $table->index('start_date');
             $table->index('end_date');
-            $table->index('venue');
-            $table->index('image_file_id');
+            $table->index('location');
         });
     }
 
     public function down(): void
     {
         Schema::dropIfExists('events');
+        Schema::dropIfExists('event_statuses');
     }
 };

@@ -30,7 +30,7 @@ class OutputController extends Controller
 
     public function store(StoreOutputRequest $request): JsonResponse
     {
-        $output = Output::create(['status_id' => 1, ...$request->validated()]); // draft
+        $output = Output::create(['status_id' => Output::getStatusId('draft'), ...$request->validated()]);
         return response()->json($output, 201);
     }
 
@@ -55,7 +55,7 @@ class OutputController extends Controller
 
     public function changeStatus(ChangeOutputStatusRequest $request, Output $output): JsonResponse
     {
-        $this->outputService->changeStatus($output, $request->status_id, $request->user());
+        $this->outputService->changeStatus($output, $request->status_id);
         return response()->json(['message' => 'Status updated.']);
     }
 }

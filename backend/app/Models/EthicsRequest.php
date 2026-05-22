@@ -8,7 +8,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class EthicsRequest extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\HasDynamicStatus;
+
+    public $statusModelMapping = \App\Models\EthicsApprovalStatus::class;
 
     protected $fillable = [
         'proposal_id', 'generated_pdf_path', 'submitted_to_irb',

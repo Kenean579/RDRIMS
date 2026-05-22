@@ -13,7 +13,7 @@ class DetectionController extends Controller
     {
         $detectionRequest = DetectionRequest::create([
             ...$request->validated(),
-            'status_id' => 1, // pending
+            'status_id' => DetectionRequest::getStatusId('pending'),
             'requested_by' => $request->user()->id,
             'requested_at' => now(),
         ]);

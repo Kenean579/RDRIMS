@@ -10,10 +10,10 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Patent extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\HasDynamicStatus;
 
     protected $fillable = [
-        'project_id', 'title', 'inventors', 'filing_date', 'patent_number', 'status_id'
+        'project_id', 'title', 'inventors', 'filing_date', 'application_number', 'status_id'
     ];
 
     protected $casts = [

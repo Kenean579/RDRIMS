@@ -14,7 +14,7 @@ class PublicationController extends Controller
     {
         $publications = Publication::with('project', 'authors.user')
             ->when($request->search, fn($q) => $q->where('title', 'LIKE', '%' . $request->search . '%')
-                ->orWhere('journal', 'LIKE', '%' . $request->search . '%'))
+                ->orWhere('journal_name', 'LIKE', '%' . $request->search . '%'))
             ->when($request->year, fn($q) => $q->whereYear('publication_date', $request->year))
             ->orderBy('publication_date', 'desc')
             ->paginate(20);
@@ -30,7 +30,7 @@ class PublicationController extends Controller
 
     public function show(Publication $publication): JsonResponse
     {
-        return response()->json($publication->load('project', 'authors.user', 'file'));
+        return response()->json($publication->load('project', 'authors.user', 'coverImage'));
     }
 
     public function update(UpdatePublicationRequest $request, Publication $publication): JsonResponse

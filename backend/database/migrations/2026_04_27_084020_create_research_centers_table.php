@@ -12,14 +12,14 @@ return new class extends Migration
             $table->id();
             $table->string('name', 255)->index();
             $table->string('code', 50)->unique();
-            // Using unsignedBigInteger for files & users to avoid migration order issues, 
-            // but for parents we can use constrained as those tables are earlier.
             $table->unsignedBigInteger('director_id')->nullable()->index();
             $table->unsignedBigInteger('logo_file_id')->nullable()->index();
-            $table->foreignId('parent_university_id')->nullable()->constrained('universities')->cascadeOnDelete();
-            $table->foreignId('parent_campus_id')->nullable()->constrained('campuses')->cascadeOnDelete();
-            $table->foreignId('parent_faculty_id')->nullable()->constrained('faculties')->cascadeOnDelete();
+            $table->foreignId('university_id')->nullable()->constrained('universities')->cascadeOnDelete();
+            $table->foreignId('campus_id')->nullable()->constrained('campuses')->cascadeOnDelete();
+            $table->foreignId('faculty_id')->nullable()->constrained('faculties')->cascadeOnDelete();
+            $table->foreignId('department_id')->nullable()->constrained('departments')->cascadeOnDelete();
             $table->text('description')->nullable();
+            $table->date('established_at')->nullable();
             $table->timestamps();
         });
     }

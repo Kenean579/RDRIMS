@@ -18,7 +18,7 @@ return new class extends Migration
             $table->json('budget_allocation')->nullable();
             $table->unsignedBigInteger('cover_image_id')->nullable()->index();
             $table->unsignedTinyInteger('status_id');
-            $table->foreign('status_id')->references('id')->on('project_statuses');
+            $table->foreign('status_id')->references('id')->on('project_statuses')->restrictOnDelete();
             $table->foreignId('pi_id')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('academic_year_id')->nullable()->constrained('academic_years')->nullOnDelete();
             $table->timestamps();

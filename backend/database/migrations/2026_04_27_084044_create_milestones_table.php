@@ -16,7 +16,7 @@ return new class extends Migration
             $table->date('due_date');
             $table->integer('display_order')->default(0);
             $table->unsignedTinyInteger('status_id');
-            $table->foreign('status_id')->references('id')->on('milestone_statuses');
+            $table->foreign('status_id')->references('id')->on('milestone_statuses')->restrictOnDelete();
             $table->timestamps();
 
             $table->index('project_id');

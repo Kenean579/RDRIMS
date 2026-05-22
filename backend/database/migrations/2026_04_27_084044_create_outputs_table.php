@@ -27,7 +27,7 @@ return new class extends Migration
             $table->foreignId('project_id')->nullable()->constrained('projects')->nullOnDelete();
             
             $table->unsignedTinyInteger('status_id');
-            $table->foreign('status_id')->references('id')->on('output_statuses');
+            $table->foreign('status_id')->references('id')->on('output_statuses')->restrictOnDelete();
             
             $table->date('start_date')->nullable();
             $table->date('end_date')->nullable();

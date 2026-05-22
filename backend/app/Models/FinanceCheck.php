@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class FinanceCheck extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\HasDynamicStatus;
 
     protected $fillable = ['proposal_id', 'checker_id', 'status_id', 'comments', 'checked_at'];
 

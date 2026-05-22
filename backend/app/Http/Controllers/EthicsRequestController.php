@@ -17,7 +17,7 @@ class EthicsRequestController extends Controller
 
     public function store(StoreEthicsRequestRequest $request, Proposal $proposal): JsonResponse
     {
-        $ethicsRequest = $this->ethicsService->generatePdf($proposal);
+        $ethicsRequest = $this->ethicsService->submitRequest($proposal, $request->validated(), $request->user());
         return response()->json($ethicsRequest, 201);
     }
 

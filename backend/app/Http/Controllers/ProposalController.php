@@ -41,7 +41,7 @@ class ProposalController extends Controller
             ...$request->safe()->except('investigators'),
             'submitted_by' => $request->user()->id,
             'submitted_at' => now(),
-            'status_id' => 1, // draft
+            'status_id' => Proposal::getStatusId('draft'),
         ]);
 
         // Attach investigators

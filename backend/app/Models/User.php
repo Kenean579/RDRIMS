@@ -12,6 +12,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use App\Models\Proposal;
 use App\Models\ProposalReviewer;
+use App\Models\Publication;
 
 class User extends Authenticatable
 {
@@ -99,8 +100,10 @@ class User extends Authenticatable
         return $this->hasMany(Notification::class);
     }
 
-    public function hasRole(...$roleNames): bool
+    public function publications(): BelongsToMany
     {
-        return $this->roles()->whereIn('name', $roleNames)->exists();
+        return $this->belongsToMany(Publication::class, 'publication_authors')
+                    ->withPivot('external_author_name', 'external_institution', 'author_order')
+                    ->withTimestamps();
     }
 }

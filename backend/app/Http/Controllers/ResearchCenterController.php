@@ -11,7 +11,7 @@ class ResearchCenterController extends Controller
 {
     public function index(): JsonResponse
     {
-        return response()->json(ResearchCenter::with('director', 'parentUniversity')->get());
+        return response()->json(ResearchCenter::with('director', 'university')->get());
     }
 
     public function store(StoreResearchCenterRequest $request): JsonResponse
@@ -22,7 +22,7 @@ class ResearchCenterController extends Controller
 
     public function show(ResearchCenter $researchCenter): JsonResponse
     {
-        return response()->json($researchCenter->load('director', 'users', 'parentUniversity', 'parentCampus', 'parentFaculty'));
+        return response()->json($researchCenter->load('director', 'users', 'university', 'campus', 'faculty', 'department'));
     }
 
     public function update(UpdateResearchCenterRequest $request, ResearchCenter $researchCenter): JsonResponse

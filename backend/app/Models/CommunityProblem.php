@@ -8,12 +8,12 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CommunityProblem extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\HasDynamicStatus;
 
     protected $fillable = [
         'title', 'description', 'location', 'submitted_by',
         'contact_info', 'status_id', 'claimed_by', 'claimed_at',
-        'completed_at', 'linked_project_id', 'feedback', 'rating', 'is_anonymous'
+        'completed_at', 'linked_project_id', 'results_summary', 'rating', 'is_anonymous'
     ];
 
     protected $casts = [

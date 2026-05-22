@@ -26,7 +26,7 @@ class ProposalInvestigatorController extends Controller
 
         $investigator = $proposal->investigators()->create([
             ...$request->all(),
-            'status_id' => 1, // pending
+            'status_id' => ProposalInvestigator::getStatusId('pending'),
             'invited_at' => now(),
         ]);
 

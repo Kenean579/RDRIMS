@@ -31,7 +31,7 @@ class CommunityProblemController extends Controller
         $problem = CommunityProblem::create([
             ...$request->validated(),
             'submitted_by' => $request->user()->id,
-            'status_id' => 1, // open
+            'status_id' => CommunityProblem::getStatusId('open'),
         ]);
 
         return response()->json($problem, 201);
@@ -64,12 +64,12 @@ class CommunityProblemController extends Controller
     public function addFeedback(Request $request, CommunityProblem $communityProblem): JsonResponse
     {
         $request->validate([
-            'feedback' => 'required|string',
-            'rating' => 'required|integer|min:1|max:5',
+            'results_summary' => 'required|string',
+            'rating'          => 'required|integer|min:1|max:5',
         ]);
 
-        $this->communityProblemService->addFeedback($communityProblem, $request->feedback, $request->rating);
-        return response()->json(['message' => 'Feedback added.']);
+        $this->communityProblemService->addFeedback($communityProblem, $request->results_summary, $request->rating);
+        return response()->json(['message' => 'Results summary added.']);
     }
 
     public function destroy(CommunityProblem $communityProblem): JsonResponse

@@ -18,7 +18,7 @@ return new class extends Migration
             $table->foreignId('assigned_to')->nullable()->constrained('users')->nullOnDelete();
             $table->date('due_date');
             $table->unsignedTinyInteger('status_id');
-            $table->foreign('status_id')->references('id')->on('task_statuses');
+            $table->foreign('status_id')->references('id')->on('task_statuses')->restrictOnDelete();
             $table->timestamps();
 
             $table->index('milestone_id');

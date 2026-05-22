@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Project extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\HasDynamicStatus;
 
     protected $fillable = [
         'proposal_id', 'title', 'start_date', 'end_date', 'total_budget',
@@ -84,5 +84,10 @@ class Project extends Model
     public function linkedCommunityProblems(): HasMany
     {
         return $this->hasMany(CommunityProblem::class, 'linked_project_id');
+    }
+
+    public function investigators(): HasMany
+    {
+        return $this->hasMany(ProjectInvestigator::class);
     }
 }

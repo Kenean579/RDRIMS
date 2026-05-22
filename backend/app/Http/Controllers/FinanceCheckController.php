@@ -14,7 +14,8 @@ class FinanceCheckController extends Controller
     public function store(StoreFinanceCheckRequest $request, Proposal $proposal): JsonResponse
     {
         $check = $proposal->financeChecks()->create([
-            ...$request->validated(),
+            'status_id' => $request->status_id ?? FinanceCheck::getStatusId('pending'),
+            'comments' => $request->comments,
             'checker_id' => $request->user()->id,
             'checked_at' => now(),
         ]);

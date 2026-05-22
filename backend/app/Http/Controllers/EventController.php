@@ -11,8 +11,9 @@ class EventController extends Controller
 {
     public function index(): JsonResponse
     {
-        $events = Event::with('registrations')
+        $events = Event::with('registrations', 'banner')
             ->when(request('upcoming'), fn($q) => $q->where('start_date', '>=', now()))
+            ->when(request('status'), fn($q) => $q->where('status', request('status')))
             ->orderBy('start_date', 'desc')
             ->paginate(20);
 
@@ -27,7 +28,7 @@ class EventController extends Controller
 
     public function show(Event $event): JsonResponse
     {
-        return response()->json($event->load('registrations.user', 'imageFile'));
+        return response()->json($event->load('registrations.user', 'banner'));
     }
 
     public function update(UpdateEventRequest $request, Event $event): JsonResponse

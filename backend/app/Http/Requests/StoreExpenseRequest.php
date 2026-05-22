@@ -8,16 +8,15 @@ class StoreExpenseRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        $project = $this->route('project');
-        return $this->user()->can('update', $project);
+        return true;
     }
 
     public function rules(): array
     {
         return [
-            'amount'          => 'required|numeric|min:0',
-            'budget_category' => 'nullable|string|max:50',
-            'description'     => 'required|string',
+            'project_id' => 'required|exists:projects,id',
+            'amount' => 'required|numeric',
+            'category' => 'required',
         ];
     }
 }

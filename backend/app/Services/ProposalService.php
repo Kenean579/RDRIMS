@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use App\Enums\ProposalStatusEnum;
 use App\Models\Proposal;
 use App\Models\User;
 use Illuminate\Validation\ValidationException;
@@ -15,7 +14,7 @@ class ProposalService
 
     public function submit(Proposal $proposal, User $user): void
     {
-        if ($proposal->status_id !== ProposalStatusEnum::DRAFT->value) {
+        if ($proposal->status->name !== 'draft') {
             throw ValidationException::withMessages([
                 'status' => 'Only draft proposals can be submitted.',
             ]);
@@ -28,7 +27,7 @@ class ProposalService
         }
 
         $proposal->update([
-            'status_id' => ProposalStatusEnum::SUBMITTED->value,
+            'status_id' => Proposal::getStatusId('submitted'),
             'submitted_at' => now(),
             'submitted_by' => $user->id,
         ]);
@@ -38,14 +37,14 @@ class ProposalService
 
     public function approve(Proposal $proposal, User $approvedBy): void
     {
-        if ($proposal->status_id !== ProposalStatusEnum::UNDER_REVIEW->value) {
+        if ($proposal->status->name !== 'under_review') {
             throw ValidationException::withMessages([
                 'status' => 'Only proposals under review can be approved.',
             ]);
         }
 
         $proposal->update([
-            'status_id' => ProposalStatusEnum::APPROVED->value,
+            'status_id' => Proposal::getStatusId('approved'),
             'approved_by' => $approvedBy->id,
             'approved_at' => now(),
         ]);
@@ -56,7 +55,7 @@ class ProposalService
             'start_date' => now(),
             'end_date' => now()->addYear(),
             'total_budget' => $proposal->budget,
-            'status_id' => 1, // active
+            'status_id' => \App\Models\Project::getStatusId('active'),
             'pi_id' => $proposal->submitted_by,
             'academic_year_id' => $proposal->academic_year_id,
         ]);
@@ -66,14 +65,14 @@ class ProposalService
 
     public function reject(Proposal $proposal, User $rejectedBy, string $comment): void
     {
-        if (! in_array($proposal->status_id, [ProposalStatusEnum::SUBMITTED->value, ProposalStatusEnum::UNDER_REVIEW->value])) {
+        if (! in_array($proposal->status->name, ['submitted', 'under_review'])) {
             throw ValidationException::withMessages([
                 'status' => 'Only submitted or under-review proposals can be rejected.',
             ]);
         }
 
         $proposal->update([
-            'status_id' => ProposalStatusEnum::REJECTED->value,
+            'status_id' => Proposal::getStatusId('rejected'),
             'status_change_comment' => $comment,
         ]);
 
@@ -89,7 +88,7 @@ class ProposalService
             ]);
         }
 
-        $proposal->update(['status_id' => ProposalStatusEnum::UNDER_REVIEW->value]);
+        $proposal->update(['status_id' => Proposal::getStatusId('under_review')]);
 
         $this->auditLogService->log('reviewers_assigned', 'proposals', $proposal->id, request());
     }

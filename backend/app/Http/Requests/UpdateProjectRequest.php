@@ -8,23 +8,15 @@ class UpdateProjectRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        $project = $this->route('project');
-        return $this->user()->can('update', $project);
+        return true;
     }
 
     public function rules(): array
     {
         return [
-            'proposal_id'      => 'nullable|exists:proposals,id',
-            'title'            => 'sometimes|string|max:255',
-            'start_date'       => 'sometimes|date',
-            'end_date'         => 'sometimes|date|after:start_date',
-            'total_budget'     => 'sometimes|numeric|min:0',
-            'budget_allocation'=> 'nullable|array',
-            'cover_image_id'   => 'nullable|exists:files,id',
-            'status_id'        => 'sometimes|exists:project_statuses,id',
-            'pi_id'            => 'sometimes|exists:users,id',
-            'academic_year_id' => 'nullable|exists:academic_years,id',
+            'title' => 'sometimes',
+            'proposal_id' => 'nullable|exists:proposals,id',
+            'total_budget' => 'sometimes|numeric',
         ];
     }
 }

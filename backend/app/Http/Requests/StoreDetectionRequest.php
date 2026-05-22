@@ -8,16 +8,15 @@ class StoreDetectionRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true; // Any authenticated user can request detection
+        return true;
     }
 
     public function rules(): array
     {
         return [
-            'detectable_type' => 'required|string|in:App\\Models\\Proposal,App\\Models\\Output',
-            'detectable_id' => 'required|integer',
+            'detectable_type' => 'required',
+            'detectable_id' => 'required',
             'file_id' => 'required|exists:files,id',
-            'service_id' => 'required|exists:detection_services,id',
         ];
     }
 }

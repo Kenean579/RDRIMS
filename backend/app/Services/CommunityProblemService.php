@@ -23,7 +23,7 @@ class CommunityProblemService
         ]);
     }
 
-    public function complete(CommunityProblem $problem): void
+    public function complete(CommunityProblem $problem, int $userId): void
     {
         if ($problem->status->name !== 'claimed') {
             abort(422, 'Only claimed problems can be completed.');
@@ -35,11 +35,11 @@ class CommunityProblemService
         ]);
     }
 
-    public function addFeedback(CommunityProblem $problem, string $feedback, int $rating): void
+    public function addFeedback(CommunityProblem $problem, string $resultsSummary, int $rating): void
     {
         $problem->update([
-            'feedback' => $feedback,
-            'rating'   => $rating,
+            'results_summary' => $resultsSummary,
+            'rating'          => $rating,
         ]);
     }
 }

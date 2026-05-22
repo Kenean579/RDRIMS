@@ -35,7 +35,7 @@ class ProjectController extends Controller
 
     public function show(Project $project): JsonResponse
     {
-        return response()->json($project->load('status', 'pi', 'milestones.tasks', 'expenses', 'publications', 'patents', 'outputs'));
+        return response()->json($project->load('status', 'pi', 'investigators.user', 'milestones.tasks', 'expenses', 'publications', 'patents', 'outputs'));
     }
 
     public function update(UpdateProjectRequest $request, Project $project): JsonResponse

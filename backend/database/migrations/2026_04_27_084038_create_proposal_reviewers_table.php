@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->foreignId('proposal_id')->constrained('proposals')->cascadeOnDelete();
             $table->foreignId('reviewer_id')->constrained('users')->cascadeOnDelete();
-            $table->foreignId('assigned_by')->nullable()->constrained('users')->nullOnDelete();
+            $table->foreignId('assigned_by')->nullable()->constrained('users')->cascadeOnDelete();
             $table->dateTime('assigned_at');
             $table->dateTime('submitted_at')->nullable()->index();
             $table->decimal('overall_score', 5, 2)->nullable();

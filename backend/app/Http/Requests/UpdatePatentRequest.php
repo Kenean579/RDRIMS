@@ -8,19 +8,15 @@ class UpdatePatentRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        $patent = $this->route('patent');
-        return $this->user()->can('update', $patent);
+        return true;
     }
 
     public function rules(): array
     {
         return [
-            'project_id'    => 'nullable|exists:projects,id',
-            'title'         => 'sometimes|string|max:255',
-            'inventors'     => 'sometimes|string',
-            'filing_date'   => 'sometimes|date',
-            'patent_number' => 'nullable|string|max:100',
-            'status_id'     => 'nullable|exists:patent_statuses,id',
+            'project_id' => 'sometimes|exists:projects,id',
+            'title' => 'sometimes',
+            'application_number' => 'sometimes',
         ];
     }
 }

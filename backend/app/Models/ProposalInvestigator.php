@@ -8,7 +8,9 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ProposalInvestigator extends Model
 {
-    use HasFactory;
+    use HasFactory, \App\Traits\HasDynamicStatus;
+
+    public $statusModelMapping = \App\Models\InvitationStatus::class;
 
     protected $fillable = [
         'proposal_id', 'user_id', 'name', 'email', 'institution',
