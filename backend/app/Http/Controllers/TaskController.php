@@ -7,6 +7,7 @@ use App\Http\Requests\UpdateTaskRequest;
 use App\Models\Milestone;
 use App\Models\Task;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class TaskController extends Controller
 {
@@ -18,6 +19,19 @@ class TaskController extends Controller
     public function store(StoreTaskRequest $request, Milestone $milestone): JsonResponse
     {
         $task = $milestone->tasks()->create($request->validated());
+        return response()->json($task, 201);
+    }
+
+    public function storeStandalone(Request $request): JsonResponse
+    {
+        $request->validate([
+            'milestone_id' => 'required|exists:milestones,id',
+            'title' => 'required|string|max:255',
+            'status_id' => 'required|integer',
+        ]);
+
+        $milestone = Milestone::findOrFail($request->milestone_id);
+        $task = $milestone->tasks()->create($request->only(['title', 'status_id']));
         return response()->json($task, 201);
     }
 

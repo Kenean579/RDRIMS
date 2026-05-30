@@ -57,4 +57,23 @@ class ProjectController extends Controller
         $project = $this->projectService->createFromProposal($proposal, $request->user());
         return response()->json($project, 201);
     }
+
+    public function changeStatus(Request $request, Project $project): JsonResponse
+    {
+        $this->authorize('update', $project);
+
+        $request->validate([
+            'status' => 'required|string|in:active,completed,suspended',
+        ]);
+
+        $statusMap = [
+            'active' => 1,
+            'completed' => 2,
+            'suspended' => 3,
+        ];
+
+        $project->update(['status_id' => $statusMap[$request->status]]);
+
+        return response()->json($project->load('status'));
+    }
 }

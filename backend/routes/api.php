@@ -55,14 +55,29 @@ use App\Http\Controllers\UserController;
 use App\Http\Controllers\UserExpertiseController;
 use App\Http\Controllers\UserResearchCenterController;
 use App\Http\Controllers\UserRoleController;
+use App\Http\Controllers\ThematicAreaController;
 use Illuminate\Support\Facades\Route;
 
 // Public routes
 Route::post('register', [AuthController::class, 'register']);
 Route::post('login', [AuthController::class, 'login']);
+Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
+Route::post('reset-password', [AuthController::class, 'resetPassword']);
 
-// Lookups (public read)
+// Lookups and Basic Config (public read)
 Route::get('lookups/{table}', [LookupController::class, 'index']);
+Route::get('settings', [SettingController::class, 'index']);
+Route::get('universities', [UniversityController::class, 'index']);
+Route::get('calls', [CallController::class, 'index']);
+Route::get('calls/{call}', [CallController::class, 'show']);
+Route::get('publications', [PublicationController::class, 'index']);
+Route::get('publications/{publication}', [PublicationController::class, 'show']);
+Route::get('community-problems', [CommunityProblemController::class, 'index']);
+Route::get('community-problems/{community_problem}', [CommunityProblemController::class, 'show']);
+Route::get('events', [EventController::class, 'index']);
+Route::get('events/{event}', [EventController::class, 'show']);
+Route::get('departments', [DepartmentController::class, 'index']);
+Route::get('users', [UserController::class, 'index']);
 
 // Public-facing endpoints (no auth required)
 Route::prefix('public')->group(function () {
@@ -76,6 +91,7 @@ Route::prefix('public')->group(function () {
 Route::middleware('auth:sanctum')->group(function () {
     // Auth
     Route::get('user', [AuthController::class, 'user']);
+    Route::put('profile', [AuthController::class, 'updateProfile']);
     Route::post('logout', [AuthController::class, 'logout']);
 
     // Language
@@ -89,15 +105,16 @@ Route::middleware('auth:sanctum')->group(function () {
     // Audit logs (admin only)
     Route::get('audit-logs', [AuditLogController::class, 'index'])->middleware('role:super_admin,research_admin,admin');
 
-    // Settings (admin only)
-    Route::apiResource('settings', SettingController::class)->only(['index', 'store', 'update', 'destroy']);
+    // Settings (admin only management)
+    Route::apiResource('settings', SettingController::class)->only(['store', 'update', 'destroy']);
 
-    // Academic hierarchy
-    Route::apiResource('universities', UniversityController::class);
+    // Academic hierarchy & Thematic Areas
+    Route::apiResource('universities', UniversityController::class)->except(['index', 'show']);
     Route::apiResource('campuses', CampusController::class);
     Route::apiResource('faculties', FacultyController::class);
     Route::apiResource('departments', DepartmentController::class);
     Route::apiResource('research-centers', ResearchCenterController::class);
+    Route::apiResource('thematic-areas', ThematicAreaController::class);
     Route::apiResource('academic-years', AcademicYearController::class);
     Route::post('academic-years/{academic_year}/set-current', [AcademicYearController::class, 'setCurrent']);
 
@@ -119,7 +136,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('expertise', ExpertiseController::class);
 
     // Calls
-    Route::apiResource('calls', CallController::class);
+    Route::apiResource('calls', CallController::class)->except(['index', 'show']);
 
     // Review criteria
     Route::apiResource('review-criteria', ReviewCriterionController::class);
@@ -130,6 +147,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('proposals/{proposal}/approve', [ProposalController::class, 'approve']);
     Route::post('proposals/{proposal}/reject', [ProposalController::class, 'reject']);
     Route::post('proposals/{proposal}/assign-reviewers', [ProposalController::class, 'assignReviewers']);
+    Route::post('proposals/{proposal}/create-project', [ProjectController::class, 'createFromProposal']);
     Route::get('proposals/{proposal}/suggest-reviewers', [ProposalController::class, 'suggestReviewers']);
     Route::apiResource('proposals.investigators', ProposalInvestigatorController::class)->only(['index', 'store', 'destroy']);
     Route::apiResource('proposals.reviewers', ProposalReviewerController::class)->only(['index', 'store', 'destroy']);
@@ -146,10 +164,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::put('finance-checks/{finance_check}', [FinanceCheckController::class, 'update']);
 
     // Ethics requests
+    Route::get('ethics-requests', [EthicsRequestController::class, 'index']);
+    Route::get('ethics-requests/{ethics_request}', [EthicsRequestController::class, 'show']);
     Route::post('proposals/{proposal}/ethics-requests', [EthicsRequestController::class, 'store']);
     Route::put('ethics-requests/{ethics_request}', [EthicsRequestController::class, 'update']);
+    Route::post('ethics-requests/{ethics_request}/decision', [EthicsRequestController::class, 'decision']);
 
     // Detection
+    Route::get('detection/requests', [DetectionController::class, 'index']);
     Route::post('detection/requests', [DetectionController::class, 'store']);
     Route::get('detection/requests/{id}', [DetectionController::class, 'show']);
 
@@ -165,8 +187,12 @@ Route::middleware('auth:sanctum')->group(function () {
     // Projects
     Route::apiResource('projects', ProjectController::class);
     Route::post('projects/create-from-proposal/{proposal}', [ProjectController::class, 'createFromProposal']);
+    Route::put('projects/{project}/status', [ProjectController::class, 'changeStatus']);
     Route::apiResource('projects.milestones', MilestoneController::class);
     Route::apiResource('milestones.tasks', TaskController::class);
+    // Standalone task routes (used by frontend for quick task updates)
+    Route::post('tasks', [TaskController::class, 'storeStandalone']);
+    Route::put('tasks/{task}', [TaskController::class, 'update']);
     Route::post('projects/{project}/files', [ProjectFileController::class, 'attach']);
     Route::delete('projects/{project}/files/{file}', [ProjectFileController::class, 'detach']);
     Route::apiResource('projects.investigators', ProjectInvestigatorController::class)->only(['index', 'store', 'destroy']);
@@ -180,34 +206,37 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // Patents
     Route::apiResource('patents', PatentController::class);
-    Route::apiResource('patents.licenses', LicenseController::class);
+    Route::apiResource('patents.licenses', LicenseController::class)->shallow();
     Route::post('patents/{patent}/files', [PatentFileController::class, 'attach']);
     Route::delete('patents/{patent}/files/{file}', [PatentFileController::class, 'detach']);
 
     // Partners & MoUs
     Route::apiResource('partners', PartnerController::class);
-    Route::apiResource('partners.mo-us', MoUController::class);
+    Route::apiResource('partners.mo-us', MoUController::class)->shallow();
 
     // Agreement files
+    Route::get('agreement-files', [AgreementFileController::class, 'index']);
     Route::post('agreement-files', [AgreementFileController::class, 'attach']);
     Route::delete('agreement-files/{agreement_file}', [AgreementFileController::class, 'detach']);
 
     // Expenses
+    Route::apiResource('expenses', ExpenseController::class);
     Route::apiResource('projects.expenses', ExpenseController::class);
     Route::put('expenses/{expense}/approve', [ExpenseController::class, 'approve']);
 
-    // Events
-    Route::apiResource('events', EventController::class);
+    // Events (index is public — registered above outside auth group)
+    Route::apiResource('events', EventController::class)->except(['index', 'show']);
     Route::post('events/{event}/register', [EventRegistrationController::class, 'register']);
+    Route::delete('events/{event}/registrations/{registration}', [EventRegistrationController::class, 'destroy']);
     Route::put('events/{event}/attendance', [EventRegistrationController::class, 'markAttendance']);
     Route::post('events/{event}/certificates', [EventRegistrationController::class, 'generateCertificate']);
 
     // Publications
-    Route::apiResource('publications', PublicationController::class);
+    Route::apiResource('publications', PublicationController::class)->except(['index']);
     Route::apiResource('publications.authors', PublicationAuthorController::class)->only(['index', 'store', 'update', 'destroy']);
 
-    // Community Problems
-    Route::apiResource('community-problems', CommunityProblemController::class);
+    // Community Problems (index is public — registered above outside auth group)
+    Route::apiResource('community-problems', CommunityProblemController::class)->except(['index', 'show']);
     Route::post('community-problems/{community_problem}/claim', [CommunityProblemController::class, 'claim']);
     Route::post('community-problems/{community_problem}/complete', [CommunityProblemController::class, 'complete']);
     Route::post('community-problems/{community_problem}/feedback', [CommunityProblemController::class, 'addFeedback']);

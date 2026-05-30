@@ -27,4 +27,29 @@ class EthicsRequestController extends Controller
         $ethicsRequest->update($request->validated());
         return response()->json($ethicsRequest);
     }
+
+    public function index(): JsonResponse
+    {
+        return response()->json(EthicsRequest::with('proposal')->get());
+    }
+
+    public function show(EthicsRequest $ethicsRequest): JsonResponse
+    {
+        return response()->json($ethicsRequest->load('proposal'));
+    }
+
+    public function decision(\Illuminate\Http\Request $request, EthicsRequest $ethicsRequest): JsonResponse
+    {
+        $validated = $request->validate([
+            'status' => 'required|string|in:approved,rejected,needs_revision',
+            'decision_note' => 'nullable|string'
+        ]);
+        
+        $ethicsRequest->update([
+            'status' => $validated['status'],
+            'decision_note' => $validated['decision_note'] ?? $ethicsRequest->decision_note
+        ]);
+
+        return response()->json($ethicsRequest);
+    }
 }

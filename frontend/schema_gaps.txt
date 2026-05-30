@@ -1,0 +1,26 @@
+﻿
+========================================
+ RDRIMS Backend Γåö DB Schema Gap Report
+========================================
+
+Γ£à Total DB tables: 89 (80 business tables)
+Γ£à Models: 80
+Γ£à Controllers: 56
+Γ£à Policies: 33
+Γ£à Services: 17
+
+--- Tables WITHOUT a matching Model ---
+  Γ¥î Table: campuses  (expected model: Campuses)
+  Γ¥î Table: expense_categories  (expected model: ExpenseCategories)
+  Γ¥î Table: faculties  (expected model: Faculties)
+  Γ¥î Table: output_categories  (expected model: OutputCategories)
+  Γ¥î Table: review_criteria  (expected model: ReviewCriteria)
+  Γ¥î Table: universities  (expected model: Universities)
+
+--- Controllers WITHOUT a matching Route (not in api.php) ---
+  None ΓÇö all controllers are routed Γ£à
+
+--- Controllers WITHOUT a Policy ---
+  Γ¥î DetectionController has no policy
+
+

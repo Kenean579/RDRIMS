@@ -31,4 +31,14 @@ class EventRegistrationController extends Controller
         $filePath = $this->eventService->generateCertificate($event, $request->user()->id);
         return response()->json(['certificate_path' => $filePath]);
     }
+
+    public function destroy(Event $event, $registration): JsonResponse
+    {
+        \Illuminate\Support\Facades\DB::table('event_registrations')
+            ->where('event_id', $event->id)
+            ->where('id', $registration)
+            ->delete();
+            
+        return response()->json(['message' => 'Registration cancelled']);
+    }
 }

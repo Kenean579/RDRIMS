@@ -11,7 +11,6 @@ class SettingController extends Controller
 {
     public function index(): JsonResponse
     {
-        $this->authorize('viewAny', Setting::class);
         return response()->json(Setting::all());
     }
 

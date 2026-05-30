@@ -1,85 +1,57 @@
-<script setup>
-import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
-</script>
-
 <template>
-  <header>
-    <img alt="Vue logo" class="logo" src="@/assets/logo.svg" width="125" height="125" />
-
-    <div class="wrapper">
-      <HelloWorld msg="You did it!" />
-
-      <nav>
-        <RouterLink to="/">Home</RouterLink>
-        <RouterLink to="/about">About</RouterLink>
-      </nav>
+  <!-- Global Notifications -->
+  <transition name="slide">
+    <div v-if="notif.show" :class="notifBg" class="fixed top-20 right-6 z-9999 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-4 min-w-[300px] max-w-md border border-white/20 backdrop-blur-sm">
+      <div class="text-2xl">{{ notifIcon }}</div>
+      <div class="flex-1">
+        <p class="font-bold text-xs uppercase tracking-widest opacity-70">{{ notif.type }}</p>
+        <p class="text-sm font-semibold">{{ notif.message }}</p>
+      </div>
+      <button @click="notif.show = false" class="text-white/50 hover:text-white transition text-2xl">&times;</button>
     </div>
-  </header>
+  </transition>
 
-  <RouterView />
+  <router-view />
 </template>
 
-<style scoped>
-header {
-  line-height: 1.5;
-  max-height: 100vh;
-}
+<script setup>
+import { computed } from 'vue'
+import { useAuthStore } from '@/stores/auth'
+import { useNotificationStore } from '@/stores/notification'
+import { useLookupStore } from '@/stores/lookup'
 
-.logo {
-  display: block;
-  margin: 0 auto 2rem;
-}
+const auth = useAuthStore()
+const notif = useNotificationStore()
+const lookupStore = useLookupStore()
 
-nav {
-  width: 100%;
-  font-size: 12px;
-  text-align: center;
-  margin-top: 2rem;
-}
+if (auth.isAuthenticated && !auth.user) auth.fetchUser()
+lookupStore.initialize()
 
-nav a.router-link-exact-active {
-  color: var(--color-text);
-}
-
-nav a.router-link-exact-active:hover {
-  background-color: transparent;
-}
-
-nav a {
-  display: inline-block;
-  padding: 0 1rem;
-  border-left: 1px solid var(--color-border);
-}
-
-nav a:first-of-type {
-  border: 0;
-}
-
-@media (min-width: 1024px) {
-  header {
-    display: flex;
-    place-items: center;
-    padding-right: calc(var(--section-gap) / 2);
+const notifBg = computed(() => {
+  switch(notif.type) {
+    case 'success': return 'bg-emerald-600'
+    case 'error': return 'bg-rose-600'
+    case 'warning': return 'bg-amber-600'
+    case 'info': return 'bg-blue-600'
+    default: return 'bg-slate-700'
   }
+})
 
-  .logo {
-    margin: 0 2rem 0 0;
+const notifIcon = computed(() => {
+  switch(notif.type) {
+    case 'success': return '✅'
+    case 'error': return '❌'
+    case 'warning': return '⚠️'
+    case 'info': return 'ℹ️'
+    default: return '🔔'
   }
+})
+</script>
 
-  header .wrapper {
-    display: flex;
-    place-items: flex-start;
-    flex-wrap: wrap;
-  }
+<style>
+.slide-enter-active, .slide-leave-active { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.slide-enter-from { transform: translateX(120%) scale(0.9); opacity: 0; }
+.slide-leave-to { transform: translateX(120%); opacity: 0; }
 
-  nav {
-    text-align: left;
-    margin-left: -1rem;
-    font-size: 1rem;
-
-    padding: 1rem 0;
-    margin-top: 1rem;
-  }
-}
+.font-inter { font-family: 'Inter', sans-serif; }
 </style>

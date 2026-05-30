@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Enums\UserRole;
+
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
@@ -20,8 +20,8 @@ class UserService
             'is_active' => true,
         ]);
 
-        // Assign default guest role
-        $guestRole = Role::where('name', UserRole::GUEST->value)->first();
+        // Assign default guest role (fetched from DB)
+        $guestRole = Role::where('name', 'guest')->first();
         if ($guestRole) {
             $user->roles()->attach($guestRole->id, [
                 'assigned_by' => null,

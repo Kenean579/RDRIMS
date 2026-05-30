@@ -9,6 +9,14 @@ use Illuminate\Http\JsonResponse;
 
 class DetectionController extends Controller
 {
+    public function index(): JsonResponse
+    {
+        $requests = DetectionRequest::with('results', 'service', 'status')
+            ->latest()
+            ->get();
+        return response()->json($requests);
+    }
+
     public function store(StoreDetectionRequest $request): JsonResponse
     {
         $detectionRequest = DetectionRequest::create([

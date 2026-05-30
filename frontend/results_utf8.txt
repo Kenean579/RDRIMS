@@ -1,0 +1,9 @@
+﻿== DISCREPANCIES FOUND ==
+These frontend calls do not seem to match any backend route (or could not be parsed dynamically):
+[POST] /forgot-password -> Found in: \views\auth\ForgotPasswordView.vue
+[POST] /reset-password -> Found in: \views\auth\ResetPasswordView.vue
+[POST] /event-registrations -> Found in: \views\events\EventDetailView.vue
+[PUT] /projects/123/status -> Found in: \views\projects\ProjectDetailView.vue
+[PUT] /tasks/ -> Found in: \views\projects\ProjectDetailView.vue
+[POST] /tasks -> Found in: \views\projects\ProjectDetailView.vue
+[POST] /detection-requests -> Found in: \views\proposals\ProposalDetailView.vue

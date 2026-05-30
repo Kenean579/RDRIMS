@@ -4,21 +4,21 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use App\Models\Role;
-use App\Models\Permission;
 use App\Models\User;
-use App\Enums\UserRole;
 
 class ProductionSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Create Roles from Enum
-        foreach (UserRole::cases() as $role) {
-            Role::firstOrCreate(['name' => $role->value]);
+        // 1. Create default roles from a plain array (no enum needed)
+        $defaultRoles = ['super_admin', 'admin', 'reviewer', 'researcher', 'guest'];
+
+        foreach ($defaultRoles as $roleName) {
+            Role::firstOrCreate(['name' => $roleName]);
         }
 
         // 2. Create Admin User
-        $adminRole = Role::where('name', UserRole::SUPER_ADMIN->value)->first();
+        $adminRole = Role::where('name', 'super_admin')->first();
         $admin = User::firstOrCreate(
             ['email' => 'admin@wollouniversity.edu.et'],
             [

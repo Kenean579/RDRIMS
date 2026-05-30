@@ -8,6 +8,10 @@ use Illuminate\Http\Request;
 
 class AgreementFileController extends Controller
 {
+    public function index(): JsonResponse
+    {
+        return response()->json(AgreementFile::with('file')->get());
+    }
     public function attach(Request $request): JsonResponse
     {
         $request->validate([

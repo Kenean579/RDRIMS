@@ -14,6 +14,7 @@ class LookupController extends Controller
         'task_statuses', 'investigator_roles', 'invitation_statuses', 'agreement_types',
         'output_categories', 'student_levels', 'output_subtypes', 'detection_services',
         'detection_statuses', 'participant_types', 'output_statuses', 'center_roles',
+        'publication_access_types', 'thematic_areas', 'academic_years',
     ];
 
     public function index(string $table): JsonResponse
