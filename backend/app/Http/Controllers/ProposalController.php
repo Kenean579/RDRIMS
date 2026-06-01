@@ -38,14 +38,28 @@ class ProposalController extends Controller
     public function store(StoreProposalRequest $request): JsonResponse
     {
         $proposal = Proposal::create([
-            ...$request->safe()->except('investigators'),
+            ...$request->safe()->except(['investigators', 'proposal_file']),
             'submitted_by' => $request->user()->id,
             'submitted_at' => now(),
             'status_id' => Proposal::getStatusId('draft'),
         ]);
 
+        // Handle file upload
+        if ($request->hasFile('proposal_file')) {
+            $path = $request->file('proposal_file')->store('proposals', 'public');
+            $file = \App\Models\File::create([
+                'original_name' => $request->file('proposal_file')->getClientOriginalName(),
+                'path' => $path,
+                'mime_type' => $request->file('proposal_file')->getMimeType(),
+                'size' => $request->file('proposal_file')->getSize(),
+                'uploaded_by' => $request->user()->id,
+            ]);
+            $proposal->update(['file_id' => $file->id]);
+        }
+
         // Attach investigators
-        foreach ($request->investigators as $investigator) {
+        $investigators = $request->investigators ?? [];
+        foreach ($investigators as $investigator) {
             $proposal->investigators()->create([
                 'user_id' => $investigator['user_id'] ?? null,
                 'name' => $investigator['name'] ?? null,
@@ -57,7 +71,7 @@ class ProposalController extends Controller
             ]);
         }
 
-        return response()->json($proposal->load('investigators'), 201);
+        return response()->json($proposal->load('investigators', 'file'), 201);
     }
 
     public function show(Proposal $proposal): JsonResponse

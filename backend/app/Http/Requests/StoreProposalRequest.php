@@ -11,16 +11,34 @@ class StoreProposalRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        // The frontend sends investigators as a JSON string inside FormData
+        if (is_string($this->investigators)) {
+            $this->merge([
+                'investigators' => json_decode($this->investigators, true) ?? [],
+            ]);
+        }
+    }
+
     public function rules(): array
     {
         return [
-            'title' => 'required',
-            'abstract' => 'required',
-            'call_id' => 'required|exists:calls,id',
-            'budget' => 'required|numeric',
-            'investigators' => 'required|array|min:1',
-            'investigators.*.user_id' => 'nullable|exists:users,id',
-            'investigators.*.role_id' => 'required|exists:investigator_roles,id',
+            'title'        => 'required|string|max:255',
+            'abstract'     => 'required|string',
+            'call_id'      => 'nullable|exists:calls,id',
+            'type_id'      => 'nullable|exists:proposal_types,id',
+            'academic_year_id' => 'nullable|exists:academic_years,id',
+            'budget'       => 'required|numeric|min:0',
+            'keywords'     => 'nullable|string',
+            'objectives'   => 'nullable|string',
+            'methodology'  => 'nullable|string',
+            'proposal_file' => 'nullable|file|mimes:pdf,doc,docx|max:20480',
+            'investigators'          => 'nullable|array',
+            'investigators.*.user_id'  => 'nullable|exists:users,id',
+            'investigators.*.name'     => 'nullable|string',
+            'investigators.*.email'    => 'nullable|email',
+            'investigators.*.role_id'  => 'required_with:investigators|exists:investigator_roles,id',
         ];
     }
 }

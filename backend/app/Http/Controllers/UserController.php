@@ -17,7 +17,6 @@ class UserController extends Controller
 
     public function index(): JsonResponse
     {
-        $this->authorize('viewAny', User::class);
         return response()->json(User::with('roles', 'department.faculty')->get());
     }
 
@@ -35,7 +34,6 @@ class UserController extends Controller
 
     public function show(User $user): JsonResponse
     {
-        $this->authorize('view', $user);
         return response()->json($user->load('roles.permissions', 'department.faculty', 'expertise'));
     }
 

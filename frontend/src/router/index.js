@@ -6,8 +6,13 @@ const routes = [
     path: '/', 
     component: () => import('@/layouts/PublicLayout.vue'),
     children: [
-      // Removed guest: true. We want authenticated users to still be able to see the public landing page!
-      { path: '', name: 'Home', component: () => import('@/views/public/HomeView.vue'), meta: { title: 'Home' } }
+      { path: '', name: 'Home', component: () => import('@/views/public/HomeView.vue'), meta: { title: 'Home' } },
+      { path: 'calls', name: 'PublicCalls', component: () => import('@/views/public/PublicCallsView.vue'), meta: { title: 'Research Calls' } },
+      { path: 'calls/:id', name: 'PublicCallDetail', component: () => import('@/views/public/PublicCallDetailView.vue'), meta: { title: 'Call Details' } },
+      { path: 'publications', name: 'PublicPublications', component: () => import('@/views/public/PublicPublicationsView.vue'), meta: { title: 'Publications' } },
+      { path: 'events', name: 'PublicEvents', component: () => import('@/views/public/PublicEventsView.vue'), meta: { title: 'Events' } },
+      { path: 'researchers', name: 'PublicResearchers', component: () => import('@/views/public/PublicResearchersView.vue'), meta: { title: 'Researchers' } },
+      { path: 'community', name: 'PublicCommunity', component: () => import('@/views/public/PublicCommunityView.vue'), meta: { title: 'Community Impact' } }
     ]
   },
   { path: '/login', name: 'Login', component: () => import('@/views/auth/LoginView.vue'), meta: { guest: true, title: 'Login' } },
@@ -29,6 +34,7 @@ const routes = [
       { path: 'projects', name: 'Projects', component: () => import('@/views/projects/ProjectListView.vue'), meta: { title: 'Projects' } },
       { path: 'projects/create-from-proposal/:id', name: 'CreateProject', component: () => import('@/views/projects/CreateProjectView.vue'), meta: { title: 'Create Project' } },
       { path: 'projects/:id', name: 'ProjectDetail', component: () => import('@/views/projects/ProjectDetailView.vue'), meta: { title: 'Project Detail' } },
+      { path: 'projects/:id/finance', name: 'ProjectFinance', component: () => import('@/views/projects/ProjectFinanceView.vue'), meta: { title: 'Project Finance' } },
       { path: 'publications', name: 'Publications', component: () => import('@/views/publications/PublicationListView.vue'), meta: { title: 'Publications' } },
       { path: 'events', name: 'Events', component: () => import('@/views/events/EventListView.vue'), meta: { title: 'Events' } },
       { path: 'partners', name: 'Partners', component: () => import('@/views/partners/PartnerListView.vue'), meta: { title: 'Partners' } },

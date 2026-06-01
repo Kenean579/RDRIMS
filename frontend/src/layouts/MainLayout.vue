@@ -236,26 +236,26 @@ const navigation = computed(() => {
     {
       title: 'Research',
       items: [
-        { name: 'Funding Calls', path: '/calls',        icon: icons.calls },
+        { name: 'Funding Calls', path: '/app/calls',        icon: icons.calls },
         { name: 'Proposals',     path: '/proposals',    icon: icons.proposals },
         // Review reviewer role injection placeholder later
-        { name: 'Projects',      path: '/projects',     icon: icons.projects },
-        { name: 'Publications',   path: '/publications', icon: icons.publications },
+        { name: 'Projects',      path: '/app/projects',     icon: icons.projects },
+        { name: 'Publications',   path: '/app/publications', icon: icons.publications },
       ]
     },
     {
       title: 'Patents',
       items: [
-        { name: 'Patents & IP',   path: '/patents',  icon: icons.patents },
-        { name: 'Innovation',     path: '/outputs',  icon: icons.outputs },
+        { name: 'Patents & IP',   path: '/app/patents',  icon: icons.patents },
+        { name: 'Innovation',     path: '/app/outputs',  icon: icons.outputs },
       ]
     },
     {
       title: 'Community',
       items: [
-        { name: 'Partners',    path: '/partners',   icon: icons.partners },
-        { name: 'Issues',      path: '/community',  icon: icons.community },
-        { name: 'News',        path: '/events',     icon: icons.events },
+        { name: 'Partners',    path: '/app/partners',   icon: icons.partners },
+        { name: 'Issues',      path: '/app/community-problems',  icon: icons.community },
+        { name: 'News',        path: '/app/events',     icon: icons.events },
       ]
     }
   ]

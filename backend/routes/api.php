@@ -77,7 +77,9 @@ Route::get('community-problems/{community_problem}', [CommunityProblemController
 Route::get('events', [EventController::class, 'index']);
 Route::get('events/{event}', [EventController::class, 'show']);
 Route::get('departments', [DepartmentController::class, 'index']);
+Route::get('departments/{department}', [DepartmentController::class, 'show']);
 Route::get('users', [UserController::class, 'index']);
+Route::get('users/{user}', [UserController::class, 'show']);
 
 // Public-facing endpoints (no auth required)
 Route::prefix('public')->group(function () {
@@ -112,14 +114,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('universities', UniversityController::class)->except(['index', 'show']);
     Route::apiResource('campuses', CampusController::class);
     Route::apiResource('faculties', FacultyController::class);
-    Route::apiResource('departments', DepartmentController::class);
+    Route::apiResource('departments', DepartmentController::class)->except(['index', 'show']);
     Route::apiResource('research-centers', ResearchCenterController::class);
     Route::apiResource('thematic-areas', ThematicAreaController::class);
     Route::apiResource('academic-years', AcademicYearController::class);
     Route::post('academic-years/{academic_year}/set-current', [AcademicYearController::class, 'setCurrent']);
 
     // Users & Roles (admin only where needed)
-    Route::apiResource('users', UserController::class);
+    Route::apiResource('users', UserController::class)->except(['index', 'show']);
     Route::post('users/{user}/roles', [UserRoleController::class, 'assign']);
     Route::delete('users/{user}/roles/{role}', [UserRoleController::class, 'revoke']);
     Route::post('users/{user}/research-centers', [UserResearchCenterController::class, 'attach']);
@@ -232,7 +234,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('events/{event}/certificates', [EventRegistrationController::class, 'generateCertificate']);
 
     // Publications
-    Route::apiResource('publications', PublicationController::class)->except(['index']);
+    Route::apiResource('publications', PublicationController::class)->except(['index', 'show']);
     Route::apiResource('publications.authors', PublicationAuthorController::class)->only(['index', 'store', 'update', 'destroy']);
 
     // Community Problems (index is public — registered above outside auth group)
