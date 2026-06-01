@@ -1,82 +1,113 @@
 <template>
-  <div class="flex flex-col gap-12 pb-16 animate-fade">
-    <div v-if="loading" class="max-w-4xl mx-auto px-4 w-full pt-16">
-      <div class="h-10 w-3/4 bg-slate-200 rounded-lg animate-pulse mb-6"></div>
-      <div class="h-6 w-1/2 bg-slate-100 rounded-lg animate-pulse mb-12"></div>
-      <div class="h-64 bg-slate-50 border border-slate-100 rounded-2xl animate-pulse"></div>
+  <div class="space-y-12 animate-fade pb-32">
+    <!-- Skeleton Overlay -->
+    <div v-if="loading" class="max-w-7xl mx-auto px-4 w-full pt-16 space-y-12">
+      <div class="h-40 bg-white rounded-[40px] border border-slate-100 animate-pulse shadow-sm"></div>
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
+        <div class="lg:col-span-8 h-96 bg-white rounded-[40px] border border-slate-100 animate-pulse"></div>
+        <div class="lg:col-span-4 h-64 bg-white rounded-[40px] border border-slate-100 animate-pulse"></div>
+      </div>
     </div>
 
-    <div v-else-if="!call" class="text-center py-24">
-      <h1 class="text-2xl font-black text-slate-800 mb-2">Call not found</h1>
-      <p class="text-slate-500 mb-6">The research call you are looking for does not exist or has been removed.</p>
-      <router-link to="/calls" class="btn btn-primary px-8">Browse Open Calls</router-link>
+    <!-- Error State -->
+    <div v-else-if="!call" class="bg-white rounded-[40px] border border-slate-200 p-24 text-center max-w-4xl mx-auto shadow-sm">
+      <div class="w-24 h-24 bg-rose-50 text-rose-500 rounded-full flex items-center justify-center mx-auto mb-8 text-4xl shadow-inner grayscale opacity-50">⚠️</div>
+      <h1 class="text-3xl font-black text-slate-800 mb-4 tracking-tight">Entry Not Found</h1>
+      <p class="text-slate-500 mb-10 max-w-sm mx-auto font-medium">The specific funding call identifier does not intersect with any current registry entry.</p>
+      <router-link to="/calls" class="px-10 py-4 bg-slate-900 text-white rounded-2xl font-black uppercase tracking-widest text-xs shadow-xl active:scale-95 transition-all">Retry Archive Search</router-link>
     </div>
 
     <template v-else>
-      <!-- Hero Header -->
-      <section class="bg-white border-b border-slate-100 pt-16 pb-12">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-          <router-link to="/calls" class="inline-flex items-center gap-1.5 text-xs font-black uppercase tracking-widest text-brand mb-6 hover:-translate-x-1 transition-transform">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
-            Back to Calls
+      <!-- Premium Hero Header -->
+      <section class="bg-white rounded-[40px] border border-slate-200 shadow-sm p-10 md:p-16 relative overflow-hidden group">
+        <div class="absolute right-0 top-0 w-96 h-96 bg-brand/5 rounded-full -translate-y-1/3 translate-x-1/4 blur-[100px] pointer-events-none"></div>
+        
+        <div class="max-w-5xl relative z-10">
+          <router-link to="/calls" class="inline-flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.3em] text-brand mb-10 hover:-translate-x-2 transition-transform group/back">
+            <svg class="w-4 h-4 group-hover/back:scale-125 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+            Registry Feed
           </router-link>
           
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6 mb-6">
-            <h1 class="text-3xl md:text-5xl font-black text-slate-900 tracking-tight leading-tight">{{ call.title }}</h1>
-          </div>
+          <h1 class="text-4xl md:text-6xl font-black text-slate-800 tracking-tight leading-tight mb-10">{{ call.title }}</h1>
           
-          <div class="flex flex-wrap items-center gap-4 text-xs font-black uppercase tracking-widest">
-            <span class="px-3 py-1.5 rounded-full"
-              :class="call.status?.name === 'open' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-slate-100 text-slate-500 border border-slate-200'">
-              {{ call.status?.name || 'open' }}
-            </span>
-            <span class="flex items-center gap-1.5 text-slate-500 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-200">
-              <svg class="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-              Ends on {{ formatDate(call.deadline) }}
-            </span>
-            <span v-if="call.academic_year" class="text-slate-400 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-200">
-              Target Year: {{ call.academic_year.name }}
-            </span>
+          <div class="flex flex-wrap items-center gap-4">
+             <span class="px-5 py-2 bg-slate-900 text-white rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] shadow-xl shadow-slate-900/10">
+                Phase: {{ call.status?.name || 'Open Enrollment' }}
+             </span>
+             <div class="flex items-center gap-3 px-5 py-2 bg-slate-50 border-2 border-slate-100 rounded-2xl shadow-sm italic">
+                <svg class="w-4 h-4 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 8v4l3 3" /></svg>
+                <span class="text-[11px] font-black text-slate-600 uppercase tracking-widest">{{ formatDate(call.deadline) }} Deadline</span>
+             </div>
+             <span v-if="call.academic_year" class="px-4 py-2 bg-indigo-50/50 border border-indigo-100 text-indigo-600 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em]">
+                Cycle: {{ call.academic_year.name }}
+             </span>
           </div>
         </div>
       </section>
 
-      <!-- Main Content -->
-      <section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+      <!-- Detailed Analytics Content -->
+      <section class="max-w-7xl mx-auto w-full">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-10">
           
-          <!-- Left: Details -->
-          <div class="md:col-span-2 space-y-8">
-             <div class="bg-white rounded-3xl border border-slate-200 shadow-sm p-8">
-                <h2 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2">
-                  <span class="w-1 h-3 bg-brand rounded-full"></span>
-                  Call Description
+          <!-- Narrative Analysis -->
+          <div class="lg:col-span-8 space-y-10">
+             <div class="bg-white rounded-[40px] border border-slate-200 shadow-sm p-12 md:p-16 relative overflow-hidden">
+                <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,var(--tw-gradient-stops))] from-slate-50/50 via-transparent to-transparent"></div>
+                <h2 class="text-[12px] font-black text-brand uppercase tracking-[0.4em] mb-12 flex items-center gap-4 relative z-10">
+                  <span class="w-10 h-px bg-brand/30"></span> Mandate Description
                 </h2>
-                <div class="prose prose-slate max-w-none text-slate-700 font-medium whitespace-pre-wrap leading-relaxed">
-                   {{ call.description }}
+                <div class="prose prose-slate max-w-none text-slate-700 font-medium whitespace-pre-wrap leading-relaxed text-xl relative z-10 italic">
+                   "{{ call.description }}"
+                </div>
+             </div>
+
+             <!-- Grid Stats for Metadata -->
+             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                <div class="p-10 bg-slate-50 rounded-[40px] border border-slate-100 shadow-inner group hover:bg-white hover:border-brand/20 transition-all">
+                   <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Institutional Host</p>
+                   <p class="text-xl font-black text-slate-800 tracking-tight leading-tight group-hover:text-brand transition-colors">{{ call.university?.name || 'Global Research Network' }}</p>
+                </div>
+                <div class="p-10 bg-slate-50 rounded-[40px] border border-slate-100 shadow-inner group hover:bg-white hover:border-brand/20 transition-all">
+                   <p class="text-[10px] font-black text-slate-400 uppercase tracking-[0.2em] mb-4">Submission ID</p>
+                   <p class="text-xl font-black text-slate-800 tracking-tight group-hover:text-brand transition-colors">#CALL-{{ String(call.id).padStart(4, '0') }}</p>
                 </div>
              </div>
           </div>
 
-          <!-- Right: Action Panel -->
-          <div class="space-y-6">
-             <div class="bg-emerald-50 rounded-3xl border border-emerald-100 p-8 shadow-sm">
-                <h2 class="text-[10px] font-black text-emerald-600 uppercase tracking-widest mb-2 text-center">Maximum Award Budget</h2>
-                <p class="text-3xl font-black text-emerald-800 text-center">{{ formatCurrency(call.budget_limit) }}</p>
+          <!-- Application Interface -->
+          <div class="lg:col-span-4 space-y-8 sticky top-30">
+             <div class="bg-emerald-500 rounded-[40px] p-10 text-white shadow-2xl shadow-emerald-500/20 relative overflow-hidden group">
+                <div class="absolute right-0 top-0 w-24 h-24 bg-white/10 rounded-bl-[40px]"></div>
+                <p class="text-[10px] font-black text-emerald-100 uppercase tracking-[0.4em] mb-4 relative z-10">Strategic Allocation</p>
+                <div class="flex flex-col items-start gap-1 relative z-10">
+                  <span class="text-[10px] font-black uppercase text-emerald-200">Budget Limit</span>
+                  <p class="text-4xl font-black tracking-tighter leading-none">{{ formatCurrency(call.budget_limit) }}</p>
+                </div>
+                <div class="mt-10 h-1.5 w-full bg-emerald-700/50 rounded-full overflow-hidden">
+                   <div class="h-full bg-white rounded-full w-[70%] animate-pulse"></div>
+                </div>
              </div>
              
-             <div class="bg-white rounded-3xl border border-slate-200 p-8 shadow-sm text-center">
-                <h2 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Submit Your Application</h2>
-                <div v-if="call.status?.name === 'open'">
-                   <router-link :to="`/proposals/create?call_id=${call.id}`" class="btn btn-primary w-full justify-center h-12 text-[11px] font-black uppercase tracking-widest shadow-lg shadow-blue-500/20 mb-3">
-                     Apply Now
+             <div class="bg-white rounded-[40px] border border-slate-200 p-10 shadow-sm text-center relative overflow-hidden group">
+                <div class="absolute inset-0 bg-brand/5 opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
+                <h2 class="text-[11px] font-black text-slate-400 uppercase tracking-[0.3em] mb-8 relative z-10">Initiate Application</h2>
+                
+                <div v-if="call.status?.name === 'open' || !call.status" class="relative z-10">
+                   <router-link :to="`/proposals/create?call_id=${call.id}`" 
+                     class="w-full h-16 bg-slate-900 hover:bg-black text-white rounded-2xl font-black uppercase tracking-widest text-[11px] shadow-2xl shadow-slate-900/20 flex items-center justify-center gap-3 active:scale-95 transition-all mb-6"
+                   >
+                     Submit Research Entry
+                     <svg class="w-5 h-5 opacity-40" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M14 5l7 7m0 0l-7 7m7-7H3"/></svg>
                    </router-link>
-                   <p class="text-[10px] font-bold text-slate-400">Requires a registered researcher account to proceed.</p>
+                   <div class="bg-slate-50 rounded-2xl p-6 border border-slate-100">
+                      <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest leading-relaxed">System requires a verified institutional <span class="text-brand">Researcher Identity</span> to proceed.</p>
+                   </div>
                 </div>
-                <div v-else>
-                   <button disabled class="w-full h-12 rounded-xl bg-slate-100 text-slate-400 text-[11px] font-black uppercase tracking-widest cursor-not-allowed border border-slate-200">
-                     Call Closed
-                   </button>
+                <div v-else class="relative z-10">
+                   <div class="w-full h-16 bg-slate-50 border-2 border-dashed border-slate-200 rounded-2xl flex items-center justify-center text-slate-300 font-black uppercase tracking-[0.2em] text-[10px]">
+                      Enrollment Terminal Closed
+                   </div>
+                   <p class="mt-4 text-[9px] font-black text-slate-400 uppercase tracking-widest">This entry has been moved to the historical archive.</p>
                 </div>
              </div>
           </div>
@@ -98,7 +129,7 @@ const call = ref(null)
 const loading = ref(true)
 
 function formatDate(val) {
-  if (!val) return ''
+  if (!val) return 'Undetermined'
   return new Date(val).toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })
 }
 
@@ -107,7 +138,7 @@ onMounted(async () => {
     const { data } = await api.get(`/calls/${route.params.id}`)
     call.value = data
   } catch (e) {
-    console.error('Call not found')
+    console.error('Parity check failed for the requested call identifier.')
   } finally {
     loading.value = false
   }

@@ -1,97 +1,132 @@
 <template>
-  <div class="flex flex-col gap-6 card">
-    <!-- Header -->
-    <div class="section-header">
+  <div class="flex flex-col gap-8 pb-12 animate-fade card">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div>
-        <h1 class="section-title">Files Repository</h1>
-        <p class="section-subtitle">Manage uploaded documents and institutional file assets</p>
-      </div>
-      <div class="flex gap-2">
-        <input ref="fileInput" type="file" class="hidden" @change="handleUpload" />
-        <button @click="$refs.fileInput.click()" class="btn btn-primary">
-          <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-          Upload File
-        </button>
+        <h1 class="text-3xl font-black text-slate-900 tracking-tight">File Registry</h1>
+        <p class="text-slate-500 font-medium mt-1">Global management of institutional research documents and datasets.</p>
       </div>
     </div>
 
-    <!-- Content -->
-    <div v-if="loading" class="card p-8"><LoadingSkeleton :rows="4" /></div>
-    <div v-else-if="files.length === 0" class="card">
-      <EmptyState icon="📂" title="No files uploaded" description="Upload documents to the institutional repository for centralized access." action-label="Upload File" @action="$refs.fileInput.click()" />
-    </div>
-
-    <div v-else class="space-y-3">
-      <div v-for="f in files" :key="f.id" class="card p-4 group card-hover flex items-center justify-between">
-        <div class="flex items-center gap-4">
-          <div class="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400 group-hover:text-blue-600 group-hover:bg-blue-50 transition duration-300">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z" /></svg>
-          </div>
-          <div>
-            <p class="text-sm font-bold text-slate-800 group-hover:text-blue-600 transition truncate max-w-xs">{{ f.file_path?.split('/').pop() }}</p>
-            <div class="flex items-center gap-3 mt-1">
-              <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">v{{ f.version }}</span>
-              <span :class="f.is_public ? 'badge badge-green' : 'badge badge-gray'" style="font-size: 9px">{{ f.is_public ? 'Public' : 'Private' }}</span>
-            </div>
-          </div>
-        </div>
-        <div class="flex gap-2">
-          <button @click="downloadFile(f)" class="btn btn-ghost text-blue-600 font-bold" style="padding: 6px 10px; font-size: 11px">
-            <svg class="w-3.5 h-3.5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-            Download
-          </button>
-          <button @click="confirmDelete(f)" class="btn btn-ghost text-red-500 hover:bg-red-50" style="padding: 6px 10px; font-size: 11px">Delete</button>
+    <!-- Filters -->
+    <div class="card p-5 flex flex-col md:flex-row gap-5 items-end">
+      <div class="flex-1 w-full relative">
+        <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest mb-2 ml-1">Search Files</label>
+        <div class="relative group">
+          <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          </span>
+          <input v-model="searchQuery" type="text" placeholder="Search by filename or content type..." class="input pl-11 h-12" />
         </div>
       </div>
-      <div class="card p-4">
-        <Pagination :current-page="pagination.current_page" :total-pages="pagination.last_page" :total="pagination.total" @page-change="fetchFiles" />
+       <div class="w-full md:w-64">
+        <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest mb-2 ml-1">Mime Group</label>
+        <select v-model="mimeFilter" class="input h-12 font-bold">
+          <option value="">All Types</option>
+          <option value="application/pdf">PDF Documents</option>
+          <option value="image/">Images</option>
+          <option value="application/vnd.openxmlformats-officedocument">MS Office</option>
+        </select>
       </div>
     </div>
 
-    <ConfirmDialog :show="showDelete" title="Delete File" message="Are you sure you want to permanently delete this file?" confirmText="Delete" variant="danger" @confirm="deleteFile" @cancel="showDelete = false" />
+    <div v-if="loading" class="card p-24 flex justify-center"><div class="animate-spin rounded-full h-10 w-10 border-b-2 border-brand"></div></div>
+    
+    <div v-else class="card overflow-hidden">
+      <div class="overflow-x-auto">
+        <table class="table-auto">
+          <thead>
+            <tr>
+              <th class="pl-8 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Filename</th>
+              <th class="py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Size</th>
+              <th class="py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Mime Type</th>
+              <th class="py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Stored On</th>
+              <th class="pr-8 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-slate-50">
+            <tr v-for="file in filteredFiles" :key="file.id" class="group hover:bg-slate-50/50 transition-colors">
+              <td class="pl-8 py-4">
+                <div class="flex items-center gap-3">
+                  <div class="w-9 h-9 rounded-xl bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100 shadow-inner group-hover:bg-brand-light group-hover:text-brand transition-all">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+                  </div>
+                  <div class="min-w-0">
+                    <p class="text-sm font-black text-slate-800 truncate">{{ file.original_name }}</p>
+                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">{{ file.path }}</p>
+                  </div>
+                </div>
+              </td>
+              <td class="py-4 text-xs font-bold text-slate-600">{{ formatSize(file.size) }}</td>
+              <td class="py-4 font-black">
+                <span class="px-2 py-0.5 bg-slate-100 text-slate-500 rounded text-[9px] uppercase tracking-widest border border-slate-200">{{ file.mime_type }}</span>
+              </td>
+              <td class="py-4 text-xs font-bold text-slate-400">{{ formatDate(file.created_at) }}</td>
+              <td class="pr-8 py-4 text-right">
+                 <button @click="downloadFile(file)" class="btn btn-ghost text-brand text-[10px] font-black uppercase tracking-widest py-1.5 px-4 h-auto border border-slate-100 hover:bg-brand hover:text-white transition-all shadow-sm">
+                   Download
+                 </button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div v-if="filteredFiles.length === 0" class="p-24 text-center">
+        <p class="text-sm font-black text-slate-400 uppercase tracking-widest italic">No files found in the registry.</p>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { useNotificationStore } from '@/stores/notification'
 import api from '@/services/api'
-import Pagination from '@/components/Pagination.vue'
-import ConfirmDialog from '@/components/ConfirmDialog.vue'
-import LoadingSkeleton from '@/components/LoadingSkeleton.vue'
-import EmptyState from '@/components/EmptyState.vue'
+import { formatDate } from '@/utils/formatters'
 
 const notif = useNotificationStore()
 const files = ref([]); const loading = ref(true)
-const pagination = reactive({ current_page: 1, last_page: 1, total: 0 })
-const showDelete = ref(false); const deletingFile = ref(null)
+const searchQuery = ref(''); const mimeFilter = ref('')
 
-async function fetchFiles(page = 1) {
+const filteredFiles = computed(() => {
+  return files.value.filter(f => {
+    const s = searchQuery.value.toLowerCase()
+    const matchSearch = !s || f.original_name?.toLowerCase().includes(s) || f.path?.toLowerCase().includes(s)
+    const matchMime = !mimeFilter.value || (f.mime_type && f.mime_type.startsWith(mimeFilter.value))
+    return matchSearch && matchMime
+  })
+})
+
+async function fetchFiles() {
   loading.value = true
-  try { const { data } = await api.get('/files', { params: { page } }); files.value = data.data; Object.assign(pagination, { current_page: data.current_page, last_page: data.last_page, total: data.total }) }
-  catch (e) {} finally { loading.value = false }
+  try {
+    const { data } = await api.get('/files')
+    files.value = data.data || data
+  } catch (err) {
+    notif.error('Failed to load registry')
+  } finally {
+    loading.value = false
+  }
 }
 
-async function handleUpload(e) {
-  const file = e.target.files[0]
-  if (!file) return
-  const formData = new FormData()
-  formData.append('file', file)
-  try { await api.post('/files/upload', formData, { headers: { 'Content-Type': 'multipart/form-data' } }); notif.success('Uploaded!'); fetchFiles() }
-  catch (err) { notif.error('Upload failed') }
+function formatSize(bytes) {
+  if (!bytes) return '0 B'
+  const k = 1024
+  const sizes = ['B', 'KB', 'MB', 'GB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
 }
 
-async function downloadFile(f) {
-  try { const res = await api.get(`/files/${f.id}/download`, { responseType: 'blob' }); const url = URL.createObjectURL(new Blob([res.data])); const a = document.createElement('a'); a.href = url; a.download = f.file_path.split('/').pop(); a.click(); URL.revokeObjectURL(url) }
-  catch (err) { notif.error('Download failed') }
+async function downloadFile(file) {
+  try {
+    const { data } = await api.get(`/files/${file.id}/download`, { responseType: 'blob' })
+    const url = URL.createObjectURL(new Blob([data]))
+    const a = document.createElement('a')
+    a.href = url; a.download = file.original_name; a.click()
+    URL.revokeObjectURL(url)
+  } catch (err) {
+    notif.error('Download failed')
+  }
 }
 
-function confirmDelete(f) { deletingFile.value = f; showDelete.value = true }
-
-async function deleteFile() {
-  try { await api.delete(`/files/${deletingFile.value.id}`); notif.success('Deleted!'); showDelete.value = false; fetchFiles() }
-  catch (err) { notif.error('Failed') }
-}
-
-onMounted(() => fetchFiles())
+onMounted(fetchFiles)
 </script>

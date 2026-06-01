@@ -1,85 +1,72 @@
 <template>
-  <div class="flex flex-col gap-12 pb-16">
-    <!-- Hero Banner -->
-    <section class="bg-white border-b border-slate-100 pt-12 pb-16">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <h1 class="text-4xl md:text-5xl font-black text-slate-900 tracking-tight mb-3">Research Funding Calls</h1>
-        <p class="text-lg text-slate-500 font-medium max-w-2xl">Browse open opportunities for research grants, funding, and academic collaboration across universities.</p>
+  <div class="flex flex-col gap-8 pb-12 animate-fade">
+    <!-- Header -->
+    <div class="card p-8 bg-slate-50 border-slate-100 relative overflow-hidden">
+      <div class="relative z-10">
+        <h1 class="text-3xl font-black text-slate-900 tracking-tight">Funding Opportunities</h1>
+        <p class="text-slate-500 font-medium mt-1">Open grants and research calls across the institutional network.</p>
       </div>
-    </section>
+      <div class="absolute right-0 top-0 w-32 h-32 bg-brand/5 rounded-full translate-x-8 -translate-y-8"></div>
+    </div>
 
-    <!-- Filters & Content -->
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-      <!-- Search Bar -->
-      <div class="flex flex-col sm:flex-row gap-4 mb-8">
-        <div class="flex-1 relative">
-          <svg class="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-          <input v-model="search" type="text" placeholder="Search funding calls..."
-            class="w-full pl-12 pr-4 py-3.5 bg-white border border-slate-200 rounded-2xl text-sm font-medium focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none shadow-sm transition-all" />
+    <!-- Filters -->
+    <div class="card p-5 flex flex-col md:flex-row gap-5 items-end">
+      <div class="flex-1 w-full relative">
+        <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest mb-2 ml-1">Search Database</label>
+        <div class="relative group">
+          <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          </span>
+          <input v-model="search" type="text" placeholder="Search by title or keyword..." class="input pl-10" />
         </div>
-        <select v-model="statusFilter"
-          class="px-4 py-3.5 bg-white border border-slate-200 rounded-2xl text-sm font-bold text-slate-600 focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none shadow-sm">
+      </div>
+      <div class="w-full md:w-64">
+        <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest mb-2 ml-1">Call Status</label>
+        <select v-model="statusFilter" class="input font-bold">
           <option value="">All Statuses</option>
           <option value="open">Open</option>
           <option value="closed">Closed</option>
         </select>
       </div>
+    </div>
 
-      <!-- Loading -->
-      <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <div v-for="i in 6" :key="i" class="bg-white rounded-2xl border border-slate-200 p-6 h-56 animate-pulse">
-          <div class="h-4 w-20 bg-slate-200 rounded mb-4"></div>
-          <div class="h-6 w-3/4 bg-slate-100 rounded mb-3"></div>
-          <div class="h-16 w-full bg-slate-50 rounded mb-4"></div>
-          <div class="h-4 w-1/2 bg-slate-100 rounded"></div>
+    <!-- Content -->
+    <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div v-for="i in 4" :key="i" class="card h-48 animate-pulse"></div>
+    </div>
+
+    <div v-else-if="filteredCalls.length === 0" class="card p-12 text-center">
+      <p class="text-sm font-black text-slate-400 uppercase tracking-widest italic">No matching calls found.</p>
+    </div>
+
+    <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <router-link v-for="call in filteredCalls" :key="call.id" :to="`/calls/${call.id}`"
+        class="card p-6 flex flex-col group card-hover border-l-4 border-l-transparent hover:border-l-brand transition-all"
+      >
+        <div class="flex items-center gap-2 mb-4">
+          <span class="px-2 py-0.5 bg-brand-light text-brand text-[9px] font-black uppercase tracking-widest rounded border border-brand/10">{{ call.status?.name || 'Open' }}</span>
+          <span v-if="isUrgent(call.deadline)" class="px-2 py-0.5 bg-rose-50 text-rose-600 text-[9px] font-black uppercase tracking-widest rounded border border-rose-100">Expiring Soon</span>
         </div>
-      </div>
 
-      <!-- Empty -->
-      <div v-else-if="filteredCalls.length === 0" class="text-center py-20">
-        <div class="h-20 w-20 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">📢</div>
-        <h3 class="text-xl font-black text-slate-700 mb-2">No calls found</h3>
-        <p class="text-sm text-slate-500 font-medium">Try adjusting your search or check back later for new opportunities.</p>
-      </div>
+        <h3 class="text-lg font-black text-slate-900 group-hover:text-brand transition-colors mb-2">{{ call.title }}</h3>
+        <p class="text-sm text-slate-500 font-medium line-clamp-2 mb-6 flex-1">{{ call.description }}</p>
 
-      <!-- Calls Grid -->
-      <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        <router-link v-for="call in filteredCalls" :key="call.id" :to="`/calls/${call.id}`"
-          class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-lg hover:-translate-y-1 transition-all group relative overflow-hidden">
-          <!-- Status pill -->
-          <div class="flex items-center justify-between mb-4">
-            <span class="px-3 py-1 rounded-full text-[10px] font-black uppercase tracking-widest"
-              :class="call.status?.name === 'open' ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-slate-100 text-slate-500 border border-slate-200'">
-              {{ call.status?.name || 'open' }}
-            </span>
-            <span v-if="isUrgent(call.deadline)" class="px-2 py-0.5 bg-rose-50 text-rose-600 rounded-full text-[9px] font-black uppercase border border-rose-200">
-              Closing Soon
-            </span>
-          </div>
-
-          <h3 class="text-lg font-black text-slate-800 leading-tight mb-3 group-hover:text-brand transition-colors line-clamp-2">
-            {{ call.title }}
-          </h3>
-          <p class="text-sm text-slate-500 font-medium line-clamp-3 mb-6 leading-relaxed">{{ call.description }}</p>
-
-          <div class="flex items-center gap-3 pt-4 border-t border-slate-100 mt-auto">
-            <div class="h-9 w-9 rounded-xl bg-rose-50 flex items-center justify-center text-rose-500 shrink-0">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-            </div>
-            <div>
-              <p class="text-[9px] font-black uppercase tracking-widest text-slate-400">Deadline</p>
-              <p class="text-sm font-bold text-slate-700" :class="{ 'text-rose-600': isUrgent(call.deadline) }">{{ formatDate(call.deadline) }}</p>
-            </div>
-          </div>
-        </router-link>
-      </div>
-    </section>
+        <div class="flex items-center justify-between pt-4 border-t border-slate-50 text-[10px] font-black uppercase tracking-widest text-slate-400">
+          <span class="flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            Deadline: {{ formatDate(call.deadline) }}
+          </span>
+          <span class="text-brand">View Details →</span>
+        </div>
+      </router-link>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import api from '@/services/api'
+import { formatDate } from '@/utils/formatters'
 
 const calls = ref([])
 const loading = ref(true)
@@ -88,16 +75,12 @@ const statusFilter = ref('')
 
 const filteredCalls = computed(() => {
   return calls.value.filter(c => {
-    const matchSearch = !search.value || c.title?.toLowerCase().includes(search.value.toLowerCase())
+    const matchSearch = !search.value || c.title?.toLowerCase().includes(search.value.toLowerCase()) || 
+                       c.description?.toLowerCase().includes(search.value.toLowerCase())
     const matchStatus = !statusFilter.value || c.status?.name === statusFilter.value
     return matchSearch && matchStatus
   })
 })
-
-function formatDate(val) {
-  if (!val) return 'N/A'
-  return new Date(val).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
-}
 
 function isUrgent(dateStr) {
   if (!dateStr) return false

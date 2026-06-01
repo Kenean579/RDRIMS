@@ -1,7 +1,7 @@
 <template>
   <div card>
     <div class="mb-6">
-      <router-link to="/calls" class="text-sm text-blue-600 hover:underline mb-2 inline-block">← Back to Calls</router-link>
+      <router-link to="/app/calls" class="text-sm text-blue-600 hover:underline mb-2 inline-block">← Back to Calls</router-link>
       <div class="flex items-center gap-3">
         <h1 class="text-xl font-bold text-gray-800">{{ call.title || 'Call Detail' }}</h1>
         <StatusBadge :status="call.status?.name || 'draft'" />
@@ -54,7 +54,7 @@
         </div>
         <div v-else class="space-y-2">
           <div v-for="proposal in proposals" :key="proposal.id"
-            @click="$router.push(`/proposals/${proposal.id}`)"
+            @click="$router.push(`/app/proposals/${proposal.id}`)"
             class="p-4 border border-gray-200 rounded-lg hover:bg-blue-50/50 cursor-pointer transition">
             <div class="flex items-start justify-between">
               <div class="flex-1">

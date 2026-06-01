@@ -1,7 +1,7 @@
 <template>
   <div card>
     <div class="mb-6">
-      <router-link to="/partners" class="text-sm text-blue-600 hover:underline mb-2 inline-block">← Back to Partners</router-link>
+      <router-link to="/app/partners" class="text-sm text-blue-600 hover:underline mb-2 inline-block">← Back to Partners</router-link>
       <h1 class="text-xl font-bold text-gray-800">{{ partner.name || 'Partner Detail' }}</h1>
     </div>
 

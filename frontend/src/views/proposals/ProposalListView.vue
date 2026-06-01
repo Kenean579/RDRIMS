@@ -6,7 +6,7 @@
         <h1 class="text-3xl font-black text-slate-900 tracking-tight">Submissions</h1>
         <p class="text-slate-500 font-medium mt-1">See where your work is in the system.</p>
       </div>
-      <router-link v-if="auth.hasPermission('submit_proposals')" to="/proposals/create" class="btn btn-primary h-11 px-8 shadow-lg shadow-blue-500/20">
+      <router-link v-if="auth.hasPermission('submit_proposals')" to="/app/proposals/create" class="btn btn-primary h-11 px-8 shadow-lg shadow-blue-500/20">
         <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" /></svg>
         Start Submission
       </router-link>
@@ -56,7 +56,7 @@
     </div>
 
     <div v-else-if="proposals.length === 0" class="card">
-      <EmptyState icon="📝" title="No submissions found" description="Try changing your search or add a new one." :action-label="auth.hasPermission('submit_proposals') ? 'Add First' : ''" action-icon="add" @action="$router.push('/proposals/create')" />
+      <EmptyState icon="📝" title="No submissions found" description="Try changing your search or add a new one." :action-label="auth.hasPermission('submit_proposals') ? 'Add First' : ''" action-icon="add" @action="$router.push('/app/proposals/create')" />
     </div>
 
     <div v-else class="card overflow-hidden">
@@ -72,7 +72,7 @@
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-50">
-            <tr v-for="p in proposals" :key="p.id" class="cursor-pointer group hover:bg-slate-50/50 transition-colors" @click="$router.push(`/proposals/${p.id}`)">
+            <tr v-for="p in proposals" :key="p.id" class="cursor-pointer group hover:bg-slate-50/50 transition-colors" @click="$router.push(`/app/proposals/${p.id}`)">
               <td class="pl-8 py-5">
                 <div class="max-w-md">
                    <p class="font-black text-slate-900 group-hover:text-brand transition-colors text-sm line-clamp-2 leading-snug tracking-tight mb-2">{{ p.title }}</p>
@@ -95,7 +95,7 @@
                 </div>
               </td>
               <td class="pr-8 py-5 text-right">
-                <router-link :to="`/proposals/${p.id}`" class="btn btn-secondary py-1.5 px-4 text-[10px] font-black uppercase tracking-widest shadow-sm hover:border-brand hover:text-brand transition-all">Open</router-link>
+                <router-link :to="`/app/proposals/${p.id}`" class="btn btn-secondary py-1.5 px-4 text-[10px] font-black uppercase tracking-widest shadow-sm hover:border-brand hover:text-brand transition-all">Open</router-link>
               </td>
             </tr>
           </tbody>

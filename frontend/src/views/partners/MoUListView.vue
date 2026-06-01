@@ -1,7 +1,7 @@
 <template>
   <div class="flex flex-col gap-6 card">
     <div class="mb-2">
-      <router-link to="/partners" class="inline-flex items-center text-sm font-bold text-slate-500 hover:text-blue-600 transition">
+      <router-link to="/app/partners" class="inline-flex items-center text-sm font-bold text-slate-500 hover:text-blue-600 transition">
         <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
         Back to Partners
       </router-link>

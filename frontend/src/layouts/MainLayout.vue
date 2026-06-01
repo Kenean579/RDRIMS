@@ -17,7 +17,7 @@
           <div class="brand-icon">R</div>
           <div class="brand-text">
             <span class="brand-name">RDRIMS</span>
-            <span class="brand-sub">Wollo University</span>
+            <span class="brand-sub">{{ appName }}</span>
           </div>
         </router-link>
       </div>
@@ -39,7 +39,7 @@
 
       <div class="topbar-right">
         <!-- Notifications -->
-        <router-link to="/notifications" class="icon-btn notif-btn" title="Notifications">
+        <router-link to="/app/notifications" class="icon-btn notif-btn" title="Notifications">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
             <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
@@ -51,7 +51,7 @@
         <div class="topbar-divider"></div>
 
         <!-- Profile -->
-        <router-link to="/profile" class="profile-btn" title="My Profile">
+        <router-link to="/app/profile" class="profile-btn" title="My Profile">
           <div class="avatar">{{ getInitials(auth.user?.name) }}</div>
           <div class="profile-info">
             <span class="profile-name">{{ auth.user?.name || 'Administrator' }}</span>
@@ -142,12 +142,15 @@
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+import { useLookupStore } from '@/stores/lookup'
 import { getInitials } from '@/utils/formatters'
 import api from '@/services/api'
 
 const router  = useRouter()
 const route   = useRoute()
 const auth    = useAuthStore()
+const lookupStore = useLookupStore()
+const appName = computed(() => lookupStore.getSetting('app_name', 'Research Portal'))
 
 const sidebarOpen  = ref(true)
 const unreadCount  = ref(0)
@@ -167,7 +170,7 @@ function checkMobile() {
 
 function goSearch() {
   if (searchQuery.value.trim()) {
-    router.push({ path: '/search', query: { q: searchQuery.value } })
+    router.push({ path: '/app/search', query: { q: searchQuery.value } })
     searchQuery.value = ''
   }
 }
@@ -231,14 +234,13 @@ const icons = {
 const navigation = computed(() => {
   const nav = [
     {
-      items: [{ name: 'Dashboard', path: '/dashboard', icon: icons.home }]
+      items: [{ name: 'Dashboard', path: '/app/dashboard', icon: icons.home }]
     },
     {
       title: 'Research',
       items: [
         { name: 'Funding Calls', path: '/app/calls',        icon: icons.calls },
-        { name: 'Proposals',     path: '/proposals',    icon: icons.proposals },
-        // Review reviewer role injection placeholder later
+        { name: 'Proposals',     path: '/app/proposals',    icon: icons.proposals },
         { name: 'Projects',      path: '/app/projects',     icon: icons.projects },
         { name: 'Publications',   path: '/app/publications', icon: icons.publications },
       ]
@@ -253,9 +255,9 @@ const navigation = computed(() => {
     {
       title: 'Community',
       items: [
-        { name: 'Partners',    path: '/app/partners',   icon: icons.partners },
+        { name: 'Partners',    path: '/app/partners',          icon: icons.partners },
         { name: 'Issues',      path: '/app/community-problems',  icon: icons.community },
-        { name: 'News',        path: '/app/events',     icon: icons.events },
+        { name: 'News',        path: '/app/events',            icon: icons.events },
       ]
     }
   ]
@@ -263,18 +265,18 @@ const navigation = computed(() => {
   if (auth.hasRole?.('reviewer')) {
     const researchGroup = nav.find(g => g.title === 'Research')
     const proposalsIdx = researchGroup.items.findIndex(i => i.name === 'Proposals')
-    researchGroup.items.splice(proposalsIdx + 1, 0, { name: 'Reviews', path: '/reviewer/proposals', icon: icons.criteria })
+    researchGroup.items.splice(proposalsIdx + 1, 0, { name: 'Reviews', path: '/app/reviewer/proposals', icon: icons.criteria })
   }
   
   if (auth.hasRole?.('director')) {
     nav.splice(1, 0, {
-      items: [{ name: 'My Research Center', path: '/research-centers/my-center', icon: icons.centers }]
+      items: [{ name: 'My Research Center', path: '/app/research-centers/my-center', icon: icons.centers }]
     })
   }
 
   if (auth.hasRole?.('department_head')) {
     nav.splice(1, 0, {
-      items: [{ name: 'My Department', path: '/departments/my-department', icon: icons.dept }]
+      items: [{ name: 'My Department', path: '/app/departments/my-department', icon: icons.dept }]
     })
   }
 
@@ -282,8 +284,8 @@ const navigation = computed(() => {
     nav.push({
       title: 'Rules',
       items: [
-        { name: 'Ethics Review',  path: '/ethics-requests',    icon: icons.ethics },
-        { name: 'Writing Check',  path: '/detection-requests', icon: icons.detect },
+        { name: 'Ethics Review',  path: '/app/ethics-requests',    icon: icons.ethics },
+        { name: 'Writing Check',  path: '/app/detection-requests', icon: icons.detect },
       ]
     })
   }
@@ -292,7 +294,7 @@ const navigation = computed(() => {
     nav.push({
       title: 'Finance',
       items: [
-        { name: 'Funding Check', path: '/finance-checks', icon: icons.finance },
+        { name: 'Funding Check', path: '/app/finance-checks', icon: icons.finance },
       ]
     })
   }
@@ -301,25 +303,27 @@ const navigation = computed(() => {
     nav.push({
       title: 'Users',
       items: [
-        { name: 'All Users',   path: '/users',       icon: icons.users },
-        { name: 'Roles',       path: '/roles',       icon: icons.roles },
-        { name: 'Permissions', path: '/permissions', icon: icons.perms },
+        { name: 'All Users',   path: '/app/users',       icon: icons.users },
+        { name: 'Roles',       path: '/app/roles',       icon: icons.roles },
+        { name: 'Permissions', path: '/app/permissions', icon: icons.perms },
       ]
     })
     nav.push({
       title: 'Settings',
       items: [
-        { name: 'Academic Years',   path: '/academic-years',   icon: icons.academic },
-        { name: 'Research Areas',   path: '/thematic-areas',   icon: icons.thematic },
-        { name: 'Research Centers', path: '/research-centers', icon: icons.centers },
-        { name: 'Tags',             path: '/expertise',        icon: icons.criteria },
-        { name: 'Review Rules',     path: '/review-criteria',  icon: icons.criteria },
-        { name: 'Departments',      path: '/departments',      icon: icons.dept },
-        { name: 'Faculties',        path: '/faculties',        icon: icons.dept },
-        { name: 'Campuses',         path: '/campuses',         icon: icons.centers },
-        { name: 'Universities',     path: '/universities',     icon: icons.academic },
-        { name: 'Files',            path: '/files',            icon: icons.files },
-        { name: 'System Logs',      path: '/audit-logs',       icon: icons.audit },
+        { name: 'Academic Years',   path: '/app/academic-years',   icon: icons.academic },
+        { name: 'Research Areas',   path: '/app/thematic-areas',   icon: icons.thematic },
+        { name: 'Research Centers', path: '/app/research-centers', icon: icons.centers },
+        { name: 'Tags',             path: '/app/expertise',        icon: icons.criteria },
+        { name: 'Review Rules',     path: '/app/review-criteria',  icon: icons.criteria },
+        { name: 'Departments',      path: '/app/departments',      icon: icons.dept },
+        { name: 'Faculties',        path: '/app/faculties',        icon: icons.dept },
+        { name: 'Campuses',         path: '/app/campuses',         icon: icons.centers },
+        { name: 'Universities',     path: '/app/universities',     icon: icons.academic },
+        { name: 'Files',            path: '/app/files',            icon: icons.files },
+        { name: 'Settings',         path: '/app/settings',         icon: icons.perms },
+        { name: 'Lookups',          path: '/app/settings/lookups', icon: icons.criteria },
+        { name: 'System Logs',      path: '/app/audit-logs',       icon: icons.audit },
       ]
     })
   }

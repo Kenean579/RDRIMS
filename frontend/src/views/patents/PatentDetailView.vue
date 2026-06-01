@@ -1,7 +1,7 @@
 <template>
   <div card>
     <div class="mb-6">
-      <router-link to="/patents" class="text-sm text-blue-600 hover:underline mb-2 inline-block">← Back to Patents</router-link>
+      <router-link to="/app/patents" class="text-sm text-blue-600 hover:underline mb-2 inline-block">← Back to Patents</router-link>
       <h1 class="text-xl font-bold text-gray-800">{{ patent.title || 'Patent Detail' }}</h1>
     </div>
 

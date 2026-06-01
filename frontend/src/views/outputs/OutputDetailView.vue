@@ -1,7 +1,7 @@
 <template>
   <div card>
     <div class="mb-6">
-      <router-link to="/outputs" class="text-sm text-blue-600 hover:underline mb-2 inline-block">← Back to Outputs</router-link>
+      <router-link to="/app/outputs" class="text-sm text-blue-600 hover:underline mb-2 inline-block">← Back to Outputs</router-link>
       <h1 class="text-xl font-bold text-gray-800">{{ output.title || 'Output Detail' }}</h1>
     </div>
 

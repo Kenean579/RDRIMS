@@ -91,7 +91,7 @@ const lookupStore = useLookupStore()
 
 const appName = computed(() => lookupStore.getSetting('app_name', 'RDRIMS'))
 const appDescription = computed(() => lookupStore.getSetting('app_description', 'Research Data & Resource Information Management System orchestrating the complete lifecycle of academic research paradigms.'))
-const contactEmail = computed(() => lookupStore.getSetting('contact_email', 'research@university.edu'))
+const contactEmail = computed(() => lookupStore.getSetting('contact_email', 'contact@rdrims.local'))
 const contactPhone = computed(() => lookupStore.getSetting('contact_phone', '+251 900 000000'))
-const contactAddress = computed(() => lookupStore.getSetting('contact_address', 'Dessie, Ethiopia'))
+const contactAddress = computed(() => lookupStore.getSetting('contact_address', 'Main Campus, Research Hub'))
 </script>

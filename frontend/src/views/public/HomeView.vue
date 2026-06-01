@@ -73,7 +73,7 @@
       <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <router-link v-for="call in calls" :key="call.id" :to="`/calls/${call.id}`" class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all group relative">
           <div class="absolute top-0 right-0 p-6 flex justify-end">
-            <StatusBadge status="open" />
+            <StatusBadge :status="{ name: 'open', label: 'Open' }" />
           </div>
           <p class="text-xs font-bold uppercase tracking-widest text-brand mb-3">{{ call.university?.name || 'Central' }}</p>
           <h3 class="text-lg font-black text-slate-800 leading-tight mb-3 group-hover:text-brand transition-colors pr-16 line-clamp-2">

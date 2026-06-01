@@ -10,8 +10,8 @@ class UniversitySeeder extends Seeder
     public function run(): void
     {
         University::create([
-            'name' => 'Wollo University',
-            'code' => 'WU',
+            'name' => 'Central University',
+            'code' => 'CU',
         ]);
 
         University::create([

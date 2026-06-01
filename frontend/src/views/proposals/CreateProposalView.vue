@@ -2,7 +2,7 @@
   <div class="max-w-4xl mx-auto">
     <!-- Header -->
     <div class="mb-8">
-      <router-link to="/proposals" class="inline-flex items-center gap-1.5 text-sm font-bold text-slate-500 hover:text-brand transition-colors mb-4">
+      <router-link to="/app/proposals" class="inline-flex items-center gap-1.5 text-sm font-bold text-slate-500 hover:text-brand transition-colors mb-4">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
         Back to Proposals
       </router-link>
@@ -165,6 +165,12 @@
                   class="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none transition-all"
                   placeholder="email@university.edu" />
               </div>
+              <div v-if="!inv.user_id">
+                <label class="block text-xs font-bold text-slate-500 mb-1.5">Institution</label>
+                <input v-model="inv.institution" type="text"
+                  class="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none transition-all"
+                  placeholder="University of..." />
+              </div>
               <div>
                 <label class="block text-xs font-bold text-slate-500 mb-1.5">Role <span class="text-rose-500">*</span></label>
                 <LookupSelect v-model="inv.role_id" lookup-key="investigator_roles" placeholder="Select role" />
@@ -184,7 +190,7 @@
         <div v-else></div>
 
         <div class="flex items-center gap-3">
-          <router-link to="/proposals"
+          <router-link to="/app/proposals"
             class="px-6 py-3 text-sm font-bold text-slate-500 hover:text-slate-700 transition-colors">
             Cancel
           </router-link>
@@ -291,7 +297,7 @@ async function handleSubmit() {
     ))
     const { data } = await api.post('/proposals', payload)
     notif.success('Proposal created successfully!')
-    router.push(`/proposals/${data.id}`)
+    router.push(`/app/proposals/${data.id}`)
   } catch (err) {
     notif.error(err.response?.data?.message || 'Failed to create proposal.')
   } finally {

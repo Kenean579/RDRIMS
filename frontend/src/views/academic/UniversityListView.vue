@@ -40,7 +40,7 @@
       <form @submit.prevent="saveUni" class="space-y-4 p-1">
         <div class="space-y-1.5">
           <label class="block text-sm font-semibold text-slate-700">Institution Name *</label>
-          <input v-model="form.name" type="text" required placeholder="Wollo University" class="input" />
+          <input v-model="form.name" type="text" required placeholder="University Name" class="input" />
         </div>
         <div class="space-y-1.5">
           <label class="block text-sm font-semibold text-slate-700">Code/Safe-name *</label>

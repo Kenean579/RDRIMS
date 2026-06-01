@@ -74,7 +74,7 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest mb-2 ml-1">Where is it? *</label>
-            <input v-model="form.location" type="text" required class="input h-12 font-bold" placeholder="e.g. South Wollo" />
+            <input v-model="form.location" type="text" required class="input h-12 font-bold" placeholder="e.g. Region/Zone" />
           </div>
           <div>
             <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest mb-2 ml-1">Phone / Email</label>

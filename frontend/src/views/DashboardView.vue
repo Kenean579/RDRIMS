@@ -73,7 +73,7 @@
             <h3 class="text-lg font-black text-slate-800">Operational Breakdown</h3>
             <p class="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Lifecycle Status Statistics</p>
           </div>
-          <router-link to="/proposals" class="group flex items-center gap-2 text-xs font-black text-brand uppercase tracking-widest hover:translate-x-1 transition-transform">
+          <router-link to="/app/proposals" class="group flex items-center gap-2 text-xs font-black text-brand uppercase tracking-widest hover:translate-x-1 transition-transform">
             View Register
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
           </router-link>
@@ -196,7 +196,7 @@
           </thead>
           <tbody class="divide-y divide-slate-50">
             <tr v-for="p in recentProposals" :key="p.id" 
-              @click="$router.push(`/proposals/${p.id}`)"
+              @click="$router.push(`/app/proposals/${p.id}`)"
               class="group hover:bg-brand/[0.03] transition-all cursor-pointer"
             >
               <td class="px-8 py-5">
@@ -251,10 +251,10 @@ const proposalStatuses = ref([])
 const PALETTE = ['#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#14b8a6', '#f97316']
 
 const quickActions = [
-  { label: 'Submit Proposal', icon: 'M12 4v16m8-8H4', to: '/proposals/create' },
-  { label: 'Track Projects', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2', to: '/projects' },
-  { label: 'Active Calls', icon: 'M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z', to: '/calls' },
-  { label: 'Data Reports', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z', to: '/reports' },
+  { label: 'Submit Proposal', icon: 'M12 4v16m8-8H4', to: '/app/proposals/create' },
+  { label: 'Track Projects', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2', to: '/app/projects' },
+  { label: 'Active Calls', icon: 'M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z', to: '/app/calls' },
+  { label: 'Data Reports', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z', to: '/app/reports' },
 ]
 
 const stats = ref([

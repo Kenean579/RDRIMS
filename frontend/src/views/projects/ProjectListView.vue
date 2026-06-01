@@ -61,7 +61,7 @@
             </tr>
           </thead>
           <tbody>
-            <tr v-for="p in projects" :key="p.id" @click="$router.push(`/projects/${p.id}`)" class="cursor-pointer group hover:bg-slate-50/50 transition-colors">
+            <tr v-for="p in projects" :key="p.id" @click="$router.push(`/app/projects/${p.id}`)" class="cursor-pointer group hover:bg-slate-50/50 transition-colors">
               <td class="px-6 py-5">
                 <div class="max-w-md">
                   <p class="font-black text-slate-900 group-hover:text-brand transition-colors text-sm leading-snug line-clamp-2">{{ p.title }}</p>

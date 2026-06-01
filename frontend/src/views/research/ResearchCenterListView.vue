@@ -34,15 +34,23 @@
         
         <p class="text-sm text-slate-500 font-medium flex-1 line-clamp-3 leading-relaxed mb-6">{{ center.description || 'No description found for this center.' }}</p>
         
-        <div class="flex flex-wrap items-center gap-4 text-[10px] font-black text-slate-400 uppercase tracking-widest mb-6 pt-5 border-t border-slate-50">
-          <span class="flex items-center gap-1.5" v-if="center.director">
+        <div class="flex flex-col gap-3 text-[9px] font-black text-slate-400 uppercase tracking-widest mb-6 pt-5 border-t border-slate-50">
+          <div class="flex items-center gap-1.5" v-if="center.university">
+            <svg class="w-3.5 h-3.5 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+            <span class="text-slate-800">{{ center.university.name }}</span>
+            <template v-if="center.campus">
+              <span class="text-slate-300">/</span>
+              <span>{{ center.campus.name }}</span>
+            </template>
+            <template v-if="center.faculty">
+              <span class="text-slate-300">/</span>
+              <span>{{ center.faculty.name }}</span>
+            </template>
+          </div>
+          <div class="flex items-center gap-1.5" v-if="center.director">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-            Director: {{ center.director.name }}
-          </span>
-          <span class="flex items-center gap-1.5">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
-            University Affiliation
-          </span>
+            Director: <span class="text-slate-800">{{ center.director.name }}</span>
+          </div>
         </div>
 
         <div class="flex items-center justify-between bg-slate-50/50 rounded-xl p-2">
@@ -66,6 +74,8 @@
             <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest mb-2 ml-1">Code *</label>
             <input v-model="form.code" type="text" required class="input h-12 font-black" placeholder="e.g. CAIR-01" />
           </div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
           <div>
             <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest mb-2 ml-1">University</label>
             <select v-model="form.parent_university_id" class="input h-12 font-bold">
@@ -73,11 +83,25 @@
               <option v-for="u in universities" :key="u.id" :value="u.id">{{ u.name }}</option>
             </select>
           </div>
+          <div>
+            <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest mb-2 ml-1">Campus</label>
+            <select v-model="form.campus_id" class="input h-12 font-bold">
+              <option value="">Select Campus</option>
+              <option v-for="c in campuses" :key="c.id" :value="c.id">{{ c.name }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest mb-2 ml-1">Faculty</label>
+            <select v-model="form.faculty_id" class="input h-12 font-bold">
+              <option value="">Select Faculty</option>
+              <option v-for="f in faculties" :key="f.id" :value="f.id">{{ f.name }}</option>
+            </select>
+          </div>
         </div>
         
         <div>
           <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest mb-2 ml-1">Description</label>
-          <textarea v-model="form.description" rows="4" class="input resize-none pt-3" placeholder="Tell us more about this center..."></textarea>
+          <textarea v-model="form.description" rows="3" class="input resize-none pt-3" placeholder="Tell us more about this center..."></textarea>
         </div>
 
         <div class="flex justify-end gap-3 pt-6 mt-6 border-t border-slate-100">
@@ -92,7 +116,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { useNotificationStore } from '@/stores/notification'
 import api from '@/services/api'
 import Modal from '@/components/Modal.vue'
@@ -101,23 +125,85 @@ import LoadingSkeleton from '@/components/LoadingSkeleton.vue'
 import EmptyState from '@/components/EmptyState.vue'
 
 const notif = useNotificationStore()
-const centers = ref([]); const loading = ref(true); const universities = ref([])
+const centers = ref([]); const loading = ref(true)
 const showCreate = ref(false); const editingCenter = ref(null); const showDelete = ref(false); const deletingCenter = ref(null)
-const form = reactive({ name: '', code: '', description: '', parent_university_id: '' })
 
-async function fetchCenters() {
+// Hierarchy data
+const universities = ref([])
+const allCampuses = ref([])
+const allFaculties = ref([])
+
+// Form state
+const form = reactive({ name: '', code: '', description: '', parent_university_id: '', campus_id: '', faculty_id: '' })
+
+// Filtered lists based on parent selection
+const campuses = computed(() => {
+  if (!form.parent_university_id) return []
+  return allCampuses.value.filter(c => c.university_id === form.parent_university_id)
+})
+
+const faculties = computed(() => {
+  if (!form.campus_id) return []
+  return allFaculties.value.filter(f => f.campus_id === form.campus_id)
+})
+
+// Reset children when parents change
+watch(() => form.parent_university_id, () => {
+  form.campus_id = ''
+  form.faculty_id = ''
+})
+
+watch(() => form.campus_id, () => {
+  form.faculty_id = ''
+})
+
+async function fetchData() {
   loading.value = true
-  try { const { data } = await api.get('/research-centers'); centers.value = data }
-  catch (e) {} finally { loading.value = false }
+  try {
+    const [centersRes, uniRes, campRes, facRes] = await Promise.all([
+      api.get('/research-centers'),
+      api.get('/universities'),
+      api.get('/campuses'),
+      api.get('/faculties')
+    ])
+    centers.value = centersRes.data.data || centersRes.data
+    universities.value = uniRes.data.data || uniRes.data
+    allCampuses.value = campRes.data.data || campRes.data
+    allFaculties.value = facRes.data.data || facRes.data
+  } catch (err) {
+    notif.error('Failed to sync hierarchy data')
+  } finally {
+    loading.value = false
+  }
 }
 
-function editCenter(c) { editingCenter.value = c; Object.assign(form, { name: c.name, code: c.code, description: c.description || '', parent_university_id: c.parent_university_id || '' }) }
-function closeModal() { showCreate.value = false; editingCenter.value = null; Object.assign(form, { name: '', code: '', description: '', parent_university_id: '' }) }
+function editCenter(c) { 
+  editingCenter.value = c; 
+  Object.assign(form, { 
+    name: c.name, 
+    code: c.code, 
+    description: c.description || '', 
+    parent_university_id: c.parent_university_id || c.university_id || '', 
+    campus_id: c.campus_id || '',
+    faculty_id: c.faculty_id || ''
+  }) 
+}
+function closeModal() { 
+  showCreate.value = false; 
+  editingCenter.value = null; 
+  Object.assign(form, { name: '', code: '', description: '', parent_university_id: '', campus_id: '', faculty_id: '' }) 
+}
 function confirmDelete(c) { deletingCenter.value = c; showDelete.value = true }
 
 async function saveCenter() {
   try {
-    const payload = { ...form, parent_university_id: form.parent_university_id || null }
+    const payload = { 
+      ...form, 
+      university_id: form.parent_university_id || null, // Backend might use university_id
+      parent_university_id: form.parent_university_id || null,
+      campus_id: form.campus_id || null,
+      faculty_id: form.faculty_id || null
+    }
     if (editingCenter.value) { await api.put(`/research-centers/${editingCenter.value.id}`, payload); notif.success('Updated!') }
     else { await api.post('/research-centers', payload); notif.success('Created!') }
     closeModal(); fetchCenters()
@@ -131,6 +217,15 @@ async function deleteCenter() {
 
 onMounted(async () => {
   await fetchCenters()
-  try { const { data } = await api.get('/universities'); universities.value = data } catch (e) {}
+  try { 
+    const [uR, cR, fR] = await Promise.all([
+      api.get('/universities'),
+      api.get('/campuses'),
+      api.get('/faculties')
+    ])
+    universities.value = uR.data
+    campuses.value = cR.data
+    faculties.value = fR.data
+  } catch (e) {}
 })
 </script>

@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
     return response()->json([
-        'app' => 'Wollo University RDRIMS API',
+        'app' => 'Research Management System',
         'version' => '1.0.0',
         'status' => 'connected'
     ]);

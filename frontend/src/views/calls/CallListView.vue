@@ -46,7 +46,7 @@
 
         <div class="flex items-center justify-between mt-auto pt-6 border-t border-slate-100">
           <div class="flex items-center gap-2">
-            <router-link v-if="auth.hasPermission('submit_proposals')" :to="`/proposals/create?call_id=${call.id}`" class="btn btn-primary shadow-lg shadow-blue-500/20 px-6 text-[11px] font-black uppercase tracking-widest h-10">
+            <router-link v-if="auth.hasPermission('submit_proposals')" :to="`/app/proposals/create?call_id=${call.id}`" class="btn btn-primary shadow-lg shadow-blue-500/20 px-6 text-[11px] font-black uppercase tracking-widest h-10">
               Apply
             </router-link>
             <button @click="viewCall(call)" class="btn btn-ghost hover:bg-slate-100 text-[11px] font-black uppercase tracking-widest h-10 px-5">
@@ -71,18 +71,22 @@
            <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3">About this call</h4>
            <p class="text-base text-slate-700 font-medium whitespace-pre-line leading-relaxed">{{ selectedCall.description }}</p>
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
-          <div class="p-5 bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col gap-1 text-center">
-             <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Award High</p>
-             <p class="text-lg font-black text-brand">{{ formatCurrency(selectedCall.budget_limit) }}</p>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div class="p-5 bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col gap-1 text-center font-black uppercase">
+             <p class="text-[10px] text-slate-400 tracking-widest">Award High</p>
+             <p class="text-lg text-brand">{{ formatCurrency(selectedCall.budget_limit) }}</p>
           </div>
-          <div class="p-5 bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col gap-1 text-center">
-             <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Ending Date</p>
-             <p class="text-lg font-black text-slate-900">{{ formatDate(selectedCall.deadline) }}</p>
+          <div class="p-5 bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col gap-1 text-center font-black uppercase">
+             <p class="text-[10px] text-slate-400 tracking-widest">Ending Date</p>
+             <p class="text-lg text-slate-900">{{ formatDate(selectedCall.deadline) }}</p>
           </div>
-          <div class="p-5 bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col gap-1 text-center">
-             <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Target Year</p>
-             <p class="text-lg font-black text-slate-900">{{ selectedCall.academic_year?.name || '2024' }}</p>
+          <div class="p-5 bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col gap-1 text-center font-black uppercase">
+             <p class="text-[10px] text-slate-400 tracking-widest">Target Year</p>
+             <p class="text-lg text-slate-900">{{ selectedCall.academic_year?.name || 'N/A' }}</p>
+          </div>
+           <div class="p-5 bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col gap-1 text-center font-black uppercase">
+             <p class="text-[10px] text-slate-400 tracking-widest">Thematic Area</p>
+             <p class="text-lg text-slate-900">{{ selectedCall.thematic_areas || 'Multi-disciplinary' }}</p>
           </div>
         </div>
         <div class="pt-6 border-t border-slate-100 flex justify-end gap-3">
@@ -124,10 +128,26 @@
             </select>
           </div>
           <div>
+            <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest mb-2 ml-1">Thematic Area</label>
+            <select v-model="callForm.thematic_areas" class="input h-12 font-bold">
+              <option value="">Select Area</option>
+              <option v-for="t in thematicAreas" :key="t.id" :value="t.name">{{ t.name }}</option>
+            </select>
+          </div>
+        </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div>
             <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest mb-2 ml-1">Status</label>
             <select v-model="callForm.status_id" class="input h-12 font-bold">
               <option value="">Select Status</option>
               <option v-for="s in callStatuses" :key="s.id" :value="s.id">{{ s.name }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest mb-2 ml-1">Guideline (File Reference)</label>
+            <select v-model="callForm.guideline_file_id" class="input h-12 font-bold">
+              <option value="">No Guideline Attached</option>
+              <option v-for="f in files" :key="f.id" :value="f.id">{{ f.original_name }}</option>
             </select>
           </div>
         </div>
@@ -162,10 +182,12 @@ const showCreate = ref(false)
 const editingCall = ref(null)
 const academicYears = ref([])
 const callStatuses = ref([])
+const thematicAreas = ref([])
+const files = ref([])
 
 const callForm = reactive({
   title: '', description: '', deadline: '', budget_limit: null,
-  academic_year_id: '', status_id: ''
+  academic_year_id: '', status_id: '', thematic_areas: '', guideline_file_id: ''
 })
 
 async function fetchCalls() {
@@ -187,14 +209,16 @@ function editCall(call) {
     deadline: call.deadline?.substring(0, 10) || '',
     budget_limit: call.budget_limit,
     academic_year_id: call.academic_year_id || '',
-    status_id: call.status_id || ''
+    status_id: call.status_id || '',
+    thematic_areas: call.thematic_areas || '',
+    guideline_file_id: call.guideline_file_id || ''
   })
 }
 
 function closeCallModal() {
   showCreate.value = false
   editingCall.value = null
-  Object.assign(callForm, { title: '', description: '', deadline: '', budget_limit: null, academic_year_id: '', status_id: '' })
+  Object.assign(callForm, { title: '', description: '', deadline: '', budget_limit: null, academic_year_id: '', status_id: '', thematic_areas: '', guideline_file_id: '' })
 }
 
 async function saveCall() {
@@ -218,12 +242,16 @@ async function saveCall() {
 onMounted(async () => {
   fetchCalls()
   try {
-    const [ys, ss] = await Promise.all([
+    const [ys, ss, ts, fs] = await Promise.all([
       api.get('/academic-years'),
-      api.get('/lookups/call_statuses')
+      api.get('/lookups/call_statuses'),
+      api.get('/lookups/thematic_areas'),
+      api.get('/files')
     ])
     academicYears.value = ys.data
     callStatuses.value = ss.data
+    thematicAreas.value = ts.data
+    files.value = fs.data.data || fs.data
   } catch (e) {}
 })
 </script>

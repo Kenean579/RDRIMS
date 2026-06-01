@@ -27,16 +27,16 @@ class SuperAdminSeeder extends Seeder
             'assigned_at' => now(),
         ]);
 
-        // Research Admin for Wollo University
+        // Research Admin for Primary University
         $researchAdmin = User::create([
             'name' => 'Dr. Abebe Kebede',
-            'email' => 'research.admin@wollo.edu.et',
+            'email' => 'research.admin@rdrims.local',
             'password' => Hash::make('Admin@123'),
             'department_id' => 1,
             'is_active' => true,
             'orcid_id' => '0000-0002-1234-5678',
             'google_scholar_id' => 'AbebeKebede2024',
-            'bio' => 'Research Administrator at Wollo University. Coordinates all research activities.',
+            'bio' => 'Research Administrator. Coordinates all research activities.',
         ]);
 
         $researchAdminRole = Role::where('name', 'research_admin')->first();

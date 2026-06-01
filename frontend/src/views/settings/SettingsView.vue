@@ -1,96 +1,158 @@
 <template>
   <div class="flex flex-col gap-8 pb-12 animate-fade card">
-    <!-- Header -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div>
-        <h1 class="text-3xl font-black text-slate-900 tracking-tight">Settings</h1>
-        <p class="text-slate-500 font-medium mt-1">Control how the system works.</p>
+        <h1 class="text-3xl font-black text-slate-900 tracking-tight">System Settings</h1>
+        <p class="text-slate-500 font-medium mt-1">Configure global platform variables and institutional branding.</p>
       </div>
-      <button @click="fetchSettings" class="btn btn-secondary h-11 px-6 shadow-sm group">
-        <svg class="w-4 h-4 mr-1.5 group-hover:rotate-180 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-        Refresh
-      </button>
+      <div class="flex gap-3">
+        <router-link to="/app/settings/lookups" class="btn btn-secondary h-11 px-6 text-[11px] font-black uppercase tracking-widest border border-slate-200">
+          Advanced Lookups
+        </router-link>
+        <button @click="saveAll" class="btn btn-primary h-11 px-8 text-[11px] font-black uppercase tracking-widest shadow-lg shadow-blue-500/20">
+          Save All Changes
+        </button>
+      </div>
     </div>
 
-    <!-- Content -->
-    <div v-if="loading" class="card p-12 space-y-4">
-      <div v-for="i in 5" :key="i" class="h-10 bg-slate-50/50 rounded-xl animate-pulse"></div>
-    </div>
+    <div v-if="loading" class="card p-24 flex justify-center"><div class="animate-spin rounded-full h-10 w-10 border-b-2 border-brand"></div></div>
     
-    <div v-else-if="error" class="card border-rose-100 bg-rose-50/30 p-12 text-center max-w-2xl mx-auto shadow-xl shadow-rose-500/5">
-       <div class="w-16 h-16 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center mx-auto mb-5 text-2xl shadow-inner">⚠️</div>
-       <h3 class="text-lg font-black text-slate-800 mb-2 uppercase tracking-tight">Access Error</h3>
-       <p class="text-sm text-rose-600 font-bold mb-6 uppercase tracking-widest text-[11px]">{{ error }}</p>
-       <button @click="fetchSettings" class="btn bg-rose-600 hover:bg-rose-700 text-white px-8 h-11 text-[11px] font-black uppercase tracking-widest border-0">Retry Connection</button>
-    </div>
+    <div v-else class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <!-- Branding -->
+      <div class="lg:col-span-1 space-y-8 font-bold">
+        <div class="card p-8">
+          <h2 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2">
+            <span class="w-1 h-3 bg-brand rounded-full"></span>
+            Platform Branding
+          </h2>
+          <div class="space-y-6">
+            <div>
+              <label class="block text-[11px] text-slate-500 uppercase tracking-widest mb-2 ml-1">Platform Name</label>
+              <input v-model="settings.app_name" type="text" class="input h-12 font-black" />
+            </div>
+            <div>
+              <label class="block text-[11px] text-slate-500 uppercase tracking-widest mb-2 ml-1">Institution Domain</label>
+              <input v-model="settings.institution_domain" type="text" placeholder="university.edu" class="input h-12 font-bold" />
+            </div>
+            <div>
+              <label class="block text-[11px] text-slate-500 uppercase tracking-widest mb-2 ml-1">Support Email</label>
+              <input v-model="settings.support_email" type="email" class="input h-12 font-bold" />
+            </div>
+          </div>
+        </div>
+      </div>
 
-    <div v-else-if="settings.length === 0" class="card">
-      <EmptyState icon="⚙️" title="No settings found" description="System controls will appear here once ready." />
-    </div>
+      <!-- General Settings -->
+      <div class="lg:col-span-2 space-y-8 font-bold">
+        <div class="card p-8">
+          <h2 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2">
+            <span class="w-1 h-3 bg-brand rounded-full"></span>
+            Operational Tuning
+          </h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+              <label class="block text-[11px] text-slate-500 uppercase tracking-widest mb-2 ml-1">Default Proposal Budget Cap</label>
+              <div class="relative">
+                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs">ETB</span>
+                <input v-model="settings.default_budget_cap" type="number" class="input h-12 pl-12 font-black" />
+              </div>
+            </div>
+            <div>
+              <label class="block text-[11px] text-slate-500 uppercase tracking-widest mb-2 ml-1">Review Period (Days)</label>
+              <input v-model="settings.review_period_days" type="number" class="input h-12 font-black" />
+            </div>
+            <div class="md:col-span-2">
+               <label class="flex items-center gap-3 p-4 bg-slate-50 border border-slate-100 rounded-2xl cursor-pointer hover:bg-white transition-all shadow-inner">
+                 <input v-model="settings.allow_public_registration" type="checkbox" class="w-5 h-5 rounded border-slate-300 text-brand focus:ring-brand" />
+                 <div>
+                   <p class="text-sm font-black text-slate-800">Enable Public Researcher Registration</p>
+                   <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Allow external researchers to create accounts</p>
+                 </div>
+               </label>
+            </div>
+            <div class="md:col-span-2">
+               <label class="flex items-center gap-3 p-4 bg-slate-50 border border-slate-100 rounded-2xl cursor-pointer hover:bg-white transition-all shadow-inner">
+                 <input v-model="settings.maintenance_mode" type="checkbox" class="w-5 h-5 rounded border-slate-300 text-rose-500 focus:ring-rose-500" />
+                 <div>
+                   <p class="text-sm font-black text-slate-800">Maintenance Mode</p>
+                   <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Disable system access for non-admin users</p>
+                 </div>
+               </label>
+            </div>
+          </div>
+        </div>
 
-    <div v-else class="card overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="table-auto">
-          <thead>
-            <tr>
-              <th class="pl-8 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-left">Internal Name</th>
-              <th class="py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-left">Current Value</th>
-              <th class="py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-left">What it does</th>
-              <th class="pr-8 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-50 font-bold">
-            <tr v-for="s in settings" :key="s.id" class="group hover:bg-slate-50/50 transition-colors">
-              <td class="pl-8 py-5">
-                <span class="text-[10px] font-black bg-slate-100 text-slate-500 px-2 py-1 rounded-lg uppercase tracking-widest border border-slate-200 shadow-sm">{{ s.key }}</span>
-              </td>
-              <td class="min-w-[280px] py-5">
-                <div v-if="editingId === s.id" class="flex gap-2 pr-4">
-                  <input v-model="editValue" type="text" class="input h-10 px-4 font-black text-slate-700" @keyup.enter="saveSetting(s)" auto-focus />
-                </div>
-                <span v-else class="text-sm font-black text-slate-800">{{ s.value }}</span>
-              </td>
-              <td class="py-5">
-                <p class="text-xs text-slate-500 font-medium leading-relaxed max-w-xs">{{ s.description }}</p>
-              </td>
-              <td class="pr-8 py-5 text-right">
-                <div class="flex justify-end gap-2">
-                  <template v-if="editingId === s.id">
-                    <button @click="saveSetting(s)" class="btn btn-primary h-9 px-4 text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-500/20">Save</button>
-                    <button @click="editingId = null" class="btn btn-secondary h-9 px-4 text-[10px] font-black uppercase tracking-widest">Cancel</button>
-                  </template>
-                  <button v-else @click="startEdit(s)" class="btn btn-ghost hover:bg-white text-brand text-[10px] font-black uppercase tracking-widest h-9 px-4">Change</button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <!-- Raw Metadata -->
+        <div class="card p-8 bg-slate-900 border-0 shadow-2xl relative overflow-hidden">
+          <div class="absolute right-0 top-0 w-32 h-32 bg-brand/10 rounded-full blur-3xl"></div>
+          <h2 class="text-xs font-black text-slate-500 uppercase tracking-widest mb-6 flex items-center gap-2">
+            <span class="w-1 h-3 bg-brand rounded-full"></span>
+            Internal Registry (Advanced)
+          </h2>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+             <div v-for="(val, key) in rawSettings" :key="key" class="bg-slate-800 p-3 rounded-xl border border-slate-700/50">
+               <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest mb-1">{{ key }}</p>
+               <p class="text-xs font-bold text-white truncate">{{ val }}</p>
+             </div>
+          </div>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useNotificationStore } from '@/stores/notification'
 import api from '@/services/api'
-import EmptyState from '@/components/EmptyState.vue'
 
 const notif = useNotificationStore()
-const settings = ref([]); const loading = ref(true); const error = ref(null)
-const editingId = ref(null); const editValue = ref('')
+const loading = ref(true)
+const settings = reactive({
+  app_name: 'RDRIMS',
+  institution_domain: '',
+  support_email: '',
+  default_budget_cap: 500000,
+  review_period_days: 14,
+  allow_public_registration: true,
+  maintenance_mode: false
+})
+const rawSettings = ref({})
 
 async function fetchSettings() {
-  loading.value = true; error.value = null
-  try { const { data } = await api.get('/settings'); settings.value = data }
-  catch (err) { error.value = err.response?.data?.message || 'Failed' } finally { loading.value = false }
+  loading.value = true
+  try {
+    const { data } = await api.get('/settings')
+    const items = Array.isArray(data) ? data : (data.data || [])
+    
+    // Map to reactive object
+    items.forEach(s => {
+      if (settings[s.key] !== undefined) {
+        if (typeof settings[s.key] === 'boolean') settings[s.key] = s.value === '1' || s.value === 'true' || s.value === true
+        else settings[s.key] = s.value
+      }
+      rawSettings.value[s.key] = s.value
+    })
+  } catch (err) {
+    notif.error('Failed to load settings')
+  } finally {
+    loading.value = false
+  }
 }
 
-function startEdit(s) { editingId.value = s.id; editValue.value = s.value }
-
-async function saveSetting(s) {
-  try { await api.put(`/settings/${s.id}`, { value: editValue.value }); notif.success('Updated!'); editingId.value = null; fetchSettings() }
-  catch (err) { notif.error(err.response?.data?.message || 'Failed') }
+async function saveAll() {
+  try {
+    const payload = Object.keys(settings).map(key => ({
+      key,
+      value: String(settings[key])
+    }))
+    
+    await api.post('/settings/bulk', { settings: payload })
+    notif.success('System settings updated!')
+    fetchSettings()
+  } catch (err) {
+    notif.error('Failed to save settings')
+  }
 }
 
 onMounted(fetchSettings)

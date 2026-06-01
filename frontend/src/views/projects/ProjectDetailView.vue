@@ -3,7 +3,7 @@
     <!-- Header -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
       <div>
-        <router-link to="/projects" class="flex items-center gap-2 text-brand font-black uppercase tracking-widest text-[10px] mb-3 hover:translate-x-1 transition-transform">
+        <router-link to="/app/projects" class="flex items-center gap-2 text-brand font-black uppercase tracking-widest text-[10px] mb-3 hover:translate-x-1 transition-transform">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
           Back to Projects
         </router-link>
@@ -101,13 +101,14 @@
                   <h3 class="text-base font-black text-slate-800 leading-tight mb-1" :class="{ 'line-through opacity-80': m.status?.name === 'completed' }">
                     {{ m.title }}
                   </h3>
+                  <p v-if="m.description" class="text-[11px] font-medium text-slate-500 mb-3 line-clamp-2 leading-relaxed italic">{{ m.description }}</p>
                   <div class="flex items-center gap-3 text-[10px] font-black uppercase tracking-widest text-slate-400">
                     <span class="flex items-center gap-1">
                       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                       Due: {{ formatDate(m.due_date) }}
                     </span>
                     <span class="w-1 h-1 rounded-full bg-slate-300"></span>
-                    <span>Weight: {{ m.percentage }}%</span>
+                    <span>Order: {{ m.display_order || 'N/A' }}</span>
                   </div>
                 </div>
 
@@ -206,7 +207,7 @@
             </div>
             
             <div class="pt-4 mt-2 border-t border-slate-100">
-              <router-link :to="`/projects/${project.id}/finance`" class="btn bg-white border border-slate-200 hover:border-brand w-full h-10 text-[10px] font-black uppercase tracking-widest text-slate-600 hover:text-brand transition-all shadow-sm">
+              <router-link :to="`/app/projects/${project.id}/finance`" class="btn bg-white border border-slate-200 hover:border-brand w-full h-10 text-[10px] font-black uppercase tracking-widest text-slate-600 hover:text-brand transition-all shadow-sm">
                 View Full Ledgers
               </router-link>
             </div>
@@ -268,6 +269,15 @@
                 class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none transition-all" />
             </div>
          </div>
+         <div>
+            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 ml-1">Sequence / Order</label>
+            <input v-model.number="milestoneForm.display_order" type="number" 
+              class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm font-bold focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none transition-all" placeholder="1" />
+         </div>
+         <div>
+            <label class="block text-[10px] font-black text-slate-500 uppercase tracking-widest mb-2 ml-1">Description</label>
+            <textarea v-model="milestoneForm.description" rows="2" class="input p-4 text-xs font-medium resize-none" placeholder="Brief objective of this phase..."></textarea>
+         </div>
          <div class="flex justify-end gap-3 pt-6 border-t border-slate-100">
            <button type="button" @click="showAddMilestone = false" class="btn btn-secondary px-8 h-11 text-[11px] font-black uppercase tracking-widest">Cancel</button>
            <button type="submit" class="btn btn-primary px-10 h-11 shadow-lg shadow-blue-500/20 text-[11px] font-black uppercase tracking-widest">Create</button>
@@ -290,7 +300,7 @@ import { formatDate, formatCurrency, getInitials } from '@/utils/formatters'
 const route = useRoute(); const auth = useAuthStore(); const notif = useNotificationStore()
 const project = ref({}); const loading = ref(true)
 const showAddMilestone = ref(false)
-const milestoneForm = reactive({ title: '', due_date: '', percentage: 10 })
+const milestoneForm = reactive({ title: '', due_date: '', percentage: 10, display_order: 1, description: '' })
 const newTaskTitles = reactive({})
 
 const isPI = computed(() => auth.user?.id === project.value.pi_id)
@@ -341,7 +351,7 @@ async function addMilestone() {
   try {
     await api.post(`/projects/${project.value.id}/milestones`, milestoneForm)
     notif.success('Milestone added!')
-    showAddMilestone.value = false; Object.assign(milestoneForm, { title: '', due_date: '', percentage: 10 }); fetchProject()
+    showAddMilestone.value = false; Object.assign(milestoneForm, { title: '', due_date: '', percentage: 10, display_order: 1, description: '' }); fetchProject()
   } catch (err) { notif.error('Failed to add milestone') }
 }
 

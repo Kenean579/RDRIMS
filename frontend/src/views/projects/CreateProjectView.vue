@@ -125,7 +125,7 @@ async function submit() {
   try {
     const { data } = await api.post(`/proposals/${proposal.value.id}/create-project`, form);
     notif.success('Project successfully created from proposal!');
-    router.push(`/projects/${data.id}`);
+    router.push(`/app/projects/${data.id}`);
   } catch(e) {
     notif.error(e.response?.data?.message || 'Failed to create project')
   } finally { submitting.value = false }

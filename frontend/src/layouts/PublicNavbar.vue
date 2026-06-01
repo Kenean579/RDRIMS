@@ -39,9 +39,12 @@
           <!-- Auth Buttons -->
           <div class="hidden md:flex items-center gap-3">
             <template v-if="auth.isAuthenticated">
-              <router-link to="/dashboard" class="px-4 py-2 rounded-xl text-sm font-bold text-brand bg-brand/10 hover:bg-brand/20 transition-colors">
+              <router-link to="/app/dashboard" class="px-4 py-2 rounded-xl text-sm font-bold text-brand bg-brand/10 hover:bg-brand/20 transition-colors">
                 Dashboard
               </router-link>
+              <button @click="auth.logout()" class="text-sm font-bold text-slate-500 hover:text-rose-600 transition-colors">
+                Sign Out
+              </button>
             </template>
             <template v-else>
               <router-link to="/login" class="text-sm font-bold text-slate-600 hover:text-brand transition-colors">
@@ -84,7 +87,15 @@
           {{ link.name }}
         </router-link>
       </div>
-      <div v-if="!auth.isAuthenticated" class="pt-4 pb-3 border-t border-slate-200 px-4 flex flex-col gap-3">
+      <div v-if="auth.isAuthenticated" class="pt-4 pb-3 border-t border-slate-200 px-4 flex flex-col gap-3">
+        <router-link to="/app/dashboard" @click="mobileMenuOpen = false" class="block text-center w-full px-4 py-2 text-base font-bold rounded-xl text-brand bg-brand/10">
+          Go to Dashboard
+        </router-link>
+        <button @click="auth.logout(); mobileMenuOpen = false" class="block text-center w-full px-4 py-2 text-base font-bold rounded-xl text-slate-500 bg-slate-50">
+          Sign Out
+        </button>
+      </div>
+      <div v-else class="pt-4 pb-3 border-t border-slate-200 px-4 flex flex-col gap-3">
         <router-link to="/login" @click="mobileMenuOpen = false" class="block text-center w-full px-4 py-2 text-base font-bold rounded-xl text-slate-600 bg-slate-100">
           Sign In
         </router-link>

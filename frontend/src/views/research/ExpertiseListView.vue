@@ -114,23 +114,23 @@ function confirmDelete(e) {
 async function saveExpertise() {
   try {
     await api.post('/expertise', form.value)
-    notif.success('Added to repository!')
+    notif.success('Expertise tag added!')
     showCreate.value = false
     form.value.name = ''
     fetchExpertise()
   } catch (err) {
-    notif.error('Failed to index keyword')
+    notif.error('Failed to add tag')
   }
 }
 
 async function deleteExpertise() {
   try {
     await api.delete(`/expertise/${deletingExp.value.id}`)
-    notif.success('Archived successfully')
+    notif.success('Tag deleted')
     showDelete.value = false
     fetchExpertise()
   } catch (err) {
-    notif.error('Failed to remove keyword')
+    notif.error('Failed to delete tag')
   }
 }
 
