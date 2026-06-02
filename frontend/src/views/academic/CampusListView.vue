@@ -12,37 +12,36 @@
       </button>
     </div>
 
-    <!-- Content -->
-    <div v-if="loading" class="card p-8"><LoadingSkeleton :rows="4" /></div>
+    <!-- Content Wrapper -->
+    <div v-if="loading" class="grid grid-cols-1 gap-4">
+      <div v-for="i in 3" :key="i" class="card h-24 animate-pulse bg-slate-50/50"></div>
+    </div>
     <div v-else-if="campuses.length === 0" class="card">
       <EmptyState icon="📍" title="No campuses found" description="Add university campuses to track your institution's locations." action-label="Add Campus" @action="showCreate = true" />
     </div>
 
-    <div v-else class="card overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="table-auto">
-          <thead>
-            <tr>
-              <th>Campus Name</th>
-              <th>Code</th>
-              <th>University</th>
-              <th style="text-align: right">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="campus in campuses" :key="campus.id" class="group">
-              <td class="font-bold text-slate-800 group-hover:text-blue-600 transition">{{ campus.name }}</td>
-              <td><span class="badge badge-gray" style="font-size: 10px">{{ campus.code }}</span></td>
-              <td class="text-sm text-slate-500">{{ campus.university?.name || 'N/A' }}</td>
-              <td style="text-align: right">
-                <div class="flex justify-end gap-2">
-                  <button @click="editCampus(campus)" class="btn btn-ghost text-blue-600 font-bold" style="padding: 6px 10px; font-size: 11px">Edit</button>
-                  <button @click="confirmDelete(campus)" class="btn btn-ghost text-red-500 hover:bg-red-50" style="padding: 6px 10px; font-size: 11px">Delete</button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+    <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <div v-for="campus in campuses" :key="campus.id" class="card p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-6 card-hover border-l-4 border-l-emerald-500 hover:border-l-emerald-600 transition-all">
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-2xl bg-linear-to-br from-emerald-400 to-teal-600 text-white flex items-center justify-center font-black text-xl shadow-lg shadow-emerald-500/30">
+            {{ campus.name.charAt(0) }}
+          </div>
+          <div>
+            <h3 class="font-black text-slate-800 text-lg leading-tight mb-1">{{ campus.name }}</h3>
+            <div class="flex items-center gap-2">
+              <span class="inline-block px-2.5 py-0.5 bg-slate-100 text-slate-500 text-[10px] font-black uppercase tracking-widest rounded-md border border-slate-200">CODE: {{ campus.code }}</span>
+              <span class="inline-block px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-widest rounded-md border border-blue-100"><i class="fas fa-university mr-1"></i>{{ campus.university?.name || 'N/A' }}</span>
+            </div>
+          </div>
+        </div>
+        <div class="flex gap-2 shrink-0">
+          <button @click="editCampus(campus)" class="btn btn-secondary h-9 px-4 text-[11px] font-bold uppercase tracking-widest">
+            Edit
+          </button>
+          <button @click="confirmDelete(campus)" class="btn btn-danger h-9 px-4 text-[11px] font-bold uppercase tracking-widest shadow-lg shadow-rose-500/20">
+            Delete
+          </button>
+        </div>
       </div>
     </div>
 

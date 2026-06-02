@@ -6,7 +6,7 @@
         <h1 class="text-3xl font-black text-slate-900 tracking-tight">Submissions</h1>
         <p class="text-slate-500 font-medium mt-1">See where your work is in the system.</p>
       </div>
-      <router-link v-if="auth.hasPermission('submit_proposals')" to="/app/proposals/create" class="btn btn-primary h-11 px-8 shadow-lg shadow-blue-500/20">
+      <router-link v-if="auth.hasPermission('submit_proposals') || auth.hasRole('super_admin','research_admin')" to="/app/proposals/create" class="btn btn-primary h-11 px-8 shadow-lg shadow-blue-500/20">
         <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" /></svg>
         Start Submission
       </router-link>
@@ -56,7 +56,7 @@
     </div>
 
     <div v-else-if="proposals.length === 0" class="card">
-      <EmptyState icon="📝" title="No submissions found" description="Try changing your search or add a new one." :action-label="auth.hasPermission('submit_proposals') ? 'Add First' : ''" action-icon="add" @action="$router.push('/app/proposals/create')" />
+      <EmptyState icon="📝" title="No submissions found" description="Try changing your search or add a new one." :action-label="(auth.hasPermission('submit_proposals') || auth.hasRole('super_admin')) ? 'Add First' : ''" action-icon="add" @action="$router.push('/app/proposals/create')" />
     </div>
 
     <div v-else class="card overflow-hidden">
@@ -95,7 +95,11 @@
                 </div>
               </td>
               <td class="pr-8 py-5 text-right">
-                <router-link :to="`/app/proposals/${p.id}`" class="btn btn-secondary py-1.5 px-4 text-[10px] font-black uppercase tracking-widest shadow-sm hover:border-brand hover:text-brand transition-all">Open</router-link>
+                <div class="flex items-center justify-end gap-2">
+                  <router-link :to="`/app/proposals/${p.id}`" class="btn btn-secondary py-1.5 px-4 text-[10px] font-black uppercase tracking-widest shadow-sm hover:border-brand hover:text-brand transition-all">Open</router-link>
+                  <router-link v-if="auth.hasRole('super_admin','research_admin') || p.submitted_by?.id === auth.user?.id" :to="`/app/proposals/${p.id}/edit`" class="btn btn-ghost py-1.5 px-3 text-[10px] font-black uppercase tracking-widest text-amber-600 hover:bg-amber-50 hover:text-amber-700">Edit</router-link>
+                  <button v-if="auth.hasRole('super_admin')" @click.stop="deleteProposal(p.id)" class="btn btn-ghost py-1.5 px-3 text-[10px] font-black uppercase tracking-widest text-rose-500 hover:bg-rose-50 hover:text-rose-600">Delete</button>
+                </div>
               </td>
             </tr>
           </tbody>
@@ -111,6 +115,7 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import { useNotificationStore } from '@/stores/notification'
 import api from '@/services/api'
 import StatusBadge from '@/components/StatusBadge.vue'
 import Pagination from '@/components/Pagination.vue'
@@ -119,6 +124,7 @@ import { formatCurrency, formatDate } from '@/utils/formatters'
 import { formatStatusName } from '@/utils/colors'
 
 const auth = useAuthStore()
+const notif = useNotificationStore()
 const loading = ref(true); const error = ref(null); const proposals = ref([])
 const pagination = reactive({ current_page: 1, last_page: 1, total: 0 })
 const filters = reactive({ search: '', status: '', type: '' })
@@ -133,6 +139,17 @@ async function fetchProposals(page = 1) {
 }
 function debounceSearch() { clearTimeout(searchTimer); searchTimer = setTimeout(() => fetchProposals(1), 400) }
 function clearFilters() { filters.search = ''; filters.status = ''; filters.type = ''; fetchProposals(1) }
+
+async function deleteProposal(id) {
+  if (!confirm('Are you sure you want to delete this proposal? This action cannot be undone.')) return
+  try {
+    await api.delete(`/proposals/${id}`)
+    notif.success('Proposal deleted successfully')
+    fetchProposals(pagination.current_page)
+  } catch (e) {
+    notif.error(e.response?.data?.message || 'Failed to delete proposal')
+  }
+}
 
 onMounted(async () => {
   fetchProposals()

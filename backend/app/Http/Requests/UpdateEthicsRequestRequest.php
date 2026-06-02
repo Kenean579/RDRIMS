@@ -15,7 +15,10 @@ class UpdateEthicsRequestRequest extends FormRequest
     {
         return [
             'proposal_id' => 'sometimes|exists:proposals,id',
-            'description' => 'sometimes',
+            'submitted_to_irb' => 'nullable|boolean',
+            'approval_status_id' => 'sometimes|exists:ethics_approval_statuses,id',
+            'comments' => 'nullable|string',
+            'version' => 'nullable|integer',
         ];
     }
 }

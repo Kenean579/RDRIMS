@@ -54,15 +54,17 @@ class DatabaseSeeder extends Seeder
             ReviewDecisionSeeder::class,
             StudentLevelSeeder::class,
             TaskStatusSeeder::class,
+            ThematicAreaSeeder::class,
 
             // Phase 5: Core configuration
             ExpertiseSeeder::class,
-            ReviewCriteriaSeeder::class,
+            ReviewCriterionSeeder::class,
             SettingSeeder::class,
 
             // Phase 6: Sample data for testing
             SampleUserSeeder::class,
             UserExpertiseSeeder::class,
+            DemoDataSeeder::class,
         ]);
     }
 }

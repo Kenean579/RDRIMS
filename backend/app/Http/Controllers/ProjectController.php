@@ -19,6 +19,7 @@ class ProjectController extends Controller
     public function index(Request $request): JsonResponse
     {
         $projects = Project::with('status', 'pi', 'academicYear')
+            ->hierarchical($request->user(), 'pi_id')
             ->when($request->status, fn($q) => $q->whereHas('status', fn($s) => $s->where('name', $request->status)))
             ->when($request->search, fn($q) => $q->where('title', 'LIKE', '%' . $request->search . '%'))
             ->orderBy('created_at', 'desc')

@@ -80,19 +80,30 @@ async function fetchRequests() {
 
 async function approveRequest(req) {
   try {
-    await api.put(`/ethics-requests/${req.id || req.ethics_requests?.[0]?.id}`, { approval_status_id: 2 })
+    const existing = req.ethics_requests?.[0]
+    if (existing) {
+      await api.put(`/ethics-requests/${existing.id}`, { approval_status_id: 2 })
+    } else {
+      await api.post(`/proposals/${req.id}/ethics-requests`, { approval_status_id: 2 })
+    }
     notif.success('Ethics approved!')
     fetchRequests()
-  } catch (err) { notif.error('Failed') }
+  } catch (err) { notif.error('Failed to update ethics request') }
 }
 
 function rejectRequest(req) { rejectingReq.value = req; showReject.value = true }
 
 async function confirmReject() {
   try {
-    await api.put(`/ethics-requests/${rejectingReq.value.id || rejectingReq.value.ethics_requests?.[0]?.id}`, { approval_status_id: 3, comments: rejectComment.value })
-    notif.success('Rejected!'); showReject.value = false; fetchRequests()
-  } catch (err) { notif.error('Failed') }
+    const existing = rejectingReq.value.ethics_requests?.[0]
+    if (existing) {
+      await api.put(`/ethics-requests/${existing.id}`, { approval_status_id: 3, comments: rejectComment.value })
+    } else {
+      await api.post(`/proposals/${rejectingReq.value.id}/ethics-requests`, { approval_status_id: 3, comments: rejectComment.value })
+    }
+    notif.success('Ethics rejected!')
+    showReject.value = false; fetchRequests()
+  } catch (err) { notif.error('Failed to reject ethics request') }
 }
 
 onMounted(fetchRequests)

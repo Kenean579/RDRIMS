@@ -64,115 +64,34 @@
     </div>
 
     <!-- Tier 2: Main Content Split -->
-    <div class="grid grid-cols-1 xl:grid-cols-12 gap-8">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
       
-      <!-- Submissions Breakdown -->
-      <div class="xl:col-span-8 bg-white rounded-[40px] border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-        <div class="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/30">
-          <div>
-            <h3 class="text-lg font-black text-slate-800">Operational Breakdown</h3>
-            <p class="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1">Lifecycle Status Statistics</p>
-          </div>
-          <router-link to="/app/proposals" class="group flex items-center gap-2 text-xs font-black text-brand uppercase tracking-widest hover:translate-x-1 transition-transform">
-            View Register
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M13 7l5 5m0 0l-5 5m5-5H6" /></svg>
-          </router-link>
-        </div>
-
-        <div v-if="loadingStats" class="p-10 space-y-6">
-          <div v-for="i in 5" :key="i" class="h-12 bg-slate-50/50 rounded-2xl animate-pulse"></div>
-        </div>
+      <!-- Chart Distribution -->
+      <div class="bg-white rounded-[40px] border border-slate-200 shadow-sm overflow-hidden flex flex-col p-8 relative">
+        <h3 class="text-sm font-black text-slate-800 tracking-widest uppercase mb-2">Status Distribution</h3>
+        <p class="text-xs text-slate-400 font-bold mb-6">Proportional split of current workload</p>
         
-        <div v-else class="p-8">
-          <div class="grid grid-cols-1 gap-4">
-            <div 
-              v-for="(item, i) in proposalStatuses" :key="i" 
-              class="group flex items-center gap-6 p-4 rounded-3xl border border-slate-100 hover:border-brand/20 hover:bg-brand/[0.02] transition-all"
-            >
-              <div class="w-3 h-10 rounded-full" :style="{ background: item.color }"></div>
-              
-              <div class="flex-1">
-                <div class="flex items-center justify-between mb-2">
-                  <span class="text-sm font-black text-slate-700 tracking-tight">{{ item.name }}</span>
-                  <span class="text-[10px] font-black text-slate-400">{{ item.count }} units ({{ item.percent }}%)</span>
-                </div>
-                <div class="h-2 bg-slate-100 rounded-full overflow-hidden shadow-inner flex">
-                   <div 
-                    class="h-full rounded-full transition-all duration-1000 ease-out" 
-                    :style="{ width: item.percent + '%', background: item.color }"
-                   ></div>
-                </div>
-              </div>
-
-              <div class="w-12 h-12 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 font-black text-xs group-hover:bg-brand group-hover:text-white transition-all">
-                {{ item.count }}
-              </div>
-            </div>
-            
-            <div v-if="proposalStatuses.length === 0" class="py-20 text-center">
-               <div class="w-20 h-20 bg-slate-50 text-slate-300 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-100">
-                 <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5a2 2 0 00.586-1.414V5L8 4z" /></svg>
-               </div>
-               <p class="text-sm font-black text-slate-400 uppercase tracking-[0.2em]">Zero activity detected in this cycle</p>
-            </div>
-          </div>
+        <div v-if="loadingStats" class="flex-1 min-h-[300px] flex items-center justify-center">
+          <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-brand"></div>
+        </div>
+        <div v-else-if="donutSeries.length > 0" class="flex-1 min-h-[300px] flex items-center justify-center -ml-4">
+          <apexchart type="donut" height="320" width="100%" :options="donutOptions" :series="donutSeries"></apexchart>
+        </div>
+        <div v-else class="flex-1 min-h-[300px] flex items-center justify-center text-xs font-black text-slate-300 uppercase tracking-widest italic">
+          No data available
         </div>
       </div>
 
-      <!-- Quick Actions & Deadlines -->
-      <div class="xl:col-span-4 space-y-8">
-        <!-- Shortcuts Grid -->
-        <div class="bg-slate-900 rounded-[40px] p-8 shadow-2xl shadow-slate-900/30 relative overflow-hidden group">
-          <div class="absolute right-0 bottom-0 w-32 h-32 bg-white/5 rounded-full translate-x-1/3 translate-y-1/3 group-hover:scale-150 transition-transform duration-1000"></div>
-          
-          <h3 class="text-sm font-black text-white/50 uppercase tracking-[0.2em] mb-6 relative z-10 flex items-center gap-3">
-             Command Center <span class="w-8 h-px bg-white/20"></span>
-          </h3>
-          
-          <div class="grid grid-cols-2 gap-4 relative z-10">
-            <router-link
-              v-for="action in quickActions" :key="action.label"
-              :to="action.to"
-              class="flex flex-col gap-4 p-5 bg-white/5 border border-white/10 rounded-3xl hover:bg-brand hover:border-brand-light transition-all group/item"
-            >
-              <div class="w-10 h-10 rounded-2xl bg-white/5 flex items-center justify-center text-white shrink-0 shadow-lg group-hover/item:rotate-12 transition-transform">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" :d="action.icon" /></svg>
-              </div>
-              <span class="text-[10px] font-black text-white uppercase tracking-widest">{{ action.label }}</span>
-            </router-link>
-          </div>
+      <!-- General Activity Overview -->
+      <div class="bg-white rounded-[40px] border border-slate-200 shadow-sm overflow-hidden flex flex-col p-8">
+        <h3 class="text-sm font-black text-slate-800 tracking-widest uppercase mb-2">Progress Overview</h3>
+        <p class="text-xs text-slate-400 font-bold mb-6">Metrics tracked against active lifecycle</p>
+        
+        <div v-if="loadingStats" class="flex-1 min-h-[300px] flex items-center justify-center">
+          <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-brand"></div>
         </div>
-
-        <!-- System Alerts / Upcoming -->
-        <div class="bg-white rounded-[40px] border border-slate-200 p-8 shadow-sm">
-          <h3 class="text-xs font-black text-slate-800 uppercase tracking-[0.2em] mb-6 flex items-center justify-between">
-            System Pulse
-            <span class="flex items-center gap-1.5 px-2 py-0.5 bg-emerald-50 text-emerald-600 rounded-full text-[9px]">
-               <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span> ACTIVE
-            </span>
-          </h3>
-          
-          <div class="space-y-4">
-            <div class="p-4 rounded-2xl bg-amber-50 border border-amber-100 flex gap-4">
-              <div class="w-10 h-10 rounded-xl bg-amber-500 text-white flex items-center justify-center shrink-0 shadow-lg shadow-amber-500/30 font-black text-xs">
-                !
-              </div>
-              <div>
-                <p class="text-[10px] font-black text-amber-600 uppercase tracking-widest mb-0.5">Urgent Milestone</p>
-                <p class="text-xs font-black text-slate-700 leading-tight">Q2 Fiscal Report due in 3 days</p>
-              </div>
-            </div>
-
-            <div class="p-4 rounded-2xl bg-slate-50 border border-slate-200 flex gap-4 grayscale group hover:grayscale-0 transition-all">
-              <div class="w-10 h-10 rounded-xl bg-slate-200 text-slate-500 flex items-center justify-center shrink-0 font-black text-xs">
-                i
-              </div>
-              <div>
-                <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-0.5">Policy Update</p>
-                <p class="text-xs font-black text-slate-500 leading-tight group-hover:text-slate-700">Open Access guidelines revised</p>
-              </div>
-            </div>
-          </div>
+        <div v-else class="flex-1 min-h-[300px] flex items-center justify-center -ml-4">
+          <apexchart type="bar" height="320" width="100%" :options="barOptions" :series="barSeries"></apexchart>
         </div>
       </div>
     </div>
@@ -250,12 +169,27 @@ const proposalStatuses = ref([])
 
 const PALETTE = ['#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#14b8a6', '#f97316']
 
-const quickActions = [
-  { label: 'Submit Proposal', icon: 'M12 4v16m8-8H4', to: '/app/proposals/create' },
-  { label: 'Track Projects', icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2', to: '/app/projects' },
-  { label: 'Active Calls', icon: 'M11 5.882V19.24a1.76 1.76 0 01-3.417.592l-2.147-6.15M18 13a3 3 0 100-6M5.436 13.683A4.001 4.001 0 017 6h1.832c4.1 0 7.625-1.234 9.168-3v14c-1.543-1.766-5.067-3-9.168-3H7a3.988 3.988 0 01-1.564-.317z', to: '/app/calls' },
-  { label: 'Data Reports', icon: 'M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z', to: '/app/reports' },
-]
+const donutSeries = ref([])
+const donutOptions = ref({
+  chart: { type: 'donut', fontFamily: 'Inter, sans-serif' },
+  labels: [],
+  colors: PALETTE,
+  stroke: { width: 0 },
+  plotOptions: { donut: { size: '75%' } },
+  dataLabels: { enabled: false },
+  legend: { show: true, position: 'bottom', fontSize: '11px', fontWeight: 800 }
+})
+
+const barSeries = ref([{ name: 'Count', data: [] }])
+const barOptions = ref({
+  chart: { type: 'bar', toolbar: { show: false }, fontFamily: 'Inter, sans-serif' },
+  colors: ['#2563eb'],
+  plotOptions: { bar: { borderRadius: 6, horizontal: false, columnWidth: '40%' } },
+  dataLabels: { enabled: false },
+  xaxis: { categories: [], labels: { style: { fontSize: '10px', fontWeight: 800, colors: '#94a3b8' } } },
+  yaxis: { labels: { style: { fontSize: '10px', fontWeight: 800, colors: '#94a3b8' } } },
+  grid: { borderColor: '#f1f5f9', strokeDashArray: 4 }
+})
 
 const stats = ref([
   {
@@ -288,33 +222,66 @@ async function fetchDashboard() {
       api.get('/dashboard', { params }).catch(() => ({ data: {} })),
       api.get('/proposals', { params: { ...params, per_page: 8 } }).catch(() => ({ data: { data: [] } }))
     ])
-    const d = dashRes.data || {}
-    const isAdmin = auth.hasRole?.('super_admin', 'research_admin')
-
-    stats.value[0].label = isAdmin ? 'Total Proposals' : 'My Submissions'
-    stats.value[0].value = String(d.proposals_count ?? d.active_proposals ?? 0)
-
-    stats.value[1].label = isAdmin ? 'Research Centers' : 'Institutional Units'
-    stats.value[1].value = String(d.centers_count ?? d.research_centers ?? 0)
-
-    stats.value[2].label = isAdmin ? 'System Users' : 'Draft Backlog'
-    stats.value[2].value = isAdmin 
-      ? String(d.users_count ?? d.active_researchers ?? 0)
-      : String((d.recent_proposals || []).filter(p => !p.submitted_at).length || 0)
-
-    stats.value[3].label = isAdmin ? 'Total Projects' : 'Active Grants'
-    stats.value[3].value = String(d.projects_count ?? d.ongoing_projects ?? 0)
+    const { data } = await api.get('/dashboard', { params }).catch(() => ({ data: {} }))
+    const d = data || {}
+    
+    // Dynamic Role-based mapping
+    if (auth.hasRole('super_admin', 'research_admin')) {
+      stats.value[0].label = 'Total Proposals'; stats.value[0].value = String(d.proposals_count || 0)
+      stats.value[1].label = 'Research Centers'; stats.value[1].value = String(d.centers_count || 0)
+      stats.value[2].label = 'System Users'; stats.value[2].value = String(d.users_count || 0)
+      stats.value[3].label = 'Total Projects'; stats.value[3].value = String(d.projects_count || 0)
+    } else if (auth.hasRole('reviewer')) {
+      stats.value[0].label = 'Pending Reviews'; stats.value[0].value = String(d.pending_reviews || 0)
+      stats.value[1].label = 'Completed Reviews'; stats.value[1].value = String(d.completed_reviews || 0)
+      stats.value[2].label = 'Average Score'; stats.value[2].value = String(d.average_score || 'N/A')
+      stats.value[3].label = 'Active Assignments'; stats.value[3].value = String((d.pending_reviews || 0) + (d.completed_reviews || 0))
+    } else if (auth.hasRole('finance_officer')) {
+      stats.value[0].label = 'Pending Checks'; stats.value[0].value = String(d.pending_finance_checks || 0)
+      stats.value[1].label = 'Approved Budgets'; stats.value[1].value = String(d.approved_budgets || 0)
+      stats.value[2].label = 'Total Expenses'; stats.value[2].value = String(d.total_expenses || 0)
+      stats.value[3].label = 'Active Grants'; stats.value[3].value = String(d.active_grants || 0)
+    } else if (auth.hasRole('ethics_officer')) {
+      stats.value[0].label = 'Pending Ethics'; stats.value[0].value = String(d.pending_ethics || 0)
+      stats.value[1].label = 'Cleared Projects'; stats.value[1].value = String(d.cleared_ethics || 0)
+      stats.value[2].label = 'Rejected Requests'; stats.value[2].value = String(d.rejected_ethics || 0)
+      stats.value[3].label = 'Total Processed'; stats.value[3].value = String(d.total_ethics || 0)
+    } else if (auth.hasRole('department_head')) {
+      stats.value[0].label = 'Dept Proposals'; stats.value[0].value = String(d.proposals_count || 0)
+      stats.value[1].label = 'Dept Projects'; stats.value[1].value = String(d.projects_count || 0)
+      stats.value[2].label = 'Dept Staff'; stats.value[2].value = String(d.staff_count || 0)
+      stats.value[3].label = 'Publications'; stats.value[3].value = String(d.publications_count || 0)
+    } else if (auth.hasRole('director')) {
+      stats.value[0].label = 'Center Proposals'; stats.value[0].value = String(d.proposals_count || 0)
+      stats.value[1].label = 'Center Projects'; stats.value[1].value = String(d.projects_count || 0)
+      stats.value[2].label = 'Centers Managed'; stats.value[2].value = String(d.centers_managed || 0)
+      stats.value[3].label = 'Publications'; stats.value[3].value = String(d.publications_count || 0)
+    } else {
+      // General Researcher / Student
+      stats.value[0].label = 'My Submissions'; stats.value[0].value = String(d.proposals_count || 0)
+      stats.value[1].label = 'Active Projects'; stats.value[1].value = String(d.projects_count || 0)
+      stats.value[2].label = 'Draft Backlog'; stats.value[2].value = String(d.draft_count || 0)
+      stats.value[3].label = 'Publications'; stats.value[3].value = String(d.publications_count || 0)
+    }
 
     const statusData = d.status_breakdown || d.proposal_statuses || []
+    
+    // Process donut chart
+    donutLabels = []
+    donutValues = []
     if (Array.isArray(statusData) && statusData.length > 0) {
-      const total = statusData.reduce((s, i) => s + (i.count || 0), 0) || 1
-      proposalStatuses.value = statusData.map((s, i) => ({
-        name: (s.name || s.status || 'Unknown').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
-        count: s.count || 0,
-        percent: Math.round(((s.count || 0) / total) * 100),
-        color: PALETTE[i % PALETTE.length]
-      }))
+      statusData.forEach(s => {
+        donutLabels.push((s.name || s.status || 'Unknown').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()))
+        donutValues.push(s.count || 0)
+      })
     }
+    donutSeries.value = donutValues
+    donutOptions.value = { ...donutOptions.value, labels: donutLabels }
+
+    // Process bar chart
+    barOptions.value = { ...barOptions.value, xaxis: { categories: [stats.value[0].label, stats.value[1].label, stats.value[2].label, stats.value[3].label] } }
+    barSeries.value = [{ name: 'Volume', data: [Number(stats.value[0].value), Number(stats.value[1].value), Number(stats.value[2].value), Number(stats.value[3].value)] }]
+
     recentProposals.value = (d.recent_proposals || proposalsRes.data?.data || proposalsRes.data || []).slice(0, 8)
   } catch (e) {
     console.error('Dashboard synchronization error:', e)
@@ -322,6 +289,9 @@ async function fetchDashboard() {
     loadingStats.value = false
   }
 }
+
+let donutLabels = []
+let donutValues = []
 
 onMounted(async () => {
   try {

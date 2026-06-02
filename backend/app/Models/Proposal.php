@@ -12,7 +12,7 @@ use Illuminate\Database\Eloquent\Relations\MorphMany;
 
 class Proposal extends Model
 {
-    use HasFactory, \App\Traits\HasDynamicStatus;
+    use HasFactory, \App\Traits\HasDynamicStatus, \App\Traits\HierarchicalScope;
 
     protected $fillable = [
         'call_id',

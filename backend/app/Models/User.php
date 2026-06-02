@@ -16,12 +16,12 @@ use App\Models\Publication;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, Notifiable, HasFactory, \App\Traits\HasRoles;
+    use HasApiTokens, Notifiable, HasFactory, \App\Traits\HasRoles, \App\Traits\HierarchicalScope;
 
     protected $fillable = [
         'name', 'email', 'password', 'department_id', 'profile_image_id',
         'orcid_id', 'google_scholar_id', 'scopus_id', 'linkedin_url',
-        'is_active', 'bio'
+        'is_active', 'bio', 'expertise_keywords'
     ];
 
     protected $hidden = ['password'];
@@ -55,6 +55,7 @@ class User extends Authenticatable
                     ->withTimestamps()
                     ->using(UserResearchCenter::class);
     }
+
 
     public function expertise(): BelongsToMany
     {

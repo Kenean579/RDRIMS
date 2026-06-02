@@ -24,8 +24,14 @@ export const useAuthStore = defineStore('auth', () => {
     return perms
   })
 
-  const hasRole = computed(() => (...names) => names.length === 0 || names.some(r => userRoles.value.includes(r)))
-  const hasPermission = computed(() => name => !name || userPermissions.value.includes(name))
+  const hasRole = computed(() => (...names) => {
+    if (userRoles.value.includes('super_admin')) return true
+    return names.length === 0 || names.some(r => userRoles.value.includes(r))
+  })
+  const hasPermission = computed(() => name => {
+    if (userRoles.value.includes('super_admin')) return true
+    return !name || userPermissions.value.includes(name)
+  })
   const primaryRole = computed(() => userRoles.value.length ? userRoles.value[0].replace(/_/g, ' ') : 'Guest')
 
   async function login(email, password) {

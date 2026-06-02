@@ -63,6 +63,32 @@ class DemoDataSeeder extends Seeder
             'academic_year_id' => 1
         ]);
 
+        $reviewer = User::where('email', 'yonas.reviewer@rdrims.local')->first() ?? User::find(2);
+        
+        // Give Yonas a pending review
+        \DB::table('proposal_reviewers')->insert([
+            'proposal_id' => 1, // First proposal above
+            'reviewer_id' => $reviewer->id,
+            'assigned_by' => 1,
+            'assigned_at' => Carbon::now()->subDays(2),
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now(),
+        ]);
+
+        // Give Yonas a completed review
+        \DB::table('proposal_reviewers')->insert([
+            'proposal_id' => $approvedProp->id,
+            'reviewer_id' => $reviewer->id,
+            'assigned_by' => 1,
+            'assigned_at' => Carbon::now()->subMonths(4),
+            'submitted_at' => Carbon::now()->subMonths(3)->subDays(10),
+            'overall_score' => 85.5,
+            'overall_comments' => 'Excellent methodology and clear objectives.',
+            'decision_id' => 1, // recommended
+            'created_at' => Carbon::now()->subMonths(4),
+            'updated_at' => Carbon::now()->subMonths(3)->subDays(10),
+        ]);
+
         // 4. Project (Based on approved proposal)
         Project::create([
             'proposal_id' => $approvedProp->id,
@@ -93,7 +119,7 @@ class DemoDataSeeder extends Seeder
             'abstract' => 'Review of the previous PRJ results published globally.',
             'journal_name' => 'African Journal of Renewable Energy',
             'publication_date' => Carbon::now()->subDays(2),
-            'doi' => '10.1000/xyz123',
+            'doi' => '10.1038/s41586-020-2649-2',
             'access_type_id' => \App\Models\PublicationAccessType::where('name', 'open_access')->first()->id ?? 1,
             'status_id' => \App\Models\PublicationStatus::where('name', 'published')->first()->id ?? 1,
         ]);

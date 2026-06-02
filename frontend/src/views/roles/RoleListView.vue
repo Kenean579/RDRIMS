@@ -21,25 +21,27 @@
       <EmptyState icon="🛡️" title="No roles found" description="Establish system roles to manage granular institutional access controls." action-label="Add Admin Role" action-icon="security" @action="showCreate = true" />
     </div>
 
-    <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-5">
-      <div v-for="role in roles" :key="role.id" class="card p-6 flex flex-col group card-hover relative overflow-hidden">
+    <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <div v-for="role in roles" :key="role.id" class="card p-6 flex flex-col group card-hover relative overflow-hidden border-l-4 border-l-violet-500 hover:border-l-violet-600 transition-all">
         <div class="flex items-start justify-between mb-4">
           <div class="flex-1">
-            <h3 class="text-base font-bold text-slate-800 group-hover:text-blue-600 transition">{{ role.name }}</h3>
-            <p class="text-xs text-slate-400 font-bold uppercase tracking-widest mt-1.5">{{ role.permissions?.length || 0 }} Effective Permissions</p>
+            <h3 class="text-lg font-black text-slate-800 group-hover:text-violet-700 transition leading-tight">{{ role.name }}</h3>
+            <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-1">Effective Permissions: <span class="text-violet-600">{{ role.permissions?.length || 0 }}</span></p>
           </div>
-          <div class="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400 group-hover:text-blue-600 group-hover:bg-blue-50 transition duration-300">
-             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
+          <div class="w-12 h-12 rounded-2xl bg-linear-to-br from-violet-500 to-fuchsia-600 text-white flex items-center justify-center font-black shadow-lg shadow-violet-500/30 shrink-0">
+             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
           </div>
         </div>
         
-        <p class="text-sm text-slate-500 line-clamp-2 leading-relaxed mb-6">{{ role.description || 'Access level definition for system operations.' }}</p>
+        <p class="text-sm text-slate-500 line-clamp-2 leading-relaxed mb-6 flex-1">{{ role.description || 'Access level definition for system operations.' }}</p>
 
-        <div class="mt-auto pt-4 border-t border-slate-50 flex items-center justify-between">
-           <button @click="openPermissions(role)" class="btn btn-ghost text-blue-600 font-bold" style="padding: 6px 10px; font-size: 11px">Manage Permissions</button>
+        <div class="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between">
+           <button @click="openPermissions(role)" class="btn btn-secondary h-9 px-4 text-[11px] font-bold uppercase tracking-widest text-violet-700 bg-violet-50 hover:bg-violet-100 border-0">
+             Manage Perms
+           </button>
            <div class="flex gap-2">
-             <button @click="editRole(role)" class="btn btn-ghost" style="padding: 6px 10px; font-size: 11px">Edit</button>
-             <button @click="confirmDelete(role)" class="btn btn-ghost text-red-500 hover:bg-red-50" style="padding: 6px 10px; font-size: 11px">Delete</button>
+             <button @click="editRole(role)" class="btn btn-ghost text-slate-500 hover:text-blue-600" style="padding: 6px 10px; font-size: 11px; font-weight: bold;">Edit</button>
+             <button @click="confirmDelete(role)" class="btn btn-ghost text-red-500 hover:bg-red-50" style="padding: 6px 10px; font-size: 11px; font-weight: bold;">Delete</button>
            </div>
         </div>
       </div>
@@ -132,7 +134,7 @@ async function saveRole() {
 
 async function syncPermissions() {
   try {
-    await api.post(`/roles/${syncingRole.value.id}/permissions`, { permission_ids: selectedPermissions.value })
+    await api.post(`/roles/${syncingRole.value.id}/permissions`, { permissions: selectedPermissions.value })
     notif.success('Permissions synced!'); showPermissions.value = false; fetchRoles()
   } catch (err) { notif.error('Failed') }
 }

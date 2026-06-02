@@ -9,11 +9,12 @@ use Illuminate\Http\JsonResponse;
 
 class DetectionController extends Controller
 {
-    public function index(): JsonResponse
+    public function index(\Illuminate\Http\Request $request): JsonResponse
     {
-        $requests = DetectionRequest::with('results', 'service', 'status')
+        $requests = DetectionRequest::with('results', 'service', 'status', 'requestedBy')
+            ->hierarchical($request->user(), 'requested_by')
             ->latest()
-            ->get();
+            ->paginate(50);
         return response()->json($requests);
     }
 
@@ -21,6 +22,7 @@ class DetectionController extends Controller
     {
         $detectionRequest = DetectionRequest::create([
             ...$request->validated(),
+            'service_id' => $request->service_id ?? 1,
             'status_id' => DetectionRequest::getStatusId('pending'),
             'requested_by' => $request->user()->id,
             'requested_at' => now(),

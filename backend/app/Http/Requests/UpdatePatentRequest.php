@@ -15,8 +15,11 @@ class UpdatePatentRequest extends FormRequest
     {
         return [
             'project_id' => 'sometimes|exists:projects,id',
-            'title' => 'sometimes',
-            'application_number' => 'sometimes',
+            'title' => 'sometimes|string|max:255',
+            'inventors' => 'nullable|string',
+            'filing_date' => 'nullable|date',
+            'application_number' => 'sometimes|string|max:100',
+            'status_id' => 'sometimes|exists:patent_statuses,id',
         ];
     }
 }

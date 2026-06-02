@@ -55,6 +55,7 @@ use App\Policies\SettingPolicy;
 use App\Policies\TaskPolicy;
 use App\Policies\UserPolicy;
 use Illuminate\Foundation\Support\Providers\AuthServiceProvider as ServiceProvider;
+use Illuminate\Support\Facades\Gate;
 
 class AuthServiceProvider extends ServiceProvider
 {
@@ -89,6 +90,23 @@ class AuthServiceProvider extends ServiceProvider
 
     public function boot(): void
     {
-        //
+        /*
+        |--------------------------------------------------------------
+        | Super-Admin Global Bypass
+        |--------------------------------------------------------------
+        | Gate::before runs BEFORE every policy check. If the user has
+        | the 'super_admin' role we return true immediately, granting
+        | unrestricted CRUD on every model / ability in the system.
+        | Returning null for non-super-admins lets the normal policy
+        | logic execute as usual.
+        |--------------------------------------------------------------
+        */
+        Gate::before(function (User $user, string $ability) {
+            if ($user->hasRole('super_admin')) {
+                return true;
+            }
+
+            return null; // continue to the normal policy
+        });
     }
 }

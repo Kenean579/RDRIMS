@@ -12,25 +12,33 @@
       </button>
     </div>
 
-    <!-- Content -->
-    <div v-if="loading" class="card p-8"><LoadingSkeleton :rows="3" /></div>
+    <!-- Content Wrapper -->
+    <div v-if="loading" class="grid grid-cols-1 gap-4">
+      <div v-for="i in 3" :key="i" class="card h-24 animate-pulse bg-slate-50/50"></div>
+    </div>
+    
     <div v-else-if="universities.length === 0" class="card">
       <EmptyState icon="🎓" title="No universities found" description="Add universities to manage multiple institutions." action-label="Add First University" action-icon="add" @action="showCreate = true" />
     </div>
-    <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <div v-for="uni in universities" :key="uni.id" class="card p-5 flex items-center justify-between card-hover">
+    
+    <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <div v-for="uni in universities" :key="uni.id" class="card p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-6 card-hover border-l-4 border-l-blue-500 hover:border-l-blue-600 transition-all">
         <div class="flex items-center gap-4">
-          <div class="w-10 h-10 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center font-bold text-lg">
+          <div class="w-12 h-12 rounded-2xl bg-linear-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center font-black text-xl shadow-lg shadow-blue-500/30">
             {{ uni.name.charAt(0) }}
           </div>
           <div>
-            <h3 class="font-bold text-slate-800">{{ uni.name }}</h3>
-            <p class="text-[11px] text-slate-400 font-medium uppercase tracking-wider">Institution Code: {{ uni.code }}</p>
+            <h3 class="font-black text-slate-800 text-lg leading-tight mb-1">{{ uni.name }}</h3>
+            <span class="inline-block px-2.5 py-0.5 bg-slate-100 text-slate-500 text-[10px] font-black uppercase tracking-widest rounded-md border border-slate-200">CODE: {{ uni.code }}</span>
           </div>
         </div>
-        <div class="flex gap-2">
-          <button @click="editUni(uni)" class="btn btn-ghost" style="padding: 4px 10px; font-size: 11px;">Edit</button>
-          <button @click="confirmDelete(uni)" class="btn btn-ghost text-red-600 border-red-50 hover:bg-red-50" style="padding: 4px 10px; font-size: 11px;">Delete</button>
+        <div class="flex gap-2 shrink-0">
+          <button @click="editUni(uni)" class="btn btn-secondary h-9 px-4 text-[11px] font-bold uppercase tracking-widest">
+            Edit
+          </button>
+          <button @click="confirmDelete(uni)" class="btn btn-danger h-9 px-4 text-[11px] font-bold uppercase tracking-widest shadow-lg shadow-rose-500/20">
+            Delete
+          </button>
         </div>
       </div>
     </div>

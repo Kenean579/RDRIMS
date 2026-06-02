@@ -14,7 +14,8 @@ class LookupController extends Controller
         'task_statuses', 'investigator_roles', 'invitation_statuses', 'agreement_types',
         'output_categories', 'student_levels', 'output_subtypes', 'detection_services',
         'detection_statuses', 'participant_types', 'output_statuses', 'center_roles',
-        'publication_access_types', 'thematic_areas', 'academic_years',
+        'publication_access_types', 'publication_statuses', 'event_statuses',
+        'thematic_areas', 'academic_years',
     ];
 
     public function index(string $table): JsonResponse
@@ -30,5 +31,44 @@ class LookupController extends Controller
         $results = \DB::table($table)->orderBy('id')->get(['id', 'name']);
 
         return response()->json($results);
+    }
+
+    public function store(string $table, \Illuminate\Http\Request $request): JsonResponse
+    {
+        if (! in_array($table, $this->allowedTables)) return response()->json(['message' => 'Table not allowed.'], 403);
+        $request->validate(['name' => 'required|string|max:255']);
+        
+        $id = \DB::table($table)->insertGetId([
+            'name' => $request->name,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
+        
+        return response()->json(['id' => $id, 'name' => $request->name], 201);
+    }
+
+    public function update(string $table, int $id, \Illuminate\Http\Request $request): JsonResponse
+    {
+        if (! in_array($table, $this->allowedTables)) return response()->json(['message' => 'Table not allowed.'], 403);
+        $request->validate(['name' => 'required|string|max:255']);
+        
+        \DB::table($table)->where('id', $id)->update([
+            'name' => $request->name,
+            'updated_at' => now(),
+        ]);
+        
+        return response()->json(['id' => $id, 'name' => $request->name]);
+    }
+
+    public function destroy(string $table, int $id): JsonResponse
+    {
+        if (! in_array($table, $this->allowedTables)) return response()->json(['message' => 'Table not allowed.'], 403);
+        
+        try {
+            \DB::table($table)->where('id', $id)->delete();
+            return response()->json(['message' => 'Deleted.']);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Cannot delete this record because it is in use.'], 400);
+        }
     }
 }

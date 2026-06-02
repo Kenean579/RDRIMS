@@ -15,9 +15,21 @@ class UserController extends Controller
 
     public function __construct(private UserService $userService) {}
 
-    public function index(): JsonResponse
+    public function index(Request $request): JsonResponse
     {
-        return response()->json(User::with('roles', 'department.faculty')->get());
+        $query = User::with('roles', 'department.faculty')
+            ->hierarchical($request->user(), 'id');
+
+        if ($request->has('search') && $request->search != '') {
+            $query->where('name', 'like', '%' . $request->search . '%')
+                  ->orWhere('email', 'like', '%' . $request->search . '%');
+        }
+
+        if ($request->has('role') && $request->role != '') {
+            $query->whereHas('roles', fn($q) => $q->where('name', $request->role));
+        }
+
+        return response()->json($query->paginate($request->get('per_page', 15)));
     }
 
     public function store(UserRequest $request): JsonResponse

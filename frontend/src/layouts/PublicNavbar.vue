@@ -138,7 +138,7 @@ async function toggleLanguage() {
   localStorage.setItem('language', newLang)
   try {
     if (auth.isAuthenticated) {
-      await api.put('/language-preference', { language: newLang })
+      await api.put('/language-preference', { locale: newLang })
     }
   } catch(e) {}
 }

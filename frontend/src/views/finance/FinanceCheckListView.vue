@@ -78,19 +78,30 @@ async function fetchChecks() {
 
 async function approveCheck(check) {
   try {
-    await api.put(`/finance-checks/${check.id || check.finance_checks?.[0]?.id}`, { status_id: 2 })
+    const existing = check.finance_checks?.[0]
+    if (existing) {
+      await api.put(`/finance-checks/${existing.id}`, { status_id: 2 })
+    } else {
+      await api.post(`/proposals/${check.id}/finance-checks`, { status_id: 2 })
+    }
     notif.success('Finance check approved!')
     fetchChecks()
-  } catch (err) { notif.error('Failed') }
+  } catch (err) { notif.error('Failed to update finance check') }
 }
 
 function rejectCheck(check) { rejectingCheck.value = check; showReject.value = true }
 
 async function confirmReject() {
   try {
-    await api.put(`/finance-checks/${rejectingCheck.value.id || rejectingCheck.value.finance_checks?.[0]?.id}`, { status_id: 3, comments: rejectComment.value })
-    notif.success('Rejected!'); showReject.value = false; fetchChecks()
-  } catch (err) { notif.error('Failed') }
+    const existing = rejectingCheck.value.finance_checks?.[0]
+    if (existing) {
+      await api.put(`/finance-checks/${existing.id}`, { status_id: 3, comments: rejectComment.value })
+    } else {
+      await api.post(`/proposals/${rejectingCheck.value.id}/finance-checks`, { status_id: 3, comments: rejectComment.value })
+    }
+    notif.success('Finance check rejected!')
+    showReject.value = false; fetchChecks()
+  } catch (err) { notif.error('Failed to reject finance check') }
 }
 
 onMounted(fetchChecks)

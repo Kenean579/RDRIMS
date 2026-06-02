@@ -107,8 +107,11 @@ Route::middleware('auth:sanctum')->group(function () {
     // Audit logs (admin only)
     Route::get('audit-logs', [AuditLogController::class, 'index'])->middleware('role:super_admin,research_admin,admin');
 
-    // Settings (admin only management)
+    // Settings & Lookups (admin only management)
     Route::apiResource('settings', SettingController::class)->only(['store', 'update', 'destroy']);
+    Route::post('lookups/{table}', [LookupController::class, 'store']);
+    Route::put('lookups/{table}/{id}', [LookupController::class, 'update']);
+    Route::delete('lookups/{table}/{id}', [LookupController::class, 'destroy']);
 
     // Academic hierarchy & Thematic Areas
     Route::apiResource('universities', UniversityController::class)->except(['index', 'show']);
@@ -137,11 +140,11 @@ Route::middleware('auth:sanctum')->group(function () {
     // Expertise
     Route::apiResource('expertise', ExpertiseController::class);
 
+    // Review Criteria
+    Route::apiResource('review-criteria', ReviewCriterionController::class);
+
     // Calls
     Route::apiResource('calls', CallController::class)->except(['index', 'show']);
-
-    // Review criteria
-    Route::apiResource('review-criteria', ReviewCriterionController::class);
 
     // Proposals
     Route::apiResource('proposals', ProposalController::class);
@@ -151,6 +154,17 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('proposals/{proposal}/assign-reviewers', [ProposalController::class, 'assignReviewers']);
     Route::post('proposals/{proposal}/create-project', [ProjectController::class, 'createFromProposal']);
     Route::get('proposals/{proposal}/suggest-reviewers', [ProposalController::class, 'suggestReviewers']);
+    Route::post('proposals/{proposal}/upload-document', [ProposalController::class, 'uploadDocument']);
+    
+    // Finance Checks
+    Route::post('proposals/{proposal}/finance-checks', [FinanceCheckController::class, 'store']);
+    Route::apiResource('finance-checks', FinanceCheckController::class)->only(['index', 'show', 'update']);
+
+    // Ethics Requests
+    Route::post('proposals/{proposal}/ethics-requests', [EthicsRequestController::class, 'store']);
+    Route::apiResource('ethics-requests', EthicsRequestController::class)->only(['index', 'show', 'update']);
+    Route::post('ethics-requests/{ethics_request}/mark-submitted', [EthicsRequestController::class, 'markSubmitted']);
+
     Route::apiResource('proposals.investigators', ProposalInvestigatorController::class)->only(['index', 'store', 'destroy']);
     Route::apiResource('proposals.reviewers', ProposalReviewerController::class)->only(['index', 'store', 'destroy']);
     Route::post('proposals/{proposal}/files', [ProposalFileController::class, 'attach']);

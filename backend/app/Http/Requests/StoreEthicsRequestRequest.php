@@ -15,7 +15,10 @@ class StoreEthicsRequestRequest extends FormRequest
     {
         return [
             'proposal_id' => 'required|exists:proposals,id',
-            'description' => 'required',
+            'submitted_to_irb' => 'nullable|boolean',
+            'approval_status_id' => 'nullable|exists:ethics_approval_statuses,id',
+            'comments' => 'nullable|string',
+            'version' => 'nullable|integer',
         ];
     }
 }

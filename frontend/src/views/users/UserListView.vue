@@ -116,12 +116,38 @@
           <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-2 ml-1">Min. 8 characters</p>
         </div>
 
-        <div class="space-y-2">
-          <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest ml-1">Department</label>
-          <select v-model="form.department_id" class="input h-12 font-bold text-slate-700">
-            <option value="">Select Department</option>
-            <option v-for="d in departments" :key="d.id" :value="d.id">{{ d.name }}</option>
-          </select>
+        <div class="space-y-4">
+          <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest ml-1 mb-2">Assign to Hierarchy</label>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div class="space-y-2">
+              <label class="block text-[10px] text-slate-400 font-bold ml-1">University</label>
+              <select v-model="form.university_id" class="input h-11 text-sm font-bold text-slate-700">
+                <option value="">Select University</option>
+                <option v-for="u in universities" :key="u.id" :value="u.id">{{ u.name }}</option>
+              </select>
+            </div>
+            <div class="space-y-2">
+              <label class="block text-[10px] text-slate-400 font-bold ml-1">Campus</label>
+              <select v-model="form.campus_id" class="input h-11 text-sm font-bold text-slate-700" :disabled="!form.university_id">
+                <option value="">Select Campus</option>
+                <option v-for="c in filteredCampuses" :key="c.id" :value="c.id">{{ c.name }}</option>
+              </select>
+            </div>
+            <div class="space-y-2">
+              <label class="block text-[10px] text-slate-400 font-bold ml-1">Faculty / College</label>
+              <select v-model="form.faculty_id" class="input h-11 text-sm font-bold text-slate-700" :disabled="!form.campus_id">
+                <option value="">Select Faculty</option>
+                <option v-for="f in filteredFaculties" :key="f.id" :value="f.id">{{ f.name }}</option>
+              </select>
+            </div>
+            <div class="space-y-2">
+              <label class="block text-[10px] text-slate-400 font-bold ml-1">Department</label>
+              <select v-model="form.department_id" class="input h-11 text-sm font-bold text-slate-700" :disabled="!form.faculty_id">
+                <option value="">Select Department</option>
+                <option v-for="d in filteredDepartments" :key="d.id" :value="d.id">{{ d.name }}</option>
+              </select>
+            </div>
+          </div>
         </div>
 
         <div class="space-y-3">
@@ -148,7 +174,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted } from 'vue'
+import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { useNotificationStore } from '@/stores/notification'
 import api from '@/services/api'
 import Modal from '@/components/Modal.vue'
@@ -160,9 +186,9 @@ const notif = useNotificationStore()
 const users = ref([]); const loading = ref(true); const error = ref(null)
 const pagination = reactive({ current_page: 1, last_page: 1, total: 0 })
 const search = ref(''); const roleFilter = ref('')
-const roles = ref([]); const departments = ref([])
+const roles = ref([]); const departments = ref([]); const universities = ref([]); const campuses = ref([]); const faculties = ref([])
 const showCreate = ref(false); const editingUser = ref(null); const showDelete = ref(false); const deletingUser = ref(null)
-const form = reactive({ name: '', email: '', password: '', department_id: '', role_ids: [] })
+const form = reactive({ name: '', email: '', password: '', university_id: '', campus_id: '', faculty_id: '', department_id: '', role_ids: [] })
 let searchTimer = null
 
 async function fetchUsers(page = 1) {
@@ -171,8 +197,36 @@ async function fetchUsers(page = 1) {
   catch (err) { error.value = err.response?.data?.message || 'Failed' } finally { loading.value = false }
 }
 function debounceSearch() { clearTimeout(searchTimer); searchTimer = setTimeout(() => fetchUsers(1), 400) }
-function editUser(u) { editingUser.value = u; Object.assign(form, { name: u.name, email: u.email, password: '', department_id: u.department_id || '', role_ids: u.roles?.map(r => r.id) || [] }) }
-function closeModal() { showCreate.value = false; editingUser.value = null; Object.assign(form, { name: '', email: '', password: '', department_id: '', role_ids: [] }) }
+
+// Computed hierarchy
+const filteredCampuses = computed(() => campuses.value.filter(c => c.university_id === form.university_id))
+const filteredFaculties = computed(() => faculties.value.filter(f => f.campus_id === form.campus_id))
+const filteredDepartments = computed(() => departments.value.filter(d => d.faculty_id === form.faculty_id))
+
+// Watchers to clear children on change
+watch(() => form.university_id, () => { form.campus_id = ''; form.faculty_id = ''; form.department_id = '' })
+watch(() => form.campus_id, () => { form.faculty_id = ''; form.department_id = '' })
+watch(() => form.faculty_id, () => { form.department_id = '' })
+
+function editUser(u) {
+  let uid = '', cid = '', fid = u.department?.faculty_id || ''
+  if (u.department_id) {
+    const dept = departments.value.find(d => d.id === u.department_id)
+    if (dept) {
+      fid = dept.faculty_id
+      const fac = faculties.value.find(f => f.id === fid)
+      if (fac) {
+        cid = fac.campus_id
+        const camp = campuses.value.find(c => c.id === cid)
+        if (camp) uid = camp.university_id
+      }
+    }
+  }
+  editingUser.value = u
+  Object.assign(form, { name: u.name, email: u.email, password: '', university_id: uid, campus_id: cid, faculty_id: fid, department_id: u.department_id || '', role_ids: u.roles?.map(r => r.id) || [] })
+}
+
+function closeModal() { showCreate.value = false; editingUser.value = null; Object.assign(form, { name: '', email: '', password: '', university_id: '', campus_id: '', faculty_id: '', department_id: '', role_ids: [] }) }
 function confirmDelete(u) { deletingUser.value = u; showDelete.value = true }
 
 async function saveUser() {
@@ -192,6 +246,11 @@ async function deactivateUser() {
 
 onMounted(async () => {
   await fetchUsers()
-  try { const [rr, dr] = await Promise.all([api.get('/roles'), api.get('/departments')]); roles.value = rr.data; departments.value = dr.data } catch (e) {}
+  try { 
+    const [rr, dr, ur, cr, fr] = await Promise.all([
+      api.get('/roles'), api.get('/departments'), api.get('/universities'), api.get('/campuses'), api.get('/faculties')
+    ])
+    roles.value = rr.data; departments.value = dr.data; universities.value = ur.data; campuses.value = cr.data; faculties.value = fr.data
+  } catch (e) {}
 })
 </script>

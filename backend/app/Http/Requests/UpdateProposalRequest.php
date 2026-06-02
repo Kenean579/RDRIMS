@@ -14,10 +14,20 @@ class UpdateProposalRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title' => 'sometimes',
-            'abstract' => 'sometimes',
-            'call_id' => 'sometimes|exists:calls,id',
-            'budget' => 'sometimes|numeric',
+            'title'          => 'sometimes|string|max:500',
+            'abstract'       => 'sometimes|string',
+            'call_id'        => 'sometimes|nullable|exists:calls,id',
+            'budget'         => 'sometimes|numeric',
+            'type_id'        => 'sometimes|nullable|exists:proposal_types,id',
+            'keywords'       => 'sometimes|nullable|string',
+            'objectives'     => 'sometimes|nullable|string',
+            'methodology'    => 'sometimes|nullable|string',
+            'investigators'             => 'sometimes|array',
+            'investigators.*.user_id'   => 'nullable|exists:users,id',
+            'investigators.*.name'      => 'nullable|string|max:255',
+            'investigators.*.email'     => 'nullable|email|max:255',
+            'investigators.*.institution' => 'nullable|string|max:255',
+            'investigators.*.role_id'   => 'required_with:investigators|exists:investigator_roles,id',
         ];
     }
 }

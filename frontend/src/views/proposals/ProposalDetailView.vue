@@ -32,12 +32,24 @@
     <template v-else>
       <!-- Action Bar -->
       <div class="card p-4 bg-slate-50/50 border border-slate-100 flex flex-wrap gap-4 shadow-inner font-black uppercase tracking-widest">
+        <router-link v-if="auth.hasRole('super_admin','research_admin') || isOwner" :to="`/app/proposals/${proposal.id}/edit`" class="btn bg-white border border-slate-200 text-slate-700 hover:text-brand hover:border-brand h-11 px-8 text-[11px] shadow-sm flex items-center gap-2">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
+          Edit Details
+        </router-link>
         <button v-if="auth.hasRole('super_admin','research_admin')" @click="checkOriginality" class="btn bg-indigo-600 hover:bg-indigo-700 text-white h-11 px-8 text-[11px] shadow-lg shadow-indigo-600/20">Check Originality</button>
         <router-link v-if="auth.hasRole('super_admin','research_admin') && proposal.status?.name === 'approved'" :to="`/app/projects/create-from-proposal/${proposal.id}`" class="btn bg-teal-500 hover:bg-teal-600 text-white h-11 px-8 text-[11px] shadow-lg shadow-teal-500/20 flex items-center justify-center">Convert To Project</router-link>
-        <button v-if="proposal.status?.name === 'draft' && isOwner" @click="submitProposal" class="btn btn-primary h-11 px-8 text-[11px] shadow-lg shadow-blue-500/20">Submit Final</button>
-        <button v-if="auth.hasRole('super_admin','research_admin') && canApprove" @click="approveProposal" class="btn bg-emerald-500 hover:bg-emerald-600 text-white h-11 px-8 text-[11px] shadow-lg shadow-emerald-500/20">Approve</button>
-        <button v-if="auth.hasRole('super_admin','research_admin') && canApprove" @click="showReject = true" class="btn bg-rose-600 hover:bg-rose-700 text-white h-11 px-8 text-[11px] shadow-lg shadow-rose-600/20">Reject</button>
-        <button v-if="auth.hasRole('super_admin','research_admin') && (proposal.status?.name === 'submitted' || proposal.status?.name === 'under_review')" @click="showAssignReviewers = true" class="btn bg-amber-500 hover:bg-amber-600 text-white h-11 px-8 text-[11px] shadow-lg shadow-amber-500/20">Assign Peer Reviewers</button>
+        
+        <!-- Submit: owner OR super_admin can submit drafts -->
+        <button v-if="proposal.status?.name === 'draft' && (isOwner || auth.hasRole('super_admin'))" @click="submitProposal" class="btn btn-primary h-11 px-8 text-[11px] shadow-lg shadow-blue-500/20">Submit Final</button>
+        
+        <!-- Admin workflow actions: super_admin sees them on ANY non-draft status (or even draft) -->
+        <template v-if="auth.hasRole('super_admin','research_admin') && proposal.status?.name !== 'approved' && proposal.status?.name !== 'rejected'">
+          <button v-if="['submitted','under_review','finance_check'].includes(proposal.status?.name)" @click="showAssignReviewers = true" class="btn bg-amber-500 hover:bg-amber-600 text-white h-11 px-8 text-[11px] shadow-lg shadow-amber-500/20">Assign Peer Reviewers</button>
+          <button v-if="['submitted','under_review','finance_check'].includes(proposal.status?.name)" @click="sendToFinance" class="btn bg-slate-700 hover:bg-slate-800 text-white h-11 px-8 text-[11px] shadow-lg shadow-slate-600/20">Send to Finance</button>
+          <button v-if="['submitted','under_review','finance_check'].includes(proposal.status?.name)" @click="generateEthics" class="btn bg-slate-700 hover:bg-slate-800 text-white h-11 px-8 text-[11px] shadow-lg shadow-slate-600/20">Generate Ethics PDF</button>
+          <button v-if="canApprove" @click="approveProposal" class="btn bg-emerald-500 hover:bg-emerald-600 text-white h-11 px-8 text-[11px] shadow-lg shadow-emerald-500/20">Approve</button>
+          <button v-if="canApprove" @click="showReject = true" class="btn bg-rose-600 hover:bg-rose-700 text-white h-11 px-8 text-[11px] shadow-lg shadow-rose-600/20">Reject</button>
+        </template>
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 font-bold">
@@ -137,6 +149,38 @@
             <p v-else class="text-[10px] font-black text-slate-400 uppercase tracking-widest italic text-center py-6">No co-investigators.</p>
           </div>
 
+          <!-- Document Management -->
+          <div class="card p-8">
+            <h2 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2">
+              <span class="w-1 h-3 bg-brand rounded-full"></span>
+              Main Document
+            </h2>
+            
+            <div v-if="proposal.file" class="p-4 bg-emerald-50 rounded-2xl border border-emerald-100 flex items-center justify-between group">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center text-xl shrink-0 group-hover:scale-110 transition-transform">📄</div>
+                <div class="min-w-0">
+                   <p class="text-sm font-black text-slate-800 truncate">{{ proposal.file.original_name }}</p>
+                   <p class="text-[9px] font-black text-emerald-600 uppercase tracking-widest mt-0.5">Formal Proposal Attached</p>
+                </div>
+              </div>
+              <a :href="`/api/files/${proposal.file.id}/download`" target="_blank" class="p-2 text-slate-400 hover:text-brand transition-colors">
+                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a2 2 0 002 2h2m4-4V4m0 0l4 4m-4-4l-4 4m5 6h2a2 2 0 002-2v-5a2 2 0 00-2-2H9"></path></svg>
+              </a>
+            </div>
+
+            <div v-if="proposal.status?.name === 'draft' || !proposal.file || auth.hasRole('super_admin')" class="mt-4">
+              <label class="block">
+                <span class="sr-only">Choose proposal file</span>
+                <input type="file" @change="onFileSelected" accept=".pdf,.doc,.docx" class="block w-full text-[10px] text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[10px] file:font-black file:bg-brand/10 file:text-brand hover:file:bg-brand/20 cursor-pointer"/>
+              </label>
+              <button v-if="selectedFile" @click="uploadDocument" :disabled="uploading" class="btn btn-primary w-full mt-4 h-10 text-[10px] tracking-widest uppercase">
+                <span v-if="uploading">Uploading...</span>
+                <span v-else>Attach Document</span>
+              </button>
+            </div>
+          </div>
+
           <!-- Reviews Progress -->
           <div class="card p-8">
             <h2 class="text-xs font-black text-slate-400 uppercase tracking-widest mb-6 flex items-center gap-2">
@@ -187,14 +231,23 @@
           <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
              <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Eligible Reviewers (Expertise Match)</p>
              <div class="space-y-2 max-h-60 overflow-y-auto pr-2">
-                <label v-for="r in availableReviewers" :key="r.id" class="flex items-center gap-3 p-3 bg-white rounded-xl border border-slate-100 hover:border-brand cursor-pointer group transition-all">
-                  <input type="checkbox" :value="r.id" v-model="selectedReviewers" class="w-4 h-4 rounded text-brand focus:ring-brand border-slate-300" />
-                  <div class="min-w-0">
-                    <p class="text-sm font-black text-slate-800 group-hover:text-brand">{{ r.name }}</p>
-                    <p class="text-[9px] font-bold text-slate-400 uppercase">{{ r.email }}</p>
+                <label v-for="r in availableReviewers" :key="r.user ? r.user.id : r.id" class="flex items-center justify-between p-3 bg-white rounded-xl border border-slate-100 hover:border-brand cursor-pointer group transition-all">
+                  <div class="flex items-center gap-3">
+                    <input type="checkbox" :value="r.user ? r.user.id : r.id" v-model="selectedReviewers" class="w-4 h-4 rounded text-brand focus:ring-brand border-slate-300" />
+                    <div class="min-w-0">
+                      <p class="text-sm font-black text-slate-800 group-hover:text-brand">{{ r.user ? r.user.name : r.name }}</p>
+                      <p class="text-[9px] font-bold text-slate-400 uppercase">{{ r.user ? r.user.email : r.email }}</p>
+                    </div>
+                  </div>
+                  <div v-if="r.match_percentage" class="px-2 py-1 bg-brand/10 text-brand text-[10px] font-black rounded flex flex-col items-center justify-center">
+                    <span>{{ r.match_percentage }}% Match</span>
+                    <span v-if="r.matched_keywords?.length" class="text-[8px] opacity-70">
+                      via {{ r.matched_keywords.slice(0, 2).join(', ') }}
+                    </span>
                   </div>
                 </label>
              </div>
+             <p v-if="availableReviewers.length === 0" class="text-xs text-slate-400 py-4 text-center italic font-medium">No reviewers available or configured.</p>
           </div>
           <div class="flex justify-end gap-3 pt-6 border-t border-slate-100">
              <button @click="showAssignReviewers = false" class="btn btn-secondary px-6">Cancel</button>
@@ -220,6 +273,7 @@ const route = useRoute(); const router = useRouter(); const auth = useAuthStore(
 const proposal = ref({}); const loading = ref(true); const error = ref(null)
 const showReject = ref(false); const rejectComment = ref('')
 const showAssignReviewers = ref(false); const selectedReviewers = ref([]); const availableReviewers = ref([])
+const selectedFile = ref(null); const uploading = ref(false)
 
 const isOwner = computed(() => auth.user?.id === proposal.value.submitted_by?.id)
 const canApprove = computed(() => ['submitted','under_review','finance_check'].includes(proposal.value.status?.name))
@@ -237,11 +291,19 @@ async function fetchProposal() {
 }
 
 async function checkOriginality() {
+  if (!proposal.value.file_id) {
+    notif.error('No document attached for plagiarism check')
+    return
+  }
   try {
-    await api.post('/detection/requests', { detectable_type: 'App\\Models\\Proposal', detectable_id: proposal.value.id })
+    await api.post('/detection/requests', { 
+      detectable_type: 'App\\Models\\Proposal', 
+      detectable_id: proposal.value.id,
+      file_id: proposal.value.file_id
+    })
     notif.success('Strategic detection request submitted')
   } catch(e) {
-    notif.error('Failed to initialize check')
+    notif.error(e.response?.data?.message || 'Failed to initialize check')
   }
 }
 
@@ -250,7 +312,15 @@ async function submitProposal() {
     await api.post(`/proposals/${proposal.value.id}/submit`)
     notif.success('Formally submitted for review')
     fetchProposal()
-  } catch (err) { notif.error('Recall failed') }
+  } catch (err) {
+    const data = err.response?.data
+    let msg = data?.message || 'Submission failed'
+    if (data?.errors) {
+      const firstKey = Object.keys(data.errors)[0]
+      if (firstKey) msg = data.errors[firstKey][0]
+    }
+    notif.error(msg)
+  }
 }
 
 async function approveProposal() {
@@ -258,7 +328,9 @@ async function approveProposal() {
     await api.post(`/proposals/${proposal.value.id}/approve`)
     notif.success('Proposal indexed as approved')
     fetchProposal()
-  } catch (err) { notif.error('Action failed') }
+  } catch (err) {
+    notif.error(err.response?.data?.message || 'Approval failed')
+  }
 }
 
 async function rejectProposal() {
@@ -267,7 +339,9 @@ async function rejectProposal() {
     await api.post(`/proposals/${proposal.value.id}/reject`, { comment: rejectComment.value })
     notif.success('Handled as rejected')
     showReject.value = false; fetchProposal()
-  } catch (err) { notif.error('Action failed') }
+  } catch (err) {
+    notif.error(err.response?.data?.message || 'Rejection failed')
+  }
 }
 
 async function assignReviewers() {
@@ -276,7 +350,49 @@ async function assignReviewers() {
     await api.post(`/proposals/${proposal.value.id}/assign-reviewers`, { reviewer_ids: selectedReviewers.value })
     notif.success('Peer assignment successful')
     showAssignReviewers.value = false; fetchProposal()
-  } catch (err) { notif.error('Assignment failed') }
+  } catch (err) {
+    notif.error(err.response?.data?.message || 'Assignment failed')
+  }
+}
+
+async function sendToFinance() {
+  try {
+    await api.post(`/proposals/${proposal.value.id}/finance-checks`)
+    notif.success('Budget evaluation requested')
+    fetchProposal()
+  } catch (e) { notif.error('Request failed') }
+}
+
+async function generateEthics() {
+  try {
+    await api.post(`/proposals/${proposal.value.id}/ethics-requests`)
+    notif.success('IRB Ethics PDF auto-generated')
+    fetchProposal()
+  } catch (e) { notif.error('Generation failed') }
+}
+
+function onFileSelected(event) {
+  selectedFile.value = event.target.files[0]
+}
+
+async function uploadDocument() {
+  if (!selectedFile.value) return
+  uploading.value = true
+  const formData = new FormData()
+  formData.append('document', selectedFile.value)
+  
+  try {
+    await api.post(`/proposals/${proposal.value.id}/upload-document`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+    notif.success('Research document attached successfully')
+    selectedFile.value = null
+    fetchProposal()
+  } catch (e) {
+    notif.error(e.response?.data?.message || 'Upload failed')
+  } finally {
+    uploading.value = false
+  }
 }
 
 onMounted(async () => {

@@ -13,14 +13,21 @@ class UserRequest extends FormRequest
 
     public function rules(): array
     {
-        $userId = $this->user?->id;
+        $user = $this->route('user');
+        $userId = $user instanceof \App\Models\User ? $user->id : $user;
 
         return [
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users,email,' . $userId,
-            'password' => $userId ? 'nullable|min:8' : 'required|min:8',
+            'email' => 'required|email|unique:users,email,' . ($userId ?: 'NULL'),
+            'password' => $this->isMethod('POST') ? 'required|min:8' : 'nullable|min:8',
             'department_id' => 'nullable|exists:departments,id',
-            'is_active' => 'boolean',
+            'orcid_id' => 'nullable|string|max:255',
+            'google_scholar_id' => 'nullable|string|max:255',
+            'scopus_id' => 'nullable|string|max:255',
+            'linkedin_url' => 'nullable|url|max:255',
+            'bio' => 'nullable|string',
+            'profile_image_id' => 'nullable|exists:files,id',
+            'is_active' => 'nullable|boolean',
             'roles' => 'nullable|array',
             'roles.*' => 'exists:roles,id',
         ];

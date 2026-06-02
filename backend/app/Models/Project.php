@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Project extends Model
 {
-    use HasFactory, \App\Traits\HasDynamicStatus;
+    use HasFactory, \App\Traits\HasDynamicStatus, \App\Traits\HierarchicalScope;
 
     protected $fillable = [
         'proposal_id', 'title', 'start_date', 'end_date', 'total_budget',

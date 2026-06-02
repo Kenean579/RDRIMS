@@ -20,7 +20,7 @@ class ProductionSeeder extends Seeder
         // 2. Create Admin User
         $adminRole = Role::where('name', 'super_admin')->first();
         $admin = User::firstOrCreate(
-            ['email' => 'admin@wollouniversity.edu.et'],
+            ['email' => 'admin@rdrims.local'],
             [
                 'name' => 'System Administrator',
                 'password' => \Hash::make('Admin@2025!'),

@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\MorphTo;
 
 class DetectionRequest extends Model
 {
-    use HasFactory, \App\Traits\HasDynamicStatus;
+    use HasFactory, \App\Traits\HasDynamicStatus, \App\Traits\HierarchicalScope;
 
     protected $fillable = [
         'detectable_type', 'detectable_id', 'file_id',

@@ -2,7 +2,7 @@
   <div class="flex flex-col gap-8 pb-12 animate-fade card">
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
       <div>
-        <router-link :to="`/proposals/${proposal.id}`" class="flex items-center gap-2 text-brand font-black uppercase tracking-widest text-[10px] mb-3 hover:translate-x-1 transition-transform">
+        <router-link :to="`/app/proposals/${proposal.id}`" class="flex items-center gap-2 text-brand font-black uppercase tracking-widest text-[10px] mb-3 hover:translate-x-1 transition-transform">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
           Back to Proposal
         </router-link>
@@ -120,7 +120,7 @@
       </div>
 
       <div class="flex items-center gap-3 justify-end pt-6 border-t border-slate-100">
-        <router-link :to="`/proposals/${proposal.id}`" class="btn btn-secondary px-8 h-12">Discard</router-link>
+        <router-link :to="`/app/proposals/${proposal.id}`" class="btn btn-secondary px-8 h-12">Discard</router-link>
         <button type="submit" :disabled="submitting" class="btn btn-primary px-12 h-12 shadow-lg shadow-blue-500/20">
           {{ submitting ? 'Processing...' : 'Save Changes' }}
         </button>

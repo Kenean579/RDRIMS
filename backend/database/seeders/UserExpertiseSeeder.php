@@ -11,7 +11,7 @@ class UserExpertiseSeeder extends Seeder
     public function run(): void
     {
         // Dr. Tigist Haile (id=3) -> AI, ML, NLP
-        $user = User::where('email', 'tigist.researcher@wollo.edu.et')->first();
+        $user = User::where('email', 'tigist.researcher@rdrims.local')->first();
         if ($user) {
             $user->expertise()->sync(
                 Expertise::whereIn('name', [
@@ -21,7 +21,7 @@ class UserExpertiseSeeder extends Seeder
         }
 
         // Dr. Henok Tesfaye (id=4) -> Renewable Energy, Solar Energy
-        $user = User::where('email', 'henok.researcher@wollo.edu.et')->first();
+        $user = User::where('email', 'henok.researcher@rdrims.local')->first();
         if ($user) {
             $user->expertise()->sync(
                 Expertise::whereIn('name', [
@@ -31,7 +31,7 @@ class UserExpertiseSeeder extends Seeder
         }
 
         // Dr. Sara Mohammed (id=5) -> Public Health, Epidemiology
-        $user = User::where('email', 'sara.researcher@wollo.edu.et')->first();
+        $user = User::where('email', 'sara.researcher@rdrims.local')->first();
         if ($user) {
             $user->expertise()->sync(
                 Expertise::whereIn('name', [
@@ -41,7 +41,7 @@ class UserExpertiseSeeder extends Seeder
         }
 
         // Prof. Yonas Mulugeta (id=6) -> AI, Data Science, Cybersecurity
-        $user = User::where('email', 'yonas.reviewer@wollo.edu.et')->first();
+        $user = User::where('email', 'yonas.reviewer@rdrims.local')->first();
         if ($user) {
             $user->expertise()->sync(
                 Expertise::whereIn('name', [
@@ -51,7 +51,7 @@ class UserExpertiseSeeder extends Seeder
         }
 
         // Dr. Frehiwot Assefa (id=7) -> Climate Change, Environmental Science
-        $user = User::where('email', 'frehiwot.reviewer@wollo.edu.et')->first();
+        $user = User::where('email', 'frehiwot.reviewer@rdrims.local')->first();
         if ($user) {
             $user->expertise()->sync(
                 Expertise::whereIn('name', [
@@ -61,7 +61,7 @@ class UserExpertiseSeeder extends Seeder
         }
 
         // Dr. Daniel Bekele (id=8) -> Material Science, Structural Engineering
-        $user = User::where('email', 'daniel.reviewer@wollo.edu.et')->first();
+        $user = User::where('email', 'daniel.reviewer@rdrims.local')->first();
         if ($user) {
             $user->expertise()->sync(
                 Expertise::whereIn('name', [

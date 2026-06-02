@@ -12,44 +12,37 @@
       </button>
     </div>
 
-    <!-- Content -->
-    <div v-if="loading" class="card p-8"><LoadingSkeleton :rows="6" /></div>
+    <!-- Content Wrapper -->
+    <div v-if="loading" class="grid grid-cols-1 gap-4">
+      <div v-for="i in 3" :key="i" class="card h-24 animate-pulse bg-slate-50/50"></div>
+    </div>
     <div v-else-if="permissions.length === 0" class="card">
       <EmptyState icon="🔐" title="No permissions defined" description="Create permissions to control access to system features." action-label="Create Permission" @action="showCreate = true" />
     </div>
 
-    <div v-else class="card overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="table-auto">
-          <thead>
-            <tr>
-              <th>Permission Key</th>
-              <th>Description</th>
-              <th>Assigned Roles</th>
-              <th style="text-align: right">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="perm in permissions" :key="perm.id" class="group">
-              <td>
-                <span class="font-bold text-slate-700 font-mono text-xs bg-slate-50 px-2 py-1 rounded">{{ perm.name }}</span>
-              </td>
-              <td class="text-sm text-slate-500 italic">{{ perm.description || 'No description' }}</td>
-              <td>
-                <div class="flex flex-wrap gap-1.5">
-                  <span v-for="role in perm.roles" :key="role.id" class="badge badge-blue">{{ role.name }}</span>
-                  <span v-if="!perm.roles?.length" class="text-[11px] text-slate-400 font-bold uppercase tracking-widest">Unassigned</span>
-                </div>
-              </td>
-              <td style="text-align: right">
-                <div class="flex justify-end gap-2">
-                  <button @click="editPermission(perm)" class="btn btn-ghost text-blue-600 font-bold" style="padding: 6px 10px; font-size: 11px">Edit</button>
-                  <button @click="confirmDelete(perm)" class="btn btn-ghost text-red-500 hover:bg-red-50" style="padding: 6px 10px; font-size: 11px">Delete</button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+    <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <div v-for="perm in permissions" :key="perm.id" class="card p-6 flex flex-col group card-hover relative overflow-hidden border-l-4 border-l-cyan-500 hover:border-l-cyan-600 transition-all">
+        <div class="flex items-start justify-between mb-4">
+          <div class="flex-1 pr-4">
+            <h3 class="text-base font-black font-mono text-slate-800 group-hover:text-cyan-700 transition leading-tight break-all">{{ perm.name }}</h3>
+            <div class="flex flex-wrap gap-1.5 mt-2">
+              <span v-for="role in perm.roles" :key="role.id" class="inline-block px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-widest rounded-md border border-blue-100">{{ role.name }}</span>
+              <span v-if="!perm.roles?.length" class="inline-block px-2 py-0.5 bg-slate-100 text-slate-500 text-[10px] font-black uppercase tracking-widest rounded-md border border-slate-200">Unassigned</span>
+            </div>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-linear-to-br from-cyan-400 to-blue-600 text-white flex items-center justify-center font-black shadow-lg shadow-cyan-500/30 shrink-0">
+             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
+          </div>
+        </div>
+        
+        <p class="text-sm text-slate-500 line-clamp-2 leading-relaxed mb-6 flex-1 italic">{{ perm.description || 'No description available.' }}</p>
+
+        <div class="mt-auto pt-4 border-t border-slate-100 flex items-center justify-end">
+           <div class="flex gap-2">
+             <button @click="editPermission(perm)" class="btn btn-ghost text-slate-500 hover:text-cyan-600" style="padding: 6px 10px; font-size: 11px; font-weight: bold;">Edit</button>
+             <button @click="confirmDelete(perm)" class="btn btn-ghost text-red-500 hover:bg-red-50" style="padding: 6px 10px; font-size: 11px; font-weight: bold;">Delete</button>
+           </div>
+        </div>
       </div>
     </div>
 

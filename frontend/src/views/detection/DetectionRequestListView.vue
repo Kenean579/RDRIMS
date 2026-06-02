@@ -21,29 +21,39 @@
       <EmptyState icon="🔍" title="No checks found" description="No writing checks have been done yet." />
     </div>
 
-    <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div v-for="req in requests" :key="req.id" class="card p-6 group card-hover relative overflow-hidden border-l-4 border-l-brand/20 hover:border-l-brand transition-all">
-        <div class="flex items-start justify-between gap-4">
-          <div class="space-y-3 flex-1 min-w-0">
-            <div>
-              <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1.5">{{ req.detectable_type.split('\\').pop() }} ID #{{ req.detectable_id }}</p>
-              <h3 class="text-base font-black text-slate-800 leading-snug truncate">Scan: {{ req.service?.name || 'Standard Check' }}</h3>
-            </div>
-            
-            <div class="flex items-center gap-3">
-              <StatusBadge :status="req.status?.name || 'pending'" />
-              <div v-if="req.results?.length" class="flex items-center gap-2 px-2.5 py-1 bg-slate-50 rounded-lg border border-slate-100">
-                 <div class="w-2 h-2 rounded-full" :class="req.results[0].similarity_score > 20 ? 'bg-rose-500' : 'bg-emerald-500'"></div>
-                 <span class="text-[11px] font-black uppercase tracking-widest" :class="req.results[0].similarity_score > 20 ? 'text-rose-600' : 'text-emerald-600'">
-                   {{ req.results[0].similarity_score }}% Match
-                 </span>
-              </div>
+    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div v-for="req in requests" :key="req.id" class="card p-6 flex flex-col group card-hover relative overflow-hidden border-l-4 border-l-brand hover:border-l-indigo-500 transition-all">
+        <div class="flex items-start justify-between mb-4">
+          <div class="flex-1 pr-4">
+            <h3 class="text-base font-black text-slate-800 leading-tight mb-2">{{ req.service?.name || 'Standard Check' }}</h3>
+            <div class="flex items-center gap-2">
+              <span class="inline-block px-2 py-0.5 bg-slate-100 text-slate-500 text-[9px] font-black uppercase tracking-widest rounded-md border border-slate-200">
+                {{ req.detectable_type.split('\\').pop() }} #{{ req.detectable_id }}
+              </span>
+              <span v-if="req.requested_by" class="inline-block px-2 py-0.5 bg-blue-50 text-blue-600 text-[9px] font-black uppercase tracking-widest rounded-md border border-blue-100 truncate max-w-[120px]">
+                <i class="fas fa-user mr-1"></i>{{ req.requested_by?.name || 'User' }}
+              </span>
             </div>
           </div>
-          
-          <button class="w-10 h-10 rounded-full flex items-center justify-center bg-slate-50 text-slate-300 group-hover:bg-brand group-hover:text-white transition-all duration-300 shadow-sm">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7" /></svg>
-          </button>
+          <div class="w-12 h-12 rounded-2xl bg-linear-to-br from-indigo-500 to-blue-600 text-white flex items-center justify-center font-black shadow-lg shadow-indigo-500/30 shrink-0">
+             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
+          </div>
+        </div>
+        
+        <div class="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between">
+           <div class="flex items-center gap-2">
+             <StatusBadge :status="req.status?.name || 'pending'" />
+             <div v-if="req.results?.length" class="flex items-center gap-1.5 px-2 py-0.5 bg-slate-50 rounded-md border border-slate-200">
+                <div class="w-1.5 h-1.5 rounded-full" :class="req.results[0].similarity_score > 20 ? 'bg-rose-500' : 'bg-emerald-500'"></div>
+                <span class="text-[10px] font-black uppercase tracking-widest" :class="req.results[0].similarity_score > 20 ? 'text-rose-600' : 'text-emerald-600'">
+                  {{ req.results[0].similarity_score }}% Match
+                </span>
+             </div>
+           </div>
+           
+           <button class="w-8 h-8 rounded-full flex items-center justify-center bg-slate-50 text-slate-400 group-hover:bg-indigo-50 group-hover:text-indigo-600 transition-all duration-300">
+             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7" /></svg>
+           </button>
         </div>
       </div>
     </div>

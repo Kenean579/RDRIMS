@@ -30,11 +30,56 @@
         <input
           v-model="searchQuery"
           type="text"
-          placeholder="Search proposals, projects, publications…"
+          placeholder="Search items…"
           class="search-input"
           @keyup.enter="goSearch"
         />
         <kbd class="search-kbd">⌵</kbd>
+      </div>
+
+      <!-- Hierarchical Context Switcher -->
+      <div class="topbar-context-shell" v-if="!isGuestOnly">
+        <label class="context-label">Context</label>
+        <div class="context-breadcrumb">
+          <!-- University -->
+          <div class="context-item">
+            <select :value="context.university_id" @change="e => context.setUniversity(e.target.value)" class="context-select">
+              <option value="">All Universities</option>
+              <option v-for="u in universities" :key="u.id" :value="u.id">{{ u.name }}</option>
+            </select>
+          </div>
+          
+          <!-- Campus -->
+          <div class="context-item" v-if="context.university_id">
+            <span class="context-sep">/</span>
+            <select :value="context.campus_id" @change="e => context.setCampus(e.target.value)" class="context-select">
+              <option value="">All Campuses</option>
+              <option v-for="c in filteredCampuses" :key="c.id" :value="c.id">{{ c.name }}</option>
+            </select>
+          </div>
+
+          <!-- Faculty -->
+          <div class="context-item" v-if="context.campus_id">
+            <span class="context-sep">/</span>
+            <select :value="context.faculty_id" @change="e => context.setFaculty(e.target.value)" class="context-select">
+              <option value="">All Faculties</option>
+              <option v-for="f in filteredFaculties" :key="f.id" :value="f.id">{{ f.name }}</option>
+            </select>
+          </div>
+
+          <!-- Department -->
+          <div class="context-item" v-if="context.faculty_id">
+            <span class="context-sep">/</span>
+            <select :value="context.department_id" @change="e => context.setDepartment(e.target.value)" class="context-select">
+              <option value="">All Departments</option>
+              <option v-for="d in filteredDepartments" :key="d.id" :value="d.id">{{ d.name }}</option>
+            </select>
+          </div>
+        </div>
+        
+        <button v-if="context.university_id" @click="context.resetContext" class="context-reset" title="Reset Context">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+        </button>
       </div>
 
       <div class="topbar-right">
@@ -127,7 +172,15 @@
 
       <!-- ── Main Content ─────────────────────────── -->
       <main class="main-content" :class="{ 'main-expanded': !sidebarOpen }">
-        <router-view v-slot="{ Component }">
+        <div v-if="isGuestOnly" class="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-xl text-yellow-800 text-sm font-medium flex items-start gap-3">
+          <span class="text-xl">⚠️</span>
+          <div>
+            <p class="font-bold mb-0.5">Limited Access</p>
+            <p>You have limited access as a Guest. Contact your university administrator to upgrade your role.</p>
+          </div>
+        </div>
+
+        <router-view :key="viewKey" v-slot="{ Component }">
           <transition name="fade" mode="out-in">
             <component :is="Component" />
           </transition>
@@ -139,10 +192,11 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted, watch } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useLookupStore } from '@/stores/lookup'
+import { useContextStore } from '@/stores/context'
 import { getInitials } from '@/utils/formatters'
 import api from '@/services/api'
 
@@ -157,6 +211,37 @@ const unreadCount  = ref(0)
 const searchQuery  = ref('')
 const isMobile     = ref(false)
 const openGroups   = reactive({})
+const context = useContextStore()
+
+const universities = ref([])
+const campuses     = ref([])
+const faculties    = ref([])
+const departments  = ref([])
+const viewKey      = ref(0)
+
+const filteredCampuses = computed(() => campuses.value.filter(c => String(c.university_id) === String(context.university_id)))
+const filteredFaculties = computed(() => faculties.value.filter(f => String(f.campus_id) === String(context.campus_id)))
+const filteredDepartments = computed(() => departments.value.filter(d => String(d.faculty_id) === String(context.faculty_id)))
+
+// Watch context to refresh views
+watch(() => [context.university_id, context.campus_id, context.faculty_id, context.department_id], () => {
+  viewKey.value++
+})
+
+async function fetchContextOptions() {
+  try {
+    const [uRes, cRes, fRes, dRes] = await Promise.all([
+      api.get('/universities'),
+      api.get('/campuses'),
+      api.get('/faculties'),
+      api.get('/departments')
+    ])
+    universities.value = uRes.data
+    campuses.value     = cRes.data
+    faculties.value    = fRes.data
+    departments.value  = dRes.data
+  } catch (e) {}
+}
 
 function toggleGroup(title) {
   openGroups[title] = !openGroups[title]
@@ -196,6 +281,7 @@ onMounted(() => {
   checkMobile()
   window.addEventListener('resize', checkMobile)
   fetchUnreadCount()
+  fetchContextOptions()
   
   // Initialize all groups to open by default
   navigation.value.forEach(g => {
@@ -231,7 +317,26 @@ const icons = {
   audit:    `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`,
 }
 
+const isGuestOnly = computed(() => {
+  if (!auth.userRoles) return true
+  return auth.userRoles.length === 1 && auth.userRoles[0] === 'guest'
+})
+
 const navigation = computed(() => {
+  if (isGuestOnly.value) {
+    return [
+      {
+        title: 'Community & Public',
+        items: [
+          { name: 'Funding Calls', path: '/app/calls', icon: icons.calls },
+          { name: 'Publications', path: '/app/publications', icon: icons.publications },
+          { name: 'News & Events', path: '/app/events', icon: icons.events },
+          { name: 'Community', path: '/app/community-problems', icon: icons.community },
+        ]
+      }
+    ]
+  }
+
   const nav = [
     {
       items: [{ name: 'Dashboard', path: '/app/dashboard', icon: icons.home }]
@@ -443,7 +548,85 @@ const navigation = computed(() => {
   display: flex; align-items: center; justify-content: center;
 }
 
-/* Profiles & Actions */
+/* Context Switcher */
+.topbar-context-shell {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: white;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 4px 12px;
+  margin-left: 20px;
+  margin-right: -10px;
+  height: 40px;
+  box-shadow: var(--shadow-sm);
+  max-width: 600px;
+  overflow: hidden;
+}
+.context-label {
+  font-size: 10px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--brand);
+  background: var(--brand-light);
+  padding: 2px 6px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.context-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.context-item {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.context-sep {
+  color: var(--text-muted);
+  font-size: 14px;
+  opacity: 0.5;
+}
+.context-select {
+  border: none;
+  background: transparent;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-primary);
+  outline: none;
+  cursor: pointer;
+  max-width: 130px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 4px;
+}
+.context-select:hover {
+  color: var(--brand);
+}
+.context-reset {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: none;
+  background: #fee2e2;
+  color: #ef4444;
+  cursor: pointer;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+.context-reset:hover {
+  background: #ef4444;
+  color: white;
+  transform: scale(1.1);
+}
+
 .topbar-right {
   display: flex; align-items: center; gap: 8px; flex-shrink: 0;
 }

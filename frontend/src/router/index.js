@@ -112,9 +112,9 @@ router.beforeEach((to, from) => {
   document.title = to.meta.title ? `${to.meta.title} – RDRIMS` : 'RDRIMS'
   
   if (to.meta.requiresAuth && !auth.isAuthenticated) return '/login'
-  if (to.meta.guest && auth.isAuthenticated) return '/app/dashboard'
-  if (to.meta.roles?.length && !auth.hasRole(...to.meta.roles)) return '/app/dashboard'
-  if (to.meta.permissions && !auth.hasPermission(to.meta.permissions)) return '/app/dashboard'
+  if (to.meta.guest && auth.isAuthenticated) return '/dashboard'
+  if (to.meta.roles?.length && !auth.hasRole(...to.meta.roles)) return '/app/403'
+  if (to.meta.permissions && !auth.hasPermission(to.meta.permissions)) return '/app/403'
 })
 
 export default router

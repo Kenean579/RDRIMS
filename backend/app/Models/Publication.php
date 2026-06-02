@@ -9,7 +9,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Publication extends Model
 {
-    use HasFactory, \App\Traits\HasDynamicStatus;
+    use HasFactory, \App\Traits\HasDynamicStatus, \App\Traits\HierarchicalScope;
 
     protected $fillable = [
         'project_id', 'title', 'abstract', 'keywords', 'journal_name',

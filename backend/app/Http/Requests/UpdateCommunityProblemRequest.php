@@ -20,7 +20,10 @@ class UpdateCommunityProblemRequest extends FormRequest
             'location'    => 'sometimes|string|max:255',
             'contact_info'=> 'nullable|string|max:255',
             'is_anonymous'=> 'nullable|boolean',
-            'status_id'   => 'nullable|exists:community_problem_statuses,id',
+            'status_id'   => 'sometimes|exists:community_problem_statuses,id',
+            'linked_project_id' => 'nullable|exists:projects,id',
+            'results_summary' => 'nullable|string',
+            'rating'      => 'nullable|integer|min:1|max:5',
         ];
     }
 }

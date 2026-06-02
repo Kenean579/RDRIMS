@@ -17,15 +17,17 @@ class ProposalController extends Controller
     public function __construct(
         private ProposalService $proposalService,
         private ReviewerSuggestionService $reviewerSuggestionService,
+        private \App\Services\FileService $fileService,
     ) {}
 
     public function index(Request $request): JsonResponse
     {
         $this->authorize('viewAny', Proposal::class);
 
-        $proposals = Proposal::with('status', 'type', 'submittedBy', 'call')
-            ->when(! $request->user()->isAdmin(), fn($q) => $q->where('submitted_by', $request->user()->id))
+        $proposals = Proposal::with('status', 'type', 'submittedBy', 'call', 'financeChecks.status', 'ethicsRequests.approvalStatus')
+            ->hierarchical($request->user(), 'submitted_by')
             ->when($request->status, fn($q) => $q->whereHas('status', fn($s) => $s->where('name', $request->status)))
+            ->when($request->type, fn($q) => $q->whereHas('type', fn($t) => $t->where('name', $request->type)))
             ->when($request->call_id, fn($q) => $q->where('call_id', $request->call_id))
             ->when($request->search, fn($q) => $q->where('title', 'LIKE', '%' . $request->search . '%')
                 ->orWhere('keywords', 'LIKE', '%' . $request->search . '%'))
@@ -78,17 +80,40 @@ class ProposalController extends Controller
     {
         $this->authorize('view', $proposal);
         return response()->json($proposal->load(
-            'status', 'type', 'submittedBy', 'approvedBy', 'call',
+            'status', 'type', 'submittedBy.department', 'approvedBy', 'call',
             'reviewers.reviewPivot.scores.criterion',
-            'financeChecks', 'ethicsRequests', 'file'
+            'financeChecks', 'ethicsRequests', 'file',
+            'investigators.user', 'investigators.role', 'academicYear'
         ));
     }
 
     public function update(UpdateProposalRequest $request, Proposal $proposal): JsonResponse
     {
         $this->authorize('update', $proposal);
-        $proposal->update($request->validated());
-        return response()->json($proposal);
+
+        $validated = $request->validated();
+        $investigators = $validated['investigators'] ?? null;
+        unset($validated['investigators']);
+
+        $proposal->update($validated);
+
+        // Replace investigators if provided
+        if ($investigators !== null) {
+            $proposal->investigators()->delete();
+            foreach ($investigators as $inv) {
+                $proposal->investigators()->create([
+                    'user_id'     => $inv['user_id'] ?: null,
+                    'name'        => $inv['name'] ?? null,
+                    'email'       => $inv['email'] ?? null,
+                    'institution' => $inv['institution'] ?? null,
+                    'role_id'     => $inv['role_id'],
+                    'status_id'   => 1,
+                    'invited_at'  => now(),
+                ]);
+            }
+        }
+
+        return response()->json($proposal->load('investigators', 'file', 'status', 'type'));
     }
 
     public function destroy(Proposal $proposal): JsonResponse
@@ -129,5 +154,20 @@ class ProposalController extends Controller
     {
         $suggestions = $this->reviewerSuggestionService->suggest($proposal);
         return response()->json($suggestions);
+    }
+
+    public function uploadDocument(Request $request, Proposal $proposal): JsonResponse
+    {
+        $this->authorize('update', $proposal);
+        $request->validate(['document' => 'required|file|mimes:pdf,docx,doc|max:10240']);
+
+        $file = $this->fileService->upload($request->file('document'), $request->user()->id);
+        
+        $proposal->update(['file_id' => $file->id]);
+
+        return response()->json([
+            'message' => 'Document uploaded successfully.',
+            'file' => $file
+        ]);
     }
 }
