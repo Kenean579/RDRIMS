@@ -23,7 +23,7 @@
 
     <div v-else class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-5">
       <div v-for="p in partners" :key="p.id" class="card p-6 text-center group card-hover flex flex-col items-center">
-        <div class="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-3xl group-hover:scale-110 group-hover:bg-blue-50 transition duration-300 mb-4 shadow-sm border border-slate-100">
+        <div class="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center text-xl group-hover:scale-110 group-hover:bg-blue-50 transition duration-300 mb-4 shadow-sm border border-slate-100">
            {{ getLogo(p) }}
         </div>
         <h3 class="text-sm font-bold text-slate-800 line-clamp-1 group-hover:text-blue-600 transition" :title="p.name">{{ p.name }}</h3>

@@ -57,7 +57,7 @@
         <h2 class="text-base font-semibold text-gray-800 mb-4">
           Proposals ({{ proposals.length }})
         </h2>
-        <div v-if="proposals.length === 0" class="text-center py-8 text-gray-400 text-sm">
+        <div v-if="proposals.length === 0" class="text-center py-4 text-gray-400 text-sm">
           No proposals submitted for this call yet.
         </div>
         <div v-else class="space-y-2">

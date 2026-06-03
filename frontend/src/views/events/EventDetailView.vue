@@ -15,11 +15,11 @@
                <h2 class="text-base font-semibold text-gray-800">Event Details</h2>
                <!-- Registration Action -->
                <template v-if="!isRegistered">
-                 <button v-if="canRegister" @click="registerForEvent" class="btn bg-brand hover:bg-brand-dark text-white px-6 font-black capitalize tracking-widest text-[11px] shadow-lg shadow-blue-500/20">Register</button>
-                 <span v-else class="text-[10px] text-rose-500 font-black capitalize tracking-widest py-2">Registration Closed</span>
+                 <button v-if="canRegister" @click="registerForEvent" class="btn bg-brand hover:bg-brand-dark text-white px-6 font-bold capitalize tracking-widest text-[11px] shadow-lg shadow-blue-500/20">Register</button>
+                 <span v-else class="text-[10px] text-rose-500 font-bold capitalize tracking-widest py-2">Registration Closed</span>
                </template>
                <template v-else>
-                 <span class="btn bg-emerald-100 text-emerald-700 px-6 font-black capitalize tracking-widest text-[11px] pointer-events-none">Registered ✓</span>
+                 <span class="btn bg-emerald-100 text-emerald-700 px-6 font-bold capitalize tracking-widest text-[11px] pointer-events-none">Registered ✓</span>
                </template>
             </div>
             <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">

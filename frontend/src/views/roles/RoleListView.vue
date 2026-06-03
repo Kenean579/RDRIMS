@@ -13,7 +13,7 @@
     </div>
 
     <!-- Content -->
-    <div v-if="loading" class="card p-8">
+    <div v-if="loading" class="card p-5">
       <LoadingSkeleton :rows="4" />
     </div>
     
@@ -25,10 +25,10 @@
       <div v-for="role in roles" :key="role.id" class="card p-6 flex flex-col group card-hover relative overflow-hidden border-l-4 border-l-violet-500 hover:border-l-violet-600 transition-all">
         <div class="flex items-start justify-between mb-4">
           <div class="flex-1">
-            <h3 class="text-lg font-black text-slate-800 group-hover:text-violet-700 transition leading-tight">{{ role.name }}</h3>
-            <p class="text-[10px] text-slate-400 font-black capitalize tracking-widest mt-1">Effective Permissions: <span class="text-violet-600">{{ role.permissions?.length || 0 }}</span></p>
+            <h3 class="text-lg font-bold text-slate-800 group-hover:text-violet-700 transition leading-tight">{{ role.name }}</h3>
+            <p class="text-[10px] text-slate-400 font-bold capitalize tracking-widest mt-1">Effective Permissions: <span class="text-violet-600">{{ role.permissions?.length || 0 }}</span></p>
           </div>
-          <div class="w-12 h-12 rounded-2xl bg-linear-to-br from-violet-500 to-fuchsia-600 text-white flex items-center justify-center font-black shadow-lg shadow-violet-500/30 shrink-0">
+          <div class="w-12 h-12 rounded-2xl bg-linear-to-br from-violet-500 to-fuchsia-600 text-white flex items-center justify-center font-bold shadow-lg shadow-violet-500/30 shrink-0">
              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
           </div>
         </div>
@@ -60,7 +60,7 @@
         </div>
         <div class="flex justify-end gap-3 pt-4">
           <button type="button" @click="closeModal" class="btn btn-secondary">Discard</button>
-          <button type="submit" class="btn btn-primary px-10">{{ editingRole ? 'Update Role' : 'Create Role' }}</button>
+          <button type="submit" class="btn btn-primary px-5">{{ editingRole ? 'Update Role' : 'Create Role' }}</button>
         </div>
       </form>
     </Modal>
@@ -82,9 +82,9 @@
           </label>
         </div>
       </div>
-      <div class="flex justify-end gap-3 mt-8 pt-6 border-t border-slate-50">
+      <div class="flex justify-end gap-3 mt-5 pt-6 border-t border-slate-50">
         <button @click="showPermissions = false" class="btn btn-secondary">Cancel</button>
-        <button @click="syncPermissions" class="btn btn-primary px-10 shadow-lg shadow-blue-500/20">Apply Permission Set</button>
+        <button @click="syncPermissions" class="btn btn-primary px-5 shadow-lg shadow-blue-500/20">Apply Permission Set</button>
       </div>
     </Modal>
 

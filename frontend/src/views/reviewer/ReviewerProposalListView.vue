@@ -14,8 +14,8 @@
       <button @click="fetchProposals" class="mt-2 text-sm text-red-600 hover:underline">Retry</button>
     </div>
 
-    <div v-else-if="proposals.length === 0" class="bg-white rounded-lg shadow-sm border border-gray-100 p-12 text-center">
-      <p class="text-4xl mb-3">✅</p>
+    <div v-else-if="proposals.length === 0" class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 text-center">
+      <p class="text-2xl mb-3">✅</p>
       <h3 class="text-base font-medium text-gray-800 mb-1">No reviews pending</h3>
       <p class="text-sm text-gray-500">You have no proposals assigned for review.</p>
     </div>

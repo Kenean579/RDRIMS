@@ -1,13 +1,13 @@
 <template>
-  <div class="flex flex-col gap-8 pb-12 animate-fade card">
+  <div class="flex flex-col gap-5 pb-6 animate-fade card">
     <!-- Header -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
       <div>
-        <router-link to="/app/proposals" class="flex items-center gap-2 text-brand font-black capitalize tracking-widest text-[10px] mb-3 hover:translate-x-1 transition-transform">
+        <router-link to="/app/proposals" class="flex items-center gap-2 text-brand font-bold capitalize tracking-widest text-[10px] mb-3 hover:translate-x-1 transition-transform">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
           Back to list
         </router-link>
-        <h1 class="text-3xl font-black text-slate-900 tracking-tight leading-tight max-w-2xl">{{ proposal.title || 'Submission View' }}</h1>
+        <h1 class="text-xl font-bold text-slate-900 tracking-tight leading-tight max-w-2xl">{{ proposal.title || 'Submission View' }}</h1>
         <p class="text-slate-500 font-medium mt-1 capitalize tracking-widest text-[9px]">Submission details and tracking.</p>
       </div>
       <div v-if="!loading" class="flex items-center gap-3">
@@ -15,7 +15,7 @@
       </div>
     </div>
 
-    <div v-if="loading" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div v-if="loading" class="grid grid-cols-1 lg:grid-cols-3 gap-5">
       <div class="lg:col-span-2 space-y-8">
         <div class="card h-48 animate-pulse bg-slate-50/50"></div>
         <div class="card h-96 animate-pulse bg-slate-50/50"></div>
@@ -23,114 +23,114 @@
       <div class="card h-64 animate-pulse bg-slate-50/50"></div>
     </div>
 
-    <div v-else-if="error" class="card border-rose-100 bg-rose-50/30 p-12 text-center shadow-xl shadow-rose-500/5 max-w-2xl mx-auto font-bold capitalize tracking-widest text-xs">
+    <div v-else-if="error" class="card border-rose-100 bg-rose-50/30 p-6 text-center shadow-xl shadow-rose-500/5 max-w-2xl mx-auto font-bold capitalize tracking-widest text-xs">
        <div class="w-16 h-16 bg-rose-100 text-rose-600 rounded-2xl flex items-center justify-center mx-auto mb-5 text-2xl shadow-inner">⚠️</div>
        <p class="text-rose-600 mb-6">{{ error }}</p>
-       <button @click="fetchProposal" class="btn bg-rose-600 text-white px-8 h-11 border-0">Retry</button>
+       <button @click="fetchProposal" class="btn bg-rose-600 text-white px-5 h-11 border-0">Retry</button>
     </div>
 
     <template v-else>
       <!-- Action Bar -->
-      <div class="card p-4 bg-slate-50/50 border border-slate-100 flex flex-wrap gap-4 shadow-inner font-black capitalize tracking-widest">
+      <div class="card p-4 bg-slate-50/50 border border-slate-100 flex flex-wrap gap-4 shadow-inner font-bold capitalize tracking-widest">
         <!-- Edit Logic: Draft Only + Owner/Admin -->
-        <router-link v-if="(proposal.status?.name === 'draft' && (isOwner || auth.hasRole('super_admin'))) || auth.hasRole('super_admin','research_admin')" :to="`/app/proposals/${proposal.id}/edit`" class="btn bg-white border border-slate-200 text-slate-700 hover:text-brand hover:border-brand h-11 px-8 text-[11px] shadow-sm flex items-center gap-2">
+        <router-link v-if="(proposal.status?.name === 'draft' && (isOwner || auth.hasRole('super_admin'))) || auth.hasRole('super_admin','research_admin')" :to="`/app/proposals/${proposal.id}/edit`" class="btn bg-white border border-slate-200 text-slate-700 hover:text-brand hover:border-brand h-11 px-5 text-[11px] shadow-sm flex items-center gap-2">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
           Edit Details
         </router-link>
 
         <!-- Plagiarism Check: Admins Only -->
-        <button v-if="auth.hasRole('super_admin','research_admin')" @click="checkOriginality" class="btn bg-indigo-600 hover:bg-indigo-700 text-white h-11 px-8 text-[11px] shadow-lg shadow-indigo-600/20">Check Originality</button>
+        <button v-if="auth.hasRole('super_admin','research_admin')" @click="checkOriginality" class="btn bg-indigo-600 hover:bg-indigo-700 text-white h-11 px-5 text-[11px] shadow-lg shadow-indigo-600/20">Check Originality</button>
         
         <!-- Registration as Project: Approved Only + Admin -->
-        <router-link v-if="auth.hasRole('super_admin','research_admin') && proposal.status?.name === 'approved'" :to="`/app/projects/create-from-proposal/${proposal.id}`" class="btn bg-teal-500 hover:bg-teal-600 text-white h-11 px-8 text-[11px] shadow-lg shadow-teal-500/20 flex items-center justify-center">Convert To Project</router-link>
+        <router-link v-if="auth.hasRole('super_admin','research_admin') && proposal.status?.name === 'approved'" :to="`/app/projects/create-from-proposal/${proposal.id}`" class="btn bg-teal-500 hover:bg-teal-600 text-white h-11 px-5 text-[11px] shadow-lg shadow-teal-500/20 flex items-center justify-center">Convert To Project</router-link>
         
         <!-- Submit: Owner Only + Draft Only -->
-        <button v-if="proposal.status?.name === 'draft' && isOwner" @click="submitProposal" class="btn btn-primary h-11 px-8 text-[11px] shadow-lg shadow-blue-500/20">Submit Final</button>
+        <button v-if="proposal.status?.name === 'draft' && isOwner" @click="submitProposal" class="btn btn-primary h-11 px-5 text-[11px] shadow-lg shadow-blue-500/20">Submit Final</button>
         
         <!-- Admin Workflow: Submitted / Under Review / Processing -->
         <template v-if="auth.hasRole('super_admin','research_admin') && ['submitted','under_review','finance_check','ethics_pending'].includes(proposal.status?.name)">
-          <button @click="showAssignReviewers = true" class="btn bg-amber-500 hover:bg-amber-600 text-white h-11 px-8 text-[11px] shadow-lg shadow-amber-500/20">Assign Reviewers</button>
-          <button @click="exportScoresMatrix" class="btn bg-indigo-600 hover:bg-indigo-700 text-white h-11 px-8 text-[11px] shadow-lg shadow-indigo-600/20">Export Scores Matrix</button>
-          <button v-if="proposal.status?.name === 'submitted'" @click="sendToFinance" class="btn bg-slate-700 hover:bg-slate-800 text-white h-11 px-8 text-[11px] shadow-lg shadow-slate-600/20">Send to Finance</button>
-          <button v-if="proposal.status?.name === 'finance_check'" @click="generateEthics" class="btn bg-slate-700 hover:bg-slate-800 text-white h-11 px-8 text-[11px] shadow-lg shadow-slate-600/20">Generate Ethics IRB</button>
+          <button @click="showAssignReviewers = true" class="btn bg-amber-500 hover:bg-amber-600 text-white h-11 px-5 text-[11px] shadow-lg shadow-amber-500/20">Assign Reviewers</button>
+          <button @click="exportScoresMatrix" class="btn bg-indigo-600 hover:bg-indigo-700 text-white h-11 px-5 text-[11px] shadow-lg shadow-indigo-600/20">Export Scores Matrix</button>
+          <button v-if="proposal.status?.name === 'submitted'" @click="sendToFinance" class="btn bg-slate-700 hover:bg-slate-800 text-white h-11 px-5 text-[11px] shadow-lg shadow-slate-600/20">Send to Finance</button>
+          <button v-if="proposal.status?.name === 'finance_check'" @click="generateEthics" class="btn bg-slate-700 hover:bg-slate-800 text-white h-11 px-5 text-[11px] shadow-lg shadow-slate-600/20">Generate Ethics IRB</button>
           
-          <button v-if="canApprove" @click="approveProposal" class="btn bg-emerald-500 hover:bg-emerald-600 text-white h-11 px-8 text-[11px] shadow-lg shadow-emerald-500/20">Final Approve</button>
-          <button v-if="canApprove" @click="showReject = true" class="btn bg-rose-600 hover:bg-rose-700 text-white h-11 px-8 text-[11px] shadow-lg shadow-rose-600/20">Reject</button>
+          <button v-if="canApprove" @click="approveProposal" class="btn bg-emerald-500 hover:bg-emerald-600 text-white h-11 px-5 text-[11px] shadow-lg shadow-emerald-500/20">Final Approve</button>
+          <button v-if="canApprove" @click="showReject = true" class="btn bg-rose-600 hover:bg-rose-700 text-white h-11 px-5 text-[11px] shadow-lg shadow-rose-600/20">Reject</button>
         </template>
 
         <!-- Finance Officer Check -->
         <template v-if="auth.hasRole('finance_officer') && proposal.status?.name === 'finance_check'">
-          <button @click="approveProposal" class="btn bg-emerald-500 hover:bg-emerald-600 text-white h-11 px-8 text-[11px] shadow-lg shadow-emerald-500/20">Verify Budget</button>
-          <button @click="showReject = true" class="btn bg-rose-600 hover:bg-rose-700 text-white h-11 px-8 text-[11px] shadow-lg shadow-rose-600/20">Budget Revision</button>
+          <button @click="approveProposal" class="btn bg-emerald-500 hover:bg-emerald-600 text-white h-11 px-5 text-[11px] shadow-lg shadow-emerald-500/20">Verify Budget</button>
+          <button @click="showReject = true" class="btn bg-rose-600 hover:bg-rose-700 text-white h-11 px-5 text-[11px] shadow-lg shadow-rose-600/20">Budget Revision</button>
         </template>
 
         <!-- Ethics Officer Check -->
         <template v-if="auth.hasRole('ethics_officer') && proposal.status?.name === 'ethics_pending'">
-          <button @click="approveProposal" class="btn bg-emerald-500 hover:bg-emerald-600 text-white h-11 px-8 text-[11px] shadow-lg shadow-emerald-500/20">Ethical Clearance</button>
-          <button @click="showReject = true" class="btn bg-rose-600 hover:bg-rose-700 text-white h-11 px-8 text-[11px] shadow-lg shadow-rose-600/20">Ethics Rejection</button>
+          <button @click="approveProposal" class="btn bg-emerald-500 hover:bg-emerald-600 text-white h-11 px-5 text-[11px] shadow-lg shadow-emerald-500/20">Ethical Clearance</button>
+          <button @click="showReject = true" class="btn bg-rose-600 hover:bg-rose-700 text-white h-11 px-5 text-[11px] shadow-lg shadow-rose-600/20">Ethics Rejection</button>
         </template>
       </div>
 
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 font-bold">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 font-bold">
         <!-- Main Content -->
         <div class="lg:col-span-2 space-y-8">
           <!-- Quick Summary -->
-          <div class="card p-8 border-l-4 border-l-brand/20">
-            <h2 class="text-xs font-black text-slate-400 capitalize tracking-widest mb-8 flex items-center gap-2">
+          <div class="card p-5 border-l-4 border-l-brand/20">
+            <h2 class="text-xs font-bold text-slate-400 capitalize tracking-widest mb-5 flex items-center gap-2">
               <span class="w-1 h-3 bg-brand rounded-full"></span>
               Institutional Metadata
             </h2>
-            <dl class="grid grid-cols-1 sm:grid-cols-2 gap-8 text-sm">
+            <dl class="grid grid-cols-1 sm:grid-cols-2 gap-5 text-sm">
               <div>
-                <dt class="text-[10px] font-black text-slate-400 capitalize tracking-widest mb-1.5 ml-1">Research Title</dt>
-                <dd class="text-sm font-black text-slate-800 bg-slate-50 p-4 rounded-xl border border-slate-100">{{ proposal.title }}</dd>
+                <dt class="text-[10px] font-bold text-slate-400 capitalize tracking-widest mb-1.5 ml-1">Research Title</dt>
+                <dd class="text-sm font-bold text-slate-800 bg-slate-50 p-4 rounded-xl border border-slate-100">{{ proposal.title }}</dd>
               </div>
                <div>
-                <dt class="text-[10px] font-black text-slate-400 capitalize tracking-widest mb-1.5 ml-1">Year & Allocation</dt>
+                <dt class="text-[10px] font-bold text-slate-400 capitalize tracking-widest mb-1.5 ml-1">Year & Allocation</dt>
                 <dd class="p-4 rounded-xl bg-white border border-slate-100 flex items-center justify-between">
                   <span class="text-slate-700">{{ proposal.academic_year?.name || 'N/A' }}</span>
-                  <span class="text-emerald-600 font-black">{{ formatCurrency(proposal.budget) }}</span>
+                  <span class="text-emerald-600 font-bold">{{ formatCurrency(proposal.budget) }}</span>
                 </dd>
               </div>
               <div>
-                <dt class="text-[10px] font-black text-slate-400 capitalize tracking-widest mb-1.5 ml-1">Work Type</dt>
+                <dt class="text-[10px] font-bold text-slate-400 capitalize tracking-widest mb-1.5 ml-1">Work Type</dt>
                 <dd class="p-4 rounded-xl bg-white border border-slate-100">
-                  <span class="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-lg text-[10px] font-black capitalize tracking-widest">{{ proposal.type?.name || 'N/A' }}</span>
+                  <span class="px-2.5 py-1 bg-slate-100 text-slate-600 rounded-lg text-[10px] font-bold capitalize tracking-widest">{{ proposal.type?.name || 'N/A' }}</span>
                 </dd>
               </div>
               <div>
-                <dt class="text-[10px] font-black text-slate-400 capitalize tracking-widest mb-1.5 ml-1">Principal Investigator</dt>
+                <dt class="text-[10px] font-bold text-slate-400 capitalize tracking-widest mb-1.5 ml-1">Principal Investigator</dt>
                 <dd class="p-4 rounded-xl bg-white border border-slate-100 text-slate-700 flex items-center gap-2">
                   {{ proposal.submitted_by?.name || 'N/A' }}
-                  <span v-if="proposal.submitted_by?.department" class="text-[10px] font-black text-slate-400">({{ proposal.submitted_by.department.name }})</span>
+                  <span v-if="proposal.submitted_by?.department" class="text-[10px] font-bold text-slate-400">({{ proposal.submitted_by.department.name }})</span>
                 </dd>
               </div>
             </dl>
           </div>
 
           <!-- Research Details -->
-          <div class="card p-8">
-            <h2 class="text-xs font-black text-slate-400 capitalize tracking-widest mb-8 flex items-center gap-2">
+          <div class="card p-5">
+            <h2 class="text-xs font-bold text-slate-400 capitalize tracking-widest mb-5 flex items-center gap-2">
               <span class="w-1 h-3 bg-brand rounded-full"></span>
               Methodology & Abstract
             </h2>
             <div class="space-y-10">
               <div>
-                <p class="text-[10px] font-black text-slate-400 capitalize tracking-widest mb-3 ml-1">Domain Keywords</p>
+                <p class="text-[10px] font-bold text-slate-400 capitalize tracking-widest mb-3 ml-1">Domain Keywords</p>
                 <div class="flex flex-wrap gap-2">
-                  <span v-for="kw in proposal.keywords?.split(',')" :key="kw" class="px-3 py-1.5 bg-slate-50 text-slate-600 border border-slate-100 rounded-xl text-[10px] font-black capitalize tracking-widest hover:bg-white hover:border-brand transition-colors cursor-default">{{ kw.trim() }}</span>
+                  <span v-for="kw in proposal.keywords?.split(',')" :key="kw" class="px-3 py-1.5 bg-slate-50 text-slate-600 border border-slate-100 rounded-xl text-[10px] font-bold capitalize tracking-widest hover:bg-white hover:border-brand transition-colors cursor-default">{{ kw.trim() }}</span>
                 </div>
               </div>
               <div>
-                <p class="text-[10px] font-black text-slate-400 capitalize tracking-widest mb-3 ml-1">Research Abstract</p>
+                <p class="text-[10px] font-bold text-slate-400 capitalize tracking-widest mb-3 ml-1">Research Abstract</p>
                 <p class="text-sm font-medium text-slate-600 leading-relaxed italic border-l-4 border-slate-100 pl-6">{{ proposal.abstract }}</p>
               </div>
               <div v-if="proposal.objectives">
-                <p class="text-[10px] font-black text-slate-400 capitalize tracking-widest mb-3 ml-1">Specific Objectives</p>
+                <p class="text-[10px] font-bold text-slate-400 capitalize tracking-widest mb-3 ml-1">Specific Objectives</p>
                 <pre class="whitespace-pre-wrap font-inter text-sm text-slate-600 bg-slate-50 p-6 rounded-2xl border border-slate-100 leading-relaxed">{{ proposal.objectives }}</pre>
               </div>
                <div v-if="proposal.methodology">
-                <p class="text-[10px] font-black text-slate-400 capitalize tracking-widest mb-3 ml-1">Methodology</p>
+                <p class="text-[10px] font-bold text-slate-400 capitalize tracking-widest mb-3 ml-1">Methodology</p>
                 <div class="text-sm font-medium text-slate-600 leading-relaxed">{{ proposal.methodology }}</div>
               </div>
             </div>
@@ -138,19 +138,19 @@
         </div>
 
         <!-- Sidebar -->
-        <div class="flex flex-col gap-8">
+        <div class="flex flex-col gap-5">
           <!-- Research Team -->
-          <div class="card p-8">
-            <h2 class="text-xs font-black text-slate-400 capitalize tracking-widest mb-6 flex items-center gap-2">
+          <div class="card p-5">
+            <h2 class="text-xs font-bold text-slate-400 capitalize tracking-widest mb-6 flex items-center gap-2">
               <span class="w-1 h-3 bg-brand rounded-full"></span>
               Research Team
             </h2>
             <div v-if="proposal.investigators?.length" class="space-y-4">
               <div v-for="inv in proposal.investigators" :key="inv.id" class="flex items-start gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-white hover:border-brand transition-all group shadow-sm">
-                <div class="w-10 h-10 bg-brand-light text-brand rounded-xl flex items-center justify-center text-xs font-black capitalize shadow-inner group-hover:scale-110 transition-transform shrink-0">{{ getInitials(inv.user?.name || inv.name) }}</div>
+                <div class="w-10 h-10 bg-brand-light text-brand rounded-xl flex items-center justify-center text-xs font-bold capitalize shadow-inner group-hover:scale-110 transition-transform shrink-0">{{ getInitials(inv.user?.name || inv.name) }}</div>
                 <div class="min-w-0">
-                  <p class="text-sm font-black text-slate-800 leading-tight truncate">{{ inv.user?.name || inv.name }}</p>
-                  <p class="text-[9px] font-black text-slate-400 capitalize tracking-widest mt-0.5">{{ inv.role?.name || 'Researcher' }}</p>
+                  <p class="text-sm font-bold text-slate-800 leading-tight truncate">{{ inv.user?.name || inv.name }}</p>
+                  <p class="text-[9px] font-bold text-slate-400 capitalize tracking-widest mt-0.5">{{ inv.role?.name || 'Researcher' }}</p>
                   
                   <div class="mt-3 space-y-1">
                     <p v-if="inv.email || inv.user?.email" class="text-[10px] text-slate-500 font-bold flex items-center gap-1.5">
@@ -165,12 +165,12 @@
                 </div>
               </div>
             </div>
-            <p v-else class="text-[10px] font-black text-slate-400 capitalize tracking-widest italic text-center py-6">No co-investigators.</p>
+            <p v-else class="text-[10px] font-bold text-slate-400 capitalize tracking-widest italic text-center py-6">No co-investigators.</p>
           </div>
 
           <!-- Document Management -->
-          <div class="card p-8">
-            <h2 class="text-xs font-black text-slate-400 capitalize tracking-widest mb-6 flex items-center gap-2">
+          <div class="card p-5">
+            <h2 class="text-xs font-bold text-slate-400 capitalize tracking-widest mb-6 flex items-center gap-2">
               <span class="w-1 h-3 bg-brand rounded-full"></span>
               Main Document
             </h2>
@@ -179,8 +179,8 @@
               <div class="flex items-center gap-3 min-w-0">
                 <div class="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-xl flex items-center justify-center text-xl shrink-0 group-hover:scale-110 transition-transform">📄</div>
                 <div class="min-w-0">
-                   <p class="text-sm font-black text-slate-800 truncate">{{ proposal.file.original_name }}</p>
-                   <p class="text-[9px] font-black text-emerald-600 capitalize tracking-widest mt-0.5">Formal Proposal Attached</p>
+                   <p class="text-sm font-bold text-slate-800 truncate">{{ proposal.file.original_name }}</p>
+                   <p class="text-[9px] font-bold text-emerald-600 capitalize tracking-widest mt-0.5">Formal Proposal Attached</p>
                 </div>
               </div>
               <a :href="`/api/files/${proposal.file.id}/download`" target="_blank" class="p-2 text-slate-400 hover:text-brand transition-colors">
@@ -191,7 +191,7 @@
             <div v-if="proposal.status?.name === 'draft' || !proposal.file || auth.hasRole('super_admin')" class="mt-4">
               <label class="block">
                 <span class="sr-only">Choose proposal file</span>
-                <input type="file" @change="onFileSelected" accept=".pdf,.doc,.docx" class="block w-full text-[10px] text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[10px] file:font-black file:bg-brand/10 file:text-brand hover:file:bg-brand/20 cursor-pointer"/>
+                <input type="file" @change="onFileSelected" accept=".pdf,.doc,.docx" class="block w-full text-[10px] text-slate-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-[10px] file:font-bold file:bg-brand/10 file:text-brand hover:file:bg-brand/20 cursor-pointer"/>
               </label>
               <button v-if="selectedFile" @click="uploadDocument" :disabled="uploading" class="btn btn-primary w-full mt-4 h-10 text-[10px] tracking-widest capitalize">
                 <span v-if="uploading">Uploading...</span>
@@ -201,8 +201,8 @@
           </div>
 
           <!-- Reviews Progress -->
-          <div class="card p-8">
-            <h2 class="text-xs font-black text-slate-400 capitalize tracking-widest mb-6 flex items-center gap-2">
+          <div class="card p-5">
+            <h2 class="text-xs font-bold text-slate-400 capitalize tracking-widest mb-6 flex items-center gap-2">
               <span class="w-1 h-3 bg-amber-500 rounded-full"></span>
               Status & Reviews
             </h2>
@@ -210,28 +210,28 @@
             <div class="space-y-6">
               <!-- Internal Reviewers -->
               <div v-if="proposal.reviewers?.length" class="space-y-3">
-                 <p class="text-[10px] font-black text-slate-400 capitalize tracking-widest">Internal Peer Reviewers</p>
+                 <p class="text-[10px] font-bold text-slate-400 capitalize tracking-widest">Internal Peer Reviewers</p>
                  <div v-for="r in proposal.reviewers" :key="r.id" class="p-4 bg-slate-50 rounded-xl border border-slate-100 relative group">
                     <div class="flex justify-between items-center mb-1">
-                      <p class="text-sm font-black text-slate-700">{{ r.name }}</p>
-                      <span v-if="r.pivot?.overall_score" class="text-brand font-black">{{ r.pivot.overall_score }}/5</span>
+                      <p class="text-sm font-bold text-slate-700">{{ r.name }}</p>
+                      <span v-if="r.pivot?.overall_score" class="text-brand font-bold">{{ r.pivot.overall_score }}/5</span>
                     </div>
-                    <p class="text-[9px] font-black capitalize text-slate-400 tracking-widest">{{ r.pivot?.overall_score ? 'Feedback Provided' : 'Under Review' }}</p>
+                    <p class="text-[9px] font-bold capitalize text-slate-400 tracking-widest">{{ r.pivot?.overall_score ? 'Feedback Provided' : 'Under Review' }}</p>
                  </div>
               </div>
-              <p v-else class="text-[10px] font-black text-slate-400 capitalize italic">No reviewers assigned.</p>
+              <p v-else class="text-[10px] font-bold text-slate-400 capitalize italic">No reviewers assigned.</p>
 
               <hr class="border-slate-50" />
 
               <!-- External Checks -->
               <div class="space-y-4">
-                 <p class="text-[10px] font-black text-slate-400 capitalize tracking-widest">Procedural Status</p>
+                 <p class="text-[10px] font-bold text-slate-400 capitalize tracking-widest">Procedural Status</p>
                  <div class="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-100 shadow-inner">
-                    <span class="text-[10px] font-black capitalize text-slate-600">Ethics Clearance</span>
+                    <span class="text-[10px] font-bold capitalize text-slate-600">Ethics Clearance</span>
                     <StatusBadge :status="proposal.ethics_status || 'not_requested'" size="sm" />
                  </div>
                  <div class="flex items-center justify-between p-3 rounded-lg bg-slate-50 border border-slate-100 shadow-inner">
-                    <span class="text-[10px] font-black capitalize text-slate-600">Finance Audit</span>
+                    <span class="text-[10px] font-bold capitalize text-slate-600">Finance Audit</span>
                     <StatusBadge :status="proposal.finance_status || 'pending'" size="sm" />
                  </div>
               </div>
@@ -248,17 +248,17 @@
     <Modal :show="showAssignReviewers" title="Assign Peer Reviewers" @close="showAssignReviewers = false">
        <div class="space-y-6">
           <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-             <p class="text-[10px] font-black text-slate-400 capitalize tracking-widest mb-4">Eligible Reviewers (Expertise Match)</p>
+             <p class="text-[10px] font-bold text-slate-400 capitalize tracking-widest mb-4">Eligible Reviewers (Expertise Match)</p>
              <div class="space-y-2 max-h-60 overflow-y-auto pr-2">
                 <label v-for="r in availableReviewers" :key="r.user ? r.user.id : r.id" class="flex items-center justify-between p-3 bg-white rounded-xl border border-slate-100 hover:border-brand cursor-pointer group transition-all">
                   <div class="flex items-center gap-3">
                     <input type="checkbox" :value="r.user ? r.user.id : r.id" v-model="selectedReviewers" class="w-4 h-4 rounded text-brand focus:ring-brand border-slate-300" />
                     <div class="min-w-0">
-                      <p class="text-sm font-black text-slate-800 group-hover:text-brand">{{ r.user ? r.user.name : r.name }}</p>
+                      <p class="text-sm font-bold text-slate-800 group-hover:text-brand">{{ r.user ? r.user.name : r.name }}</p>
                       <p class="text-[9px] font-bold text-slate-400 capitalize">{{ r.user ? r.user.email : r.email }}</p>
                     </div>
                   </div>
-                  <div v-if="r.match_percentage" class="px-2 py-1 bg-brand/10 text-brand text-[10px] font-black rounded flex flex-col items-center justify-center">
+                  <div v-if="r.match_percentage" class="px-2 py-1 bg-brand/10 text-brand text-[10px] font-bold rounded flex flex-col items-center justify-center">
                     <span>{{ r.match_percentage }}% Match</span>
                     <span v-if="r.matched_keywords?.length" class="text-[8px] opacity-70">
                       via {{ r.matched_keywords.slice(0, 2).join(', ') }}
@@ -270,7 +270,7 @@
           </div>
           <div class="flex justify-end gap-3 pt-6 border-t border-slate-100">
              <button @click="showAssignReviewers = false" class="btn btn-secondary px-6">Cancel</button>
-             <button @click="assignReviewers" class="btn btn-primary px-8">Assign Selection</button>
+             <button @click="assignReviewers" class="btn btn-primary px-5">Assign Selection</button>
           </div>
        </div>
     </Modal>

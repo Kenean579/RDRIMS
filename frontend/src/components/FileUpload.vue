@@ -1,6 +1,6 @@
 <template>
   <div class="w-full">
-    <label v-if="label" class="block text-xs font-black text-slate-400 capitalize tracking-widest mb-2 ml-1">
+    <label v-if="label" class="block text-xs font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">
       {{ label }}
       <span v-if="required" class="text-rose-500">*</span>
     </label>
@@ -9,7 +9,7 @@
       @dragover.prevent="dragover = true"
       @dragleave.prevent="dragover = false"
       @drop.prevent="handleDrop"
-      class="border-2 border-dashed rounded-2xl p-8 flex flex-col items-center justify-center transition-all bg-slate-50 relative overflow-hidden"
+      class="border-2 border-dashed rounded-2xl p-5 flex flex-col items-center justify-center transition-all bg-slate-50 relative overflow-hidden"
       :class="[
         dragover ? 'border-brand bg-brand/5' : 'border-slate-300 hover:border-slate-400',
         error ? 'border-rose-400 bg-rose-50' : ''
@@ -43,7 +43,7 @@
         </div>
         <div class="flex-1 min-w-0">
           <p class="text-sm font-bold text-slate-800 truncate">{{ selectedFile.name }}</p>
-          <p class="text-[10px] font-black tracking-widest text-slate-400 mt-1">{{ formatBytes(selectedFile.size) }}</p>
+          <p class="text-[10px] font-bold tracking-widest text-slate-400 mt-1">{{ formatBytes(selectedFile.size) }}</p>
         </div>
         <button type="button" @click.prevent="clearFile" class="shrink-0 h-8 w-8 rounded-full bg-slate-100 hover:bg-rose-100 text-slate-500 hover:text-rose-600 flex items-center justify-center transition-colors">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -52,7 +52,7 @@
         </button>
       </div>
     </div>
-    <p v-if="error || internalError" class="mt-2 text-[10px] font-black capitalize tracking-widest text-rose-500 ml-1">
+    <p v-if="error || internalError" class="mt-2 text-[10px] font-bold capitalize tracking-widest text-rose-500 ml-1">
       {{ error || internalError }}
     </p>
   </div>

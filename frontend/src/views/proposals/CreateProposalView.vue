@@ -1,17 +1,17 @@
 <template>
   <div class="max-w-4xl mx-auto">
     <!-- Header -->
-    <div class="mb-8">
+    <div class="mb-5">
       <router-link to="/app/proposals" class="inline-flex items-center gap-1.5 text-sm font-bold text-slate-500 hover:text-brand transition-colors mb-4">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
         Back to Proposals
       </router-link>
-      <h1 class="text-2xl font-black text-slate-800 tracking-tight">Create New Proposal</h1>
+      <h1 class="text-2xl font-bold text-slate-800 tracking-tight">Create New Proposal</h1>
       <p class="text-sm text-slate-500 mt-1 font-medium">Fill in the details to submit your research proposal</p>
     </div>
 
     <!-- Step Indicator -->
-    <div class="flex items-center gap-2 mb-8 bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
+    <div class="flex items-center gap-2 mb-5 bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
       <button
         v-for="(s, i) in steps"
         :key="i"
@@ -25,7 +25,7 @@
               : 'text-slate-400 hover:text-slate-600'
         ]"
       >
-        <span class="h-6 w-6 rounded-full flex items-center justify-center text-xs font-black shrink-0"
+        <span class="h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
           :class="[
             currentStep === i ? 'bg-white/20' : currentStep > i ? 'bg-emerald-200 text-emerald-700' : 'bg-slate-100'
           ]"
@@ -39,13 +39,13 @@
 
     <form @submit.prevent="handleSubmit">
       <!-- Step 1: Basic Information -->
-      <div v-show="currentStep === 0" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
-        <h2 class="text-lg font-black text-slate-800 mb-6">Basic Information</h2>
+      <div v-show="currentStep === 0" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+        <h2 class="text-lg font-bold text-slate-800 mb-6">Basic Information</h2>
         
         <!-- Basic Info Section -->
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-5">
           <div>
-            <label class="block text-xs font-black text-slate-400 capitalize tracking-widest mb-2 ml-1">Call</label>
+            <label class="block text-xs font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">Call</label>
             <select v-model="form.call_id"
               class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none bg-white transition-all">
               <option value="">Open Call (no specific call)</option>
@@ -53,17 +53,17 @@
             </select>
           </div>
           <div>
-            <label class="block text-xs font-black text-slate-400 capitalize tracking-widest mb-2 ml-1">Type</label>
+            <label class="block text-xs font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">Type</label>
             <LookupSelect v-model="form.type_id" lookup-key="proposal_types" placeholder="Select type" />
           </div>
           <div class="md:col-span-2">
-            <label class="block text-xs font-black text-slate-400 capitalize tracking-widest mb-2 ml-1">Title</label>
+            <label class="block text-xs font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">Title</label>
             <input v-model="form.title" type="text" maxlength="255"
               class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none transition-all"
               placeholder="Enter the title of your research proposal" />
           </div>
           <div>
-            <label class="block text-xs font-black text-slate-400 capitalize tracking-widest mb-2 ml-1">Academic Year</label>
+            <label class="block text-xs font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">Academic Year</label>
             <select v-model="form.academic_year_id"
               class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none bg-white transition-all">
               <option value="">Select year</option>
@@ -71,7 +71,7 @@
             </select>
           </div>
           <div>
-            <label class="block text-xs font-black text-slate-400 capitalize tracking-widest mb-2 ml-1">Budget (ETB)</label>
+            <label class="block text-xs font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">Budget (ETB)</label>
             <input v-model.number="form.budget" type="number" min="0" step="0.01"
               class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none transition-all"
               placeholder="500000.00" />
@@ -80,29 +80,29 @@
 
         <!-- Research Details Section (part of Basic Info per spec) -->
         <div class="border-t border-slate-200 pt-6">
-          <h3 class="text-sm font-black text-slate-800 mb-4">Research Details</h3>
+          <h3 class="text-sm font-bold text-slate-800 mb-4">Research Details</h3>
           <div class="space-y-6">
             <div>
-              <label class="block text-xs font-black text-slate-400 capitalize tracking-widest mb-2 ml-1">Keywords</label>
+              <label class="block text-xs font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">Keywords</label>
               <input v-model="form.keywords" type="text"
                 class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none transition-all"
                 placeholder="AI, Machine Learning, Agriculture" />
               <p class="text-[10px] text-slate-400 mt-1.5 ml-1 font-medium">Separate keywords with commas</p>
             </div>
             <div>
-              <label class="block text-xs font-black text-slate-400 capitalize tracking-widest mb-2 ml-1">Abstract</label>
+              <label class="block text-xs font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">Abstract</label>
               <textarea v-model="form.abstract" rows="5"
                 class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none resize-none transition-all"
                 placeholder="Provide a brief summary of your research proposal..."></textarea>
             </div>
             <div>
-              <label class="block text-xs font-black text-slate-400 capitalize tracking-widest mb-2 ml-1">Objectives</label>
+              <label class="block text-xs font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">Objectives</label>
               <textarea v-model="form.objectives" rows="4"
                 class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none resize-none transition-all"
                 placeholder="1. First objective&#10;2. Second objective&#10;3. Third objective"></textarea>
             </div>
             <div>
-              <label class="block text-xs font-black text-slate-400 capitalize tracking-widest mb-2 ml-1">Methodology</label>
+              <label class="block text-xs font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">Methodology</label>
               <textarea v-model="form.methodology" rows="5"
                 class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none resize-none transition-all"
                 placeholder="Describe your research methodology in detail..."></textarea>
@@ -151,7 +151,7 @@
               </div>
               <div class="bg-slate-100 rounded-xl p-3 flex flex-col justify-center">
                 <div class="text-[10px] font-bold text-slate-500">Total Allocation</div>
-                <div class="text-lg font-black text-slate-800">{{ formatCurrency(totalBudgetAllocation) }}</div>
+                <div class="text-lg font-bold text-slate-800">{{ formatCurrency(totalBudgetAllocation) }}</div>
               </div>
             </div>
           </div>
@@ -159,10 +159,10 @@
       </div>
 
       <!-- Step 3: Co-Investigators -->
-      <div v-show="currentStep === 2" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
+      <div v-show="currentStep === 2" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
         <div class="flex items-center justify-between mb-6">
           <div>
-            <h2 class="text-lg font-black text-slate-800">Co-Team Members</h2>
+            <h2 class="text-lg font-bold text-slate-800">Co-Team Members</h2>
             <p class="text-xs text-slate-400 font-medium mt-1">You are automatically the Principal Investigator</p>
           </div>
           <button type="button" @click="addInvestigator"
@@ -172,7 +172,7 @@
           </button>
         </div>
 
-        <div v-if="form.investigators.length === 0" class="text-center py-12 border-2 border-dashed border-slate-200 rounded-2xl">
+        <div v-if="form.investigators.length === 0" class="text-center py-6 border-2 border-dashed border-slate-200 rounded-2xl">
           <div class="h-16 w-16 border-2 border-slate-200 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg class="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
           </div>
@@ -184,7 +184,7 @@
           <div v-for="(inv, index) in form.investigators" :key="index"
             class="p-5 border border-slate-200 rounded-2xl hover:border-slate-300 transition-colors">
             <div class="flex items-center justify-between mb-4">
-              <span class="text-xs font-black text-slate-400 capitalize tracking-widest">Member #{{ index + 1 }}</span>
+              <span class="text-xs font-bold text-slate-400 capitalize tracking-widest">Member #{{ index + 1 }}</span>
               <button type="button" @click="removeInvestigator(index)"
                 class="h-7 w-7 rounded-full border border-rose-300 text-rose-500 hover:bg-rose-50 flex items-center justify-center transition-colors">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -227,10 +227,10 @@
       </div>
 
       <!-- Step 2: Co-Investigators -->
-      <div v-show="currentStep === 1" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
+      <div v-show="currentStep === 1" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
         <div class="flex items-center justify-between mb-6">
           <div>
-            <h2 class="text-lg font-black text-slate-800">Co-Team Members</h2>
+            <h2 class="text-lg font-bold text-slate-800">Co-Team Members</h2>
             <p class="text-xs text-slate-400 font-medium mt-1">You are automatically the Principal Investigator</p>
           </div>
           <button type="button" @click="addInvestigator"
@@ -240,7 +240,7 @@
           </button>
         </div>
 
-        <div v-if="form.investigators.length === 0" class="text-center py-12 border-2 border-dashed border-slate-200 rounded-2xl">
+        <div v-if="form.investigators.length === 0" class="text-center py-6 border-2 border-dashed border-slate-200 rounded-2xl">
           <div class="h-16 w-16 border-2 border-slate-200 rounded-full flex items-center justify-center mx-auto mb-4">
             <svg class="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
           </div>
@@ -252,7 +252,7 @@
           <div v-for="(inv, index) in form.investigators" :key="index"
             class="p-5 border border-slate-200 rounded-2xl hover:border-slate-300 transition-colors">
             <div class="flex items-center justify-between mb-4">
-              <span class="text-xs font-black text-slate-400 capitalize tracking-widest">Member #{{ index + 1 }}</span>
+              <span class="text-xs font-bold text-slate-400 capitalize tracking-widest">Member #{{ index + 1 }}</span>
               <button type="button" @click="removeInvestigator(index)"
                 class="h-7 w-7 rounded-full border border-rose-300 text-rose-500 hover:bg-rose-50 flex items-center justify-center transition-colors">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -295,8 +295,8 @@
       </div>
 
       <!-- Step 3: Documents -->
-      <div v-show="currentStep === 2" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
-        <h2 class="text-lg font-black text-slate-800 mb-6">Documents</h2>
+      <div v-show="currentStep === 2" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+        <h2 class="text-lg font-bold text-slate-800 mb-6">Documents</h2>
         <div class="space-y-6">
           <div>
             <FileUpload v-model="form.proposal_file" label="Proposal Document" :required="true" />
@@ -310,12 +310,12 @@
       </div>
 
       <!-- Step 4: Review & Submit -->
-      <div v-show="currentStep === 3" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
-        <h2 class="text-lg font-black text-slate-800 mb-6">Review & Submit</h2>
+      <div v-show="currentStep === 3" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-5">
+        <h2 class="text-lg font-bold text-slate-800 mb-6">Review & Submit</h2>
         
         <!-- Summary Card -->
         <div class="bg-slate-50 rounded-xl p-6 mb-6 border border-slate-200">
-          <h3 class="text-sm font-black text-slate-800 mb-4">Proposal Summary</h3>
+          <h3 class="text-sm font-bold text-slate-800 mb-4">Proposal Summary</h3>
           <div class="space-y-2 text-sm">
             <div class="flex justify-between"><span class="text-slate-600">Title:</span><span class="font-medium text-slate-800">{{ form.title }}</span></div>
             <div class="flex justify-between"><span class="text-slate-600">Budget:</span><span class="font-medium text-slate-800">{{ form.budget ? 'ETB ' + Number(form.budget).toLocaleString() : 'N/A' }}</span></div>
@@ -326,7 +326,7 @@
 
         <!-- Completion Checklist -->
         <div class="bg-white rounded-xl p-6 border border-slate-200 mb-6 space-y-4">
-          <h3 class="text-sm font-black text-slate-800 mb-4">Completion Checklist</h3>
+          <h3 class="text-sm font-bold text-slate-800 mb-4">Completion Checklist</h3>
           <div class="flex items-center gap-3">
             <div class="h-5 w-5 rounded border border-emerald-200 text-emerald-600 flex items-center justify-center text-xs">✓</div>
             <span class="text-sm text-slate-600">All required fields completed</span>
@@ -347,7 +347,7 @@
       </div>
 
       <!-- Navigation Buttons -->
-      <div class="flex items-center justify-between mt-8">
+      <div class="flex items-center justify-between mt-5">
         <button v-if="currentStep > 0" type="button" @click="currentStep--"
           class="inline-flex items-center gap-2 px-6 py-3 text-sm font-bold text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 shadow-sm transition-all">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
@@ -366,7 +366,7 @@
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
           </button>
           <button v-else type="submit" :disabled="submitting"
-            class="inline-flex items-center gap-2 px-8 py-3 text-sm font-bold text-white bg-emerald-600 rounded-xl shadow-lg shadow-emerald-600/30 hover:shadow-emerald-600/50 hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:pointer-events-none">
+            class="inline-flex items-center gap-2 px-5 py-3 text-sm font-bold text-white bg-emerald-600 rounded-xl shadow-lg shadow-emerald-600/30 hover:shadow-emerald-600/50 hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:pointer-events-none">
             <svg v-if="submitting" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
             {{ submitting ? 'Saving...' : 'Save as Draft' }}
           </button>

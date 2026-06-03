@@ -1,6 +1,6 @@
 <template>
   <div>
-    <label v-if="label" class="block text-xs font-black text-slate-400 capitalize tracking-widest mb-2 ml-1">
+    <label v-if="label" class="block text-xs font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">
       {{ label }}
       <span v-if="required" class="text-rose-500">*</span>
     </label>
@@ -45,10 +45,10 @@
     </div>
     
     <div class="flex justify-between items-center mt-1.5 px-1">
-      <p v-if="error" class="text-[10px] font-black capitalize tracking-widest text-rose-500">{{ error }}</p>
-      <p v-else-if="helpText" class="text-[10px] font-black capitalize tracking-widest text-slate-400">{{ helpText }}</p>
+      <p v-if="error" class="text-[10px] font-bold capitalize tracking-widest text-rose-500">{{ error }}</p>
+      <p v-else-if="helpText" class="text-[10px] font-bold capitalize tracking-widest text-slate-400">{{ helpText }}</p>
       
-      <p v-if="min > 0" class="text-[10px] font-black tracking-widest capitalize transition-colors" 
+      <p v-if="min > 0" class="text-[10px] font-bold tracking-widest capitalize transition-colors" 
          :class="modelValue.length < min ? 'text-amber-500' : 'text-emerald-500'">
         {{ modelValue.length }} / {{ min }} min
       </p>

@@ -1,7 +1,7 @@
 <template>
   <div class="empty-state">
     <div class="empty-icon-shell">
-      <span class="empty-icon text-3xl">{{ icon }}</span>
+      <span class="empty-icon text-xl">{{ icon }}</span>
     </div>
     <h3 class="empty-title">{{ title }}</h3>
     <p class="empty-description">{{ description }}</p>

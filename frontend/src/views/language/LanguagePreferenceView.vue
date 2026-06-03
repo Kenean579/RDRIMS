@@ -7,9 +7,9 @@
       </div>
     </div>
 
-    <div v-if="loading" class="card p-8"><LoadingSkeleton :rows="2" /></div>
+    <div v-if="loading" class="card p-5"><LoadingSkeleton :rows="2" /></div>
 
-    <div v-else class="card p-8 max-w-xl">
+    <div v-else class="card p-5 max-w-xl">
       <form @submit.prevent="savePreference" class="flex flex-col gap-6">
         <div>
           <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-wider mb-3 ml-1">Interface Language</label>
@@ -31,7 +31,7 @@
           </div>
         </div>
         <div class="flex justify-end pt-2">
-          <button type="submit" class="btn btn-primary px-10">Save Preference</button>
+          <button type="submit" class="btn btn-primary px-5">Save Preference</button>
         </div>
       </form>
     </div>

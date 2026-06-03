@@ -18,7 +18,7 @@
       </button>
     </div>
 
-    <div v-if="loading" class="card p-8"><LoadingSkeleton :rows="3" /></div>
+    <div v-if="loading" class="card p-5"><LoadingSkeleton :rows="3" /></div>
     <div v-else-if="mous.length === 0" class="card">
       <EmptyState icon="📜" title="No MoUs found" description="A Memorandum of Understanding (MoU) defines the formal agreement between your institution and this partner." action-label="Add MoU" @action="showCreate = true" />
     </div>
@@ -55,7 +55,7 @@
         </div>
         <div class="flex justify-end gap-3 pt-4">
           <button type="button" @click="closeModal" class="btn btn-secondary">Cancel</button>
-          <button type="submit" class="btn btn-primary px-10">{{ editingMoU ? 'Update' : 'Add MoU' }}</button>
+          <button type="submit" class="btn btn-primary px-5">{{ editingMoU ? 'Update' : 'Add MoU' }}</button>
         </div>
       </form>
     </Modal>

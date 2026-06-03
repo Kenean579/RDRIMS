@@ -1,21 +1,21 @@
 <template>
-  <div class="flex flex-col gap-8 pb-12 animate-fade card">
+  <div class="flex flex-col gap-5 pb-6 animate-fade card">
     <!-- Header -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
       <div>
-        <router-link to="/app/publications" class="flex items-center gap-2 text-brand font-black capitalize tracking-widest text-[10px] mb-3 hover:translate-x-1 transition-transform">
+        <router-link to="/app/publications" class="flex items-center gap-2 text-brand font-bold capitalize tracking-widest text-[10px] mb-3 hover:translate-x-1 transition-transform">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
           Back to Publications
         </router-link>
-        <h1 class="text-3xl font-black text-slate-900 tracking-tight leading-tight max-w-3xl">{{ pub.title || 'Publication Detail' }}</h1>
+        <h1 class="text-xl font-bold text-slate-900 tracking-tight leading-tight max-w-3xl">{{ pub.title || 'Publication Detail' }}</h1>
         <div class="flex items-center gap-3 mt-3">
-          <span class="px-2.5 py-1 bg-indigo-50 text-indigo-600 border border-indigo-100 text-[10px] font-black capitalize tracking-widest rounded-lg">{{ pub.type?.name || 'Journal Article' }}</span>
+          <span class="px-2.5 py-1 bg-indigo-50 text-indigo-600 border border-indigo-100 text-[10px] font-bold capitalize tracking-widest rounded-lg">{{ pub.type?.name || 'Journal Article' }}</span>
           <span v-if="pub.doi" class="text-[10px] text-slate-400 font-bold capitalize tracking-widest">DOI: {{ pub.doi }}</span>
         </div>
       </div>
     </div>
 
-    <div v-if="loading" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div v-if="loading" class="grid grid-cols-1 lg:grid-cols-3 gap-5">
       <div class="lg:col-span-2 space-y-8">
         <div class="card h-48 animate-pulse bg-slate-50/50"></div>
         <div class="card h-96 animate-pulse bg-slate-50/50"></div>
@@ -24,35 +24,35 @@
     </div>
 
     <template v-else>
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 font-bold">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 font-bold">
         <div class="lg:col-span-2 space-y-8">
           <!-- Main Details -->
-          <div class="card p-8 border-l-4 border-l-indigo-500/20">
-            <h2 class="text-xs font-black text-slate-400 capitalize tracking-widest mb-8 flex items-center gap-2">
+          <div class="card p-5 border-l-4 border-l-indigo-500/20">
+            <h2 class="text-xs font-bold text-slate-400 capitalize tracking-widest mb-5 flex items-center gap-2">
               <span class="w-1 h-3 bg-indigo-500 rounded-full"></span>
               Core Information
             </h2>
-            <dl class="grid grid-cols-1 sm:grid-cols-2 gap-8 text-sm">
+            <dl class="grid grid-cols-1 sm:grid-cols-2 gap-5 text-sm">
               <div class="sm:col-span-2">
-                <dt class="text-[10px] font-black text-slate-400 capitalize tracking-widest mb-1.5 ml-1">Full Title</dt>
-                <dd class="text-base font-black text-slate-800 bg-slate-50 p-5 rounded-2xl border border-slate-100 leading-snug">{{ pub.title }}</dd>
+                <dt class="text-[10px] font-bold text-slate-400 capitalize tracking-widest mb-1.5 ml-1">Full Title</dt>
+                <dd class="text-base font-bold text-slate-800 bg-slate-50 p-5 rounded-2xl border border-slate-100 leading-snug">{{ pub.title }}</dd>
               </div>
               <div>
-                <dt class="text-[10px] font-black text-slate-400 capitalize tracking-widest mb-1.5 ml-1">Source Venue</dt>
+                <dt class="text-[10px] font-bold text-slate-400 capitalize tracking-widest mb-1.5 ml-1">Source Venue</dt>
                 <dd class="p-4 rounded-xl bg-white border border-slate-100 text-slate-700">
                    <div class="flex items-center gap-2 mb-1">
                       <i class="fas fa-scroll text-indigo-400"></i>
-                      <span class="font-black text-slate-900">{{ pub.journal_name || pub.conference_name || 'N/A' }}</span>
+                      <span class="font-bold text-slate-900">{{ pub.journal_name || pub.conference_name || 'N/A' }}</span>
                    </div>
                    <p class="text-[10px] capitalize tracking-widest opacity-60">Published: {{ pub.publication_year }}</p>
                 </dd>
               </div>
               <div>
-                <dt class="text-[10px] font-black text-slate-400 capitalize tracking-widest mb-1.5 ml-1">Impact & Mentions</dt>
+                <dt class="text-[10px] font-bold text-slate-400 capitalize tracking-widest mb-1.5 ml-1">Impact & Mentions</dt>
                 <dd class="p-4 rounded-xl bg-white border border-slate-100">
                    <div class="flex items-center gap-2">
                       <i class="fas fa-quote-left text-slate-300"></i>
-                      <span class="text-slate-700">Citations: <span class="text-brand font-black">{{ pub.citation_count || 0 }}</span></span>
+                      <span class="text-slate-700">Citations: <span class="text-brand font-bold">{{ pub.citation_count || 0 }}</span></span>
                    </div>
                 </dd>
               </div>
@@ -60,8 +60,8 @@
           </div>
 
           <!-- Abstract -->
-          <div v-if="pub.abstract" class="card p-8">
-             <h2 class="text-xs font-black text-slate-400 capitalize tracking-widest mb-8 flex items-center gap-2">
+          <div v-if="pub.abstract" class="card p-5">
+             <h2 class="text-xs font-bold text-slate-400 capitalize tracking-widest mb-5 flex items-center gap-2">
                <span class="w-1 h-3 bg-slate-300 rounded-full"></span>
                Abstract Summary
              </h2>
@@ -75,14 +75,14 @@
         <div class="space-y-8">
           <div class="card p-6 bg-slate-50/50">
             <div class="flex items-center justify-between mb-6">
-              <h2 class="text-[10px] font-black text-slate-400 capitalize tracking-widest">Authorship Team</h2>
-              <button @click="showAddAuthor = true" class="text-[10px] font-black text-brand capitalize tracking-widest hover:underline">+ Add Member</button>
+              <h2 class="text-[10px] font-bold text-slate-400 capitalize tracking-widest">Authorship Team</h2>
+              <button @click="showAddAuthor = true" class="text-[10px] font-bold text-brand capitalize tracking-widest hover:underline">+ Add Member</button>
             </div>
             
             <div v-if="pub.authors?.length" class="space-y-4">
               <div v-for="author in pub.authors" :key="author.id" class="flex items-center justify-between p-4 bg-white rounded-2xl border border-slate-100 group shadow-sm">
                 <div class="min-w-0">
-                  <p class="text-xs font-black text-slate-800 truncate mb-0.5">{{ author.user?.name || author.external_author_name }}</p>
+                  <p class="text-xs font-bold text-slate-800 truncate mb-0.5">{{ author.user?.name || author.external_author_name }}</p>
                   <p class="text-[9px] text-slate-400 capitalize tracking-widest">Priority Order: {{ author.author_order }}</p>
                 </div>
                 <button @click="removeAuthor(author)" class="w-7 h-7 flex items-center justify-center text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-full transition-all">
@@ -90,15 +90,15 @@
                 </button>
               </div>
             </div>
-            <div v-else class="p-8 text-center bg-white rounded-2xl border border-dashed border-slate-200">
-               <p class="text-[10px] font-black text-slate-400 capitalize tracking-widest">No authors added.</p>
+            <div v-else class="p-5 text-center bg-white rounded-2xl border border-dashed border-slate-200">
+               <p class="text-[10px] font-bold text-slate-400 capitalize tracking-widest">No authors added.</p>
             </div>
           </div>
           
           <div v-if="pub.url" class="card p-6 bg-linear-to-br from-indigo-600 to-blue-700 text-white shadow-xl shadow-indigo-500/20">
-             <h3 class="text-xs font-black capitalize tracking-widest mb-4 opacity-80">Online Access</h3>
+             <h3 class="text-xs font-bold capitalize tracking-widest mb-4 opacity-80">Online Access</h3>
              <p class="text-sm font-medium mb-6 leading-snug">Full document is available at the publisher's site.</p>
-             <a :href="pub.url" target="_blank" class="btn w-full bg-white text-indigo-700 text-[11px] font-black capitalize tracking-widest h-11 border-0 shadow-lg">Open Full Text</a>
+             <a :href="pub.url" target="_blank" class="btn w-full bg-white text-indigo-700 text-[11px] font-bold capitalize tracking-widest h-11 border-0 shadow-lg">Open Full Text</a>
           </div>
         </div>
       </div>

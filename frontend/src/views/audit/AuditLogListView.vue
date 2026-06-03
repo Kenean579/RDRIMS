@@ -1,5 +1,5 @@
 <template>
-  <div class="flex flex-col gap-6 pb-12 animate-fade">
+  <div class="flex flex-col gap-6 pb-6 animate-fade">
     <!-- Header -->
     <div class="section-header">
       <div>
@@ -62,7 +62,7 @@
     <div class="card p-5 bg-slate-50/50">
       <div class="flex flex-wrap gap-4 items-end">
         <div class="flex-1 min-w-[200px]">
-          <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest mb-2 ml-1">Search User</label>
+          <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-widest mb-2 ml-1">Search User</label>
           <div class="relative group">
             <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand transition-colors">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -71,7 +71,7 @@
           </div>
         </div>
         <div class="w-44">
-          <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest mb-2 ml-1">Action</label>
+          <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-widest mb-2 ml-1">Action</label>
           <select v-model="filterAction" @change="fetchLogs(1)" class="input font-bold">
             <option value="">All Actions</option>
             <option value="created">Created</option>
@@ -85,7 +85,7 @@
           </select>
         </div>
         <div class="w-44">
-          <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest mb-2 ml-1">Table</label>
+          <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-widest mb-2 ml-1">Table</label>
           <select v-model="filterTable" @change="fetchLogs(1)" class="input font-bold">
             <option value="">All Tables</option>
             <option value="proposals">Proposals</option>
@@ -98,23 +98,23 @@
           </select>
         </div>
         <div class="w-44">
-          <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest mb-2 ml-1">From</label>
+          <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-widest mb-2 ml-1">From</label>
           <input v-model="filterFrom" type="date" @change="fetchLogs(1)" class="input" />
         </div>
         <div class="w-44">
-          <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest mb-2 ml-1">To</label>
+          <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-widest mb-2 ml-1">To</label>
           <input v-model="filterTo" type="date" @change="fetchLogs(1)" class="input" />
         </div>
-        <button v-if="hasActiveFilters" @click="clearFilters" class="btn btn-secondary h-11 px-6 font-black capitalize tracking-widest text-[11px]">
+        <button v-if="hasActiveFilters" @click="clearFilters" class="btn btn-secondary h-11 px-6 font-bold capitalize tracking-widest text-[11px]">
           Reset
         </button>
       </div>
     </div>
 
     <!-- Content -->
-    <div v-if="loading" class="card p-24 flex flex-col justify-center items-center gap-4">
+    <div v-if="loading" class="card p-5 flex flex-col justify-center items-center gap-4">
       <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-brand"></div>
-      <p class="text-[10px] font-black text-slate-400 capitalize tracking-widest">Loading audit trail...</p>
+      <p class="text-[10px] font-bold text-slate-400 capitalize tracking-widest">Loading audit trail...</p>
     </div>
 
     <div v-else-if="logs.length === 0" class="card">

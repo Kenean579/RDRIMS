@@ -1,9 +1,9 @@
 <template>
-  <div class="flex flex-col gap-8 pb-12 animate-fade card">
+  <div class="flex flex-col gap-5 pb-6 animate-fade card">
     <!-- Header -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div>
-        <h1 class="text-3xl font-black text-slate-900 tracking-tight">Research Areas</h1>
+        <h1 class="text-xl font-bold text-slate-900 tracking-tight">Research Areas</h1>
         <p class="text-slate-500 font-medium mt-1">Focus areas for research and funding priority.</p>
       </div>
       <button @click="showCreate = true" class="btn btn-primary h-11 px-6 shadow-lg shadow-blue-500/20">
@@ -13,7 +13,7 @@
     </div>
 
     <!-- Content -->
-    <div v-if="loading" class="card p-24 flex flex-col justify-center items-center gap-4">
+    <div v-if="loading" class="card p-5 flex flex-col justify-center items-center gap-4">
       <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-brand"></div>
       <p class="text-xs font-bold text-slate-400 capitalize tracking-widest">Loading areas...</p>
     </div>
@@ -26,10 +26,10 @@
       <div v-for="t in thematicAreas" :key="t.id" class="card p-6 flex flex-col group card-hover relative overflow-hidden border-l-4 border-l-brand hover:border-l-brand-600 transition-all">
         <div class="flex items-start justify-between mb-4">
           <div class="flex-1 pr-4 min-w-0">
-            <h3 class="text-base font-black text-slate-800 leading-tight group-hover:text-brand transition-colors line-clamp-2 min-h-10">{{ t.name }}</h3>
-            <p class="text-[10px] font-black text-slate-400 capitalize tracking-widest mt-1">Research Area</p>
+            <h3 class="text-base font-bold text-slate-800 leading-tight group-hover:text-brand transition-colors line-clamp-2 min-h-10">{{ t.name }}</h3>
+            <p class="text-[10px] font-bold text-slate-400 capitalize tracking-widest mt-1">Research Area</p>
           </div>
-          <div class="w-12 h-12 rounded-2xl bg-linear-to-br from-indigo-500 to-blue-600 text-white flex items-center justify-center font-black shadow-lg shadow-indigo-500/30 shrink-0 capitalize text-xs">
+          <div class="w-12 h-12 rounded-2xl bg-linear-to-br from-indigo-500 to-blue-600 text-white flex items-center justify-center font-bold shadow-lg shadow-indigo-500/30 shrink-0 capitalize text-xs">
              {{ t.name.substring(0,2) }}
           </div>
         </div>
@@ -37,8 +37,8 @@
         <p class="text-sm text-slate-500 font-medium flex-1 line-clamp-2 leading-relaxed mb-6">{{ t.description || 'Global research focus area for institutional alignment.' }}</p>
         
         <div class="flex items-center justify-between bg-slate-50/50 rounded-xl p-1 gap-1">
-          <button @click="editTheme(t)" class="btn btn-ghost bg-white hover:bg-brand-light hover:text-brand flex-1 justify-center text-[10px] font-black capitalize tracking-widest py-2 shadow-xs">Edit</button>
-          <button @click="confirmDelete(t)" class="btn btn-ghost text-rose-500 hover:bg-rose-50 flex-1 justify-center text-[10px] font-black capitalize tracking-widest py-2">Delete</button>
+          <button @click="editTheme(t)" class="btn btn-ghost bg-white hover:bg-brand-light hover:text-brand flex-1 justify-center text-[10px] font-bold capitalize tracking-widest py-2 shadow-xs">Edit</button>
+          <button @click="confirmDelete(t)" class="btn btn-ghost text-rose-500 hover:bg-rose-50 flex-1 justify-center text-[10px] font-bold capitalize tracking-widest py-2">Delete</button>
         </div>
       </div>
     </div>
@@ -47,16 +47,16 @@
     <Modal :show="showCreate || !!editingTheme" :title="editingTheme ? 'Edit Area' : 'Add Area'" size="lg" @close="closeModal">
       <form @submit.prevent="saveTheme" class="space-y-6">
         <div>
-          <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest mb-2 ml-1">Area Name *</label>
+          <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-widest mb-2 ml-1">Area Name *</label>
           <input v-model="form.name" type="text" required class="input h-12 font-bold" placeholder="e.g., Artificial Intelligence, Climate" />
         </div>
         <div>
-          <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest mb-2 ml-1">Description</label>
+          <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-widest mb-2 ml-1">Description</label>
           <textarea v-model="form.description" rows="4" class="input resize-none pt-3" placeholder="Tell us more about this research area..."></textarea>
         </div>
         <div class="flex justify-end gap-3 pt-6 mt-6 border-t border-slate-100">
           <button type="button" @click="closeModal" class="btn btn-secondary px-6">Cancel</button>
-          <button type="submit" class="btn btn-primary px-10 shadow-lg shadow-blue-500/20">{{ editingTheme ? 'Save Changes' : 'Save Area' }}</button>
+          <button type="submit" class="btn btn-primary px-5 shadow-lg shadow-blue-500/20">{{ editingTheme ? 'Save Changes' : 'Save Area' }}</button>
         </div>
       </form>
     </Modal>

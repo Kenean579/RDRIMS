@@ -1,25 +1,25 @@
 <template>
-  <div class="flex flex-col gap-16 pb-16">
+  <div class="flex flex-col gap-16 pb-4">
     
     <!-- HERO SECTION -->
     <section class="relative bg-white pt-20 pb-24 overflow-hidden border-b border-slate-100">
       <div class="absolute inset-0 z-0 bg-[radial-gradient(circle_at_top_right,var(--tw-gradient-stops))] from-brand/5 via-transparent to-transparent"></div>
       
-      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-        <h1 class="text-5xl md:text-6xl font-black text-slate-900 tracking-tight leading-tight mb-6">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-5 relative z-10 text-center">
+        <h1 class="text-2xl md:text-xl font-bold text-slate-900 tracking-tight leading-tight mb-6">
           Transforming Higher Education
         </h1>
-        <p class="text-3xl md:text-4xl font-black text-slate-800 mb-8">
+        <p class="text-xl md:text-2xl font-bold text-slate-800 mb-5">
           The Central Hub for <span class="text-transparent bg-clip-text bg-gradient-to-r from-brand to-indigo-600">Academic Research</span>
         </p>
-        <p class="mt-4 text-lg text-slate-500 max-w-2xl mx-auto font-medium leading-relaxed mb-10">
+        <p class="mt-4 text-lg text-slate-500 max-w-2xl mx-auto font-medium leading-relaxed mb-5">
           Discover ground-breaking projects, browse the latest publications, explore open research calls, and track our ongoing community impact across universities.
         </p>
         <div class="flex items-center justify-center gap-4">
-          <a href="#calls-section" class="px-8 py-3.5 bg-brand text-white font-bold rounded-xl shadow-lg shadow-brand/30 hover:shadow-brand/50 hover:-translate-y-0.5 transition-all">
+          <a href="#calls-section" class="px-5 py-3.5 bg-brand text-white font-bold rounded-xl shadow-lg shadow-brand/30 hover:shadow-brand/50 hover:-translate-y-0.5 transition-all">
             Explore Open Calls
           </a>
-          <router-link to="/publications" class="px-8 py-3.5 bg-white text-slate-700 font-bold rounded-xl shadow-sm border border-slate-200 hover:border-brand hover:text-brand transition-all">
+          <router-link to="/publications" class="px-5 py-3.5 bg-white text-slate-700 font-bold rounded-xl shadow-sm border border-slate-200 hover:border-brand hover:text-brand transition-all">
             Browse Publications
           </router-link>
         </div>
@@ -27,23 +27,23 @@
     </section>
 
     <!-- STATS BAR -->
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 -mt-24 relative z-20">
-      <div class="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 p-8">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 divide-x divide-slate-100">
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-5 -mt-24 relative z-20">
+      <div class="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 p-5">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-5 divide-x divide-slate-100">
           <div class="text-center px-4">
-            <p class="text-4xl font-black text-slate-800 mb-2 tracking-tight">{{ stats.universities }}</p>
+            <p class="text-2xl font-bold text-slate-800 mb-2 tracking-tight">{{ stats.universities }}</p>
             <p class="text-xs font-bold capitalize tracking-widest text-slate-500">Universities</p>
           </div>
           <div class="text-center px-4">
-            <p class="text-4xl font-black text-brand mb-2 tracking-tight">{{ stats.openCalls }}</p>
+            <p class="text-2xl font-bold text-brand mb-2 tracking-tight">{{ stats.openCalls }}</p>
             <p class="text-xs font-bold capitalize tracking-widest text-slate-500">Open Calls</p>
           </div>
           <div class="text-center px-4">
-            <p class="text-4xl font-black text-slate-800 mb-2 tracking-tight">{{ stats.publications }}</p>
+            <p class="text-2xl font-bold text-slate-800 mb-2 tracking-tight">{{ stats.publications }}</p>
             <p class="text-xs font-bold capitalize tracking-widest text-slate-500">Publications</p>
           </div>
           <div class="text-center px-4">
-            <p class="text-4xl font-black text-emerald-500 mb-2 tracking-tight">{{ stats.problemsSolved }}</p>
+            <p class="text-2xl font-bold text-emerald-500 mb-2 tracking-tight">{{ stats.problemsSolved }}</p>
             <p class="text-xs font-bold capitalize tracking-widest text-slate-500">Problems Solved</p>
           </div>
         </div>
@@ -51,10 +51,10 @@
     </section>
 
     <!-- OPEN RESEARCH CALLS SECTION -->
-    <section id="calls-section" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-      <div class="flex justify-between items-end mb-8">
+    <section id="calls-section" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-5 w-full">
+      <div class="flex justify-between items-end mb-5">
         <div>
-          <h2 class="text-2xl font-black text-slate-800 tracking-tight">Open Research Calls</h2>
+          <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Open Research Calls</h2>
           <p class="text-sm text-slate-500 mt-1 font-medium">Opportunities for funding and collaboration</p>
         </div>
         <router-link to="/calls" class="text-sm font-bold text-brand hover:text-brand-dark flex items-center gap-1 group">
@@ -66,13 +66,13 @@
       <div v-if="loading.calls" class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div v-for="i in 3" :key="i" class="bg-white rounded-2xl border border-slate-200 p-6 animate-pulse h-48"></div>
       </div>
-      <div v-else-if="calls.length === 0" class="bg-white rounded-2xl border border-slate-200 p-12 text-center">
+      <div v-else-if="calls.length === 0" class="bg-white rounded-2xl border border-slate-200 p-6 text-center">
         <p class="text-slate-500 font-medium">No open calls at this time. Check back soon.</p>
       </div>
       <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         <router-link v-for="call in calls" :key="call.id" :to="`/calls/${call.id}`" class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md hover:-translate-y-1 transition-all group relative">
           <p class="text-xs font-bold capitalize tracking-widest text-brand mb-3">{{ call.university?.name || 'Central' }}</p>
-          <h3 class="text-lg font-black text-slate-800 leading-tight mb-3 group-hover:text-brand transition-colors line-clamp-2">
+          <h3 class="text-lg font-bold text-slate-800 leading-tight mb-3 group-hover:text-brand transition-colors line-clamp-2">
             {{ call.title }}
           </h3>
           <p class="text-sm text-slate-500 line-clamp-3 mb-6 font-medium leading-relaxed">{{ call.description }}</p>
@@ -82,7 +82,7 @@
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             </div>
             <div>
-              <p class="text-[10px] font-black capitalize tracking-widest text-slate-400">Deadline</p>
+              <p class="text-[10px] font-bold capitalize tracking-widest text-slate-400">Deadline</p>
               <p class="text-sm font-bold text-slate-700" :class="{ 'text-rose-600': isUrgent(call.deadline) }">
                 {{ formatDate(call.deadline) }}
               </p>
@@ -93,10 +93,10 @@
     </section>
 
     <!-- UPCOMING EVENTS SECTION -->
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-      <div class="flex justify-between items-end mb-8">
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-5 w-full">
+      <div class="flex justify-between items-end mb-5">
         <div>
-          <h2 class="text-2xl font-black text-slate-800 tracking-tight">Upcoming Events</h2>
+          <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Upcoming Events</h2>
           <p class="text-sm text-slate-500 mt-1 font-medium">Conferences, workshops, and academic seminars</p>
         </div>
         <router-link to="/events" class="text-sm font-bold text-brand hover:text-brand-dark flex items-center gap-1 group">
@@ -108,23 +108,23 @@
       <div v-if="loading.events" class="flex gap-6 overflow-x-auto pb-4">
         <div v-for="i in 3" :key="i" class="bg-white rounded-2xl border border-slate-200 p-6 animate-pulse w-80 h-48 flex-shrink-0"></div>
       </div>
-      <div v-else-if="events.length === 0" class="bg-white rounded-2xl border border-slate-200 p-12 text-center">
+      <div v-else-if="events.length === 0" class="bg-white rounded-2xl border border-slate-200 p-6 text-center">
         <p class="text-slate-500 font-medium">No upcoming events scheduled. Check back soon!</p>
       </div>
       <div v-else class="flex gap-6 overflow-x-auto pb-4">
         <div v-for="event in events" :key="event.id" class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm hover:shadow-md transition-all w-80 flex-shrink-0">
           <div class="text-xs font-bold text-slate-500 mb-2">{{ formatDate(event.start_date) }}</div>
-          <h3 class="text-base font-black text-slate-800 leading-tight mb-2">{{ event.title }}</h3>
+          <h3 class="text-base font-bold text-slate-800 leading-tight mb-2">{{ event.title }}</h3>
           <p class="text-sm text-slate-500">{{ event.venue }}</p>
         </div>
       </div>
     </section>
 
     <!-- LATEST PUBLICATIONS SECTION -->
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-      <div class="flex justify-between items-end mb-8">
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-5 w-full">
+      <div class="flex justify-between items-end mb-5">
         <div>
-          <h2 class="text-2xl font-black text-slate-800 tracking-tight">Latest Research Publications</h2>
+          <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Latest Research Publications</h2>
         </div>
         <router-link to="/publications" class="text-sm font-bold text-brand hover:text-brand-dark flex items-center gap-1 group">
           View all 
@@ -135,17 +135,17 @@
       <div v-if="loading.publications" class="space-y-4">
         <div v-for="i in 5" :key="i" class="bg-white rounded-2xl border border-slate-200 p-6 animate-pulse h-24"></div>
       </div>
-      <div v-else-if="publications.length === 0" class="bg-white rounded-2xl border border-slate-200 p-12 text-center">
+      <div v-else-if="publications.length === 0" class="bg-white rounded-2xl border border-slate-200 p-6 text-center">
         <p class="text-slate-500 font-medium">No publications yet.</p>
       </div>
       <div v-else class="space-y-4">
         <div v-for="pub in publications" :key="pub.id" class="bg-white rounded-2xl border border-slate-200 p-6">
           <div class="flex items-start gap-4">
-            <div class="h-12 w-12 bg-brand/10 rounded-xl flex items-center justify-center text-brand font-black shrink-0">
+            <div class="h-12 w-12 bg-brand/10 rounded-xl flex items-center justify-center text-brand font-bold shrink-0">
               📄
             </div>
             <div class="flex-1 min-w-0">
-              <h3 class="text-base font-black text-slate-800 leading-tight mb-2">{{ pub.title }}</h3>
+              <h3 class="text-base font-bold text-slate-800 leading-tight mb-2">{{ pub.title }}</h3>
               <p class="text-xs text-slate-500 mb-2">Authors: {{ formatAuthors(pub.authors) }}</p>
               <div class="flex items-center gap-4 text-xs text-slate-500">
                 <span>{{ pub.journal || 'Journal' }}</span>
@@ -158,13 +158,13 @@
     </section>
 
     <!-- COMMUNITY PROBLEMS SECTION (SUBMIT FORM ONLY) -->
-    <section class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-      <div class="mb-8">
-        <h2 class="text-2xl font-black text-slate-800 tracking-tight">Community Problems</h2>
+    <section class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-5 w-full">
+      <div class="mb-5">
+        <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Community Problems</h2>
         <p class="text-sm text-slate-500 mt-1 font-medium">Report a real-world problem in your community for university researchers to study and help solve</p>
       </div>
       
-      <div class="bg-white rounded-2xl border border-slate-200 p-8">
+      <div class="bg-white rounded-2xl border border-slate-200 p-5">
         <form @submit.prevent="submitProblem" class="space-y-6">
           <div>
             <label class="block text-sm font-bold text-slate-700 mb-2">Problem Title <span class="text-rose-500">*</span></label>
@@ -203,9 +203,9 @@
     </section>
 
     <!-- PARTNER INSTITUTIONS SECTION -->
-    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-      <div class="mb-8">
-        <h2 class="text-2xl font-black text-slate-800 tracking-tight">Partner Institutions</h2>
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-5 w-full">
+      <div class="mb-5">
+        <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Partner Institutions</h2>
       </div>
       
       <div v-if="loading.partners" class="grid grid-cols-1 md:grid-cols-3 gap-6">
@@ -213,7 +213,7 @@
       </div>
       <div v-else class="grid grid-cols-1 md:grid-cols-3 gap-6">
         <div v-for="uni in universities" :key="uni.id" class="bg-white rounded-2xl border border-slate-200 p-6 text-center">
-          <h3 class="text-lg font-black text-slate-800 mb-2">{{ uni.name }}</h3>
+          <h3 class="text-lg font-bold text-slate-800 mb-2">{{ uni.name }}</h3>
           <span class="text-xs font-bold text-slate-500 bg-slate-100 rounded px-2 py-1">{{ uni.code || 'CODE' }}</span>
           <div class="mt-4 text-xs text-slate-500">
             {{ uni.campuses_count || 0 }} Campuses · {{ uni.research_centers_count || 0 }} Research Ctrs

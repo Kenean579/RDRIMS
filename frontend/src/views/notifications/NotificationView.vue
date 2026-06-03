@@ -13,8 +13,8 @@
     </div>
 
     <!-- Content -->
-    <div v-if="loading" class="card p-8"><LoadingSkeleton :rows="4" /></div>
-    <div v-else-if="error" class="card border-red-100 bg-red-50/30 p-8 text-center">
+    <div v-if="loading" class="card p-5"><LoadingSkeleton :rows="4" /></div>
+    <div v-else-if="error" class="card border-red-100 bg-red-50/30 p-5 text-center">
       <p class="text-sm text-red-600 font-medium">{{ error }}</p>
     </div>
     <div v-else-if="notifications.length === 0" class="card">

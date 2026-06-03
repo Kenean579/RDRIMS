@@ -1,14 +1,14 @@
   <template>
   <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-5">
       <div class="flex justify-between h-16">
         <!-- Logo and brand name -->
         <div class="flex items-center">
           <router-link to="/" class="shrink-0 flex items-center gap-2 group">
-            <div class="h-8 w-8 rounded-lg flex items-center justify-center text-brand font-black text-xl shadow-sm group-hover:text-brand-dark transition-colors">
+            <div class="h-8 w-8 rounded-lg flex items-center justify-center text-brand font-bold text-xl shadow-sm group-hover:text-brand-dark transition-colors">
               R
             </div>
-            <span class="font-black text-xl tracking-tight text-slate-800">{{ appName }}</span>
+            <span class="font-bold text-xl tracking-tight text-slate-800">{{ appName }}</span>
           </router-link>
           
           <!-- Desktop Navigation -->

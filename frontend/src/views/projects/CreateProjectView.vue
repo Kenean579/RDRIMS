@@ -1,24 +1,24 @@
 <template>
-  <div class="flex flex-col gap-6 pb-12">
+  <div class="flex flex-col gap-6 pb-6">
     <!-- Header -->
     <div class="mb-2">
       <router-link :to="`/proposals/${proposal.id}`" class="inline-flex items-center gap-1.5 text-sm font-bold text-slate-500 hover:text-brand transition-colors mb-4">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
         Back to Proposal
       </router-link>
-      <h1 class="text-3xl font-black text-slate-900 tracking-tight">Initialize Research Project</h1>
+      <h1 class="text-xl font-bold text-slate-900 tracking-tight">Initialize Research Project</h1>
       <p class="text-slate-500 font-medium mt-1">Convert an approved research proposal into an active project.</p>
     </div>
 
-    <div v-if="loading" class="bg-white rounded-2xl border border-slate-200 p-8">
+    <div v-if="loading" class="bg-white rounded-2xl border border-slate-200 p-5">
       <LoadingSkeleton :rows="6" />
     </div>
 
-    <form v-else @submit.prevent="submit" class="flex flex-col gap-8 max-w-4xl">
+    <form v-else @submit.prevent="submit" class="flex flex-col gap-5 max-w-4xl">
       <!-- Original Details Card -->
       <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         <div class="bg-slate-50/50 p-6 border-b border-slate-100">
-          <h2 class="text-xs flex items-center gap-2 font-black capitalize tracking-widest text-slate-500">
+          <h2 class="text-xs flex items-center gap-2 font-bold capitalize tracking-widest text-slate-500">
             <span class="w-1.5 h-4 bg-brand rounded-full"></span>
             Original Proposal Details
           </h2>
@@ -26,20 +26,20 @@
         <div class="p-6">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label class="block text-[10px] text-slate-400 capitalize font-black tracking-widest mb-1.5 ml-1">Research Title</label>
+              <label class="block text-[10px] text-slate-400 capitalize font-bold tracking-widest mb-1.5 ml-1">Research Title</label>
               <div class="text-sm font-bold text-slate-800 bg-slate-50 border border-slate-100 p-3.5 rounded-xl">{{ proposal.title }}</div>
             </div>
             <div>
-              <label class="block text-[10px] text-slate-400 capitalize font-black tracking-widest mb-1.5 ml-1">Principal Investigator</label>
+              <label class="block text-[10px] text-slate-400 capitalize font-bold tracking-widest mb-1.5 ml-1">Principal Investigator</label>
               <div class="text-sm font-bold text-slate-800 bg-slate-50 border border-slate-100 p-3.5 rounded-xl">{{ proposal.submitted_by?.name }}</div>
             </div>
             <div>
-              <label class="block text-[10px] text-slate-400 capitalize font-black tracking-widest mb-1.5 ml-1">Academic Year</label>
+              <label class="block text-[10px] text-slate-400 capitalize font-bold tracking-widest mb-1.5 ml-1">Academic Year</label>
               <div class="text-sm font-bold text-slate-800 bg-slate-50 border border-slate-100 p-3.5 rounded-xl">{{ proposal.academic_year?.name || 'N/A' }}</div>
             </div>
             <div>
-              <label class="block text-[10px] text-slate-400 capitalize font-black tracking-widest mb-1.5 ml-1">Requested Budget</label>
-              <div class="text-sm font-black text-emerald-600 bg-emerald-50 border border-emerald-100 p-3.5 rounded-xl">{{ formatCurrency(proposal.budget) }}</div>
+              <label class="block text-[10px] text-slate-400 capitalize font-bold tracking-widest mb-1.5 ml-1">Requested Budget</label>
+              <div class="text-sm font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 p-3.5 rounded-xl">{{ formatCurrency(proposal.budget) }}</div>
             </div>
           </div>
         </div>
@@ -48,7 +48,7 @@
       <!-- Project Parameters Card -->
       <div class="bg-white rounded-2xl shadow-sm border border-slate-200 overflow-hidden">
         <div class="bg-brand/5 p-6 border-b border-brand/10">
-          <h2 class="text-xs flex items-center gap-2 font-black capitalize tracking-widest text-brand">
+          <h2 class="text-xs flex items-center gap-2 font-bold capitalize tracking-widest text-brand">
             <span class="w-1.5 h-4 bg-brand rounded-full"></span>
             Set Project Parameters
           </h2>
@@ -56,19 +56,19 @@
         <div class="p-6">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label class="block text-xs font-black text-slate-400 capitalize tracking-widest mb-2 ml-1">Start Date <span class="text-rose-500">*</span></label>
+              <label class="block text-xs font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">Start Date <span class="text-rose-500">*</span></label>
               <input v-model="form.start_date" type="date" required 
                 class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none transition-all" />
             </div>
             <div>
-              <label class="block text-xs font-black text-slate-400 capitalize tracking-widest mb-2 ml-1">Expected End Date <span class="text-rose-500">*</span></label>
+              <label class="block text-xs font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">Expected End Date <span class="text-rose-500">*</span></label>
               <input v-model="form.end_date" type="date" required 
                 class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm font-bold text-slate-800 focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none transition-all" />
             </div>
             <div class="md:col-span-2">
-              <label class="block text-xs font-black text-emerald-600 capitalize tracking-widest mb-2 ml-1">Approved Total Budget (ETB) <span class="text-rose-500">*</span></label>
+              <label class="block text-xs font-bold text-emerald-600 capitalize tracking-widest mb-2 ml-1">Approved Total Budget (ETB) <span class="text-rose-500">*</span></label>
               <input v-model.number="form.total_budget" type="number" step="0.01" required 
-                class="w-full border-2 border-emerald-200 bg-emerald-50 rounded-xl px-4 py-4 text-emerald-800 font-black text-lg focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 outline-none transition-all" 
+                class="w-full border-2 border-emerald-200 bg-emerald-50 rounded-xl px-4 py-4 text-emerald-800 font-bold text-lg focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 outline-none transition-all" 
                 placeholder="0.00" />
               <p class="text-[10px] font-bold text-emerald-600 mt-2 ml-1 capitalize tracking-widest">Initial proposal requested: {{ formatCurrency(proposal.budget) }}</p>
             </div>
@@ -83,7 +83,7 @@
           Cancel
         </router-link>
         <button type="submit" :disabled="submitting" 
-          class="inline-flex items-center gap-2 px-8 py-3 text-sm font-bold text-white bg-brand rounded-xl shadow-lg shadow-brand/30 hover:shadow-brand/50 hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:pointer-events-none">
+          class="inline-flex items-center gap-2 px-5 py-3 text-sm font-bold text-white bg-brand rounded-xl shadow-lg shadow-brand/30 hover:shadow-brand/50 hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:pointer-events-none">
           <svg v-if="submitting" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
           {{ submitting ? 'Initializing...' : 'Create Project' }}
         </button>

@@ -1,9 +1,9 @@
 <template>
-  <div class="flex flex-col gap-8 pb-12 animate-fade">
+  <div class="flex flex-col gap-5 pb-6 animate-fade">
     <!-- Header -->
-    <div class="card p-8 bg-slate-50 border-slate-100 relative overflow-hidden">
+    <div class="card p-5 bg-slate-50 border-slate-100 relative overflow-hidden">
       <div class="relative z-10">
-        <h1 class="text-3xl font-black text-slate-900 tracking-tight">Researcher Directory</h1>
+        <h1 class="text-xl font-bold text-slate-900 tracking-tight">Researcher Directory</h1>
         <p class="text-slate-500 font-medium mt-1">Connect with experts and principal investigators across our network.</p>
       </div>
       <div class="absolute right-0 top-0 w-32 h-32 bg-brand/5 rounded-full translate-x-8 -translate-y-8"></div>
@@ -12,7 +12,7 @@
     <!-- Filters -->
     <div class="card p-5 flex flex-col md:flex-row gap-5 items-end">
       <div class="flex-1 w-full relative">
-        <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest mb-2 ml-1">Search Experts</label>
+        <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-widest mb-2 ml-1">Search Experts</label>
         <div class="relative group">
           <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
             <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
@@ -27,31 +27,31 @@
       <div v-for="i in 6" :key="i" class="card h-40 animate-pulse"></div>
     </div>
 
-    <div v-else-if="filteredResearchers.length === 0" class="card p-12 text-center text-slate-400 text-xs font-black capitalize tracking-widest italic">
+    <div v-else-if="filteredResearchers.length === 0" class="card p-6 text-center text-slate-400 text-xs font-bold capitalize tracking-widest italic">
       No researchers found matching your criteria.
     </div>
 
     <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <div v-for="user in filteredResearchers" :key="user.id" class="card p-6 flex flex-col group card-hover relative border-t-4 border-t-brand/10 hover:border-t-brand transition-all">
         <div class="flex items-center gap-4 mb-4">
-           <div class="w-12 h-12 rounded-2xl bg-brand-light text-brand flex items-center justify-center font-black text-xs capitalize shadow-sm">
+           <div class="w-12 h-12 rounded-2xl bg-brand-light text-brand flex items-center justify-center font-bold text-xs capitalize shadow-sm">
              {{ user.name.charAt(0) }}
            </div>
            <div class="min-w-0">
-             <h3 class="text-sm font-black text-slate-900 leading-tight truncate">{{ user.name }}</h3>
-             <p class="text-[10px] font-black text-slate-400 capitalize tracking-widest mt-1">{{ user.department?.name || 'Researcher' }}</p>
+             <h3 class="text-sm font-bold text-slate-900 leading-tight truncate">{{ user.name }}</h3>
+             <p class="text-[10px] font-bold text-slate-400 capitalize tracking-widest mt-1">{{ user.department?.name || 'Researcher' }}</p>
            </div>
         </div>
         
         <div class="flex flex-wrap gap-1.5 mb-6">
-          <span v-for="ex in user.expertise?.slice(0, 3)" :key="ex.id" class="px-2 py-0.5 bg-slate-50 text-slate-500 text-[9px] font-black capitalize tracking-widest rounded border border-slate-100">
+          <span v-for="ex in user.expertise?.slice(0, 3)" :key="ex.id" class="px-2 py-0.5 bg-slate-50 text-slate-500 text-[9px] font-bold capitalize tracking-widest rounded border border-slate-100">
             {{ ex.name }}
           </span>
-          <span v-if="user.expertise?.length > 3" class="text-[9px] font-black text-slate-300 self-center">+{{ user.expertise.length - 3 }}</span>
+          <span v-if="user.expertise?.length > 3" class="text-[9px] font-bold text-slate-300 self-center">+{{ user.expertise.length - 3 }}</span>
         </div>
 
         <div class="mt-auto pt-4 border-t border-slate-50 flex items-center justify-between">
-           <a :href="`mailto:${user.email}`" class="text-[10px] font-black text-brand capitalize tracking-widest hover:underline">Contact</a>
+           <a :href="`mailto:${user.email}`" class="text-[10px] font-bold text-brand capitalize tracking-widest hover:underline">Contact</a>
            <div class="flex gap-2">
              <a v-if="user.orcid_id" :href="`https://orcid.org/${user.orcid_id}`" target="_blank" class="text-slate-300 hover:text-brand transition-colors" title="ORCID Profile">
                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">

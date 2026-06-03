@@ -1,6 +1,6 @@
 <template>
   <div class="relative">
-    <label v-if="label" class="block text-xs font-black text-slate-400 capitalize tracking-widest mb-2 ml-1">
+    <label v-if="label" class="block text-xs font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">
       {{ label }}
       <span v-if="required" class="text-rose-500">*</span>
     </label>
@@ -28,7 +28,7 @@
         </svg>
       </div>
     </div>
-    <p v-if="error" class="mt-1.5 text-[10px] font-black capitalize tracking-widest text-rose-500 ml-1">{{ error }}</p>
+    <p v-if="error" class="mt-1.5 text-[10px] font-bold capitalize tracking-widest text-rose-500 ml-1">{{ error }}</p>
   </div>
 </template>
 

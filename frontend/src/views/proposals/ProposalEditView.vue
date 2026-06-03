@@ -1,12 +1,12 @@
 <template>
-  <div class="flex flex-col gap-8 pb-12 animate-fade card">
+  <div class="flex flex-col gap-5 pb-6 animate-fade card">
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
       <div>
-        <router-link :to="`/app/proposals/${proposal.id}`" class="flex items-center gap-2 text-brand font-black capitalize tracking-widest text-[10px] mb-3 hover:translate-x-1 transition-transform">
+        <router-link :to="`/app/proposals/${proposal.id}`" class="flex items-center gap-2 text-brand font-bold capitalize tracking-widest text-[10px] mb-3 hover:translate-x-1 transition-transform">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
           Back to Proposal
         </router-link>
-        <h1 class="text-3xl font-black text-slate-900 tracking-tight leading-tight">Edit Proposal</h1>
+        <h1 class="text-xl font-bold text-slate-900 tracking-tight leading-tight">Edit Proposal</h1>
       </div>
     </div>
 
@@ -17,32 +17,32 @@
 
     <form v-else @submit.prevent="handleSubmit" class="space-y-8 font-bold">
       <!-- Section: Summary -->
-      <div class="card p-8">
-        <h2 class="text-xs font-black text-slate-400 capitalize tracking-widest mb-8 flex items-center gap-2">
+      <div class="card p-5">
+        <h2 class="text-xs font-bold text-slate-400 capitalize tracking-widest mb-5 flex items-center gap-2">
           <span class="w-1 h-3 bg-brand rounded-full"></span>
           Quick Summary
         </h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="md:col-span-2">
             <label class="block text-[11px] text-slate-500 capitalize tracking-widest mb-2 ml-1">Title *</label>
-            <input v-model="form.title" type="text" required class="input h-12 font-black" />
+            <input v-model="form.title" type="text" required class="input h-12 font-bold" />
           </div>
           <div>
             <label class="block text-[11px] text-slate-500 capitalize tracking-widest mb-2 ml-1">Proposal Type</label>
-            <select v-model="form.type_id" class="input h-12 font-black">
+            <select v-model="form.type_id" class="input h-12 font-bold">
               <option v-for="t in proposalTypes" :key="t.id" :value="t.id">{{ t.name.toUpperCase() }}</option>
             </select>
           </div>
           <div>
             <label class="block text-[11px] text-slate-500 capitalize tracking-widest mb-2 ml-1">Budget (ETB) *</label>
-            <input v-model.number="form.budget" type="number" required class="input h-12 font-black" />
+            <input v-model.number="form.budget" type="number" required class="input h-12 font-bold" />
           </div>
         </div>
       </div>
 
       <!-- Section: Details -->
-      <div class="card p-8">
-        <h2 class="text-xs font-black text-slate-400 capitalize tracking-widest mb-8 flex items-center gap-2">
+      <div class="card p-5">
+        <h2 class="text-xs font-bold text-slate-400 capitalize tracking-widest mb-5 flex items-center gap-2">
           <span class="w-1 h-3 bg-brand rounded-full"></span>
           Research Details
         </h2>
@@ -67,19 +67,19 @@
       </div>
 
       <!-- Section: Team -->
-      <div class="card p-8">
-        <div class="flex items-center justify-between mb-8">
-          <h2 class="text-xs font-black text-slate-400 capitalize tracking-widest flex items-center gap-2">
+      <div class="card p-5">
+        <div class="flex items-center justify-between mb-5">
+          <h2 class="text-xs font-bold text-slate-400 capitalize tracking-widest flex items-center gap-2">
             <span class="w-1 h-3 bg-brand rounded-full"></span>
             Research Team
           </h2>
-          <button type="button" @click="addInvestigator" class="btn btn-secondary h-10 px-6 text-[10px] font-black capitalize tracking-widest border border-slate-200">
+          <button type="button" @click="addInvestigator" class="btn btn-secondary h-10 px-6 text-[10px] font-bold capitalize tracking-widest border border-slate-200">
             Add Member
           </button>
         </div>
 
-        <div v-if="form.investigators.length === 0" class="p-12 text-center bg-slate-50 rounded-3xl border border-dashed border-slate-200">
-          <p class="text-[10px] font-black text-slate-400 capitalize tracking-widest italic">No co-investigators added.</p>
+        <div v-if="form.investigators.length === 0" class="p-6 text-center bg-slate-50 rounded-3xl border border-dashed border-slate-200">
+          <p class="text-[10px] font-bold text-slate-400 capitalize tracking-widest italic">No co-investigators added.</p>
         </div>
 
         <div v-else class="space-y-4">
@@ -90,28 +90,28 @@
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div class="md:col-span-2">
-                <label class="block text-[10px] font-black text-slate-400 capitalize tracking-widest mb-2 ml-1">User Affiliation</label>
+                <label class="block text-[10px] font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">User Affiliation</label>
                 <select v-model="inv.user_id" @change="onUserSelected(index)" class="input h-11 font-bold">
                   <option value="">External Person</option>
                   <option v-for="u in availableUsers" :key="u.id" :value="u.id">{{ u.name }} ({{ u.email }})</option>
                 </select>
               </div>
               <div>
-                <label class="block text-[10px] font-black text-slate-400 capitalize tracking-widest mb-2 ml-1">Role</label>
+                <label class="block text-[10px] font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">Role</label>
                 <select v-model="inv.role_id" required class="input h-11 font-bold">
                   <option v-for="r in investigatorRoles" :key="r.id" :value="r.id">{{ r.name }}</option>
                 </select>
               </div>
               <div v-if="!inv.user_id">
-                <label class="block text-[10px] font-black text-slate-400 capitalize tracking-widest mb-2 ml-1">Full Name</label>
+                <label class="block text-[10px] font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">Full Name</label>
                 <input v-model="inv.name" type="text" required class="input h-11 font-bold" />
               </div>
               <div v-if="!inv.user_id">
-                <label class="block text-[10px] font-black text-slate-400 capitalize tracking-widest mb-2 ml-1">Email</label>
+                <label class="block text-[10px] font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">Email</label>
                 <input v-model="inv.email" type="email" required class="input h-11 font-bold" />
               </div>
               <div v-if="!inv.user_id">
-                <label class="block text-[10px] font-black text-slate-400 capitalize tracking-widest mb-2 ml-1">Institution</label>
+                <label class="block text-[10px] font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">Institution</label>
                 <input v-model="inv.institution" type="text" class="input h-11 font-bold" placeholder="University of..." />
               </div>
             </div>
@@ -120,8 +120,8 @@
       </div>
 
       <div class="flex items-center gap-3 justify-end pt-6 border-t border-slate-100">
-        <router-link :to="`/app/proposals/${proposal.id}`" class="btn btn-secondary px-8 h-12">Discard</router-link>
-        <button type="submit" :disabled="submitting" class="btn btn-primary px-12 h-12 shadow-lg shadow-blue-500/20">
+        <router-link :to="`/app/proposals/${proposal.id}`" class="btn btn-secondary px-5 h-12">Discard</router-link>
+        <button type="submit" :disabled="submitting" class="btn btn-primary px-6 h-12 shadow-lg shadow-blue-500/20">
           {{ submitting ? 'Processing...' : 'Save Changes' }}
         </button>
       </div>

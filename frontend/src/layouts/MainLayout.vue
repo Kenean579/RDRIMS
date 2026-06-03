@@ -449,7 +449,7 @@ const navigation = computed(() => {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background: var(--surface-2);
+  background: var(--color-surface-2);
 }
 
 /* ── Top Bar ─────────────────────────────────── */
@@ -457,10 +457,10 @@ const navigation = computed(() => {
   position: fixed;
   top: 0; left: 0; right: 0;
   height: var(--topbar-h);
-  background: var(--glass-bg);
+  background: var(--color-glass-bg);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border-bottom: 1px solid var(--border);
+  border-bottom: 1px solid var(--color-border);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -490,8 +490,8 @@ const navigation = computed(() => {
 }
 .icon-btn:hover { 
   background: #f1f5f9; 
-  color: var(--brand);
-  border-color: var(--border);
+  color: var(--color-brand);
+  border-color: var(--color-border);
 }
 
 .brand {
@@ -502,7 +502,7 @@ const navigation = computed(() => {
 }
 .brand-icon {
   width: 34px; height: 34px;
-  background: linear-gradient(135deg, var(--brand), #4f46e5);
+  background: linear-gradient(135deg, var(--color-brand), #4f46e5);
   border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
   color: white; font-weight: 800; font-size: 16px;
@@ -533,7 +533,7 @@ const navigation = computed(() => {
 .search-input {
   width: 100%;
   padding: 10px 42px 10px 42px;
-  border: 1px solid var(--border);
+  border: 1px solid var(--color-border);
   border-radius: 12px;
   font-size: 13.5px;
   color: var(--text-primary);
@@ -542,14 +542,14 @@ const navigation = computed(() => {
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .search-input:focus {
-  border-color: var(--brand);
+  border-color: var(--color-brand);
   background: #fff;
-  box-shadow: 0 0 0 4px var(--brand-light);
+  box-shadow: 0 0 0 4px var(--color-brand-light);
 }
 .search-kbd {
   position: absolute; right: 12px;
   font-size: 11px; color: var(--text-muted);
-  background: #fff; border: 1px solid var(--border);
+  background: #fff; border: 1px solid var(--color-border);
   border-radius: 6px; padding: 2px 6px;
   display: flex; align-items: center; justify-content: center;
 }
@@ -560,7 +560,7 @@ const navigation = computed(() => {
   align-items: center;
   gap: 12px;
   background: white;
-  border: 1px solid var(--border);
+  border: 1px solid var(--color-border);
   border-radius: 12px;
   padding: 4px 12px;
   margin-left: 20px;
@@ -575,8 +575,8 @@ const navigation = computed(() => {
   font-weight: 800;
   text-transform: capitalize;
   letter-spacing: 0.05em;
-  color: var(--brand);
-  background: var(--brand-light);
+  color: var(--color-brand);
+  background: var(--color-brand-light);
   padding: 2px 6px;
   border-radius: 4px;
   white-space: nowrap;
@@ -611,7 +611,7 @@ const navigation = computed(() => {
   padding-right: 4px;
 }
 .context-select:hover {
-  color: var(--brand);
+  color: var(--color-brand);
 }
 .context-reset {
   display: flex;
@@ -638,7 +638,7 @@ const navigation = computed(() => {
 }
 .topbar-divider {
   width: 1px; height: 32px;
-  background: var(--border); margin: 0 8px;
+  background: var(--color-border); margin: 0 8px;
 }
 
 .profile-btn {
@@ -652,13 +652,13 @@ const navigation = computed(() => {
 }
 .profile-btn:hover { 
   background: #fff; 
-  border-color: var(--border);
+  border-color: var(--color-border);
   box-shadow: var(--shadow-sm); 
 }
 
 .avatar {
   width: 36px; height: 36px;
-  background: linear-gradient(135deg, var(--brand), var(--accent));
+  background: linear-gradient(135deg, var(--color-brand), var(--color-accent));
   border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
   font-size: 13px; font-weight: 800;
@@ -693,7 +693,7 @@ const navigation = computed(() => {
   left: 0;
   bottom: 0;
   z-index: 40;
-  border-right: 1px solid var(--border);
+  border-right: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -745,15 +745,15 @@ const navigation = computed(() => {
 }
 .sidebar-link:hover {
   background: #f8fafc;
-  color: var(--brand);
+  color: var(--color-brand);
 }
 .sidebar-link.router-link-exact-active {
-  background: var(--brand-light);
-  color: var(--brand);
+  background: var(--color-brand-light);
+  color: var(--color-brand);
   font-weight: 700;
 }
 .sidebar-link.router-link-exact-active .nav-icon {
-  color: var(--brand);
+  color: var(--color-brand);
 }
 
 .nav-icon {
@@ -762,7 +762,7 @@ const navigation = computed(() => {
 
 .sidebar-footer {
   padding: 20px 24px;
-  border-top: 1px solid var(--border);
+  border-top: 1px solid var(--color-border);
   background: #fcfdfe;
 }
 .sidebar-footer-inner {
@@ -771,7 +771,7 @@ const navigation = computed(() => {
 }
 .footer-dot {
   width: 10px; height: 10px;
-  background: var(--success);
+  background: var(--color-success);
   border-radius: 50%;
   box-shadow: 0 0 0 3px rgba(16,185,129,0.1);
   animation: pulse 2s infinite;
@@ -787,9 +787,9 @@ const navigation = computed(() => {
 .main-content {
   flex: 1;
   margin-left: var(--sidebar-w);
-  padding: 40px;
+  padding: 24px;
   min-height: calc(100vh - var(--topbar-h));
-  background: var(--surface-2);
+  background: var(--color-surface-2);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   min-width: 0;
 }

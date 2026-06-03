@@ -1,9 +1,9 @@
 <template>
-  <div class="flex flex-col gap-8 pb-12 animate-fade card">
+  <div class="flex flex-col gap-5 pb-6 animate-fade card">
     <!-- Header -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div>
-        <h1 class="text-3xl font-black text-slate-900 tracking-tight">Writing Check</h1>
+        <h1 class="text-xl font-bold text-slate-900 tracking-tight">Writing Check</h1>
         <p class="text-slate-500 font-medium mt-1">History of writing checks and original work scans.</p>
       </div>
       <button @click="fetchRequests" class="btn btn-secondary h-11 px-6 shadow-sm group">
@@ -25,17 +25,17 @@
       <div v-for="req in requests" :key="req.id" class="card p-6 flex flex-col group card-hover relative overflow-hidden border-l-4 border-l-brand hover:border-l-indigo-500 transition-all">
         <div class="flex items-start justify-between mb-4">
           <div class="flex-1 pr-4">
-            <h3 class="text-base font-black text-slate-800 leading-tight mb-2">{{ req.service?.name || 'Standard Check' }}</h3>
+            <h3 class="text-base font-bold text-slate-800 leading-tight mb-2">{{ req.service?.name || 'Standard Check' }}</h3>
             <div class="flex items-center gap-2">
-              <span class="inline-block px-2 py-0.5 text-slate-500 text-[9px] font-black capitalize tracking-widest rounded-md border border-slate-200">
+              <span class="inline-block px-2 py-0.5 text-slate-500 text-[9px] font-bold capitalize tracking-widest rounded-md border border-slate-200">
                 {{ req.detectable_type.split('\\').pop() }} #{{ req.detectable_id }}
               </span>
-              <span v-if="req.requested_by" class="inline-block px-2 py-0.5 text-blue-600 text-[9px] font-black capitalize tracking-widest rounded-md border border-blue-200 truncate max-w-[120px]">
+              <span v-if="req.requested_by" class="inline-block px-2 py-0.5 text-blue-600 text-[9px] font-bold capitalize tracking-widest rounded-md border border-blue-200 truncate max-w-[120px]">
                 <i class="fas fa-user mr-1"></i>{{ req.requested_by?.name || 'User' }}
               </span>
             </div>
           </div>
-          <div class="w-12 h-12 rounded-2xl bg-linear-to-br from-indigo-500 to-blue-600 text-white flex items-center justify-center font-black shadow-lg shadow-indigo-500/30 shrink-0">
+          <div class="w-12 h-12 rounded-2xl bg-linear-to-br from-indigo-500 to-blue-600 text-white flex items-center justify-center font-bold shadow-lg shadow-indigo-500/30 shrink-0">
              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" /></svg>
           </div>
         </div>
@@ -45,7 +45,7 @@
              <StatusBadge :status="req.status?.name || 'pending'" />
              <div v-if="req.results?.length" class="flex items-center gap-1.5 px-2 py-0.5 rounded-md border border-slate-200">
                 <div class="w-1.5 h-1.5 rounded-full" :class="req.results[0].similarity_score > 20 ? 'bg-rose-500' : 'bg-emerald-500'"></div>
-                <span class="text-[10px] font-black capitalize tracking-widest" :class="req.results[0].similarity_score > 20 ? 'text-rose-600' : 'text-emerald-600'">
+                <span class="text-[10px] font-bold capitalize tracking-widest" :class="req.results[0].similarity_score > 20 ? 'text-rose-600' : 'text-emerald-600'">
                   {{ req.results[0].similarity_score }}% Match
                 </span>
              </div>

@@ -1,8 +1,8 @@
 <template>
-  <div class="flex flex-col gap-8 pb-12 animate-fade card">
+  <div class="flex flex-col gap-5 pb-6 animate-fade card">
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div>
-        <h1 class="text-3xl font-black text-slate-900 tracking-tight">File Registry</h1>
+        <h1 class="text-xl font-bold text-slate-900 tracking-tight">File Registry</h1>
         <p class="text-slate-500 font-medium mt-1">Global management of institutional research documents and datasets.</p>
       </div>
     </div>
@@ -10,7 +10,7 @@
     <!-- Filters -->
     <div class="card p-5 flex flex-col md:flex-row gap-5 items-end">
       <div class="flex-1 w-full relative">
-        <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest mb-2 ml-1">Search Files</label>
+        <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-widest mb-2 ml-1">Search Files</label>
         <div class="relative group">
           <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -19,7 +19,7 @@
         </div>
       </div>
        <div class="w-full md:w-64">
-        <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest mb-2 ml-1">Mime Group</label>
+        <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-widest mb-2 ml-1">Mime Group</label>
         <select v-model="mimeFilter" class="input h-12 font-bold">
           <option value="">All Types</option>
           <option value="application/pdf">PDF Documents</option>
@@ -29,18 +29,18 @@
       </div>
     </div>
 
-    <div v-if="loading" class="card p-24 flex justify-center"><div class="animate-spin rounded-full h-10 w-10 border-b-2 border-brand"></div></div>
+    <div v-if="loading" class="card p-5 flex justify-center"><div class="animate-spin rounded-full h-10 w-10 border-b-2 border-brand"></div></div>
     
     <div v-else class="card overflow-hidden">
       <div class="overflow-x-auto">
         <table class="table-auto">
           <thead>
             <tr>
-              <th class="pl-8 py-4 text-[10px] font-black capitalize tracking-widest text-slate-400">Filename</th>
-              <th class="py-4 text-[10px] font-black capitalize tracking-widest text-slate-400">Size</th>
-              <th class="py-4 text-[10px] font-black capitalize tracking-widest text-slate-400">Mime Type</th>
-              <th class="py-4 text-[10px] font-black capitalize tracking-widest text-slate-400">Stored On</th>
-              <th class="pr-8 py-4 text-[10px] font-black capitalize tracking-widest text-slate-400 text-right">Actions</th>
+              <th class="pl-8 py-4 text-[10px] font-bold capitalize tracking-widest text-slate-400">Filename</th>
+              <th class="py-4 text-[10px] font-bold capitalize tracking-widest text-slate-400">Size</th>
+              <th class="py-4 text-[10px] font-bold capitalize tracking-widest text-slate-400">Mime Type</th>
+              <th class="py-4 text-[10px] font-bold capitalize tracking-widest text-slate-400">Stored On</th>
+              <th class="pr-8 py-4 text-[10px] font-bold capitalize tracking-widest text-slate-400 text-right">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-50">
@@ -51,18 +51,18 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
                   </div>
                   <div class="min-w-0">
-                    <p class="text-sm font-black text-slate-800 truncate">{{ file.original_name }}</p>
-                    <p class="text-[9px] font-black text-slate-400 capitalize tracking-widest">{{ file.path }}</p>
+                    <p class="text-sm font-bold text-slate-800 truncate">{{ file.original_name }}</p>
+                    <p class="text-[9px] font-bold text-slate-400 capitalize tracking-widest">{{ file.path }}</p>
                   </div>
                 </div>
               </td>
               <td class="py-4 text-xs font-bold text-slate-600">{{ formatSize(file.size) }}</td>
-              <td class="py-4 font-black">
+              <td class="py-4 font-bold">
                 <span class="px-2 py-0.5 bg-slate-100 text-slate-500 rounded text-[9px] capitalize tracking-widest border border-slate-200">{{ file.mime_type }}</span>
               </td>
               <td class="py-4 text-xs font-bold text-slate-400">{{ formatDate(file.created_at) }}</td>
               <td class="pr-8 py-4 text-right">
-                 <button @click="downloadFile(file)" class="btn btn-ghost text-brand text-[10px] font-black capitalize tracking-widest py-1.5 px-4 h-auto border border-brand hover:bg-brand hover:text-white transition-all shadow-sm">
+                 <button @click="downloadFile(file)" class="btn btn-ghost text-brand text-[10px] font-bold capitalize tracking-widest py-1.5 px-4 h-auto border border-brand hover:bg-brand hover:text-white transition-all shadow-sm">
                    Download
                  </button>
               </td>
@@ -70,8 +70,8 @@
           </tbody>
         </table>
       </div>
-      <div v-if="filteredFiles.length === 0" class="p-24 text-center">
-        <p class="text-sm font-black text-slate-400 capitalize tracking-widest italic">No files found in the registry.</p>
+      <div v-if="filteredFiles.length === 0" class="p-5 text-center">
+        <p class="text-sm font-bold text-slate-400 capitalize tracking-widest italic">No files found in the registry.</p>
       </div>
     </div>
   </div>

@@ -11,8 +11,8 @@
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
       <!-- Profile Sidebar -->
       <div class="lg:col-span-4 space-y-6">
-        <div class="card p-8 text-center flex flex-col items-center">
-          <div class="w-24 h-24 rounded-3xl bg-blue-600 shadow-xl shadow-blue-500/20 flex items-center justify-center text-4xl font-black text-white mb-6 transform rotate-3">
+        <div class="card p-5 text-center flex flex-col items-center">
+          <div class="w-24 h-24 rounded-3xl bg-blue-600 shadow-xl shadow-blue-500/20 flex items-center justify-center text-2xl font-bold text-white mb-6 transform rotate-3">
             {{ getInitials(auth.user?.name) }}
           </div>
           <h2 class="text-xl font-bold text-slate-800">{{ auth.user?.name }}</h2>
@@ -41,7 +41,7 @@
 
       <!-- Settings Form -->
       <div class="lg:col-span-8">
-        <div class="card p-8">
+        <div class="card p-5">
           <h2 class="text-lg font-bold text-slate-800 mb-6">Security & Identity Settings</h2>
           <form @submit.prevent="updateProfile" class="flex flex-col gap-6">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -82,7 +82,7 @@
             </div>
 
             <div class="pt-4">
-              <button type="submit" class="btn btn-primary px-10">Save Profile Updates</button>
+              <button type="submit" class="btn btn-primary px-5">Save Profile Updates</button>
             </div>
           </form>
         </div>

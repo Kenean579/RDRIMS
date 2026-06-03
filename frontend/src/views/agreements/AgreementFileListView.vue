@@ -1,9 +1,9 @@
 <template>
-  <div class="flex flex-col gap-8 pb-12 animate-fade card">
+  <div class="flex flex-col gap-5 pb-6 animate-fade card">
     <!-- Header -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div>
-        <h1 class="text-3xl font-black text-slate-900 tracking-tight">Agreement Files</h1>
+        <h1 class="text-xl font-bold text-slate-900 tracking-tight">Agreement Files</h1>
         <p class="text-slate-500 font-medium mt-1">Manage files for agreements and licenses.</p>
       </div>
       <button @click="fetchFiles" class="btn btn-secondary h-11 px-6 shadow-sm group">
@@ -13,7 +13,7 @@
     </div>
 
     <!-- Content -->
-    <div v-if="loading" class="card p-24 flex flex-col justify-center items-center gap-4">
+    <div v-if="loading" class="card p-5 flex flex-col justify-center items-center gap-4">
       <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-brand"></div>
       <p class="text-xs font-bold text-slate-400 capitalize tracking-widest">Loading files...</p>
     </div>
@@ -29,23 +29,23 @@
              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" /></svg>
           </div>
           <div class="min-w-0">
-            <p class="text-sm font-black text-slate-900 group-hover:text-brand transition-colors truncate mb-1" :title="file.file?.file_path?.split('/').pop()">
+            <p class="text-sm font-bold text-slate-900 group-hover:text-brand transition-colors truncate mb-1" :title="file.file?.file_path?.split('/').pop()">
               {{ file.file?.file_path?.split('/').pop() || 'Agreement File' }}
             </p>
             <div class="flex flex-wrap items-center gap-2">
-              <span class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[9px] font-black capitalize tracking-widest">{{ file.parent_type?.name || 'File' }}</span>
-              <span class="text-[9px] font-black text-slate-400 capitalize tracking-widest">ID: {{ String(file.parent_id).padStart(4, '0') }}</span>
+              <span class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[9px] font-bold capitalize tracking-widest">{{ file.parent_type?.name || 'File' }}</span>
+              <span class="text-[9px] font-bold text-slate-400 capitalize tracking-widest">ID: {{ String(file.parent_id).padStart(4, '0') }}</span>
             </div>
           </div>
         </div>
         
         <div class="flex items-center justify-between gap-3 pt-5 border-t border-slate-50 mt-auto">
-          <button @click="downloadFile(file)" class="btn btn-ghost hover:bg-brand-light hover:text-brand flex-1 justify-center text-[10px] font-black capitalize tracking-widest py-2">
+          <button @click="downloadFile(file)" class="btn btn-ghost hover:bg-brand-light hover:text-brand flex-1 justify-center text-[10px] font-bold capitalize tracking-widest py-2">
              <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
              Download
           </button>
           <div class="w-px h-4 bg-slate-100"></div>
-          <button @click="confirmDelete(file)" class="btn btn-ghost text-red-400 hover:bg-red-50 hover:text-red-600 flex-1 justify-center text-[10px] font-black capitalize tracking-widest py-2">Delete</button>
+          <button @click="confirmDelete(file)" class="btn btn-ghost text-red-400 hover:bg-red-50 hover:text-red-600 flex-1 justify-center text-[10px] font-bold capitalize tracking-widest py-2">Delete</button>
         </div>
       </div>
     </div>

@@ -1,5 +1,5 @@
 <template>
-  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-5 py-6">
     
     <!-- Loading State -->
     <div v-if="loading" class="flex items-center justify-center py-24">
@@ -7,11 +7,11 @@
     </div>
 
     <!-- Sign In Required State -->
-    <div v-else-if="!allowPublicSubmission" class="bg-white rounded-2xl border border-slate-200 p-12 text-center">
-      <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">🔒</div>
-      <h2 class="text-2xl font-black text-slate-800 mb-4">Sign In Required</h2>
-      <p class="text-slate-500 mb-8">Please sign in to submit a community problem.</p>
-      <router-link to="/login" class="inline-block px-8 py-3 bg-brand text-white font-bold rounded-xl hover:bg-brand-dark transition-colors">
+    <div v-else-if="!allowPublicSubmission" class="bg-white rounded-2xl border border-slate-200 p-6 text-center">
+      <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 text-xl">🔒</div>
+      <h2 class="text-2xl font-bold text-slate-800 mb-4">Sign In Required</h2>
+      <p class="text-slate-500 mb-5">Please sign in to submit a community problem.</p>
+      <router-link to="/login" class="inline-block px-5 py-3 bg-brand text-white font-bold rounded-xl hover:bg-brand-dark transition-colors">
         Sign In
       </router-link>
     </div>
@@ -21,7 +21,7 @@
       
       <!-- Success Banner -->
       <div v-if="showSuccess" class="bg-emerald-50 border border-emerald-200 rounded-2xl p-6 flex items-center gap-4">
-        <div class="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center text-white flex-shrink-0">✓</div>
+        <div class="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center text-white shrink-0">✓</div>
         <div class="flex-1">
           <p class="text-emerald-800 font-bold">✅ Problem submitted successfully! Researchers will review it.</p>
         </div>
@@ -32,7 +32,7 @@
 
       <!-- Server Error Banner -->
       <div v-if="serverError" class="bg-rose-50 border border-rose-200 rounded-2xl p-6 flex items-center gap-4">
-        <div class="w-10 h-10 bg-rose-500 rounded-full flex items-center justify-center text-white flex-shrink-0">✕</div>
+        <div class="w-10 h-10 bg-rose-500 rounded-full flex items-center justify-center text-white shrink-0">✕</div>
         <div class="flex-1">
           <p class="text-rose-800 font-bold">{{ serverError }}</p>
         </div>
@@ -43,12 +43,12 @@
 
       <!-- Section Heading -->
       <div>
-        <h1 class="text-3xl md:text-4xl font-black text-slate-800 tracking-tight mb-3">Community Problems</h1>
+        <h1 class="text-xl md:text-2xl font-bold text-slate-800 tracking-tight mb-3">Community Problems</h1>
         <p class="text-lg text-slate-500">Report a real-world problem for university researchers to study and help solve.</p>
       </div>
 
       <!-- Submission Form -->
-      <div class="bg-white rounded-2xl border border-slate-200 p-8">
+      <div class="bg-white rounded-2xl border border-slate-200 p-5">
         <form @submit.prevent="submitProblem" class="space-y-6">
           
           <!-- Problem Title -->
@@ -147,7 +147,7 @@
 
       <!-- Info Box -->
       <div class="bg-blue-50 rounded-2xl border border-blue-200 p-6">
-        <h3 class="text-sm font-black text-slate-800 mb-4">💡 How it works:</h3>
+        <h3 class="text-sm font-bold text-slate-800 mb-4">💡 How it works:</h3>
         <ul class="text-sm text-slate-600 space-y-2">
           <li class="flex items-start gap-2">
             <span class="text-blue-500">•</span>
@@ -264,6 +264,5 @@ function resetForm() {
   }
   errors.value = {}
   serverError.value = ''
-  showSuccess.value = false
 }
 </script>

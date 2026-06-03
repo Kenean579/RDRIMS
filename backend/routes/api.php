@@ -74,6 +74,7 @@ Route::get('publications', [PublicationController::class, 'index']);
 Route::get('publications/{publication}', [PublicationController::class, 'show']);
 Route::get('community-problems', [CommunityProblemController::class, 'index']);
 Route::get('community-problems/{community_problem}', [CommunityProblemController::class, 'show']);
+Route::post('community-problems', [CommunityProblemController::class, 'store']);
 Route::get('events', [EventController::class, 'index']);
 Route::get('events/{event}', [EventController::class, 'show']);
 Route::get('departments', [DepartmentController::class, 'index']);
@@ -252,7 +253,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('publications.authors', PublicationAuthorController::class)->only(['index', 'store', 'update', 'destroy']);
 
     // Community Problems (index is public — registered above outside auth group)
-    Route::apiResource('community-problems', CommunityProblemController::class)->except(['index', 'show']);
+    Route::apiResource('community-problems', CommunityProblemController::class)->except(['index', 'show', 'store']);
     Route::post('community-problems/{community_problem}/claim', [CommunityProblemController::class, 'claim']);
     Route::post('community-problems/{community_problem}/complete', [CommunityProblemController::class, 'complete']);
     Route::post('community-problems/{community_problem}/feedback', [CommunityProblemController::class, 'addFeedback']);

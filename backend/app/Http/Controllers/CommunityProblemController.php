@@ -30,7 +30,7 @@ class CommunityProblemController extends Controller
     {
         $problem = CommunityProblem::create([
             ...$request->validated(),
-            'submitted_by' => $request->user()->id,
+            'submitted_by' => auth('sanctum')->user()?->id,
             'status_id' => CommunityProblem::getStatusId('open'),
         ]);
 

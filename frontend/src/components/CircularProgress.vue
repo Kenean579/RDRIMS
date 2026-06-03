@@ -27,7 +27,7 @@
       />
     </svg>
     <div class="absolute inset-0 flex flex-col items-center justify-center text-center">
-      <span class="text-xl font-black tabular-nums tracking-tighter" :class="textColor">
+      <span class="text-xl font-bold tabular-nums tracking-tighter" :class="textColor">
         {{ Math.round(percentage) }}<span class="text-xs ml-0.5">%</span>
       </span>
       <span v-if="label" class="text-[9px] capitalize tracking-widest font-bold text-slate-400 mt-1">

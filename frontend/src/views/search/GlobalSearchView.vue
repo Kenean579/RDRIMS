@@ -27,7 +27,7 @@
     </div>
 
     <!-- Results -->
-    <div v-else-if="searched && results.length === 0" class="bg-white rounded-lg shadow-sm border border-gray-100 p-8">
+    <div v-else-if="searched && results.length === 0" class="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
       <EmptyState icon="🔍" title="No results found" description="Try adjusting your search terms or checking different keywords." />
     </div>
 
@@ -53,7 +53,7 @@
     </div>
 
     <!-- Initial State -->
-    <div v-else class="bg-white rounded-lg shadow-sm border border-gray-100 p-8 text-center text-gray-400">
+    <div v-else class="bg-white rounded-lg shadow-sm border border-gray-100 p-5 text-center text-gray-400">
       <EmptyState icon="🔎" title="Search RDRIMS" description="Type a keyword and press Enter to search across all records." />
     </div>
   </div>

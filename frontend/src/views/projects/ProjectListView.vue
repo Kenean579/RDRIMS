@@ -1,9 +1,9 @@
 <template>
-  <div class="flex flex-col gap-8 pb-12 animate-fade card">
+  <div class="flex flex-col gap-5 pb-6 animate-fade card">
     <!-- Header -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div>
-        <h1 class="text-3xl font-black text-slate-900 tracking-tight">Research Projects</h1>
+        <h1 class="text-xl font-bold text-slate-900 tracking-tight">Research Projects</h1>
         <p class="text-slate-500 font-medium mt-1">Track the progress of all ongoing and finished research projects.</p>
       </div>
       <div class="flex items-center gap-3">
@@ -39,7 +39,7 @@
     </div>
 
     <!-- Content -->
-    <div v-if="loading" class="card p-24 flex flex-col justify-center items-center gap-4">
+    <div v-if="loading" class="card p-5 flex flex-col justify-center items-center gap-4">
       <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-brand"></div>
       <p class="text-xs font-bold text-slate-400 capitalize tracking-widest">Loading projects...</p>
     </div>
@@ -53,27 +53,27 @@
       >
         <div class="flex items-start justify-between mb-4">
           <div class="flex-1 pr-4 min-w-0">
-            <p class="text-[10px] font-black text-slate-400 capitalize tracking-widest mb-1.5 flex items-center gap-1.5">
+            <p class="text-[10px] font-bold text-slate-400 capitalize tracking-widest mb-1.5 flex items-center gap-1.5">
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-300"></span>
               ID: {{ String(p.id).padStart(4, '0') }}
             </p>
-            <h3 class="text-base font-black text-slate-800 leading-tight group-hover:text-emerald-700 transition-colors line-clamp-2 min-h-10">{{ p.title }}</h3>
+            <h3 class="text-base font-bold text-slate-800 leading-tight group-hover:text-emerald-700 transition-colors line-clamp-2 min-h-10">{{ p.title }}</h3>
           </div>
-          <div class="w-12 h-12 rounded-2xl bg-linear-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center font-black shadow-lg shadow-emerald-500/30 shrink-0">
+          <div class="w-12 h-12 rounded-2xl bg-linear-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center font-bold shadow-lg shadow-emerald-500/30 shrink-0">
              <i class="fas fa-project-diagram"></i>
           </div>
         </div>
         
         <div class="flex items-center gap-3 mb-6">
-           <div class="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center text-[10px] font-black text-slate-500 border border-slate-100 group-hover:bg-emerald-50 group-hover:text-emerald-700 transition-all">{{ getInitials(p.proposal?.submitted_by?.name) }}</div>
+           <div class="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center text-[10px] font-bold text-slate-500 border border-slate-100 group-hover:bg-emerald-50 group-hover:text-emerald-700 transition-all">{{ getInitials(p.proposal?.submitted_by?.name) }}</div>
            <div class="min-w-0">
-             <p class="text-[9px] font-black text-slate-400 capitalize tracking-widest leading-none mb-1">Lead PI</p>
+             <p class="text-[9px] font-bold text-slate-400 capitalize tracking-widest leading-none mb-1">Lead PI</p>
              <p class="text-xs font-bold text-slate-700 truncate">{{ p.proposal?.submitted_by?.name || 'Researcher' }}</p>
            </div>
         </div>
 
         <div class="space-y-3 mb-6">
-           <div class="flex items-center justify-between text-[10px] font-black capitalize tracking-widest text-slate-400">
+           <div class="flex items-center justify-between text-[10px] font-bold capitalize tracking-widest text-slate-400">
               <span>Execution Progress</span>
               <span class="text-emerald-600">{{ calculateProgress(p) }}%</span>
            </div>
@@ -84,13 +84,13 @@
 
         <div class="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between">
            <div class="flex flex-col">
-             <span class="text-[9px] font-black text-slate-400 capitalize tracking-widest">Target End Date</span>
+             <span class="text-[9px] font-bold text-slate-400 capitalize tracking-widest">Target End Date</span>
              <span class="text-xs font-bold text-slate-700">{{ formatDate(p.end_date) }}</span>
            </div>
            <StatusBadge :status="p.status?.name || 'active'" />
         </div>
       </div>
-      <div class="lg:col-span-2 xl:col-span-3 px-8 py-4 bg-slate-50/50 rounded-2xl border border-slate-100 overflow-hidden mt-2">
+      <div class="lg:col-span-2 xl:col-span-3 px-5 py-4 bg-slate-50/50 rounded-2xl border border-slate-100 overflow-hidden mt-2">
         <Pagination :current-page="pagination.current_page" :total-pages="pagination.last_page" :total="pagination.total" @page-change="fetchProjects" />
       </div>
     </div>iv>

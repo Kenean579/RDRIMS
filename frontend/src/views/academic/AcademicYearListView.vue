@@ -11,7 +11,7 @@
       </button>
     </div>
 
-    <div v-if="loading" class="card p-8"><LoadingSkeleton :rows="3" /></div>
+    <div v-if="loading" class="card p-5"><LoadingSkeleton :rows="3" /></div>
     <div v-else-if="years.length === 0" class="card">
       <EmptyState icon="📆" title="No academic years" description="Create academic years to organize your institution's timeline." action-label="Add Year" @action="showCreate = true" />
     </div>
@@ -51,7 +51,7 @@
         </div>
         <div class="flex justify-end gap-3 pt-4">
           <button type="button" @click="closeModal" class="btn btn-secondary">Cancel</button>
-          <button type="submit" class="btn btn-primary px-10">{{ editingYear ? 'Update' : 'Add' }}</button>
+          <button type="submit" class="btn btn-primary px-5">{{ editingYear ? 'Update' : 'Add' }}</button>
         </div>
       </form>
     </Modal>

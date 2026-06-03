@@ -12,7 +12,7 @@
     </div>
 
     <div v-if="loading" class="bg-white rounded-lg shadow-sm p-6"><div class="space-y-4 animate-pulse"><div v-for="i in 3" :key="i" class="h-6 bg-gray-200 rounded"></div></div></div>
-    <div v-else-if="licenses.length === 0" class="bg-white rounded-lg shadow-sm p-12 text-center"><p class="text-4xl mb-3">📜</p><h3 class="text-base font-medium text-gray-800">No licenses</h3></div>
+    <div v-else-if="licenses.length === 0" class="bg-white rounded-lg shadow-sm p-6 text-center"><p class="text-2xl mb-3">📜</p><h3 class="text-base font-medium text-gray-800">No licenses</h3></div>
 
     <div v-else class="space-y-3">
       <div v-for="l in licenses" :key="l.id" class="bg-white rounded-lg shadow-sm border border-gray-100 p-5">

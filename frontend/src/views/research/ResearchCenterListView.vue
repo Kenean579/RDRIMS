@@ -1,9 +1,9 @@
 <template>
-  <div class="flex flex-col gap-8 pb-12 animate-fade card">
+  <div class="flex flex-col gap-5 pb-6 animate-fade card">
     <!-- Header -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div>
-        <h1 class="text-3xl font-black text-slate-900 tracking-tight">Research Centers</h1>
+        <h1 class="text-xl font-bold text-slate-900 tracking-tight">Research Centers</h1>
         <p class="text-slate-500 font-medium mt-1">Manage research institutes, labs, and hubs.</p>
       </div>
       <button @click="showCreate = true" class="btn btn-primary h-11 px-6 shadow-lg shadow-blue-500/20">
@@ -13,7 +13,7 @@
     </div>
 
     <!-- Content -->
-    <div v-if="loading" class="card p-24 flex flex-col justify-center items-center gap-4">
+    <div v-if="loading" class="card p-5 flex flex-col justify-center items-center gap-4">
       <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-brand"></div>
       <p class="text-xs font-bold text-slate-400 capitalize tracking-widest">Loading centers...</p>
     </div>
@@ -26,21 +26,21 @@
       <div v-for="center in centers" :key="center.id" class="card p-6 flex flex-col group card-hover relative overflow-hidden border-l-4 border-l-brand hover:border-l-indigo-600 transition-all">
         <div class="flex items-start justify-between mb-4">
           <div class="flex-1 pr-4 min-w-0">
-            <h3 class="text-base font-black text-slate-900 leading-tight group-hover:text-brand transition-colors line-clamp-2 min-h-10">{{ center.name }}</h3>
+            <h3 class="text-base font-bold text-slate-900 leading-tight group-hover:text-brand transition-colors line-clamp-2 min-h-10">{{ center.name }}</h3>
             <div class="flex items-center gap-2 mt-2">
-              <span class="px-2 py-0.5 bg-slate-100 text-slate-500 text-[10px] font-black capitalize tracking-widest rounded-md border border-slate-200">
+              <span class="px-2 py-0.5 bg-slate-100 text-slate-500 text-[10px] font-bold capitalize tracking-widest rounded-md border border-slate-200">
                 CODE: {{ center.code }}
               </span>
             </div>
           </div>
-          <div class="w-12 h-12 rounded-2xl bg-linear-to-br from-brand to-indigo-600 text-white flex items-center justify-center font-black shadow-lg shadow-brand/30 shrink-0 capitalize tracking-tighter text-xs">
+          <div class="w-12 h-12 rounded-2xl bg-linear-to-br from-brand to-indigo-600 text-white flex items-center justify-center font-bold shadow-lg shadow-brand/30 shrink-0 capitalize tracking-tighter text-xs">
              {{ center.code?.substring(0,3) || 'RC' }}
           </div>
         </div>
         
         <p class="text-sm text-slate-500 font-medium flex-1 line-clamp-2 leading-relaxed mb-6">{{ center.description || 'Institutional research hub for advanced academic pursuit.' }}</p>
         
-        <div class="flex flex-col gap-2 text-[9px] font-black text-slate-400 capitalize tracking-widest mb-6 pt-5 border-t border-slate-100">
+        <div class="flex flex-col gap-2 text-[9px] font-bold text-slate-400 capitalize tracking-widest mb-6 pt-5 border-t border-slate-100">
           <div class="flex items-center gap-1.5" v-if="center.university">
             <i class="fas fa-university text-brand/60"></i>
             <span class="text-slate-800">{{ center.university.name }}</span>
@@ -52,8 +52,8 @@
         </div>
 
         <div class="flex items-center justify-between bg-slate-50/50 rounded-xl p-1 gap-1">
-          <button @click="editCenter(center)" class="btn btn-ghost bg-white hover:bg-indigo-50 hover:text-indigo-600 flex-1 justify-center text-[11px] font-black capitalize tracking-wider py-2 shadow-xs">Edit</button>
-          <button @click="confirmDelete(center)" class="btn btn-ghost text-rose-500 hover:bg-rose-50 flex-1 justify-center text-[11px] font-black capitalize tracking-wider py-2">Delete</button>
+          <button @click="editCenter(center)" class="btn btn-ghost bg-white hover:bg-indigo-50 hover:text-indigo-600 flex-1 justify-center text-[11px] font-bold capitalize tracking-wider py-2 shadow-xs">Edit</button>
+          <button @click="confirmDelete(center)" class="btn btn-ghost text-rose-500 hover:bg-rose-50 flex-1 justify-center text-[11px] font-bold capitalize tracking-wider py-2">Delete</button>
         </div>
       </div>
     </div>iv>
@@ -62,33 +62,33 @@
     <Modal :show="showCreate || !!editingCenter" :title="editingCenter ? 'Edit Center' : 'Add New Center'" size="lg" @close="closeModal">
       <form @submit.prevent="saveCenter" class="space-y-6">
         <div>
-          <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest mb-2 ml-1">Name *</label>
+          <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-widest mb-2 ml-1">Name *</label>
           <input v-model="form.name" type="text" required class="input h-12 font-bold" placeholder="e.g. Center for AI" />
         </div>
         
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
-            <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest mb-2 ml-1">Code *</label>
-            <input v-model="form.code" type="text" required class="input h-12 font-black" placeholder="e.g. CAIR-01" />
+            <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-widest mb-2 ml-1">Code *</label>
+            <input v-model="form.code" type="text" required class="input h-12 font-bold" placeholder="e.g. CAIR-01" />
           </div>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
           <div>
-            <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest mb-2 ml-1">University</label>
+            <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-widest mb-2 ml-1">University</label>
             <select v-model="form.parent_university_id" class="input h-12 font-bold">
               <option value="">Select University</option>
               <option v-for="u in universities" :key="u.id" :value="u.id">{{ u.name }}</option>
             </select>
           </div>
           <div>
-            <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest mb-2 ml-1">Campus</label>
+            <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-widest mb-2 ml-1">Campus</label>
             <select v-model="form.campus_id" class="input h-12 font-bold">
               <option value="">Select Campus</option>
               <option v-for="c in campuses" :key="c.id" :value="c.id">{{ c.name }}</option>
             </select>
           </div>
           <div>
-            <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest mb-2 ml-1">Faculty</label>
+            <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-widest mb-2 ml-1">Faculty</label>
             <select v-model="form.faculty_id" class="input h-12 font-bold">
               <option value="">Select Faculty</option>
               <option v-for="f in faculties" :key="f.id" :value="f.id">{{ f.name }}</option>
@@ -97,13 +97,13 @@
         </div>
         
         <div>
-          <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest mb-2 ml-1">Description</label>
+          <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-widest mb-2 ml-1">Description</label>
           <textarea v-model="form.description" rows="3" class="input resize-none pt-3" placeholder="Tell us more about this center..."></textarea>
         </div>
 
         <div class="flex justify-end gap-3 pt-6 mt-6 border-t border-slate-100">
           <button type="button" @click="closeModal" class="btn btn-secondary px-6">Cancel</button>
-          <button type="submit" class="btn btn-primary px-10 shadow-lg shadow-blue-500/20">{{ editingCenter ? 'Save Changes' : 'Save Center' }}</button>
+          <button type="submit" class="btn btn-primary px-5 shadow-lg shadow-blue-500/20">{{ editingCenter ? 'Save Changes' : 'Save Center' }}</button>
         </div>
       </form>
     </Modal>

@@ -1,8 +1,8 @@
 <template>
   <div class="w-full">
     <div v-if="showLabels" class="flex justify-between items-end mb-1.5 px-0.5">
-      <span class="text-xs font-black capitalize tracking-widest text-slate-500">{{ label || 'Progress' }}</span>
-      <span class="text-xs font-black text-slate-700">{{ formattedValue }} {{ unit }}</span>
+      <span class="text-xs font-bold capitalize tracking-widest text-slate-500">{{ label || 'Progress' }}</span>
+      <span class="text-xs font-bold text-slate-700">{{ formattedValue }} {{ unit }}</span>
     </div>
     
     <div 

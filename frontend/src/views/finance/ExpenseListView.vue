@@ -11,7 +11,7 @@
       </button>
     </div>
 
-    <div v-if="loading" class="card p-8"><LoadingSkeleton :rows="4" /></div>
+    <div v-if="loading" class="card p-5"><LoadingSkeleton :rows="4" /></div>
 
     <div v-else class="card overflow-hidden">
       <div class="overflow-x-auto">
@@ -78,7 +78,7 @@
         </div>
         <div class="flex justify-end gap-3 pt-4">
           <button type="button" @click="showCreate = false" class="btn btn-secondary">Cancel</button>
-          <button type="submit" class="btn btn-primary px-10">Save Expense</button>
+          <button type="submit" class="btn btn-primary px-5">Save Expense</button>
         </div>
       </form>
     </Modal>

@@ -16,7 +16,7 @@
     />
     <span 
       v-else 
-      class="font-black tracking-widest capitalize text-slate-500"
+      class="font-bold tracking-widest capitalize text-slate-500"
       :class="textClasses"
     >
       {{ initials }}
@@ -79,7 +79,7 @@ const textClasses = computed(() => {
     case 'md': return 'text-sm'
     case 'lg': return 'text-base'
     case 'xl': return 'text-xl'
-    case '2xl': return 'text-3xl'
+    case '2xl': return 'text-xl'
     default: return 'text-sm'
   }
 })

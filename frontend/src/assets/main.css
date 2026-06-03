@@ -2,17 +2,17 @@
 @import "tailwindcss";
 
 /* ── Design Tokens ───────────────────────────────────────── */
-:root {
+@theme {
   --color-brand: #0250A3;
   --color-brand-hover: #0F56B3;
   --color-brand-light: #eef4fa;
   --color-brand-dark: #003b7a;
+  --color-accent: #4f46e5;
 
   --color-surface: #ffffff;
   --color-surface-2: #f4f7fa;
   --color-border: #f1f5f9;
   --color-border-2: #f8fafc;
-
   --color-glass-bg: rgba(255, 255, 255, 0.90);
 
   --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.02);
@@ -21,25 +21,25 @@
   --shadow-lg: 0 12px 24px -6px rgba(0, 0, 0, 0.05), 0 8px 12px -6px rgba(0, 0, 0, 0.03);
   --shadow-inner: inset 0 2px 4px 0 rgba(0, 0, 0, 0.02);
 
-  --sidebar-w:     260px;
-  --topbar-h:      64px;
+  --sidebar-w: 260px;
+  --topbar-h: 64px;
 
   /* Typography */
-  --text-primary:  #0f172a;
-  --text-secondary:#475569;
-  --text-muted:    #64748b;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #64748b;
 
   /* Status */
-  --success:       #10b981;
-  --warning:       #f59e0b;
-  --danger:        #ef4444;
-  --info:          #3b82f6;
+  --color-success: #10b981;
+  --color-warning: #f59e0b;
+  --color-danger: #ef4444;
+  --color-info: #3b82f6;
 
   /* Interaction */
-  --radius-sm:     8px;
-  --radius-md:     12px;
-  --radius-lg:     20px;
-  --radius-xl:     24px;
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 20px;
+  --radius-xl: 24px;
 }
 
 /* ── Global Reset ───────────────────────────────────────── */
@@ -52,7 +52,7 @@ html {
 
 body {
   font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  background: var(--surface-2);
+  background: var(--color-surface-2);
   color: var(--text-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

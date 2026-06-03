@@ -13,7 +13,7 @@
     </div>
 
     <!-- Content -->
-    <div v-if="loading" class="card p-8"><LoadingSkeleton :rows="5" /></div>
+    <div v-if="loading" class="card p-5"><LoadingSkeleton :rows="5" /></div>
     <div v-else-if="checks.length === 0" class="card">
       <EmptyState icon="💰" title="No finance checks pending" description="Great job! All proposal budget reviews are up to date." />
     </div>
@@ -23,13 +23,13 @@
         <div class="flex items-start justify-between mb-4">
           <div class="flex-1 pr-4">
             <div class="flex items-center gap-3 mb-2">
-              <span class="px-2.5 py-0.5 bg-emerald-50 text-emerald-600 text-[10px] font-black capitalize tracking-widest rounded-md border border-emerald-100">
+              <span class="px-2.5 py-0.5 bg-emerald-50 text-emerald-600 text-[10px] font-bold capitalize tracking-widest rounded-md border border-emerald-100">
                 Budget Review
               </span>
               <StatusBadge :status="check.status?.name || 'pending'" />
             </div>
-            <h3 class="text-base font-black text-slate-800 leading-tight mb-2 group-hover:text-emerald-700 transition-colors">{{ check.proposal?.title }}</h3>
-            <div class="flex items-center gap-4 text-[10px] font-black text-slate-400 capitalize tracking-widest">
+            <h3 class="text-base font-bold text-slate-800 leading-tight mb-2 group-hover:text-emerald-700 transition-colors">{{ check.proposal?.title }}</h3>
+            <div class="flex items-center gap-4 text-[10px] font-bold text-slate-400 capitalize tracking-widest">
               <span class="flex items-center gap-1.5">
                 <i class="fas fa-coins text-emerald-400"></i>
                 {{ formatCurrency(check.proposal?.budget) }}
@@ -40,16 +40,16 @@
               </span>
             </div>
           </div>
-          <div class="w-12 h-12 rounded-2xl bg-linear-to-br from-emerald-400 to-teal-600 text-white flex items-center justify-center font-black shadow-lg shadow-emerald-500/30 shrink-0">
+          <div class="w-12 h-12 rounded-2xl bg-linear-to-br from-emerald-400 to-teal-600 text-white flex items-center justify-center font-bold shadow-lg shadow-emerald-500/30 shrink-0">
              <i class="fas fa-dollar-sign text-xl"></i>
           </div>
         </div>
         
         <div class="mt-auto pt-4 border-t border-slate-100 flex items-center gap-3">
-          <button @click="approveCheck(check)" class="flex-1 btn btn-primary h-10 text-[11px] font-black capitalize tracking-widest bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-500/20 border-0">
+          <button @click="approveCheck(check)" class="flex-1 btn btn-primary h-10 text-[11px] font-bold capitalize tracking-widest bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-500/20 border-0">
             Approve
           </button>
-          <button @click="rejectCheck(check)" class="flex-1 btn btn-secondary h-10 text-[11px] font-black capitalize tracking-widest text-rose-600 bg-rose-50 hover:bg-rose-100 border-0">
+          <button @click="rejectCheck(check)" class="flex-1 btn btn-secondary h-10 text-[11px] font-bold capitalize tracking-widest text-rose-600 bg-rose-50 hover:bg-rose-100 border-0">
             Reject
           </button>
         </div>

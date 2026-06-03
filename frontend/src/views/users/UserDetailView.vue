@@ -1,23 +1,23 @@
 <template>
-  <div class="flex flex-col gap-8 pb-12 animate-fade card">
+  <div class="flex flex-col gap-5 pb-6 animate-fade card">
     <!-- Header & Navigation -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
       <div class="flex-1">
-        <router-link to="/app/users" class="flex items-center gap-2 text-brand font-black capitalize tracking-widest text-[10px] mb-3 hover:translate-x-1 transition-transform">
+        <router-link to="/app/users" class="flex items-center gap-2 text-brand font-bold capitalize tracking-widest text-[10px] mb-3 hover:translate-x-1 transition-transform">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
           Back to Users
         </router-link>
-        <h1 class="text-3xl font-black text-slate-900 tracking-tight leading-tight">{{ user.name || 'User Profile' }}</h1>
+        <h1 class="text-xl font-bold text-slate-900 tracking-tight leading-tight">{{ user.name || 'User Profile' }}</h1>
         <p class="text-slate-500 font-bold mt-1">{{ user.email }}</p>
       </div>
       <div class="flex items-center gap-3">
-         <span :class="user.is_active ? 'text-emerald-600 border-emerald-200' : 'text-slate-400 border-slate-200'" class="px-4 py-1 rounded-full text-[10px] font-black capitalize tracking-widest border">
+         <span :class="user.is_active ? 'text-emerald-600 border-emerald-200' : 'text-slate-400 border-slate-200'" class="px-4 py-1 rounded-full text-[10px] font-bold capitalize tracking-widest border">
            {{ user.is_active ? 'Active Status' : 'Inactive Account' }}
          </span>
       </div>
     </div>
 
-    <div v-if="loading" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <div v-if="loading" class="grid grid-cols-1 lg:grid-cols-3 gap-5">
       <div class="card h-96 animate-pulse bg-slate-50/50"></div>
       <div class="lg:col-span-2 space-y-8">
         <div class="card h-48 animate-pulse bg-slate-50/50"></div>
@@ -26,36 +26,36 @@
     </div>
 
     <template v-else>
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 font-bold">
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-5 font-bold">
         <!-- Profile Widget -->
         <div class="space-y-8">
-          <div class="card p-8 flex flex-col items-center text-center relative overflow-hidden">
+          <div class="card p-5 flex flex-col items-center text-center relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-24 bg-linear-to-br from-brand to-indigo-600 opacity-10"></div>
-            <div class="w-24 h-24 rounded-[2.5rem] bg-linear-to-br from-brand to-indigo-600 flex items-center justify-center text-3xl font-black text-white shadow-xl shadow-brand/20 mb-6 relative z-10 border-4 border-white">
+            <div class="w-24 h-24 rounded-[2.5rem] bg-linear-to-br from-brand to-indigo-600 flex items-center justify-center text-xl font-bold text-white shadow-xl shadow-brand/20 mb-6 relative z-10 border-4 border-white">
               {{ getInitials(user.name) }}
             </div>
-            <h3 class="text-xl font-black text-slate-900 mb-1">{{ user.name }}</h3>
-            <p class="text-xs text-slate-400 font-black capitalize tracking-widest mb-6">{{ user.department?.name || 'Academic Staff' }}</p>
+            <h3 class="text-xl font-bold text-slate-900 mb-1">{{ user.name }}</h3>
+            <p class="text-xs text-slate-400 font-bold capitalize tracking-widest mb-6">{{ user.department?.name || 'Academic Staff' }}</p>
             
             <div class="w-full space-y-4 text-left">
               <div class="p-4 rounded-2xl border border-slate-200">
-                <p class="text-[9px] font-black text-slate-400 capitalize tracking-widest mb-1.5 flex items-center gap-1.5">
+                <p class="text-[9px] font-bold text-slate-400 capitalize tracking-widest mb-1.5 flex items-center gap-1.5">
                    <i class="far fa-envelope text-brand"></i>
                    Contact Email
                 </p>
                 <p class="text-xs text-slate-700 truncate">{{ user.email }}</p>
               </div>
               <div v-if="user.orcid_id" class="p-4 rounded-2xl border border-slate-200">
-                <p class="text-[9px] font-black text-slate-400 capitalize tracking-widest mb-1.5 flex items-center gap-1.5">
+                <p class="text-[9px] font-bold text-slate-400 capitalize tracking-widest mb-1.5 flex items-center gap-1.5">
                    <i class="fab fa-orcid text-[#A6CE39]"></i>
                    ORCID Identifier
                 </p>
-                <p class="text-xs text-slate-700 font-black">{{ user.orcid_id }}</p>
+                <p class="text-xs text-slate-700 font-bold">{{ user.orcid_id }}</p>
               </div>
             </div>
 
-            <div v-if="user.bio" class="mt-8 text-left">
-              <p class="text-[10px] font-black text-slate-400 capitalize tracking-widest mb-2 ml-1">biography</p>
+            <div v-if="user.bio" class="mt-5 text-left">
+              <p class="text-[10px] font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">biography</p>
               <p class="text-xs text-slate-600 leading-relaxed font-medium italic p-4 bg-indigo-50/30 rounded-2xl border border-indigo-100/30">{{ user.bio }}</p>
             </div>
           </div>
@@ -64,41 +64,41 @@
         <!-- Details Widget -->
         <div class="lg:col-span-2 space-y-8">
            <!-- Roles & Permissions -->
-           <div class="card p-8">
-             <div class="flex items-center justify-between mb-8">
-               <h2 class="text-xs font-black text-slate-400 capitalize tracking-widest flex items-center gap-2">
+           <div class="card p-5">
+             <div class="flex items-center justify-between mb-5">
+               <h2 class="text-xs font-bold text-slate-400 capitalize tracking-widest flex items-center gap-2">
                  <span class="w-1 h-3 bg-brand rounded-full"></span>
                  Access Roles
                </h2>
-               <button @click="showAssignRole = true" class="text-[10px] font-black text-brand capitalize tracking-widest hover:underline">+ Assign Role</button>
+               <button @click="showAssignRole = true" class="text-[10px] font-bold text-brand capitalize tracking-widest hover:underline">+ Assign Role</button>
              </div>
              
              <div v-if="user.roles?.length" class="flex flex-wrap gap-3">
                <div v-for="role in user.roles" :key="role.id" class="flex items-center gap-3 px-4 py-2 text-indigo-700 rounded-xl border border-indigo-300 group">
-                  <span class="text-xs font-black capitalize tracking-widest">{{ role.name }}</span>
+                  <span class="text-xs font-bold capitalize tracking-widest">{{ role.name }}</span>
                   <button @click="revokeRole(role)" class="text-indigo-300 hover:text-rose-500 transition-colors">
                     <i class="fas fa-times-circle"></i>
                   </button>
                </div>
              </div>
-             <div v-else class="p-12 text-center bg-slate-50 rounded-3xl border border-dashed border-slate-200">
-               <p class="text-xs font-black text-slate-300 capitalize tracking-widest">No access roles assigned</p>
+             <div v-else class="p-6 text-center bg-slate-50 rounded-3xl border border-dashed border-slate-200">
+               <p class="text-xs font-bold text-slate-300 capitalize tracking-widest">No access roles assigned</p>
              </div>
            </div>
 
            <!-- Multi-Column Center & Expertise -->
-           <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+           <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
              <!-- Centers -->
              <div class="card p-6">
                <div class="flex items-center justify-between mb-6">
-                 <h2 class="text-[10px] font-black text-slate-400 capitalize tracking-widest">Research Hubs</h2>
-                 <button @click="showAssignCenter = true" class="text-[10px] font-black text-brand capitalize tracking-widest hover:underline">+ Add Hub</button>
+                 <h2 class="text-[10px] font-bold text-slate-400 capitalize tracking-widest">Research Hubs</h2>
+                 <button @click="showAssignCenter = true" class="text-[10px] font-bold text-brand capitalize tracking-widest hover:underline">+ Add Hub</button>
                </div>
                
                <div v-if="user.research_centers?.length" class="space-y-3">
                  <div v-for="rc in user.research_centers" :key="rc.id" class="flex items-center justify-between p-4 bg-white rounded-2xl border border-slate-100 shadow-sm group">
                    <div class="min-w-0">
-                      <p class="text-xs font-black text-slate-800 truncate mb-1">{{ rc.name }}</p>
+                      <p class="text-xs font-bold text-slate-800 truncate mb-1">{{ rc.name }}</p>
                       <p class="text-[9px] text-slate-400 capitalize tracking-widest">{{ rc.code || 'HUB' }} Center</p>
                    </div>
                    <button @click="detachCenter(rc)" class="text-slate-300 hover:text-rose-500 transition-colors">
@@ -106,26 +106,26 @@
                    </button>
                  </div>
                </div>
-               <div v-else class="p-8 text-center bg-white rounded-2xl border border-dashed border-slate-100">
-                  <p class="text-[9px] font-black text-slate-300 capitalize tracking-widest">Not assigned to any hub</p>
+               <div v-else class="p-5 text-center bg-white rounded-2xl border border-dashed border-slate-100">
+                  <p class="text-[9px] font-bold text-slate-300 capitalize tracking-widest">Not assigned to any hub</p>
                </div>
              </div>
 
              <!-- Expertise -->
              <div class="card p-6">
                <div class="flex items-center justify-between mb-6">
-                 <h2 class="text-[10px] font-black text-slate-400 capitalize tracking-widest">Domain Expertise</h2>
-                 <button @click="showAssignExpertise = true" class="text-[10px] font-black text-brand capitalize tracking-widest hover:underline">+ Add Tag</button>
+                 <h2 class="text-[10px] font-bold text-slate-400 capitalize tracking-widest">Domain Expertise</h2>
+                 <button @click="showAssignExpertise = true" class="text-[10px] font-bold text-brand capitalize tracking-widest hover:underline">+ Add Tag</button>
                </div>
                
                <div v-if="user.expertise?.length" class="flex flex-wrap gap-2">
-                 <span v-for="exp in user.expertise" :key="exp.id" class="inline-flex items-center gap-2.5 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-[10px] font-black text-slate-600 capitalize tracking-tighter">
+                 <span v-for="exp in user.expertise" :key="exp.id" class="inline-flex items-center gap-2.5 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-[10px] font-bold text-slate-600 capitalize tracking-tighter">
                    {{ exp.name }}
                    <button @click="detachExpertise(exp)" class="text-slate-300 hover:text-rose-500 transition-colors">&times;</button>
                  </span>
                </div>
-               <div v-else class="p-8 text-center bg-white rounded-2xl border border-dashed border-slate-100">
-                  <p class="text-[9px] font-black text-slate-300 capitalize tracking-widest">No expertise tags</p>
+               <div v-else class="p-5 text-center bg-white rounded-2xl border border-dashed border-slate-100">
+                  <p class="text-[9px] font-bold text-slate-300 capitalize tracking-widest">No expertise tags</p>
                </div>
              </div>
            </div>
