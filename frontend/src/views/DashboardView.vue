@@ -1,97 +1,65 @@
 <template>
-  <div class="space-y-8 animate-fade pb-4">
-    <!-- Header with Breadcrumbs & Date Selection -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 bg-white p-5 rounded-3xl border border-slate-200 shadow-sm relative overflow-hidden">
-      <div class="absolute right-0 top-0 w-64 h-64 bg-brand/5 rounded-full -translate-y-1/2 translate-x-1/3"></div>
-      <div class="relative z-10">
-        <h1 class="text-xl font-bold text-slate-800 tracking-tight mb-2">Research Pulse</h1>
-        <p class="text-slate-500 max-w-xl text-sm leading-relaxed">
-          Welcome back, <span class="text-brand font-bold">{{ auth.user?.name }}</span>. Here's a real-time overview of the institutional research ecosystem.
-        </p>
-      </div>
-      
-      <div class="flex flex-wrap items-center gap-3 relative z-10">
-        <div class="relative group min-w-[200px]">
-          <select 
-            v-model="selectedYear" 
-            @change="fetchDashboard" 
-            class="w-full bg-white border-2 border-slate-200 rounded-2xl px-5 py-3 text-xs font-bold capitalize tracking-widest text-slate-700 focus:border-brand focus:ring-4 focus:ring-brand/10 transition-all appearance-none cursor-pointer"
-          >
-            <option value="">Aggregate All-Time</option>
-            <option v-for="y in academicYears" :key="y.id" :value="y.id">{{ y.name }}{{ y.is_current ? ' (Current)' : '' }}</option>
-          </select>
-          <div class="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-slate-400">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 9l-7 7-7-7" /></svg>
-          </div>
-        </div>
-        
-        <button 
-          @click="fetchDashboard" 
-          class="bg-brand text-white p-3 rounded-2xl shadow-lg shadow-brand/20 hover:scale-105 active:scale-95 transition-all"
-        >
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-        </button>
-      </div>
-    </div>
+  <div class="space-y-4 animate-fade pb-4">
+    <div class="h-1"></div> <!-- Minor top spacing -->
+
 
     <!-- Tier 1: Primary KPIs -->
-    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
+    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4">
       <div v-for="(stat, i) in stats" :key="i" 
-        class="group bg-white rounded-3xl p-6 border border-slate-200 hover:border-brand/30 hover:shadow-2xl hover:shadow-brand/5 transition-all relative overflow-hidden"
+        class="group bg-white rounded-2xl p-4 border border-slate-200 hover:border-brand/30 hover:shadow-xl hover:shadow-brand/5 transition-all relative overflow-hidden"
       >
-        <div class="absolute -right-4 -bottom-4 w-24 h-24 bg-slate-50 rounded-full group-hover:scale-150 transition-transform duration-700 opacity-50"></div>
+        <div class="absolute -right-2 -bottom-2 w-16 h-16 bg-slate-50 rounded-full group-hover:scale-150 transition-transform duration-700 opacity-50"></div>
         
-        <div class="flex items-center justify-between mb-4 relative z-10">
-          <div class="w-12 h-12 rounded-2xl flex items-center justify-center shadow-lg group-hover:rotate-6 transition-transform" 
-            :style="{ background: stat.iconBg + '20', color: stat.iconColor }">
+        <div class="flex items-center justify-between mb-3 relative z-10">
+          <div class="w-10 h-10 rounded-xl flex items-center justify-center shadow-md group-hover:rotate-6 transition-transform" 
+            :style="{ background: stat.iconBg + '15', color: stat.iconColor }">
             <span v-html="stat.svgIcon"></span>
           </div>
-          <div class="px-2 py-1 text-[10px] font-bold text-slate-500 rounded-lg border border-slate-200 italic">
+          <div class="px-2 py-0.5 text-[9px] font-bold text-slate-400 rounded-md border border-slate-100 italic">
             {{ stat.sub }}
           </div>
         </div>
         
         <div class="relative z-10">
-          <p class="text-[10px] font-bold text-slate-400 capitalize tracking-widest mb-1">{{ stat.label }}</p>
-          <h2 class="text-2xl font-bold text-slate-800 tracking-tighter">{{ stat.value }}</h2>
+          <p class="text-[9px] font-bold text-slate-400 capitalize tracking-widest mb-0.5">{{ stat.label }}</p>
+          <h2 class="text-xl font-bold text-slate-800 tracking-tight">{{ stat.value }}</h2>
         </div>
         
-        <!-- Subtle Trend Line Concept -->
-        <div class="mt-4 h-1 w-full border-t border-slate-200 rounded-full overflow-hidden">
+        <div class="mt-3 h-1 w-full border-t border-slate-100 rounded-full overflow-hidden">
           <div class="h-full rounded-full transition-all duration-1000" :style="{ width: '60%', background: stat.iconColor }"></div>
         </div>
       </div>
     </div>
 
     <!-- Tier 2: Main Content Split -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
       
       <!-- Chart Distribution -->
-      <div class="bg-white rounded-[40px] border border-slate-200 shadow-sm overflow-hidden flex flex-col p-5 relative">
-        <h3 class="text-sm font-bold text-slate-800 tracking-widest capitalize mb-2">Status Distribution</h3>
-        <p class="text-xs text-slate-400 font-bold mb-6">Proportional split of current workload</p>
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col p-4 relative">
+        <h3 class="text-xs font-bold text-slate-800 tracking-widest capitalize mb-1">Status Distribution</h3>
+        <p class="text-[10px] text-slate-400 font-bold mb-4">Proportional split of current workload</p>
         
-        <div v-if="loadingStats" class="flex-1 min-h-[300px] flex items-center justify-center">
-          <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-brand"></div>
+        <div v-if="loadingStats" class="flex-1 min-h-[260px] flex items-center justify-center">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-brand"></div>
         </div>
-        <div v-else-if="donutSeries.length > 0" class="flex-1 min-h-[300px] flex items-center justify-center -ml-4">
-          <apexchart type="donut" height="320" width="100%" :options="donutOptions" :series="donutSeries"></apexchart>
+        <div v-else-if="donutSeries.length > 0" class="flex-1 min-h-[260px] flex items-center justify-center -ml-4">
+          <apexchart type="donut" height="280" width="100%" :options="donutOptions" :series="donutSeries"></apexchart>
         </div>
-        <div v-else class="flex-1 min-h-[300px] flex items-center justify-center text-xs font-bold text-slate-300 capitalize tracking-widest italic">
+        <div v-else class="flex-1 min-h-[260px] flex items-center justify-center text-[10px] font-bold text-slate-300 capitalize tracking-widest italic">
           No data available
         </div>
       </div>
 
       <!-- General Activity Overview -->
-      <div class="bg-white rounded-[40px] border border-slate-200 shadow-sm overflow-hidden flex flex-col p-5">
-        <h3 class="text-sm font-bold text-slate-800 tracking-widest capitalize mb-2">Progress Overview</h3>
-        <p class="text-xs text-slate-400 font-bold mb-6">Metrics tracked against active lifecycle</p>
+      <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col p-4">
+        <h3 class="text-xs font-bold text-slate-800 tracking-widest capitalize mb-1">Progress Overview</h3>
+        <p class="text-[10px] text-slate-400 font-bold mb-4">Metrics tracked against active lifecycle</p>
         
-        <div v-if="loadingStats" class="flex-1 min-h-[300px] flex items-center justify-center">
-          <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-brand"></div>
+        <div v-if="loadingStats" class="flex-1 min-h-[260px] flex items-center justify-center">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-brand"></div>
         </div>
-        <div v-else class="flex-1 min-h-[300px] flex items-center justify-center -ml-4">
-          <apexchart type="bar" height="320" width="100%" :options="barOptions" :series="barSeries"></apexchart>
+        <div v-else class="flex-1 min-h-[260px] flex items-center justify-center -ml-4">
+          <apexchart type="bar" height="280" width="100%" :options="barOptions" :series="barSeries"></apexchart>
         </div>
       </div>
     </div>
