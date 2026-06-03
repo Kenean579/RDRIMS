@@ -21,7 +21,7 @@
     <!-- Content -->
     <template v-else>
       <router-link to="/calls" class="inline-flex items-center text-sm font-bold text-slate-500 hover:text-brand mb-6 transition-colors">
-        ← Back to Funding Opportunities
+        ← Back to Call for Proposals
       </router-link>
 
       <!-- Main Header Card -->

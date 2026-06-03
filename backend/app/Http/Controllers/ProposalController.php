@@ -24,7 +24,7 @@ class ProposalController extends Controller
     {
         $this->authorize('viewAny', Proposal::class);
 
-        $proposals = Proposal::with('status', 'type', 'submittedBy', 'call', 'financeChecks.status', 'ethicsRequests.approvalStatus')
+        $proposals = Proposal::with('status', 'type', 'submittedBy.profileImage', 'call', 'financeChecks.status', 'ethicsRequests.approvalStatus', 'file', 'ethicsFile')
             ->hierarchical($request->user(), 'submitted_by')
             ->when($request->status, fn($q) => $q->whereHas('status', fn($s) => $s->where('name', $request->status)))
             ->when($request->type, fn($q) => $q->whereHas('type', fn($t) => $t->where('name', $request->type)))
@@ -81,9 +81,9 @@ class ProposalController extends Controller
         $this->authorize('view', $proposal);
         return response()->json($proposal->load(
             'status', 'type', 'submittedBy.department', 'approvedBy', 'call',
-            'reviewers',
-            'financeChecks', 'ethicsRequests', 'file',
-            'investigators.user', 'investigators.role', 'academicYear'
+            'reviewers.profileImage',
+            'financeChecks', 'ethicsRequests', 'file', 'ethicsFile',
+            'investigators.user.profileImage', 'investigators.role', 'academicYear'
         ));
     }
 

@@ -11,7 +11,7 @@ class CallController extends Controller
 {
     public function index(): JsonResponse
     {
-        $calls = Call::with('status', 'academicYear', 'createdBy')
+        $calls = Call::with('status', 'academicYear', 'createdBy.profileImage', 'guidelineFile')
             ->when(request('status'), fn($q) => $q->whereHas('status', fn($s) => $s->where('name', request('status'))))
             ->orderBy('deadline', 'desc')
             ->paginate(20);

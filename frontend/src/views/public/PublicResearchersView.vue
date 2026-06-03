@@ -34,8 +34,16 @@
     <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       <div v-for="user in filteredResearchers" :key="user.id" class="card p-6 flex flex-col group card-hover relative border-t-4 border-t-brand/10 hover:border-t-brand transition-all">
         <div class="flex items-center gap-4 mb-4">
-           <div class="w-12 h-12 rounded-2xl bg-brand-light text-brand flex items-center justify-center font-bold text-xs capitalize shadow-sm">
-             {{ user.name.charAt(0) }}
+           <div class="w-12 h-12 rounded-2xl overflow-hidden bg-brand-light border border-brand/20 shrink-0 shadow-sm">
+             <img
+               v-if="imageUrl(user.profile_image)"
+               :src="imageUrl(user.profile_image)"
+               :alt="user.name"
+               class="w-full h-full object-cover"
+             />
+             <div v-else class="w-full h-full flex items-center justify-center text-brand font-bold text-sm capitalize">
+               {{ user.name.charAt(0) }}
+             </div>
            </div>
            <div class="min-w-0">
              <h3 class="text-sm font-bold text-slate-900 leading-tight truncate">{{ user.name }}</h3>
@@ -67,6 +75,7 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { imageUrl } from '@/utils/formatters'
 import api from '@/services/api'
 
 const researchers = ref([])

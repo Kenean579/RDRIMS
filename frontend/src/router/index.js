@@ -7,7 +7,7 @@ const routes = [
     component: () => import('@/layouts/PublicLayout.vue'),
     children: [
       { path: '', name: 'Home', component: () => import('@/views/public/HomeView.vue'), meta: { title: 'Home' } },
-      { path: 'calls', name: 'PublicCalls', component: () => import('@/views/public/PublicCallsView.vue'), meta: { title: 'Funding Opportunities' } },
+      { path: 'calls', name: 'PublicCalls', component: () => import('@/views/public/PublicCallsView.vue'), meta: { title: 'Call for Proposals' } },
       { path: 'calls/:id', name: 'PublicCallDetail', component: () => import('@/views/public/PublicCallDetailView.vue'), meta: { title: 'Call Details' } },
       { path: 'publications', name: 'PublicPublications', component: () => import('@/views/public/PublicPublicationsView.vue'), meta: { title: 'Repository' } },
       { path: 'researchers', name: 'PublicResearchers', component: () => import('@/views/public/PublicResearchersView.vue'), meta: { title: 'Researcher Directory' } },

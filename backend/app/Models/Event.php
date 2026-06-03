@@ -14,7 +14,7 @@ class Event extends Model
     protected $fillable = [
         'title', 'start_date', 'end_date', 'location', 'description',
         'max_participants', 'status_id', 'organizer_id', 'registration_deadline',
-        'banner_id'
+        'image_file_id'
     ];
 
     protected $casts = [
@@ -33,8 +33,8 @@ class Event extends Model
         return $this->hasMany(EventRegistration::class);
     }
 
-    public function banner(): BelongsTo
+    public function imageFile(): BelongsTo
     {
-        return $this->belongsTo(File::class, 'banner_id');
+        return $this->belongsTo(File::class, 'image_file_id');
     }
 }

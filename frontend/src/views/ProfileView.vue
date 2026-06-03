@@ -12,8 +12,26 @@
       <!-- Profile Sidebar -->
       <div class="lg:col-span-4 space-y-6">
         <div class="card p-5 text-center flex flex-col items-center">
-          <div class="w-24 h-24 rounded-3xl bg-blue-600 shadow-xl shadow-blue-500/20 flex items-center justify-center text-2xl font-bold text-white mb-6 transform rotate-3">
-            {{ getInitials(auth.user?.name) }}
+          <!-- Profile Image / Upload -->
+          <div class="relative group mb-6">
+            <div class="w-24 h-24 rounded-3xl overflow-hidden bg-blue-600 shadow-xl shadow-blue-500/20 flex items-center justify-center text-2xl font-bold text-white">
+              <img
+                v-if="imageUrl(auth.user?.profile_image)"
+                :src="imageUrl(auth.user?.profile_image)"
+                :alt="auth.user?.name"
+                class="w-full h-full object-cover"
+              />
+              <span v-else>{{ getInitials(auth.user?.name) }}</span>
+            </div>
+            <!-- Upload overlay -->
+            <label
+              for="profile-photo-input"
+              class="absolute inset-0 rounded-3xl bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+              title="Change profile photo"
+            >
+              <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/><circle cx="12" cy="13" r="3" stroke-width="2"/></svg>
+            </label>
+            <input id="profile-photo-input" type="file" accept="image/*" class="hidden" @change="uploadProfilePhoto" />
           </div>
           <h2 class="text-xl font-bold text-slate-800">{{ auth.user?.name }}</h2>
           <p class="text-sm font-medium text-slate-400 mt-1 capitalize tracking-widest">{{ auth.user?.email }}</p>
@@ -95,7 +113,8 @@
 import { reactive, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationStore } from '@/stores/notification'
-import { getInitials } from '@/utils/formatters'
+import { getInitials, imageUrl } from '@/utils/formatters'
+import api from '@/services/api'
 
 const auth = useAuthStore(); const notif = useNotificationStore()
 const form = reactive({ name: '', email: '', orcid_id: '', bio: '', google_scholar_id: '', scopus_id: '', linkedin_url: '' })
@@ -106,5 +125,24 @@ async function updateProfile() {
   const ok = await auth.updateProfile(form)
   if (ok) notif.success('Profile updated!')
   else notif.error('Update failed')
+}
+
+async function uploadProfilePhoto(event) {
+  const file = event.target.files?.[0]
+  if (!file) return
+  try {
+    // Upload file first
+    const fd = new FormData()
+    fd.append('file', file)
+    fd.append('is_public', '1')
+    const { data: fileRecord } = await api.post('/files', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+    // Attach to profile
+    await api.put('/profile', { profile_image_id: fileRecord.id })
+    // Refresh user
+    await auth.fetchUser()
+    notif.success('Profile photo updated!')
+  } catch (e) {
+    notif.error('Failed to upload photo')
+  }
 }
 </script>

@@ -29,8 +29,8 @@ return new class extends Migration
 
             $table->foreignId('organizer_id')->nullable()->constrained('users')->nullOnDelete();
             $table->dateTime('registration_deadline')->nullable();
-            $table->unsignedBigInteger('banner_id')->nullable()->index();
-            $table->foreign('banner_id')->references('id')->on('files')->nullOnDelete();
+            $table->unsignedBigInteger('image_file_id')->nullable()->index();
+            $table->foreign('image_file_id')->references('id')->on('files')->nullOnDelete();
             $table->timestamps();
 
             $table->index('start_date');

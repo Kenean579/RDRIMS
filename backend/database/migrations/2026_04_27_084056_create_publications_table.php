@@ -42,8 +42,8 @@ return new class extends Migration
             $table->unsignedTinyInteger('status_id')->default(2)->index(); // published
             $table->foreign('status_id')->references('id')->on('publication_statuses')->restrictOnDelete();
 
-            $table->unsignedBigInteger('cover_image_id')->nullable()->index();
-            $table->foreign('cover_image_id')->references('id')->on('files')->nullOnDelete();
+            $table->unsignedBigInteger('file_id')->nullable()->index();
+            $table->foreign('file_id')->references('id')->on('files')->nullOnDelete();
             $table->timestamps();
 
             $table->index('project_id');

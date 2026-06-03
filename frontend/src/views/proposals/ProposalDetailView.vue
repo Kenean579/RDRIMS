@@ -147,7 +147,10 @@
             </h2>
             <div v-if="proposal.investigators?.length" class="space-y-4">
               <div v-for="inv in proposal.investigators" :key="inv.id" class="flex items-start gap-4 p-4 rounded-2xl bg-slate-50 border border-slate-100 hover:bg-white hover:border-brand transition-all group shadow-sm">
-                <div class="w-10 h-10 bg-brand-light text-brand rounded-xl flex items-center justify-center text-xs font-bold capitalize shadow-inner group-hover:scale-110 transition-transform shrink-0">{{ getInitials(inv.user?.name || inv.name) }}</div>
+                <div class="w-10 h-10 bg-brand-light text-brand rounded-xl flex items-center justify-center text-xs font-bold capitalize shadow-inner group-hover:scale-110 overflow-hidden transition-transform shrink-0">
+                  <img v-if="imageUrl(inv.user?.profile_image)" :src="imageUrl(inv.user?.profile_image)" class="w-full h-full object-cover"/>
+                  <span v-else>{{ getInitials(inv.user?.name || inv.name) }}</span>
+                </div>
                 <div class="min-w-0">
                   <p class="text-sm font-bold text-slate-800 leading-tight truncate">{{ inv.user?.name || inv.name }}</p>
                   <p class="text-[9px] font-bold text-slate-400 capitalize tracking-widest mt-0.5">{{ inv.role?.name || 'Researcher' }}</p>
@@ -286,7 +289,7 @@ import api from '@/services/api'
 import StatusBadge from '@/components/StatusBadge.vue'
 import Modal from '@/components/Modal.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
-import { formatCurrency, formatDateTime, getInitials } from '@/utils/formatters'
+import { formatCurrency, formatDateTime, getInitials, imageUrl } from '@/utils/formatters'
 
 const route = useRoute(); const router = useRouter(); const auth = useAuthStore(); const notif = useNotificationStore()
 const proposal = ref({}); const loading = ref(true); const error = ref(null)

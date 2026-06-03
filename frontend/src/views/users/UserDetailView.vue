@@ -31,8 +31,9 @@
         <div class="space-y-8">
           <div class="card p-5 flex flex-col items-center text-center relative overflow-hidden">
             <div class="absolute top-0 left-0 w-full h-24 bg-linear-to-br from-brand to-indigo-600 opacity-10"></div>
-            <div class="w-24 h-24 rounded-[2.5rem] bg-linear-to-br from-brand to-indigo-600 flex items-center justify-center text-xl font-bold text-white shadow-xl shadow-brand/20 mb-6 relative z-10 border-4 border-white">
-              {{ getInitials(user.name) }}
+            <div class="w-24 h-24 rounded-[2.5rem] bg-linear-to-br from-brand to-indigo-600 flex items-center justify-center text-xl font-bold text-white shadow-xl shadow-brand/20 mb-6 relative z-10 border-4 border-white overflow-hidden shrink-0">
+              <img v-if="imageUrl(user.profile_image)" :src="imageUrl(user.profile_image)" class="w-full h-full object-cover"/>
+              <span v-else>{{ getInitials(user.name) }}</span>
             </div>
             <h3 class="text-xl font-bold text-slate-900 mb-1">{{ user.name }}</h3>
             <p class="text-xs text-slate-400 font-bold capitalize tracking-widest mb-6">{{ user.department?.name || 'Academic Staff' }}</p>
@@ -192,7 +193,7 @@ import { useRoute } from 'vue-router'
 import { useNotificationStore } from '@/stores/notification'
 import api from '@/services/api'
 import Modal from '@/components/Modal.vue'
-import { getInitials } from '@/utils/formatters'
+import { getInitials, imageUrl } from '@/utils/formatters'
 
 const route = useRoute(); const notif = useNotificationStore()
 const user = ref({}); const loading = ref(true); const error = ref(null)

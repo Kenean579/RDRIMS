@@ -23,42 +23,48 @@
 
     <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
       <div v-for="event in events" :key="event.id" class="card overflow-hidden flex flex-col group card-hover border-b-4 border-b-brand/10 hover:border-b-brand transition-all">
-        <div class="p-5 flex-1">
-          <div class="flex justify-between items-start mb-6">
-            <span class="px-3 py-1 bg-brand-light text-brand text-[9px] font-bold capitalize tracking-widest rounded-lg border border-brand/20 shadow-sm">{{ event.type?.name || 'Workshop' }}</span>
+        <!-- Banner Image -->
+        <div class="relative h-36 overflow-hidden bg-slate-900 shrink-0">
+          <img
+            v-if="imageUrl(event.image_file)"
+            :src="imageUrl(event.image_file)"
+            :alt="event.title"
+            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90"
+          />
+          <div v-else class="w-full h-full bg-gradient-to-br from-slate-800 to-slate-900 flex items-center justify-center p-4">
+            <p class="text-white/30 text-xs font-bold text-center capitalize tracking-widest line-clamp-2">{{ event.title }}</p>
           </div>
-          <h3 class="text-xl font-bold text-slate-900 group-hover:text-brand transition-colors mb-4 line-clamp-2 leading-tight" :title="event.title">{{ event.title }}</h3>
-          <p class="text-sm text-slate-500 font-medium line-clamp-3 leading-relaxed mb-5 italic">{{ event.description }}</p>
+          <span class="absolute top-2 left-2 px-2 py-0.5 bg-brand text-white text-[9px] font-bold capitalize tracking-widest rounded-md shadow">{{ event.type?.name || 'Workshop' }}</span>
+        </div>
+
+        <div class="p-4 flex-1 flex flex-col">
+          <h3 class="text-sm font-bold text-slate-900 group-hover:text-brand transition-colors mb-2 line-clamp-2 leading-tight" :title="event.title">{{ event.title }}</h3>
+          <p class="text-xs text-slate-500 font-medium line-clamp-2 leading-relaxed mb-4 italic">{{ event.description }}</p>
           
-          <div class="space-y-4">
-            <div class="flex items-center gap-3 text-[10px] font-bold text-slate-400 capitalize tracking-widest">
-              <div class="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center text-brand border border-slate-100 shadow-inner">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke-width="2.5"/><line x1="16" y1="2" x2="16" y2="6" stroke-width="2.5"/><line x1="8" y1="2" x2="8" y2="6" stroke-width="2.5"/></svg>
+          <div class="space-y-2 mt-auto">
+            <div class="flex items-center gap-2 text-[10px] font-bold text-slate-400 capitalize tracking-widest">
+              <div class="w-6 h-6 rounded-lg bg-slate-50 flex items-center justify-center text-brand border border-slate-100 shrink-0">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke-width="2.5"/><line x1="16" y1="2" x2="16" y2="6" stroke-width="2.5"/><line x1="8" y1="2" x2="8" y2="6" stroke-width="2.5"/></svg>
               </div>
               {{ formatDate(event.start_date) }}
             </div>
-            <div class="flex items-center gap-3 text-[10px] font-bold text-slate-400 capitalize tracking-widest">
-              <div class="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center text-emerald-500 border border-slate-100 shadow-inner">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+            <div class="flex items-center gap-2 text-[10px] font-bold text-slate-400 capitalize tracking-widest">
+              <div class="w-6 h-6 rounded-lg bg-slate-50 flex items-center justify-center text-emerald-500 border border-slate-100 shrink-0">
+                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
               </div>
               {{ event.location || 'Online' }}
-            </div>
-            <div class="flex items-center gap-3 text-[10px] font-bold text-slate-400 capitalize tracking-widest">
-              <div class="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center text-amber-500 border border-slate-100 shadow-inner">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" /><circle cx="9" cy="7" r="4" stroke-width="2.5"/></svg>
-              </div>
-              {{ event.registrations_count || 0 }} Attending
             </div>
           </div>
         </div>
         
-        <div class="p-5 bg-slate-50/50 border-t border-slate-100 flex gap-3">
-          <button @click="viewEvent(event)" class="flex-1 btn btn-secondary justify-center text-[10px] font-bold capitalize tracking-widest py-3">Open</button>
-          <button v-if="!event.is_registered" @click="registerForEvent(event)" class="flex-1 btn btn-primary justify-center text-[10px] font-bold capitalize tracking-widest py-3 shadow-lg shadow-blue-500/20">Join Now</button>
-          <span v-else class="flex-1 text-center py-3 text-[10px] font-bold capitalize tracking-widest text-emerald-600 bg-emerald-50 rounded-xl border border-emerald-100 shadow-sm">Going ✓</span>
+        <div class="px-4 pb-4 flex gap-2">
+          <button @click="viewEvent(event)" class="flex-1 btn btn-secondary justify-center text-[10px] font-bold capitalize tracking-widest py-2.5">Open</button>
+          <button v-if="!event.is_registered" @click="registerForEvent(event)" class="flex-1 btn btn-primary justify-center text-[10px] font-bold capitalize tracking-widest py-2.5 shadow-lg shadow-blue-500/20">Join Now</button>
+          <span v-else class="flex-1 text-center py-2.5 text-[10px] font-bold capitalize tracking-widest text-emerald-600 bg-emerald-50 rounded-xl border border-emerald-100 shadow-sm">Going ✓</span>
         </div>
       </div>
     </div>
+
 
     <!-- Detail Modal -->
     <Modal :show="!!selectedEvent" :title="selectedEvent?.title" size="lg" @close="selectedEvent = null">
@@ -103,7 +109,7 @@ import { ref, onMounted } from 'vue'
 import api from '@/services/api'
 import Modal from '@/components/Modal.vue'
 import EmptyState from '@/components/EmptyState.vue'
-import { formatDate } from '@/utils/formatters'
+import { formatDate, imageUrl } from '@/utils/formatters'
 import { useNotificationStore } from '@/stores/notification'
 const notif = useNotificationStore()
 const loading = ref(true); const events = ref([]); const selectedEvent = ref(null)

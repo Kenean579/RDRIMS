@@ -18,7 +18,7 @@ class ProjectController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $projects = Project::with('status', 'pi', 'academicYear')
+        $projects = Project::with('status', 'pi.profileImage', 'academicYear', 'coverImage')
             ->hierarchical($request->user(), 'pi_id')
             ->when($request->status, fn($q) => $q->whereHas('status', fn($s) => $s->where('name', $request->status)))
             ->when($request->search, fn($q) => $q->where('title', 'LIKE', '%' . $request->search . '%'))
@@ -36,7 +36,7 @@ class ProjectController extends Controller
 
     public function show(Project $project): JsonResponse
     {
-        return response()->json($project->load('status', 'pi', 'investigators.user', 'milestones.tasks', 'expenses', 'publications', 'patents', 'outputs'));
+        return response()->json($project->load('status', 'pi.profileImage', 'investigators.user', 'milestones.tasks', 'expenses', 'publications', 'patents', 'outputs', 'coverImage'));
     }
 
     public function update(UpdateProjectRequest $request, Project $project): JsonResponse

@@ -18,10 +18,31 @@
         </div>
         <div class="overflow-x-auto">
           <table class="min-w-full">
-            <thead class="bg-gray-50"><tr><th class="text-left px-5 py-3 text-xs font-medium text-gray-500 capitalize">Name</th><th class="text-left px-5 py-3 text-xs font-medium text-gray-500 capitalize">Email</th><th class="text-left px-5 py-3 text-xs font-medium text-gray-500 capitalize">Status</th><th class="text-left px-5 py-3 text-xs font-medium text-gray-500 capitalize">Actions</th></tr></thead>
+            <thead class="bg-gray-50"><tr>
+              <th class="text-left px-5 py-3 text-xs font-medium text-gray-500 capitalize">Participant</th>
+              <th class="text-left px-5 py-3 text-xs font-medium text-gray-500 capitalize">Email</th>
+              <th class="text-left px-5 py-3 text-xs font-medium text-gray-500 capitalize">Status</th>
+              <th class="text-left px-5 py-3 text-xs font-medium text-gray-500 capitalize">Actions</th>
+            </tr></thead>
             <tbody class="divide-y divide-gray-100">
               <tr v-for="reg in registrations" :key="reg.id" class="hover:bg-gray-50">
-                <td class="px-5 py-3 text-sm font-medium text-gray-800">{{ reg.user?.name }}</td>
+                <td class="px-5 py-3">
+                  <div class="flex items-center gap-3">
+                    <!-- Profile image or initials avatar -->
+                    <div class="w-8 h-8 rounded-full overflow-hidden shrink-0 bg-brand-light border border-brand/20">
+                      <img
+                        v-if="imageUrl(reg.user?.profile_image)"
+                        :src="imageUrl(reg.user?.profile_image)"
+                        :alt="reg.user?.name"
+                        class="w-full h-full object-cover"
+                      />
+                      <div v-else class="w-full h-full flex items-center justify-center text-brand text-xs font-bold">
+                        {{ reg.user?.name?.charAt(0) || '?' }}
+                      </div>
+                    </div>
+                    <span class="text-sm font-medium text-gray-800">{{ reg.user?.name }}</span>
+                  </div>
+                </td>
                 <td class="px-5 py-3 text-sm text-gray-600">{{ reg.user?.email }}</td>
                 <td class="px-5 py-3">
                   <span :class="reg.attended ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'" class="px-2 py-0.5 rounded-full text-xs font-medium">
@@ -50,6 +71,7 @@ import { useRoute } from 'vue-router'
 import { useNotificationStore } from '@/stores/notification'
 import api from '@/services/api'
 import LoadingSkeleton from '@/components/LoadingSkeleton.vue'
+import { imageUrl } from '@/utils/formatters'
 
 const route = useRoute(); const notif = useNotificationStore()
 const event = ref({}); const registrations = ref([]); const loading = ref(true)

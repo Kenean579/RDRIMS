@@ -224,8 +224,9 @@
             <!-- PI First -->
             <div class="flex items-center gap-4 p-4 rounded-2xl bg-brand/5 border border-brand/10 shadow-sm relative overflow-hidden">
               <div class="absolute right-0 top-0 w-16 h-16 bg-brand/10 rounded-bl-full z-0"></div>
-              <div class="w-10 h-10 bg-brand text-white rounded-xl flex items-center justify-center text-xs font-bold capitalize shadow-lg shadow-brand/30 shrink-0 z-10">
-                {{ getInitials(project.pi?.name) }}
+              <div class="w-10 h-10 bg-brand text-white rounded-xl flex items-center justify-center text-xs font-bold capitalize shadow-lg shadow-brand/30 shrink-0 z-10 overflow-hidden">
+                <img v-if="imageUrl(project.pi?.profile_image)" :src="imageUrl(project.pi?.profile_image)" class="w-full h-full object-cover"/>
+                <span v-else>{{ getInitials(project.pi?.name) }}</span>
               </div>
               <div class="z-10 min-w-0">
                 <p class="text-sm font-bold text-slate-800 truncate">{{ project.pi?.name || 'Unknown' }}</p>
@@ -235,8 +236,9 @@
             
             <!-- Other Investigators -->
             <div v-for="inv in project.investigators" :key="inv.id" class="flex items-center gap-4 p-3 rounded-2xl bg-slate-50/80 border border-slate-100 hover:bg-white transition-colors">
-              <div class="w-9 h-9 bg-slate-200 text-slate-500 rounded-xl flex items-center justify-center text-[10px] font-bold capitalize shrink-0">
-                {{ getInitials(inv.user?.name) }}
+              <div class="w-9 h-9 bg-slate-200 text-slate-500 rounded-xl flex items-center justify-center text-[10px] font-bold capitalize shrink-0 overflow-hidden">
+                <img v-if="imageUrl(inv.user?.profile_image)" :src="imageUrl(inv.user?.profile_image)" class="w-full h-full object-cover"/>
+                <span v-else>{{ getInitials(inv.user?.name) }}</span>
               </div>
               <div class="min-w-0">
                 <p class="text-xs font-bold text-slate-700 truncate">{{ inv.user?.name }}</p>
@@ -295,7 +297,7 @@ import { useNotificationStore } from '@/stores/notification'
 import api from '@/services/api'
 import StatusBadge from '@/components/StatusBadge.vue'
 import Modal from '@/components/Modal.vue'
-import { formatDate, formatCurrency, getInitials } from '@/utils/formatters'
+import { formatDate, formatCurrency, getInitials, imageUrl } from '@/utils/formatters'
 
 const route = useRoute(); const auth = useAuthStore(); const notif = useNotificationStore()
 const project = ref({}); const loading = ref(true)

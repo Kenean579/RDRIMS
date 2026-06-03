@@ -30,7 +30,7 @@ class PublicationController extends Controller
 
     public function show(Publication $publication): JsonResponse
     {
-        return response()->json($publication->load('project', 'authors.user', 'coverImage'));
+        return response()->json($publication->load('project', 'authors.user', 'file'));
     }
 
     public function update(UpdatePublicationRequest $request, Publication $publication): JsonResponse

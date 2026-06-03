@@ -3,7 +3,7 @@
     <!-- Header -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div>
-        <h1 class="text-xl font-bold text-slate-900 tracking-tight">Funding Calls</h1>
+        <h1 class="text-xl font-bold text-slate-900 tracking-tight">Call for Proposals</h1>
         <p class="text-slate-500 font-medium mt-1">Open applications for research grants.</p>
       </div>
       <div class="flex items-center gap-3">
@@ -99,7 +99,7 @@
     </Modal>
 
     <!-- Create / Edit Call Modal (Admin Only) -->
-    <Modal :show="showCreate || editingCall" :title="editingCall ? 'Edit Funding Call' : 'Create New Funding Call'" size="lg" @close="closeCallModal">
+    <Modal :show="showCreate || editingCall" :title="editingCall ? 'Edit Call for Proposal' : 'Create New Call for Proposal'" size="lg" @close="closeCallModal">
       <form @submit.prevent="saveCall" class="space-y-6">
         <div>
           <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-widest mb-2 ml-1">Title *</label>
@@ -332,7 +332,7 @@ async function saveCall() {
       notif.success('Call updated successfully!')
     } else {
       await api.post('/calls', payload)
-      notif.success('Funding call created!')
+      notif.success('Call for proposal created!')
     }
     closeCallModal()
     fetchCalls()

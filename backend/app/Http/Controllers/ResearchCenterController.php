@@ -12,7 +12,7 @@ class ResearchCenterController extends Controller
     public function index(): JsonResponse
     {
         return response()->json(
-            ResearchCenter::with(['director', 'university', 'campus', 'faculty'])
+            ResearchCenter::with(['director.profileImage', 'university', 'campus', 'faculty', 'logoFile'])
                 ->latest()
                 ->paginate(100)
         );
@@ -26,7 +26,7 @@ class ResearchCenterController extends Controller
 
     public function show(ResearchCenter $researchCenter): JsonResponse
     {
-        return response()->json($researchCenter->load('director', 'users', 'university', 'campus', 'faculty', 'department'));
+        return response()->json($researchCenter->load('director.profileImage', 'users.profileImage', 'university', 'campus', 'faculty', 'department', 'logoFile'));
     }
 
     public function update(UpdateResearchCenterRequest $request, ResearchCenter $researchCenter): JsonResponse

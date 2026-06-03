@@ -330,7 +330,7 @@ const navigation = computed(() => {
       {
         title: 'Community & Public',
         items: [
-          { name: 'Funding Calls', path: '/app/calls', icon: icons.calls },
+          { name: 'Call for Proposals', path: '/app/calls', icon: icons.calls },
           { name: 'Publications', path: '/app/publications', icon: icons.publications },
           { name: 'Events', path: '/app/events', icon: icons.events },
           { name: 'Community Problems', path: '/app/community-problems', icon: icons.community },
@@ -349,7 +349,7 @@ const navigation = computed(() => {
     {
       title: 'Research',
       items: [
-        { name: 'Funding Calls', path: '/app/calls',        icon: icons.calls },
+        { name: 'Call for Proposals', path: '/app/calls', icon: icons.calls },
         { name: 'Proposals',     path: '/app/proposals',    icon: icons.proposals },
         { name: 'Projects',      path: '/app/projects',     icon: icons.projects },
         { name: 'Outputs',       path: '/app/outputs',      icon: icons.outputs },

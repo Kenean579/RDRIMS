@@ -1,3 +1,17 @@
+const STORAGE_BASE = (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api').replace('/api', '/storage') + '/'
+
+/**
+ * Build a full URL to a backend-stored image.
+ * @param {object|null} file  - The relationship object e.g. event.banner or user.profile_image
+ * @param {string} fallback   - Fallback URL when no image is present
+ */
+export function imageUrl(file, fallback = null) {
+  if (!file?.file_path) return fallback
+  // If it's already an absolute URL pass it through
+  if (file.file_path.startsWith('http')) return file.file_path
+  return STORAGE_BASE + file.file_path
+}
+
 export function formatCurrency(amount) {
   if (amount === null || amount === undefined) return 'ETB 0.00'
   return 'ETB ' + Number(amount).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })

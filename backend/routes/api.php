@@ -68,6 +68,7 @@ Route::post('reset-password', [AuthController::class, 'resetPassword']);
 Route::get('lookups/{table}', [LookupController::class, 'index']);
 Route::get('settings', [SettingController::class, 'index']);
 Route::get('universities', [UniversityController::class, 'index']);
+Route::get('universities/{university}', [UniversityController::class, 'show']);
 Route::get('calls', [CallController::class, 'index']);
 Route::get('calls/{call}', [CallController::class, 'show']);
 Route::get('publications', [PublicationController::class, 'index']);
@@ -96,6 +97,12 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('user', [AuthController::class, 'user']);
     Route::put('profile', [AuthController::class, 'updateProfile']);
     Route::post('logout', [AuthController::class, 'logout']);
+
+    // Files
+    Route::post('files', [FileController::class, 'upload']);
+    Route::get('files', [FileController::class, 'index']);
+    Route::get('files/{file}/download', [FileController::class, 'download']);
+    Route::delete('files/{file}', [FileController::class, 'destroy']);
 
     // Language
     Route::get('language-preference', [LanguagePreferenceController::class, 'show']);

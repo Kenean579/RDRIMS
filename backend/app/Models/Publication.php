@@ -14,7 +14,7 @@ class Publication extends Model
     protected $fillable = [
         'project_id', 'title', 'abstract', 'keywords', 'journal_name',
         'doi', 'url', 'publication_date', 'volume', 'issue', 'pages',
-        'access_type_id', 'status_id', 'cover_image_id'
+        'access_type_id', 'status_id', 'file_id'
     ];
 
     public function status(): BelongsTo
@@ -36,9 +36,9 @@ class Publication extends Model
         return $this->belongsTo(Project::class);
     }
 
-    public function coverImage(): BelongsTo
+    public function file(): BelongsTo
     {
-        return $this->belongsTo(File::class, 'cover_image_id');
+        return $this->belongsTo(File::class, 'file_id');
     }
 
     public function authors(): HasMany

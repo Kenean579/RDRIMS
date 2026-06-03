@@ -55,7 +55,7 @@
       <div class="flex justify-between items-end mb-5">
         <div>
           <h2 class="text-2xl font-bold text-slate-800 tracking-tight">Open Research Calls</h2>
-          <p class="text-sm text-slate-500 mt-1 font-medium">Opportunities for funding and collaboration</p>
+          <p class="text-sm text-slate-500 mt-1 font-medium">Opportunities for call for proposal and collaboration</p>
         </div>
         <router-link to="/calls" class="text-sm font-bold text-brand hover:text-brand-dark flex items-center gap-1 group">
           View all 

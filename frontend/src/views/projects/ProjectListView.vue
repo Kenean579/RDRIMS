@@ -65,10 +65,13 @@
         </div>
         
         <div class="flex items-center gap-3 mb-6">
-           <div class="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center text-[10px] font-bold text-slate-500 border border-slate-100 group-hover:bg-emerald-50 group-hover:text-emerald-700 transition-all">{{ getInitials(p.proposal?.submitted_by?.name) }}</div>
+           <div class="w-8 h-8 rounded-xl overflow-hidden bg-slate-50 flex items-center justify-center text-[10px] font-bold text-slate-500 border border-slate-100 group-hover:bg-emerald-50 group-hover:text-emerald-700 transition-all shrink-0">
+              <img v-if="imageUrl(p.pi?.profile_image)" :src="imageUrl(p.pi?.profile_image)" class="w-full h-full object-cover"/>
+              <span v-else>{{ getInitials(p.pi?.name) }}</span>
+           </div>
            <div class="min-w-0">
              <p class="text-[9px] font-bold text-slate-400 capitalize tracking-widest leading-none mb-1">Lead PI</p>
-             <p class="text-xs font-bold text-slate-700 truncate">{{ p.proposal?.submitted_by?.name || 'Researcher' }}</p>
+             <p class="text-xs font-bold text-slate-700 truncate">{{ p.pi?.name || 'Researcher' }}</p>
            </div>
         </div>
 
@@ -102,7 +105,7 @@ import api from '@/services/api'
 import StatusBadge from '@/components/StatusBadge.vue'
 import Pagination from '@/components/Pagination.vue'
 import EmptyState from '@/components/EmptyState.vue'
-import { formatDate, getInitials } from '@/utils/formatters'
+import { formatDate, getInitials, imageUrl } from '@/utils/formatters'
 const loading = ref(true); const projects = ref([]); const search = ref(''); const status = ref('')
 const pagination = reactive({ current_page: 1, last_page: 1, total: 0 })
 let timer = null

@@ -29,7 +29,7 @@ const messages = {
         communityImpact: 'Problems Solved'
       },
       openCallsTitle: 'Open Research Calls',
-      openCallsSubtitle: 'Opportunities for funding and collaboration',
+      openCallsSubtitle: 'Opportunities for call for proposal and collaboration',
       viewAll: 'View all',
       noOpenCalls: 'No open calls',
       noOpenCallsMessage: 'There are currently no open calls. Check back later.',

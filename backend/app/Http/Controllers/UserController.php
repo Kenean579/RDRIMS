@@ -17,7 +17,7 @@ class UserController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $query = User::with('roles', 'department.faculty')
+        $query = User::with('roles', 'department.faculty', 'profileImage')
             ->hierarchical($request->user(), 'id');
 
         if ($request->has('search') && $request->search != '') {
@@ -46,7 +46,7 @@ class UserController extends Controller
 
     public function show(User $user): JsonResponse
     {
-        return response()->json($user->load('roles.permissions', 'department.faculty', 'expertise'));
+        return response()->json($user->load('roles.permissions', 'department.faculty', 'expertise', 'profileImage'));
     }
 
     public function update(UserRequest $request, User $user): JsonResponse

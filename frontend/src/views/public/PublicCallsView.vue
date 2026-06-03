@@ -3,7 +3,7 @@
     <!-- Header -->
     <div class="card p-5 bg-slate-50 border-slate-100 relative overflow-hidden">
       <div class="relative z-10">
-        <h1 class="text-xl font-bold text-slate-900 tracking-tight">Funding Opportunities</h1>
+        <h1 class="text-xl font-bold text-slate-900 tracking-tight">Call for Proposals</h1>
         <p class="text-slate-500 font-medium mt-1">Open grants and research calls across the institutional network.</p>
       </div>
       <div class="absolute right-0 top-0 w-32 h-32 bg-brand/5 rounded-full translate-x-8 -translate-y-8"></div>

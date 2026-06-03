@@ -23,7 +23,7 @@ import { useRoute } from 'vue-router'
 
 const route = useRoute()
 const title = computed(() => {
-  if (route.path.includes('calls')) return 'Research Funding Calls'
+  if (route.path.includes('calls')) return 'Research Call for Proposals'
   if (route.path.includes('publications')) return 'Research Publications'
   if (route.path.includes('events')) return 'News & Events'
   if (route.path.includes('researchers')) return 'Our Researchers'

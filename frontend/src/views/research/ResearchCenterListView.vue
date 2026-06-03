@@ -56,7 +56,7 @@
           <button @click="confirmDelete(center)" class="btn btn-ghost text-rose-500 hover:bg-rose-50 flex-1 justify-center text-[11px] font-bold capitalize tracking-wider py-2">Delete</button>
         </div>
       </div>
-    </div>iv>
+    </div>
 
     <!-- Modals -->
     <Modal :show="showCreate || !!editingCenter" :title="editingCenter ? 'Edit Center' : 'Add New Center'" size="lg" @close="closeModal">
@@ -159,9 +159,9 @@ async function fetchCenters() {
   try {
     const [centersRes, uniRes, campRes, facRes] = await Promise.all([
       api.get('/research-centers'),
-      api.get('/academic/universities'),
-      api.get('/academic/campuses'),
-      api.get('/academic/faculties')
+      api.get('/universities'),
+      api.get('/campuses'),
+      api.get('/faculties')
     ])
     centers.value = centersRes.data.data || centersRes.data
     universities.value = uniRes.data.data || uniRes.data
