@@ -57,23 +57,23 @@
     <Modal :show="showCreate" title="Record New Expense" @close="showCreate = false">
       <form @submit.prevent="saveExpense" class="space-y-5 px-1 py-1">
         <div>
-          <label class="block text-[11px] text-slate-500 font-bold uppercase tracking-wider mb-1.5 ml-1">Project *</label>
+          <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-wider mb-1.5 ml-1">Project *</label>
           <select v-model="form.project_id" required class="input">
             <option v-for="p in projects" :key="p.id" :value="p.id">{{ p.title }}</option>
           </select>
         </div>
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="block text-[11px] text-slate-500 font-bold uppercase tracking-wider mb-1.5 ml-1">Amount *</label>
+            <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-wider mb-1.5 ml-1">Amount *</label>
             <input v-model.number="form.amount" type="number" step="0.01" required class="input" />
           </div>
           <div>
-            <label class="block text-[11px] text-slate-500 font-bold uppercase tracking-wider mb-1.5 ml-1">Date *</label>
+            <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-wider mb-1.5 ml-1">Date *</label>
             <input v-model="form.expense_date" type="date" required class="input" />
           </div>
         </div>
         <div>
-          <label class="block text-[11px] text-slate-500 font-bold uppercase tracking-wider mb-1.5 ml-1">Description *</label>
+          <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-wider mb-1.5 ml-1">Description *</label>
           <input v-model="form.description" type="text" required class="input" placeholder="Expense description..." />
         </div>
         <div class="flex justify-end gap-3 pt-4">

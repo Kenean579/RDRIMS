@@ -7,9 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 
+use App\Traits\HierarchicalScope;
+
 class ResearchCenter extends Model
 {
-    use HasFactory;
+    use HasFactory, HierarchicalScope;
 
     protected $fillable = [
         'name', 'code', 'director_id', 'logo_file_id',

@@ -1,6 +1,6 @@
 <template>
   <div class="w-full">
-    <label v-if="label" class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">
+    <label v-if="label" class="block text-xs font-black text-slate-400 capitalize tracking-widest mb-2 ml-1">
       {{ label }}
       <span v-if="required" class="text-rose-500">*</span>
     </label>
@@ -30,7 +30,7 @@
           </svg>
         </div>
         <p class="text-sm font-bold text-slate-700">Click to upload or drag and drop</p>
-        <p class="text-[10px] uppercase tracking-widest text-slate-400 font-bold mt-2">
+        <p class="text-[10px] capitalize tracking-widest text-slate-400 font-bold mt-2">
           {{ allowedExtensions.replace(/\./g, '').toUpperCase() }} (MAX. {{ maxSizeMb }}MB)
         </p>
       </div>
@@ -52,7 +52,7 @@
         </button>
       </div>
     </div>
-    <p v-if="error || internalError" class="mt-2 text-[10px] font-black uppercase tracking-widest text-rose-500 ml-1">
+    <p v-if="error || internalError" class="mt-2 text-[10px] font-black capitalize tracking-widest text-rose-500 ml-1">
       {{ error || internalError }}
     </p>
   </div>

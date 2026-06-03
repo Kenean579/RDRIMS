@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\SubmitReviewRequest;
 use App\Models\Proposal;
+use App\Models\ProposalReviewer;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -40,7 +41,13 @@ class ReviewerProposalController extends Controller
             abort(403, 'You are not assigned as a reviewer for this proposal.');
         }
 
-        $pivot = $reviewer->reviewPivot;
+        $pivot = ProposalReviewer::where('proposal_id', $proposal->id)
+    ->where('reviewer_id', $reviewerId)
+    ->first();
+
+if (!$pivot) {
+    abort(403, 'Reviewer assignment not found.');
+}
 
         // Save scores per criterion
         foreach ($request->scores as $scoreData) {

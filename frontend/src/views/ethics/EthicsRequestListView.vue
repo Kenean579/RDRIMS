@@ -21,24 +21,30 @@
       <EmptyState icon="⚖️" title="No requests found" description="All ethics reviews have been completed for now." />
     </div>
 
-    <div v-else class="flex flex-col gap-5">
-      <div v-for="req in requests" :key="req.id" class="card p-6 group card-hover flex flex-col md:flex-row justify-between items-center gap-6 border-l-4 border-l-brand/20 hover:border-l-brand transition-all">
-        <div class="flex-1 min-w-0">
-          <div class="flex items-center gap-3 mb-2">
-            <span class="px-2.5 py-1 bg-slate-100 text-slate-600 text-[10px] font-black uppercase tracking-widest rounded-lg border border-slate-200">Version {{ req.version }}</span>
-            <StatusBadge :status="req.approval_status?.name || 'pending'" />
+    <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div v-for="req in requests" :key="req.id" class="card p-6 flex flex-col group card-hover relative overflow-hidden border-l-4 border-l-brand hover:border-l-indigo-600 transition-all">
+        <div class="flex items-start justify-between mb-4">
+          <div class="flex-1 pr-4">
+            <div class="flex items-center gap-3 mb-2">
+              <span class="px-2.5 py-0.5 bg-slate-100 text-slate-500 text-[10px] font-black capitalize tracking-widest rounded-md border border-slate-200">VER: {{ req.version || 1 }}</span>
+              <StatusBadge :status="req.approval_status?.name || 'pending'" />
+            </div>
+            <h3 class="text-base font-black text-slate-800 leading-tight mb-2 group-hover:text-brand transition-colors">{{ req.proposal?.title }}</h3>
+            <p class="text-[10px] font-black text-slate-400 capitalize tracking-widest flex items-center gap-1.5">
+              <i class="fas fa-user-edit"></i>
+              {{ req.proposal?.authors?.split(',')[0] || 'Researcher' }}
+            </p>
           </div>
-          <h3 class="text-lg font-black text-slate-900 mb-1 leading-tight">{{ req.proposal?.title }}</h3>
-          <p class="text-xs text-slate-400 font-bold uppercase tracking-widest">Submitted by: <span class="text-slate-600 ml-1">{{ req.proposal?.authors?.split(',')[0] || 'Researcher' }}</span></p>
+          <div class="w-12 h-12 rounded-2xl bg-linear-to-br from-indigo-500 to-blue-600 text-white flex items-center justify-center font-black shadow-lg shadow-indigo-500/30 shrink-0">
+             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 6l3 1m0 0l-3 9a5.002 5.002 0 006.001 0M6 7l3 9M6 7l6-2m6 2l3-1m-3 1l-3 9a5.002 5.002 0 006.001 0M18 7l3 9m-3-9l-6-2m0-2v2m0 16V5m0 16H9m3 0h3" /></svg>
+          </div>
         </div>
         
-        <div class="flex gap-2 w-full md:w-auto shrink-0">
-          <button @click="approveRequest(req)" class="flex-1 md:flex-none btn bg-emerald-500 hover:bg-emerald-600 text-white border-0 px-6 h-10 text-[11px] font-black uppercase tracking-widest shadow-lg shadow-emerald-500/20">
-            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" /></svg>
+        <div class="mt-auto pt-4 border-t border-slate-100 flex items-center gap-3">
+          <button @click="approveRequest(req)" class="flex-1 btn btn-primary h-10 text-[11px] font-black capitalize tracking-widest bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-500/20 border-0">
             Approve
           </button>
-          <button @click="rejectRequest(req)" class="flex-1 md:flex-none btn bg-rose-500 hover:bg-rose-600 text-white border-0 px-6 h-10 text-[11px] font-black uppercase tracking-widest shadow-lg shadow-rose-500/20">
-            <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12" /></svg>
+          <button @click="rejectRequest(req)" class="flex-1 btn btn-secondary h-10 text-[11px] font-black capitalize tracking-widest text-rose-600 bg-rose-50 hover:bg-rose-100 border-0">
             Reject
           </button>
         </div>
@@ -49,7 +55,7 @@
     <ConfirmDialog :show="showReject" title="Reject Ethics Request" message="Please explain why this request is being rejected:" confirmText="Confirm Rejection" variant="danger" @confirm="confirmReject" @cancel="showReject = false">
       <template #extra>
         <div class="mt-4">
-          <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">Rejection Reason</label>
+          <label class="block text-[10px] font-black text-slate-400 capitalize tracking-widest mb-2 ml-1">Rejection Reason</label>
           <textarea v-model="rejectComment" rows="3" class="input p-4 font-semibold text-slate-700 leading-relaxed" placeholder="e.g. Missing participant consent forms..."></textarea>
         </div>
       </template>

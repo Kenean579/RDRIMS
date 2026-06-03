@@ -25,10 +25,10 @@
         <table class="min-w-full">
           <thead class="bg-gray-50 border-b border-gray-200">
             <tr>
-              <th class="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase">Title</th>
-              <th class="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase">Status</th>
-              <th class="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase">Your Score</th>
-              <th class="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase">Assigned</th>
+              <th class="text-left px-5 py-3 text-xs font-medium text-gray-500 capitalize">Title</th>
+              <th class="text-left px-5 py-3 text-xs font-medium text-gray-500 capitalize">Status</th>
+              <th class="text-left px-5 py-3 text-xs font-medium text-gray-500 capitalize">Your Score</th>
+              <th class="text-left px-5 py-3 text-xs font-medium text-gray-500 capitalize">Assigned</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-gray-100">

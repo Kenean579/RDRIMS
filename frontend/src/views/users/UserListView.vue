@@ -16,7 +16,7 @@
     <div class="card p-5 bg-slate-50/50">
       <div class="flex flex-col sm:flex-row gap-5 items-start">
         <div class="flex-1 w-full relative">
-          <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest mb-2 ml-1">Search</label>
+          <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest mb-2 ml-1">Search</label>
           <div class="relative group">
             <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand transition-colors">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -25,7 +25,7 @@
           </div>
         </div>
         <div class="w-full sm:w-56">
-          <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest mb-2 ml-1">Role Filter</label>
+          <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest mb-2 ml-1">Role Filter</label>
           <select v-model="roleFilter" @change="fetchUsers(1)" class="input font-bold">
             <option value="">All Roles</option>
             <option v-for="r in roles" :key="r.id" :value="r.name">{{ r.name }}</option>
@@ -38,60 +38,47 @@
     <div v-if="loading" class="card p-24 flex justify-center items-center">
       <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-brand"></div>
     </div>
-    <div v-else-if="error" class="card p-12 text-center text-rose-500 font-bold uppercase tracking-widest text-xs">{{ error }}</div>
+    <div v-else-if="error" class="card p-12 text-center text-rose-500 font-bold capitalize tracking-widest text-xs">{{ error }}</div>
     <div v-else-if="!users || users.length === 0" class="card">
       <EmptyState icon="👥" title="No users found" description="Add researchers or admins to give them access." action-label="Add First Person" action-icon="add" @action="showCreate = true" />
     </div>
 
-    <div v-else class="card overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="table-auto">
-          <thead>
-            <tr>
-              <th class="pl-8 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-left">Name</th>
-              <th class="py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-left">Email</th>
-              <th class="py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-left">Roles</th>
-              <th class="py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-left">Status</th>
-              <th class="pr-8 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-50">
-            <tr v-for="u in users" :key="u.id" class="hover:bg-slate-50/50 transition-colors group">
-              <td class="pl-8 py-4">
-                <div class="flex items-center gap-3">
-                  <div class="w-9 h-9 rounded-xl bg-brand-light text-brand flex items-center justify-center font-black text-xs uppercase border border-brand/10">
-                    {{ u.name.charAt(0) }}
-                  </div>
-                  <div>
-                    <p class="font-black text-slate-900 leading-tight">{{ u.name }}</p>
-                    <p class="text-[9px] text-slate-400 font-black uppercase tracking-widest mt-1">{{ u.department?.name || 'No Department' }}</p>
-                  </div>
-                </div>
-              </td>
-              <td class="py-4"><span class="text-sm font-bold text-slate-600 truncate max-w-[150px] block">{{ u.email }}</span></td>
-              <td class="py-4">
-                <div class="flex flex-wrap gap-1.5">
-                  <span v-for="r in u.roles" :key="r.id" class="px-2 py-0.5 bg-slate-100 text-slate-600 text-[9px] font-black uppercase tracking-widest rounded-lg border border-slate-200">{{ r.name }}</span>
-                </div>
-              </td>
-              <td class="py-4">
-                <div class="flex">
-                  <span :class="u.is_active ? 'bg-emerald-50 text-emerald-600 border-emerald-100' : 'bg-rose-50 text-rose-600 border-rose-100'" class="px-2 py-0.5 text-[9px] font-black uppercase tracking-widest rounded-lg border">
-                    {{ u.is_active ? 'Active' : 'Offline' }}
-                  </span>
-                </div>
-              </td>
-              <td class="pr-8 py-4 text-right">
-                <div class="flex justify-end gap-2">
-                  <button @click="editUser(u)" class="btn btn-ghost hover:bg-white text-[10px] font-black uppercase tracking-widest py-1.5 px-3">Edit</button>
-                  <button v-if="u.is_active" @click="confirmDelete(u)" class="btn btn-ghost text-rose-600 hover:bg-rose-50 text-[10px] font-black uppercase tracking-widest py-1.5 px-3">Deactivate</button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+    <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+      <div v-for="u in users" :key="u.id" class="p-6 card flex flex-col items-center text-center group card-hover relative overflow-hidden border-t-4 border-t-brand hover:border-t-indigo-600 transition-all">
+        <!-- Status Indicator -->
+        <div class="absolute top-4 right-4">
+           <span :class="u.is_active ? 'bg-emerald-500' : 'bg-slate-300'" class="w-2.5 h-2.5 rounded-full block shadow-sm ring-4 ring-white"></span>
+        </div>
+
+        <!-- Role Badge -->
+        <div class="mb-4">
+           <span class="px-2 py-0.5 bg-slate-100 text-slate-500 text-[9px] font-black capitalize tracking-widest rounded-md border border-slate-200">
+             {{ u.roles?.[0]?.name || 'Guest' }}
+           </span>
+        </div>
+
+        <!-- Avatar -->
+        <div class="w-20 h-20 rounded-3xl bg-linear-to-br from-slate-50 to-slate-100 flex items-center justify-center text-2xl font-black text-slate-300 mb-4 border border-slate-100 group-hover:scale-110 transition-transform duration-500">
+          {{ u.name.charAt(0) }}
+        </div>
+
+        <h3 class="text-base font-black text-slate-800 leading-tight mb-1 group-hover:text-brand transition-colors">{{ u.name }}</h3>
+        <p class="text-[10px] text-slate-400 font-black capitalize tracking-widest mb-4 truncate w-full px-2">{{ u.email }}</p>
+
+        <div class="w-full pt-4 border-t border-slate-50 mt-auto flex flex-col gap-2">
+           <div class="flex items-center gap-1.5 justify-center mb-4">
+             <i class="fas fa-building text-[10px] text-slate-300"></i>
+             <span class="text-[9px] font-black text-slate-400 capitalize tracking-widest">{{ u.department?.name || 'Central Unit' }}</span>
+           </div>
+           
+           <div class="grid grid-cols-2 gap-2">
+             <button @click="editUser(u)" class="btn btn-ghost border border-slate-200 hover:border-brand hover:text-brand text-[10px] font-black capitalize tracking-widest py-2 rounded-xl">Profile</button>
+             <button @click="confirmDelete(u)" class="btn btn-ghost border border-rose-300 hover:bg-rose-50 text-rose-500 text-[10px] font-black capitalize tracking-widest py-2 rounded-xl">Manage</button>
+           </div>
+        </div>
       </div>
-      <div class="px-6 py-4 bg-slate-50/50 border-t border-slate-100">
+      
+      <div class="md:col-span-2 lg:col-span-3 xl:col-span-4 px-8 py-4 bg-slate-50/50 rounded-2xl border border-slate-100 overflow-hidden mt-6">
         <Pagination :current-page="pagination.current_page" :total-pages="pagination.last_page" :total="pagination.total" @page-change="fetchUsers" />
       </div>
     </div>
@@ -101,23 +88,23 @@
       <form @submit.prevent="saveUser" class="space-y-6">
         <div class="grid grid-cols-1 gap-6">
            <div class="space-y-2">
-              <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest ml-1">Full Name *</label>
+              <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest ml-1">Full Name *</label>
               <input v-model="form.name" type="text" required placeholder="e.g. John Doe" class="input h-12 font-bold" />
            </div>
            <div class="space-y-2">
-              <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest ml-1">Email Address *</label>
+              <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest ml-1">Email Address *</label>
               <input v-model="form.email" type="email" required placeholder="e.g. john@university.edu" class="input h-12 font-bold" />
            </div>
         </div>
         
         <div class="space-y-2" v-if="!editingUser">
-          <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest ml-1">Password *</label>
+          <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest ml-1">Password *</label>
           <input v-model="form.password" type="password" required minlength="8" placeholder="••••••••" class="input h-12 font-bold" />
-          <p class="text-[10px] text-slate-400 font-black uppercase tracking-widest mt-2 ml-1">Min. 8 characters</p>
+          <p class="text-[10px] text-slate-400 font-black capitalize tracking-widest mt-2 ml-1">Min. 8 characters</p>
         </div>
 
         <div class="space-y-4">
-          <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest ml-1 mb-2">Assign to Hierarchy</label>
+          <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest ml-1 mb-2">Assign to Hierarchy</label>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div class="space-y-2">
               <label class="block text-[10px] text-slate-400 font-bold ml-1">University</label>
@@ -151,7 +138,7 @@
         </div>
 
         <div class="space-y-3">
-          <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest ml-1">Roles</label>
+          <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest ml-1">Roles</label>
           <div class="grid grid-cols-2 gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-100 max-h-48 overflow-y-auto">
             <label v-for="r in roles" :key="r.id" class="flex items-center gap-2.5 text-xs font-bold text-slate-600 p-2.5 cursor-pointer hover:bg-white rounded-xl transition-all shadow-sm border border-transparent hover:border-slate-100">
               <input type="checkbox" :value="r.id" v-model="form.role_ids" class="w-4.5 h-4.5 rounded-lg border-slate-300 text-brand focus:ring-brand shadow-sm" />
@@ -161,8 +148,8 @@
         </div>
 
         <div class="flex justify-end gap-3 pt-6 mt-6 border-t border-slate-100">
-          <button type="button" @click="closeModal" class="btn btn-secondary px-6 font-black uppercase tracking-widest text-[11px]">Discard</button>
-          <button type="submit" class="btn btn-primary px-8 shadow-lg shadow-blue-500/20 font-black uppercase tracking-widest text-[11px]">
+          <button type="button" @click="closeModal" class="btn btn-secondary px-6 font-black capitalize tracking-widest text-[11px]">Discard</button>
+          <button type="submit" class="btn btn-primary px-8 shadow-lg shadow-blue-500/20 font-black capitalize tracking-widest text-[11px]">
             {{ editingUser ? 'Save Changes' : 'Add Person' }}
           </button>
         </div>

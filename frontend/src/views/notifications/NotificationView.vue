@@ -32,7 +32,7 @@
           </div>
           <div class="flex-1 min-w-0">
             <p class="text-sm text-slate-700 leading-relaxed" :class="{ 'font-bold': !n.read_at }">{{ n.message }}</p>
-            <p class="text-[11px] text-slate-400 font-bold uppercase tracking-widest mt-1.5">{{ formatDateTime(n.created_at) }}</p>
+            <p class="text-[11px] text-slate-400 font-bold capitalize tracking-widest mt-1.5">{{ formatDateTime(n.created_at) }}</p>
           </div>
           <span v-if="!n.read_at" class="w-2.5 h-2.5 bg-blue-600 rounded-full mt-2 flex-shrink-0 ring-4 ring-blue-100"></span>
         </div>

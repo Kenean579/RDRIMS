@@ -1,150 +1,269 @@
 <template>
-  <div class="space-y-12 animate-fade pb-32">
-    <!-- Premium Header -->
-    <section class="bg-white rounded-[40px] border border-slate-200 shadow-sm p-10 md:p-16 relative overflow-hidden group">
-      <div class="absolute right-0 top-0 w-96 h-96 bg-emerald-500/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-[80px]"></div>
-      <div class="relative z-10 max-w-3xl">
-        <h1 class="text-4xl md:text-5xl font-black text-slate-800 tracking-tight leading-tight mb-6">Resilience Intelligence</h1>
-        <p class="text-xl text-slate-500 font-medium leading-relaxed">Documenting the tangible outcomes of academic research applied to community-critical challenges.</p>
-      </div>
-    </section>
-
-    <!-- Operational State Navigation -->
-    <div class="bg-white rounded-[32px] border border-slate-200 p-6 shadow-sm relative z-20 flex items-center gap-3 overflow-x-auto custom-scrollbar">
-      <button v-for="tab in tabs" :key="tab.value" @click="activeTab = tab.value"
-        class="px-8 py-3.5 rounded-2xl text-[10px] font-black uppercase tracking-[0.2em] whitespace-nowrap transition-all"
-        :class="activeTab === tab.value
-          ? 'bg-slate-900 text-white shadow-2xl shadow-slate-900/20'
-          : 'text-slate-400 hover:bg-slate-50 hover:text-slate-600'">
-        {{ tab.label }}
-      </button>
+  <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+    
+    <!-- Loading State -->
+    <div v-if="loading" class="flex items-center justify-center py-24">
+      <div class="animate-spin rounded-full h-12 w-12 border-4 border-brand border-t-transparent"></div>
     </div>
 
-    <!-- Impact Feed -->
-    <div v-if="loading" class="space-y-8">
-      <div v-for="i in 4" :key="i" class="bg-white rounded-[40px] border border-slate-100 p-12 animate-pulse flex gap-10">
-        <div class="w-20 h-20 bg-slate-100 rounded-3xl shrink-0"></div>
-        <div class="flex-1 space-y-4">
-          <div class="h-6 w-3/4 bg-slate-50 rounded"></div>
-          <div class="h-4 w-full bg-slate-50 rounded"></div>
-        </div>
-      </div>
+    <!-- Sign In Required State -->
+    <div v-else-if="!allowPublicSubmission" class="bg-white rounded-2xl border border-slate-200 p-12 text-center">
+      <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 text-3xl">🔒</div>
+      <h2 class="text-2xl font-black text-slate-800 mb-4">Sign In Required</h2>
+      <p class="text-slate-500 mb-8">Please sign in to submit a community problem.</p>
+      <router-link to="/login" class="inline-block px-8 py-3 bg-brand text-white font-bold rounded-xl hover:bg-brand-dark transition-colors">
+        Sign In
+      </router-link>
     </div>
 
-    <div v-else-if="filteredProblems.length === 0" class="bg-white rounded-[40px] border border-slate-200 p-24 text-center">
-      <div class="w-24 h-24 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-8 text-4xl shadow-inner grayscale opacity-50">🌍</div>
-      <h3 class="text-2xl font-black text-slate-800 mb-2">Impact Registry Vacant</h3>
-      <p class="text-sm text-slate-400 font-medium">Challenges matching this operational state are not currently documented in the public ledger.</p>
-    </div>
-
+    <!-- Form State -->
     <div v-else class="space-y-8">
-      <div v-for="problem in filteredProblems" :key="problem.id"
-        class="bg-white rounded-[40px] border border-slate-200 p-10 md:p-12 shadow-sm hover:shadow-2xl hover:shadow-brand/5 transition-all group flex flex-col md:flex-row gap-10 relative overflow-hidden"
-      >
-        <div class="absolute inset-0 bg-brand/5 opacity-0 group-hover:opacity-100 transition-opacity duration-1000"></div>
-        
-        <!-- Status Iconography -->
-        <div class="h-20 w-20 rounded-[32px] flex items-center justify-center shrink-0 text-3xl shadow-inner relative z-10"
-          :class="statusIcon(problem.status?.name).bg">
-          {{ statusIcon(problem.status?.name).icon }}
+      
+      <!-- Success Banner -->
+      <div v-if="showSuccess" class="bg-emerald-50 border border-emerald-200 rounded-2xl p-6 flex items-center gap-4">
+        <div class="w-10 h-10 bg-emerald-500 rounded-full flex items-center justify-center text-white flex-shrink-0">✓</div>
+        <div class="flex-1">
+          <p class="text-emerald-800 font-bold">✅ Problem submitted successfully! Researchers will review it.</p>
         </div>
-
-        <div class="flex-1 min-w-0 relative z-10 space-y-6">
-          <div class="flex flex-wrap items-center gap-4">
-            <h3 class="text-2xl font-black text-slate-800 group-hover:text-brand transition-colors tracking-tight">{{ problem.title }}</h3>
-            <span class="px-4 py-1.5 rounded-xl text-[9px] font-black uppercase tracking-[0.2em] border shadow-sm"
-              :class="statusColor(problem.status?.name)">
-              {{ problem.status?.name || 'In-Queue' }}
-            </span>
-          </div>
-          
-          <p class="text-lg text-slate-500 font-medium line-clamp-3 leading-relaxed italic border-l-4 border-slate-50 pl-8 group-hover:border-brand/20 transition-all">
-             "{{ problem.description }}"
-          </p>
-
-          <div class="flex flex-wrap items-center gap-8 pt-6 border-t border-slate-50">
-            <div v-if="problem.location" class="flex items-center gap-3">
-               <div class="w-8 h-8 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/></svg>
-               </div>
-               <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">{{ problem.location }}</span>
-            </div>
-            <div class="flex items-center gap-3">
-               <div class="w-8 h-8 rounded-lg bg-slate-50 border border-slate-100 flex items-center justify-center text-slate-400">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-               </div>
-               <span class="text-[10px] font-black text-slate-400 uppercase tracking-widest">{{ formatDate(problem.created_at) }}</span>
-            </div>
-          </div>
-        </div>
+        <button @click="showSuccess = false" class="text-emerald-600 hover:text-emerald-800">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
       </div>
+
+      <!-- Server Error Banner -->
+      <div v-if="serverError" class="bg-rose-50 border border-rose-200 rounded-2xl p-6 flex items-center gap-4">
+        <div class="w-10 h-10 bg-rose-500 rounded-full flex items-center justify-center text-white flex-shrink-0">✕</div>
+        <div class="flex-1">
+          <p class="text-rose-800 font-bold">{{ serverError }}</p>
+        </div>
+        <button @click="serverError = ''" class="text-rose-600 hover:text-rose-800">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" /></svg>
+        </button>
+      </div>
+
+      <!-- Section Heading -->
+      <div>
+        <h1 class="text-3xl md:text-4xl font-black text-slate-800 tracking-tight mb-3">Community Problems</h1>
+        <p class="text-lg text-slate-500">Report a real-world problem for university researchers to study and help solve.</p>
+      </div>
+
+      <!-- Submission Form -->
+      <div class="bg-white rounded-2xl border border-slate-200 p-8">
+        <form @submit.prevent="submitProblem" class="space-y-6">
+          
+          <!-- Problem Title -->
+          <div>
+            <label class="block text-sm font-bold text-slate-700 mb-2">Problem Title <span class="text-rose-500">*</span></label>
+            <input 
+              v-model="form.title" 
+              type="text" 
+              required
+              maxlength="255"
+              :class="{ 'border-rose-500': errors.title }"
+              class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none transition-colors"
+              placeholder="e.g., Water Shortage in Dessie Town"
+            />
+            <p v-if="errors.title" class="text-xs text-rose-500 mt-1">{{ errors.title }}</p>
+          </div>
+
+          <!-- Description -->
+          <div>
+            <label class="block text-sm font-bold text-slate-700 mb-2">Description <span class="text-rose-500">*</span></label>
+            <textarea 
+              v-model="form.description" 
+              required
+              rows="5"
+              minlength="50"
+              :class="{ 'border-rose-500': errors.description }"
+              class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none resize-none transition-colors"
+              placeholder="Describe the problem in detail. What is happening? Who is affected? How long has this been going on?"
+            ></textarea>
+            <div class="flex items-center justify-between mt-1">
+              <p v-if="errors.description" class="text-xs text-rose-500">{{ errors.description }}</p>
+              <p v-else class="text-xs text-slate-400">{{ form.description?.length || 0 }} / 50 minimum</p>
+            </div>
+          </div>
+
+          <!-- Location -->
+          <div>
+            <label class="block text-sm font-bold text-slate-700 mb-2">Location <span class="text-rose-500">*</span></label>
+            <input 
+              v-model="form.location" 
+              type="text" 
+              required
+              maxlength="255"
+              :class="{ 'border-rose-500': errors.location }"
+              class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none transition-colors"
+              placeholder="e.g., Dessie, South Wollo, Ethiopia"
+            />
+            <p v-if="errors.location" class="text-xs text-rose-500 mt-1">{{ errors.location }}</p>
+          </div>
+
+          <!-- Contact Information -->
+          <div>
+            <label class="block text-sm font-bold text-slate-700 mb-2">Contact Information (optional)</label>
+            <input 
+              v-model="form.contact_info" 
+              type="text" 
+              maxlength="255"
+              class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none transition-colors"
+              placeholder="Email or phone so researchers can contact you for follow-up"
+            />
+          </div>
+
+          <!-- Submit Anonymously -->
+          <div class="flex items-center gap-3">
+            <input 
+              type="checkbox" 
+              v-model="form.is_anonymous" 
+              id="anonymous"
+              class="w-5 h-5 rounded border-slate-300 text-brand focus:ring-brand"
+            />
+            <label for="anonymous" class="text-sm text-slate-600 cursor-pointer">Submit anonymously (your name will not be shown publicly)</label>
+          </div>
+
+          <!-- Submit Button -->
+          <button 
+            type="submit" 
+            :disabled="submitting"
+            class="w-full px-6 py-3 bg-brand text-white font-bold rounded-xl shadow-lg shadow-brand/30 hover:shadow-brand/50 hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-y-0 flex items-center justify-center gap-2"
+          >
+            <svg v-if="submitting" class="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" viewBox="0 0 24 24"></svg>
+            {{ submitting ? 'Submitting...' : 'Submit Problem' }}
+          </button>
+
+          <!-- Submit Another Button (shown after success) -->
+          <button 
+            v-if="showSuccess"
+            type="button"
+            @click="resetForm"
+            class="w-full px-6 py-3 bg-white text-slate-700 font-bold rounded-xl border border-slate-300 hover:border-brand hover:text-brand transition-all"
+          >
+            Submit Another Problem
+          </button>
+
+        </form>
+      </div>
+
+      <!-- Info Box -->
+      <div class="bg-blue-50 rounded-2xl border border-blue-200 p-6">
+        <h3 class="text-sm font-black text-slate-800 mb-4">💡 How it works:</h3>
+        <ul class="text-sm text-slate-600 space-y-2">
+          <li class="flex items-start gap-2">
+            <span class="text-blue-500">•</span>
+            <span>Submit a problem affecting your community</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-blue-500">•</span>
+            <span>University researchers review and may claim the problem</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-blue-500">•</span>
+            <span>Researchers study the issue and propose solutions</span>
+          </li>
+          <li class="flex items-start gap-2">
+            <span class="text-blue-500">•</span>
+            <span>You'll be notified when progress is made (if contact provided)</span>
+          </li>
+        </ul>
+      </div>
+
     </div>
+
   </div>
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import api from '@/services/api'
 
-const problems = ref([])
 const loading = ref(true)
-const activeTab = ref('')
+const allowPublicSubmission = ref(false)
+const submitting = ref(false)
+const showSuccess = ref(false)
+const serverError = ref('')
 
-const tabs = [
-  { label: 'Comprehensive Repository', value: '' },
-  { label: 'Active Challenges', value: 'open' },
-  { label: 'Intervention Stage', value: 'in_progress' },
-  { label: 'Solved / Outcome Verified', value: 'completed' },
-]
-
-const filteredProblems = computed(() => {
-  if (!activeTab.value) return problems.value
-  return problems.value.filter(p => p.status?.name === activeTab.value)
+const form = ref({
+  title: '',
+  description: '',
+  location: '',
+  contact_info: '',
+  is_anonymous: false
 })
 
-function statusColor(name) {
-  const map = {
-    open: 'bg-amber-50 text-amber-600 border-amber-100',
-    in_progress: 'bg-indigo-50 text-indigo-600 border-indigo-100',
-    completed: 'bg-emerald-50 text-emerald-600 border-emerald-100',
-  }
-  return map[name] || 'bg-slate-50 text-slate-400 border-slate-100'
-}
-
-function statusIcon(name) {
-  const map = {
-    open: { icon: '🔍', bg: 'bg-amber-50' },
-    in_progress: { icon: '⚙️', bg: 'bg-indigo-50' },
-    completed: { icon: '✅', bg: 'bg-emerald-50' },
-  }
-  return map[name] || { icon: '📋', bg: 'bg-slate-50' }
-}
-
-function formatDate(val) {
-  if (!val) return 'Legacy Record'
-  return new Date(val).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })
-}
+const errors = ref({})
 
 onMounted(async () => {
   try {
-    const { data } = await api.get('/community-problems')
-    problems.value = data.data || data
+    const res = await api.get('/settings')
+    const settings = res.data?.data || res.data || []
+    const setting = settings.find(s => s.key === 'allow_public_problem_submission')
+    // Allow public submission if setting is true or not set at all
+    allowPublicSubmission.value = setting?.value === 'true' || !setting
   } catch (e) {
-    console.error('Impact registry synchronization failure.')
+    console.error('Failed to load settings', e)
+    // Default to allowing submission if settings fail to load
+    allowPublicSubmission.value = true
+  } finally {
+    loading.value = false
   }
-  loading.value = false
 })
-</script>
 
-<style scoped>
-.custom-scrollbar::-webkit-scrollbar {
-  height: 4px;
+async function submitProblem() {
+  // Clear previous errors
+  errors.value = {}
+  serverError.value = ''
+
+  // Basic validation
+  if (!form.value.title?.trim()) {
+    errors.value.title = 'Problem title is required'
+  }
+  if (!form.value.description?.trim() || form.value.description.length < 50) {
+    errors.value.description = 'Description must be at least 50 characters'
+  }
+  if (!form.value.location?.trim()) {
+    errors.value.location = 'Location is required'
+  }
+
+  // If validation fails, return
+  if (Object.keys(errors.value).length > 0) {
+    return
+  }
+
+  submitting.value = true
+  try {
+    await api.post('/community-problems', {
+      title: form.value.title,
+      description: form.value.description,
+      location: form.value.location,
+      contact_info: form.value.contact_info,
+      is_anonymous: form.value.is_anonymous
+    })
+    
+    showSuccess.value = true
+    resetForm()
+  } catch (err) {
+    console.error('Failed to submit problem', err)
+    if (err.response?.data?.errors) {
+      errors.value = err.response.data.errors
+    } else {
+      serverError.value = err.response?.data?.message || 'Something went wrong. Please try again.'
+    }
+  } finally {
+    submitting.value = false
+  }
 }
-.custom-scrollbar::-webkit-scrollbar-track {
-  background: transparent;
+
+function resetForm() {
+  form.value = {
+    title: '',
+    description: '',
+    location: '',
+    contact_info: '',
+    is_anonymous: false
+  }
+  errors.value = {}
+  serverError.value = ''
+  showSuccess.value = false
 }
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #f1f5f9;
-  border-radius: 10px;
-}
-</style>
+</script>

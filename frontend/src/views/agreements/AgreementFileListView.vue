@@ -15,7 +15,7 @@
     <!-- Content -->
     <div v-if="loading" class="card p-24 flex flex-col justify-center items-center gap-4">
       <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-brand"></div>
-      <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Loading files...</p>
+      <p class="text-xs font-bold text-slate-400 capitalize tracking-widest">Loading files...</p>
     </div>
 
     <div v-else-if="files.length === 0" class="card">
@@ -33,19 +33,19 @@
               {{ file.file?.file_path?.split('/').pop() || 'Agreement File' }}
             </p>
             <div class="flex flex-wrap items-center gap-2">
-              <span class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[9px] font-black uppercase tracking-widest">{{ file.parent_type?.name || 'File' }}</span>
-              <span class="text-[9px] font-black text-slate-400 uppercase tracking-widest">ID: {{ String(file.parent_id).padStart(4, '0') }}</span>
+              <span class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[9px] font-black capitalize tracking-widest">{{ file.parent_type?.name || 'File' }}</span>
+              <span class="text-[9px] font-black text-slate-400 capitalize tracking-widest">ID: {{ String(file.parent_id).padStart(4, '0') }}</span>
             </div>
           </div>
         </div>
         
         <div class="flex items-center justify-between gap-3 pt-5 border-t border-slate-50 mt-auto">
-          <button @click="downloadFile(file)" class="btn btn-ghost hover:bg-brand-light hover:text-brand flex-1 justify-center text-[10px] font-black uppercase tracking-widest py-2">
+          <button @click="downloadFile(file)" class="btn btn-ghost hover:bg-brand-light hover:text-brand flex-1 justify-center text-[10px] font-black capitalize tracking-widest py-2">
              <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
              Download
           </button>
           <div class="w-px h-4 bg-slate-100"></div>
-          <button @click="confirmDelete(file)" class="btn btn-ghost text-red-400 hover:bg-red-50 hover:text-red-600 flex-1 justify-center text-[10px] font-black uppercase tracking-widest py-2">Delete</button>
+          <button @click="confirmDelete(file)" class="btn btn-ghost text-red-400 hover:bg-red-50 hover:text-red-600 flex-1 justify-center text-[10px] font-black capitalize tracking-widest py-2">Delete</button>
         </div>
       </div>
     </div>

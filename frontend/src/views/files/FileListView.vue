@@ -10,7 +10,7 @@
     <!-- Filters -->
     <div class="card p-5 flex flex-col md:flex-row gap-5 items-end">
       <div class="flex-1 w-full relative">
-        <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest mb-2 ml-1">Search Files</label>
+        <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest mb-2 ml-1">Search Files</label>
         <div class="relative group">
           <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -19,7 +19,7 @@
         </div>
       </div>
        <div class="w-full md:w-64">
-        <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest mb-2 ml-1">Mime Group</label>
+        <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest mb-2 ml-1">Mime Group</label>
         <select v-model="mimeFilter" class="input h-12 font-bold">
           <option value="">All Types</option>
           <option value="application/pdf">PDF Documents</option>
@@ -36,11 +36,11 @@
         <table class="table-auto">
           <thead>
             <tr>
-              <th class="pl-8 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Filename</th>
-              <th class="py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Size</th>
-              <th class="py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Mime Type</th>
-              <th class="py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Stored On</th>
-              <th class="pr-8 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Actions</th>
+              <th class="pl-8 py-4 text-[10px] font-black capitalize tracking-widest text-slate-400">Filename</th>
+              <th class="py-4 text-[10px] font-black capitalize tracking-widest text-slate-400">Size</th>
+              <th class="py-4 text-[10px] font-black capitalize tracking-widest text-slate-400">Mime Type</th>
+              <th class="py-4 text-[10px] font-black capitalize tracking-widest text-slate-400">Stored On</th>
+              <th class="pr-8 py-4 text-[10px] font-black capitalize tracking-widest text-slate-400 text-right">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-50">
@@ -52,17 +52,17 @@
                   </div>
                   <div class="min-w-0">
                     <p class="text-sm font-black text-slate-800 truncate">{{ file.original_name }}</p>
-                    <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">{{ file.path }}</p>
+                    <p class="text-[9px] font-black text-slate-400 capitalize tracking-widest">{{ file.path }}</p>
                   </div>
                 </div>
               </td>
               <td class="py-4 text-xs font-bold text-slate-600">{{ formatSize(file.size) }}</td>
               <td class="py-4 font-black">
-                <span class="px-2 py-0.5 bg-slate-100 text-slate-500 rounded text-[9px] uppercase tracking-widest border border-slate-200">{{ file.mime_type }}</span>
+                <span class="px-2 py-0.5 bg-slate-100 text-slate-500 rounded text-[9px] capitalize tracking-widest border border-slate-200">{{ file.mime_type }}</span>
               </td>
               <td class="py-4 text-xs font-bold text-slate-400">{{ formatDate(file.created_at) }}</td>
               <td class="pr-8 py-4 text-right">
-                 <button @click="downloadFile(file)" class="btn btn-ghost text-brand text-[10px] font-black uppercase tracking-widest py-1.5 px-4 h-auto border border-slate-100 hover:bg-brand hover:text-white transition-all shadow-sm">
+                 <button @click="downloadFile(file)" class="btn btn-ghost text-brand text-[10px] font-black capitalize tracking-widest py-1.5 px-4 h-auto border border-brand hover:bg-brand hover:text-white transition-all shadow-sm">
                    Download
                  </button>
               </td>
@@ -71,7 +71,7 @@
         </table>
       </div>
       <div v-if="filteredFiles.length === 0" class="p-24 text-center">
-        <p class="text-sm font-black text-slate-400 uppercase tracking-widest italic">No files found in the registry.</p>
+        <p class="text-sm font-black text-slate-400 capitalize tracking-widest italic">No files found in the registry.</p>
       </div>
     </div>
   </div>

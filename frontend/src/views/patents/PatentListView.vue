@@ -15,12 +15,12 @@
     <!-- Content -->
     <div v-if="loading" class="card p-24 flex flex-col justify-center items-center gap-4">
       <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-brand"></div>
-      <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Loading patents...</p>
+      <p class="text-xs font-bold text-slate-400 capitalize tracking-widest">Loading patents...</p>
     </div>
     
     <div v-else-if="error" class="card border-red-100 bg-red-50/30 p-16 text-center">
-      <p class="text-sm text-red-600 font-bold uppercase tracking-widest">{{ error }}</p>
-      <button @click="fetchPatents" class="btn btn-ghost mt-4 text-xs font-bold uppercase">Retry</button>
+      <p class="text-sm text-red-600 font-bold capitalize tracking-widest">{{ error }}</p>
+      <button @click="fetchPatents" class="btn btn-ghost mt-4 text-xs font-bold capitalize">Retry</button>
     </div>
     
     <div v-else-if="patents.length === 0" class="card">
@@ -35,14 +35,14 @@
               <h3 class="text-lg font-black text-slate-900 group-hover:text-brand transition-colors line-clamp-1">{{ patent.title }}</h3>
               <StatusBadge :status="patent.status?.name || 'pending'" />
             </div>
-            <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Inventors: {{ patent.inventors }}</p>
+            <p class="text-[10px] font-black text-slate-400 capitalize tracking-widest">Inventors: {{ patent.inventors }}</p>
           </div>
           <div class="w-10 h-10 bg-slate-50 rounded-xl flex items-center justify-center text-slate-400 group-hover:text-brand group-hover:bg-brand-light transition-all duration-300 shadow-sm shrink-0">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke-width="2.5"/><line x1="12" y1="8" x2="12" y2="12" stroke-width="2.5"/><line x1="12" y1="16" x2="12.01" y2="16" stroke-width="2.5"/></svg>
           </div>
         </div>
 
-        <div class="flex flex-wrap items-center gap-4 text-[10px] font-bold text-slate-500 uppercase tracking-tight mb-6">
+        <div class="flex flex-wrap items-center gap-4 text-[10px] font-bold text-slate-500 capitalize tracking-tight mb-6">
           <span class="flex items-center gap-1.5 px-2 py-1 bg-slate-100 rounded-lg">
             <svg class="w-3.5 h-3.5 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke-width="2.5"/><line x1="16" y1="2" x2="16" y2="6" stroke-width="2.5"/><line x1="8" y1="2" x2="8" y2="6" stroke-width="2.5"/></svg>
             Filed: {{ formatDate(patent.filing_date) }}
@@ -51,10 +51,10 @@
         </div>
 
         <div class="mt-auto pt-5 border-t border-slate-50 flex items-center justify-between">
-          <span class="text-[10px] font-black text-brand uppercase tracking-widest bg-brand-light px-2.5 py-1 rounded-lg">{{ patent.licenses?.length || 0 }} Licenses</span>
+          <span class="text-[10px] font-black text-brand capitalize tracking-widest bg-brand-light px-2.5 py-1 rounded-lg">{{ patent.licenses?.length || 0 }} Licenses</span>
           <div class="flex gap-2">
-            <button @click="editPatent(patent)" class="btn btn-ghost hover:bg-slate-100 text-[11px] font-black uppercase tracking-widest py-2">Edit</button>
-            <button @click="confirmDelete(patent)" class="btn btn-ghost text-red-500 hover:bg-red-50 text-[11px] font-black uppercase tracking-widest py-2">Delete</button>
+            <button @click="editPatent(patent)" class="btn btn-ghost hover:bg-slate-100 text-[11px] font-black capitalize tracking-widest py-2">Edit</button>
+            <button @click="confirmDelete(patent)" class="btn btn-ghost text-red-500 hover:bg-red-50 text-[11px] font-black capitalize tracking-widest py-2">Delete</button>
           </div>
         </div>
       </div>
@@ -64,32 +64,32 @@
     <Modal :show="showCreate || !!editingPatent" :title="editingPatent ? 'Edit Patent' : 'Add New Patent'" @close="closeModal">
       <form @submit.prevent="savePatent" class="space-y-6">
         <div>
-          <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest mb-2 ml-1">Patent Title *</label>
+          <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest mb-2 ml-1">Patent Title *</label>
           <input v-model="form.title" type="text" required class="input h-12 font-bold" placeholder="e.g. New Solar Panel Tech" />
         </div>
         <div>
-          <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest mb-2 ml-1">Inventors *</label>
+          <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest mb-2 ml-1">Inventors *</label>
           <input v-model="form.inventors" type="text" required class="input h-12 font-bold" placeholder="Names (e.g. John Doe, Sarah Smith)" />
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
-            <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest mb-2 ml-1">Filing Date *</label>
+            <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest mb-2 ml-1">Filing Date *</label>
             <input v-model="form.filing_date" type="date" required class="input h-12 font-bold" />
           </div>
           <div>
-            <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest mb-2 ml-1">Patent Number</label>
+            <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest mb-2 ml-1">Patent Number</label>
             <input v-model="form.patent_number" type="text" class="input h-12 font-bold" placeholder="e.g. PAT-12345" />
           </div>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
-            <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest mb-2 ml-1">Status</label>
+            <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest mb-2 ml-1">Status</label>
             <select v-model="form.status_id" class="input h-12 font-bold">
               <option v-for="s in patentStatuses" :key="s.id" :value="s.id">{{ formatStatusName(s.name) }}</option>
             </select>
           </div>
           <div>
-            <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest mb-2 ml-1">Project</label>
+            <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest mb-2 ml-1">Project</label>
             <select v-model="form.project_id" class="input h-12 font-bold">
               <option value="">None</option>
               <option v-for="p in projects" :key="p.id" :value="p.id">{{ p.title }}</option>

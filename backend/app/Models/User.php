@@ -87,8 +87,7 @@ class User extends Authenticatable
                 'overall_score', 'overall_comments', 'decision_id'
             )
             ->withTimestamps()
-            ->using(ProposalReviewer::class)
-            ->as('reviewPivot');
+            ->using(ProposalReviewer::class);
     }
 
     public function auditLogs(): HasMany

@@ -78,8 +78,7 @@ Route::get('events', [EventController::class, 'index']);
 Route::get('events/{event}', [EventController::class, 'show']);
 Route::get('departments', [DepartmentController::class, 'index']);
 Route::get('departments/{department}', [DepartmentController::class, 'show']);
-Route::get('users', [UserController::class, 'index']);
-Route::get('users/{user}', [UserController::class, 'show']);
+    // users endpoint requires auth for the scope hierarchical logic to work
 
 // Public-facing endpoints (no auth required)
 Route::prefix('public')->group(function () {
@@ -87,6 +86,7 @@ Route::prefix('public')->group(function () {
     Route::get('projects/{project}', [PublicController::class, 'projectDetails']);
     Route::get('publications', [PublicController::class, 'publications']);
     Route::get('events', [PublicController::class, 'events']);
+    Route::get('researchers', [PublicController::class, 'researchers']);
 });
 
 // Authenticated routes
@@ -124,7 +124,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('academic-years/{academic_year}/set-current', [AcademicYearController::class, 'setCurrent']);
 
     // Users & Roles (admin only where needed)
-    Route::apiResource('users', UserController::class)->except(['index', 'show']);
+    Route::apiResource('users', UserController::class);
     Route::post('users/{user}/roles', [UserRoleController::class, 'assign']);
     Route::delete('users/{user}/roles/{role}', [UserRoleController::class, 'revoke']);
     Route::post('users/{user}/research-centers', [UserResearchCenterController::class, 'attach']);

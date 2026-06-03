@@ -11,7 +11,11 @@ class ResearchCenterController extends Controller
 {
     public function index(): JsonResponse
     {
-        return response()->json(ResearchCenter::with('director', 'university')->get());
+        return response()->json(
+            ResearchCenter::with(['director', 'university', 'campus', 'faculty'])
+                ->latest()
+                ->paginate(100)
+        );
     }
 
     public function store(StoreResearchCenterRequest $request): JsonResponse

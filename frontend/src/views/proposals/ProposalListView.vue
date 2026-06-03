@@ -16,7 +16,7 @@
     <div class="card p-5 bg-slate-50/50">
       <div class="flex flex-wrap gap-5 items-end">
         <div class="flex-1 min-w-[300px]">
-          <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest mb-2 ml-1">Search Keywords</label>
+          <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest mb-2 ml-1">Search Keywords</label>
           <div class="relative group">
             <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand transition-colors">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -25,20 +25,20 @@
           </div>
         </div>
         <div class="w-56">
-          <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest mb-2 ml-1">Status</label>
+          <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest mb-2 ml-1">Status</label>
           <select v-model="filters.status" @change="fetchProposals(1)" class="input font-bold">
             <option value="">All Statuses</option>
             <option v-for="s in proposalStatuses" :key="s.id" :value="s.name">{{ formatStatusName(s.name) }}</option>
           </select>
         </div>
         <div class="w-56">
-          <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest mb-2 ml-1">Type</label>
+          <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest mb-2 ml-1">Type</label>
           <select v-model="filters.type" @change="fetchProposals(1)" class="input font-bold">
             <option value="">All Types</option>
             <option v-for="t in proposalTypes" :key="t.id" :value="t.name">{{ t.name.toUpperCase() }}</option>
           </select>
         </div>
-        <button v-if="hasActiveFilters" @click="clearFilters" class="btn btn-secondary h-11 px-6 font-black uppercase tracking-widest text-[11px]">
+        <button v-if="hasActiveFilters" @click="clearFilters" class="btn btn-secondary h-11 px-6 font-black capitalize tracking-widest text-[11px]">
           Reset
         </button>
       </div>
@@ -47,65 +47,71 @@
     <!-- Content -->
     <div v-if="loading" class="card p-24 flex flex-col justify-center items-center gap-4">
       <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-brand"></div>
-      <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Loading Submissions...</p>
+      <p class="text-[10px] font-black text-slate-400 capitalize tracking-widest">Loading Submissions...</p>
     </div>
     
     <div v-else-if="error" class="card p-16 text-center">
-      <p class="text-rose-500 font-black uppercase tracking-widest text-xs mb-4">{{ error }}</p>
-      <button @click="fetchProposals(1)" class="btn btn-ghost text-xs font-black uppercase tracking-widest border border-slate-100 px-6">Retry</button>
+      <p class="text-rose-500 font-black capitalize tracking-widest text-xs mb-4">{{ error }}</p>
+      <button @click="fetchProposals(1)" class="btn btn-ghost text-xs font-black capitalize tracking-widest border border-slate-100 px-6">Retry</button>
     </div>
 
     <div v-else-if="proposals.length === 0" class="card">
       <EmptyState icon="📝" title="No submissions found" description="Try changing your search or add a new one." :action-label="(auth.hasPermission('submit_proposals') || auth.hasRole('super_admin')) ? 'Add First' : ''" action-icon="add" @action="$router.push('/app/proposals/create')" />
     </div>
 
-    <div v-else class="card overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="table-auto">
-          <thead>
-            <tr>
-              <th class="pl-8 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-left">Submission Title</th>
-              <th class="py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-left">Type</th>
-              <th class="py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-left">Status</th>
-              <th class="py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-left">Cost</th>
-              <th class="pr-8 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Actions</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-slate-50">
-            <tr v-for="p in proposals" :key="p.id" class="cursor-pointer group hover:bg-slate-50/50 transition-colors" @click="$router.push(`/app/proposals/${p.id}`)">
-              <td class="pl-8 py-5">
-                <div class="max-w-md">
-                   <p class="font-black text-slate-900 group-hover:text-brand transition-colors text-sm line-clamp-2 leading-snug tracking-tight mb-2">{{ p.title }}</p>
-                   <div class="flex items-center gap-3">
-                      <span class="font-black bg-slate-100 text-slate-500 px-2.5 py-1 rounded-lg text-[9px] uppercase tracking-widest border border-slate-200">ID: {{ String(p.id).padStart(4, '0') }}</span>
-                      <div class="flex items-center gap-1.5 text-[10px] font-black text-slate-400 uppercase tracking-widest">
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21V5a2 2 0 0 0-2-2H7a2 2 0 0 0-2 2v16"/><path d="M12 11h.01"/><path d="M12 7h.01"/><path d="M12 15h.01"/></svg>
-                        {{ formatDate(p.submitted_at || p.created_at) }}
-                      </div>
-                   </div>
-                </div>
-              </td>
-              <td class="py-5">
-                <span class="px-2.5 py-1 bg-indigo-50 text-indigo-600 border border-indigo-100 text-[9px] font-black uppercase tracking-widest rounded-lg">{{ p.type?.name?.toUpperCase() || 'GENERAL' }}</span>
-              </td>
-              <td class="py-5"><StatusBadge :status="p.status?.name || 'draft'" /></td>
-              <td class="py-5">
-                <div class="flex flex-col">
-                  <span class="font-black text-slate-900 text-sm tracking-tight">{{ formatCurrency(p.budget) }}</span>
-                </div>
-              </td>
-              <td class="pr-8 py-5 text-right">
-                <div class="flex items-center justify-end gap-2">
-                  <router-link :to="`/app/proposals/${p.id}`" class="btn btn-secondary py-1.5 px-4 text-[10px] font-black uppercase tracking-widest shadow-sm hover:border-brand hover:text-brand transition-all">Open</router-link>
-                  <router-link v-if="auth.hasRole('super_admin','research_admin') || p.submitted_by?.id === auth.user?.id" :to="`/app/proposals/${p.id}/edit`" class="btn btn-ghost py-1.5 px-3 text-[10px] font-black uppercase tracking-widest text-amber-600 hover:bg-amber-50 hover:text-amber-700">Edit</router-link>
-                  <button v-if="auth.hasRole('super_admin')" @click.stop="deleteProposal(p.id)" class="btn btn-ghost py-1.5 px-3 text-[10px] font-black uppercase tracking-widest text-rose-500 hover:bg-rose-50 hover:text-rose-600">Delete</button>
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+    <div v-else class="space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+        <div v-for="p in proposals" :key="p.id" 
+          class="card p-6 flex flex-col group card-hover relative overflow-hidden border-l-4 border-l-brand hover:border-l-indigo-500 transition-all cursor-pointer"
+          @click="$router.push(`/app/proposals/${p.id}`)"
+        >
+          <div class="flex items-start justify-between mb-4">
+            <div class="flex-1 pr-4">
+              <p class="text-[10px] font-black text-slate-400 capitalize tracking-widest mb-1.5 flex items-center gap-1.5">
+                <span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
+                ID: {{ String(p.id).padStart(4, '0') }}
+              </p>
+              <h3 class="text-base font-black text-slate-800 leading-tight group-hover:text-brand transition-colors line-clamp-2 min-h-10">{{ p.title }}</h3>
+            </div>
+            <div class="w-12 h-12 rounded-2xl bg-linear-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center font-black shadow-lg shadow-blue-500/30 shrink-0">
+               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+            </div>
+          </div>
+          
+          <div class="flex flex-wrap gap-2 mb-6">
+            <span class="px-2.5 py-1 bg-indigo-50 text-indigo-600 border border-indigo-100 text-[9px] font-black capitalize tracking-widest rounded-lg">
+              {{ p.type?.name?.toUpperCase() || 'GENERAL' }}
+            </span>
+            <StatusBadge :status="p.status?.name || 'draft'" />
+          </div>
+
+          <div class="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between">
+             <div class="flex flex-col">
+               <span class="text-[10px] font-black text-slate-400 capitalize tracking-widest mb-0.5">Estimated Budget</span>
+               <span class="text-sm font-black text-slate-900 tracking-tight">{{ formatCurrency(p.budget) }}</span>
+             </div>
+             <div class="flex gap-2">
+               <router-link v-if="auth.hasRole('super_admin','research_admin') || p.submitted_by?.id === auth.user?.id" 
+                 :to="`/app/proposals/${p.id}/edit`" 
+                 class="btn btn-ghost text-[10px] font-black capitalize tracking-widest py-1.5 px-3 text-amber-600 hover:bg-amber-50"
+                 @click.stop
+               >
+                 Edit
+               </router-link>
+               <button v-if="auth.hasRole('super_admin')" 
+                 @click.stop="deleteProposal(p.id)" 
+                 class="btn btn-ghost text-[10px] font-black capitalize tracking-widest py-1.5 px-3 text-rose-500 hover:bg-rose-50"
+               >
+                 Delete
+               </button>
+               <button class="w-8 h-8 rounded-full flex items-center justify-center bg-slate-50 text-slate-400 group-hover:bg-brand group-hover:text-white transition-all duration-300">
+                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7" /></svg>
+               </button>
+             </div>
+          </div>
+        </div>
       </div>
-      <div class="px-8 py-4 bg-slate-50/50 border-t border-slate-100 overflow-hidden">
+      <div class="px-8 py-4 bg-slate-50/50 rounded-2xl border border-slate-100 overflow-hidden">
         <Pagination :current-page="pagination.current_page" :total-pages="pagination.last_page" :total="pagination.total" @page-change="fetchProposals" />
       </div>
     </div>

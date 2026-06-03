@@ -16,7 +16,7 @@
     />
     <span 
       v-else 
-      class="font-black tracking-widest uppercase text-slate-500"
+      class="font-black tracking-widest capitalize text-slate-500"
       :class="textClasses"
     >
       {{ initials }}

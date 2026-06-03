@@ -15,7 +15,7 @@
     <!-- Content -->
     <div v-if="loading" class="card p-24 flex flex-col justify-center items-center gap-4">
       <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-brand"></div>
-      <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Loading areas...</p>
+      <p class="text-xs font-bold text-slate-400 capitalize tracking-widest">Loading areas...</p>
     </div>
     
     <div v-else-if="thematicAreas.length === 0" class="card">
@@ -23,24 +23,22 @@
     </div>
 
     <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div v-for="t in thematicAreas" :key="t.id" class="card p-6 group flex flex-col justify-between card-hover relative border-l-4 border-l-transparent hover:border-l-brand transition-all">
-        <div>
-          <div class="flex items-center gap-4 mb-5">
-             <div class="w-12 h-12 rounded-2xl bg-brand-light text-brand flex items-center justify-center font-black text-xs uppercase shadow-sm group-hover:bg-brand group-hover:text-white transition-all duration-300">
-                {{ t.name.charAt(0) }}
-             </div>
-             <div class="min-w-0">
-               <h3 class="font-black text-slate-900 group-hover:text-brand transition-colors truncate">{{ t.name }}</h3>
-               <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1">Area</p>
-             </div>
+      <div v-for="t in thematicAreas" :key="t.id" class="card p-6 flex flex-col group card-hover relative overflow-hidden border-l-4 border-l-brand hover:border-l-brand-600 transition-all">
+        <div class="flex items-start justify-between mb-4">
+          <div class="flex-1 pr-4 min-w-0">
+            <h3 class="text-base font-black text-slate-800 leading-tight group-hover:text-brand transition-colors line-clamp-2 min-h-10">{{ t.name }}</h3>
+            <p class="text-[10px] font-black text-slate-400 capitalize tracking-widest mt-1">Research Area</p>
           </div>
-          <p class="text-sm text-slate-500 font-medium line-clamp-3 leading-relaxed mb-6">{{ t.description || 'No description found for this area.' }}</p>
+          <div class="w-12 h-12 rounded-2xl bg-linear-to-br from-indigo-500 to-blue-600 text-white flex items-center justify-center font-black shadow-lg shadow-indigo-500/30 shrink-0 capitalize text-xs">
+             {{ t.name.substring(0,2) }}
+          </div>
         </div>
         
-        <div class="flex items-center justify-between bg-slate-50/50 rounded-xl p-2 mt-auto">
-          <button @click="editTheme(t)" class="btn btn-ghost hover:bg-white flex-1 justify-center text-[10px] font-black uppercase tracking-widest py-2">Edit</button>
-          <div class="w-px h-4 bg-slate-200"></div>
-          <button @click="confirmDelete(t)" class="btn btn-ghost text-red-400 hover:bg-red-50 hover:text-red-500 flex-1 justify-center text-[10px] font-black uppercase tracking-widest py-2">Delete</button>
+        <p class="text-sm text-slate-500 font-medium flex-1 line-clamp-2 leading-relaxed mb-6">{{ t.description || 'Global research focus area for institutional alignment.' }}</p>
+        
+        <div class="flex items-center justify-between bg-slate-50/50 rounded-xl p-1 gap-1">
+          <button @click="editTheme(t)" class="btn btn-ghost bg-white hover:bg-brand-light hover:text-brand flex-1 justify-center text-[10px] font-black capitalize tracking-widest py-2 shadow-xs">Edit</button>
+          <button @click="confirmDelete(t)" class="btn btn-ghost text-rose-500 hover:bg-rose-50 flex-1 justify-center text-[10px] font-black capitalize tracking-widest py-2">Delete</button>
         </div>
       </div>
     </div>
@@ -49,11 +47,11 @@
     <Modal :show="showCreate || !!editingTheme" :title="editingTheme ? 'Edit Area' : 'Add Area'" size="lg" @close="closeModal">
       <form @submit.prevent="saveTheme" class="space-y-6">
         <div>
-          <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest mb-2 ml-1">Area Name *</label>
+          <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest mb-2 ml-1">Area Name *</label>
           <input v-model="form.name" type="text" required class="input h-12 font-bold" placeholder="e.g., Artificial Intelligence, Climate" />
         </div>
         <div>
-          <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest mb-2 ml-1">Description</label>
+          <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest mb-2 ml-1">Description</label>
           <textarea v-model="form.description" rows="4" class="input resize-none pt-3" placeholder="Tell us more about this research area..."></textarea>
         </div>
         <div class="flex justify-end gap-3 pt-6 mt-6 border-t border-slate-100">

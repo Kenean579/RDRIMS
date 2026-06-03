@@ -1,7 +1,7 @@
 import axios from 'axios'
 
 const api = axios.create({
-  baseURL: 'http://127.0.0.1:8000/api',
+  baseURL: import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api',
   headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
   timeout: 30000,
 })
@@ -37,7 +37,7 @@ api.interceptors.request.use(config => {
 }, error => Promise.reject(error))
 
 // Public endpoints that must NOT trigger a logout redirect on 401
-const PUBLIC_ENDPOINTS = ['/settings', '/lookups', '/universities', '/calls', '/publications', '/community-problems', '/events', '/public']
+const PUBLIC_ENDPOINTS = ['/settings', '/lookups', '/universities', '/calls', '/publications', '/community-problems', '/events', '/public', '/users']
 
 api.interceptors.response.use(
   response => response,

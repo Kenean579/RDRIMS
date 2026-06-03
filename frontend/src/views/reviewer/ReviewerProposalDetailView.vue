@@ -34,6 +34,27 @@
       <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
         <h2 class="text-base font-semibold text-gray-800 mb-4">Your Review</h2>
 
+        <!-- Excel Export/Import Options -->
+        <div class="bg-slate-50 border border-slate-200 rounded-lg p-4 mb-4 flex items-center justify-between gap-4">
+          <div class="flex items-center gap-2">
+            <svg class="w-5 h-5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
+            <span class="text-sm text-slate-600 font-medium">Excel Options</span>
+          </div>
+          <div class="flex items-center gap-2">
+            <button @click="exportReviewTemplate" :disabled="downloading" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-emerald-600 rounded-lg hover:bg-emerald-700 transition disabled:opacity-60">
+              <svg v-if="downloading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+              <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+              {{ downloading ? 'Downloading...' : 'Export Template' }}
+            </button>
+            <input type="file" ref="fileInput" @change="handleFileUpload" accept=".xlsx,.xls" class="hidden" />
+            <button @click="$refs.fileInput.click()" :disabled="uploading" class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition disabled:opacity-60">
+              <svg v-if="uploading" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+              <svg v-else class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+              {{ uploading ? 'Importing...' : 'Import Review' }}
+            </button>
+          </div>
+        </div>
+
         <div v-if="alreadyReviewed" class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4 text-sm text-blue-700">
           You have already submitted your review. Score: {{ existingScore }}
         </div>
@@ -112,6 +133,56 @@ const overallScore = ref(null)
 const overallComments = ref('')
 const decisionId = ref('')
 const submitting = ref(false)
+const downloading = ref(false)
+const uploading = ref(false)
+
+async function exportReviewTemplate() {
+  downloading.value = true
+  try {
+    const response = await api.get(`/proposals/${route.params.id}/review-template`, {
+      responseType: 'blob'
+    })
+    const url = window.URL.createObjectURL(new Blob([response.data]))
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', `review-template-${proposal.value.title}.xlsx`)
+    document.body.appendChild(link)
+    link.click()
+    link.remove()
+    notif.success('Review template downloaded successfully!')
+  } catch (err) {
+    notif.error(err.response?.data?.message || 'Failed to download template')
+  } finally {
+    downloading.value = false
+  }
+}
+
+async function handleFileUpload(event) {
+  const file = event.target.files[0]
+  if (!file) return
+  
+  uploading.value = true
+  try {
+    const formData = new FormData()
+    formData.append('file', file)
+    
+    const { data } = await api.post(`/reviewer/proposals/${route.params.id}/import-review`, formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    })
+    
+    // Preview the imported data
+    if (confirm(`Imported Review:\n\nOverall Score: ${data.overall_score}\nDecision: ${data.decision_name}\n\nConfirm and submit?`)) {
+      await api.post(`/reviewer/proposals/${route.params.id}/review`, data)
+      notif.success('Review imported and submitted successfully!')
+      await fetchProposal()
+    }
+  } catch (err) {
+    notif.error(err.response?.data?.message || 'Failed to import review')
+  } finally {
+    uploading.value = false
+    event.target.value = ''
+  }
+}
 
 const alreadyReviewed = computed(() => proposal.value.reviewPivot?.overall_score !== null)
 const existingScore = computed(() => proposal.value.reviewPivot?.overall_score)

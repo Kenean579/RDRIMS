@@ -1,6 +1,6 @@
 <template>
   <div class="relative">
-    <label v-if="label" class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">
+    <label v-if="label" class="block text-xs font-black text-slate-400 capitalize tracking-widest mb-2 ml-1">
       {{ label }}
       <span v-if="required" class="text-rose-500">*</span>
     </label>
@@ -9,7 +9,7 @@
         :value="modelValue"
         @change="$emit('update:modelValue', $event.target.value)"
         :disabled="disabled || loading"
-        class="appearance-none w-full px-4 py-3 bg-slate-50 border border-slate-200 text-slate-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand font-bold text-sm hover:bg-slate-100 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
+        class="appearance-none w-full px-4 py-3 bg-white border border-slate-200 text-slate-900 rounded-xl focus:outline-none focus:ring-2 focus:ring-brand focus:border-brand font-bold text-sm hover:border-slate-300 transition-colors disabled:opacity-60 disabled:cursor-not-allowed"
         :class="error ? 'border-rose-500 ring-rose-500' : ''"
       >
         <option value="" disabled>{{ placeholder || 'Select an option' }}</option>
@@ -28,7 +28,7 @@
         </svg>
       </div>
     </div>
-    <p v-if="error" class="mt-1.5 text-[10px] font-black uppercase tracking-widest text-rose-500 ml-1">{{ error }}</p>
+    <p v-if="error" class="mt-1.5 text-[10px] font-black capitalize tracking-widest text-rose-500 ml-1">{{ error }}</p>
   </div>
 </template>
 

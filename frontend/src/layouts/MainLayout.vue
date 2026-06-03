@@ -176,7 +176,7 @@
           <span class="text-xl">⚠️</span>
           <div>
             <p class="font-bold mb-0.5">Limited Access</p>
-            <p>You have limited access as a Guest. Contact your university administrator to upgrade your role.</p>
+            <p>You have limited access as a Guest. Contact <a :href="'mailto:' + contactEmail" class="underline font-bold">{{ contactEmail }}</a> to upgrade your role.</p>
           </div>
         </div>
 
@@ -322,6 +322,8 @@ const isGuestOnly = computed(() => {
   return auth.userRoles.length === 1 && auth.userRoles[0] === 'guest'
 })
 
+const contactEmail = computed(() => lookupStore.getSetting('contact_email', 'admin@rdrims.local'))
+
 const navigation = computed(() => {
   if (isGuestOnly.value) {
     return [
@@ -330,8 +332,8 @@ const navigation = computed(() => {
         items: [
           { name: 'Funding Calls', path: '/app/calls', icon: icons.calls },
           { name: 'Publications', path: '/app/publications', icon: icons.publications },
-          { name: 'News & Events', path: '/app/events', icon: icons.events },
-          { name: 'Community', path: '/app/community-problems', icon: icons.community },
+          { name: 'Events', path: '/app/events', icon: icons.events },
+          { name: 'Community Problems', path: '/app/community-problems', icon: icons.community },
         ]
       }
     ]
@@ -339,7 +341,10 @@ const navigation = computed(() => {
 
   const nav = [
     {
-      items: [{ name: 'Dashboard', path: '/app/dashboard', icon: icons.home }]
+      items: [
+        { name: 'Dashboard', path: '/app/dashboard', icon: icons.home },
+        { name: 'Notifications', path: '/app/notifications', icon: icons.events },
+      ]
     },
     {
       title: 'Research',
@@ -347,45 +352,34 @@ const navigation = computed(() => {
         { name: 'Funding Calls', path: '/app/calls',        icon: icons.calls },
         { name: 'Proposals',     path: '/app/proposals',    icon: icons.proposals },
         { name: 'Projects',      path: '/app/projects',     icon: icons.projects },
-        { name: 'Publications',   path: '/app/publications', icon: icons.publications },
-      ]
-    },
-    {
-      title: 'Patents',
-      items: [
-        { name: 'Patents & IP',   path: '/app/patents',  icon: icons.patents },
-        { name: 'Innovation',     path: '/app/outputs',  icon: icons.outputs },
+        { name: 'Outputs',       path: '/app/outputs',      icon: icons.outputs },
+        { name: 'Publications',  path: '/app/publications', icon: icons.publications },
+        { name: 'Patents & IP',  path: '/app/patents',      icon: icons.patents },
       ]
     },
     {
       title: 'Community',
       items: [
-        { name: 'Partners',    path: '/app/partners',          icon: icons.partners },
-        { name: 'Issues',      path: '/app/community-problems',  icon: icons.community },
-        { name: 'News',        path: '/app/events',            icon: icons.events },
+        { name: 'Partners',            path: '/app/partners',           icon: icons.partners },
+        { name: 'Community Problems',  path: '/app/community-problems',  icon: icons.community },
+        { name: 'Events',              path: '/app/events',             icon: icons.events },
       ]
     }
   ]
   
-  if (auth.hasRole?.('reviewer')) {
+  // Insert Reviews for reviewers and admins
+  if (auth.userRoles?.some(r => ['reviewer', 'super_admin', 'research_admin'].includes(r))) {
     const researchGroup = nav.find(g => g.title === 'Research')
-    const proposalsIdx = researchGroup.items.findIndex(i => i.name === 'Proposals')
-    researchGroup.items.splice(proposalsIdx + 1, 0, { name: 'Reviews', path: '/app/reviewer/proposals', icon: icons.criteria })
+    if (researchGroup) {
+      const proposalsIdx = researchGroup.items.findIndex(i => i.name === 'Proposals')
+      if (proposalsIdx !== -1) {
+        researchGroup.items.splice(proposalsIdx + 1, 0, { name: 'Reviews', path: '/app/reviewer/proposals', icon: icons.criteria })
+      }
+    }
   }
   
-  if (auth.hasRole?.('director')) {
-    nav.splice(1, 0, {
-      items: [{ name: 'My Research Center', path: '/app/research-centers/my-center', icon: icons.centers }]
-    })
-  }
-
-  if (auth.hasRole?.('department_head')) {
-    nav.splice(1, 0, {
-      items: [{ name: 'My Department', path: '/app/departments/my-department', icon: icons.dept }]
-    })
-  }
-
-  if (auth.hasRole?.('super_admin', 'research_admin', 'ethics_officer')) {
+  // Rules group for ethics and detection
+  if (auth.userRoles?.some(r => ['super_admin', 'research_admin', 'ethics_officer'].includes(r))) {
     nav.push({
       title: 'Rules',
       items: [
@@ -395,7 +389,8 @@ const navigation = computed(() => {
     })
   }
 
-  if (auth.hasRole?.('super_admin', 'research_admin', 'finance_officer')) {
+  // Finance group
+  if (auth.userRoles?.some(r => ['super_admin', 'research_admin', 'finance_officer'].includes(r))) {
     nav.push({
       title: 'Finance',
       items: [
@@ -404,7 +399,18 @@ const navigation = computed(() => {
     })
   }
 
-  if (auth.hasRole?.('super_admin', 'research_admin')) {
+  // Reports for authorized roles
+  if (auth.userRoles?.some(r => ['super_admin', 'research_admin', 'director', 'department_head', 'finance_officer'].includes(r))) {
+    nav.push({
+      title: 'Reports',
+      items: [
+        { name: 'Reports', path: '/app/reports', icon: icons.files },
+      ]
+    })
+  }
+
+  // Users management
+  if (auth.userRoles?.some(r => ['super_admin', 'research_admin'].includes(r))) {
     nav.push({
       title: 'Users',
       items: [
@@ -413,21 +419,21 @@ const navigation = computed(() => {
         { name: 'Permissions', path: '/app/permissions', icon: icons.perms },
       ]
     })
+    
+    // Settings (full for super_admin and research_admin)
     nav.push({
       title: 'Settings',
       items: [
         { name: 'Academic Years',   path: '/app/academic-years',   icon: icons.academic },
-        { name: 'Research Areas',   path: '/app/thematic-areas',   icon: icons.thematic },
         { name: 'Research Centers', path: '/app/research-centers', icon: icons.centers },
-        { name: 'Tags',             path: '/app/expertise',        icon: icons.criteria },
-        { name: 'Review Rules',     path: '/app/review-criteria',  icon: icons.criteria },
+        { name: 'Expertise Tags',   path: '/app/expertise',        icon: icons.criteria },
+        { name: 'Review Criteria',  path: '/app/review-criteria',  icon: icons.criteria },
         { name: 'Departments',      path: '/app/departments',      icon: icons.dept },
         { name: 'Faculties',        path: '/app/faculties',        icon: icons.dept },
         { name: 'Campuses',         path: '/app/campuses',         icon: icons.centers },
         { name: 'Universities',     path: '/app/universities',     icon: icons.academic },
         { name: 'Files',            path: '/app/files',            icon: icons.files },
         { name: 'Settings',         path: '/app/settings',         icon: icons.perms },
-        { name: 'Lookups',          path: '/app/settings/lookups', icon: icons.criteria },
         { name: 'System Logs',      path: '/app/audit-logs',       icon: icons.audit },
       ]
     })
@@ -509,7 +515,7 @@ const navigation = computed(() => {
   font-size: 15px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.02em;
 }
 .brand-sub {
-  font-size: 10.5px; color: var(--text-muted); font-weight: 500; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px;
+  font-size: 10.5px; color: var(--text-muted); font-weight: 500; text-transform: capitalize; letter-spacing: 0.05em; margin-top: 2px;
 }
 
 /* Search Box Enhancement */
@@ -567,7 +573,7 @@ const navigation = computed(() => {
 .context-label {
   font-size: 10px;
   font-weight: 800;
-  text-transform: uppercase;
+  text-transform: capitalize;
   letter-spacing: 0.05em;
   color: var(--brand);
   background: var(--brand-light);
@@ -721,7 +727,7 @@ const navigation = computed(() => {
   font-size: 11px;
   font-weight: 700;
   letter-spacing: 0.1em;
-  text-transform: uppercase;
+  text-transform: capitalize;
 }
 
 .sidebar-link {

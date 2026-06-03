@@ -30,7 +30,7 @@
       <span class="text-xl font-black tabular-nums tracking-tighter" :class="textColor">
         {{ Math.round(percentage) }}<span class="text-xs ml-0.5">%</span>
       </span>
-      <span v-if="label" class="text-[9px] uppercase tracking-widest font-bold text-slate-400 mt-1">
+      <span v-if="label" class="text-[9px] capitalize tracking-widest font-bold text-slate-400 mt-1">
         {{ label }}
       </span>
     </div>

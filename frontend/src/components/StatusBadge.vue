@@ -17,6 +17,7 @@ const statusMap = {
   'approved':   { class: 'badge-green', color: '#10b981' },
   'active':     { class: 'badge-green', color: '#10b981' },
   'accepted':   { class: 'badge-green', color: '#10b981' },
+  'open':       { class: 'badge-green', color: '#10b981' },
   'completed':  { class: 'badge-indigo', color: '#6366f1' },
   'finished':   { class: 'badge-indigo', color: '#6366f1' },
   
@@ -24,6 +25,8 @@ const statusMap = {
   'pending':    { class: 'badge-yellow', color: '#f59e0b' },
   'draft':      { class: 'badge-gray',   color: '#64748b' },
   'review':     { class: 'badge-blue',   color: '#3b82f6' },
+  'submitted':  { class: 'badge-blue',   color: '#3b82f6' },
+  'under_review': { class: 'badge-blue', color: '#3b82f6' },
   'processing': { class: 'badge-blue',   color: '#3b82f6' },
   
   // Danger / Negative
@@ -33,8 +36,16 @@ const statusMap = {
   'closed':     { class: 'badge-gray',   color: '#475569' },
 }
 
+// Safely extract status string from prop (handles objects, nulls, etc.)
+const statusStr = computed(() => {
+  if (!props.status) return 'pending'
+  if (typeof props.status === 'string') return props.status
+  if (typeof props.status === 'object' && props.status.name) return String(props.status.name)
+  return String(props.status)
+})
+
 const config = computed(() => {
-  const s = props.status.toLowerCase()
+  const s = statusStr.value.toLowerCase()
   for (const key in statusMap) {
     if (s.includes(key)) return statusMap[key]
   }
@@ -45,7 +56,7 @@ const badgeClass = computed(() => config.value.class)
 const dotColor = computed(() => config.value.color)
 
 const formattedStatus = computed(() => {
-  return props.status.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+  return statusStr.value.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
 })
 </script>
 

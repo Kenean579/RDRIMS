@@ -18,30 +18,40 @@
       <EmptyState icon="💰" title="No finance checks pending" description="Great job! All proposal budget reviews are up to date." />
     </div>
 
-    <div v-else class="space-y-4">
-      <div v-for="check in checks" :key="check.id" class="card p-5 group card-hover">
-        <div class="flex items-start justify-between">
-          <div class="flex-1">
-            <h3 class="text-base font-bold text-slate-800 group-hover:text-blue-600 transition mb-1">{{ check.proposal?.title }}</h3>
-            <div class="flex items-center gap-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-3">
+    <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div v-for="check in checks" :key="check.id" class="card p-6 flex flex-col group card-hover relative overflow-hidden border-l-4 border-l-emerald-500 hover:border-l-emerald-600 transition-all">
+        <div class="flex items-start justify-between mb-4">
+          <div class="flex-1 pr-4">
+            <div class="flex items-center gap-3 mb-2">
+              <span class="px-2.5 py-0.5 bg-emerald-50 text-emerald-600 text-[10px] font-black capitalize tracking-widest rounded-md border border-emerald-100">
+                Budget Review
+              </span>
+              <StatusBadge :status="check.status?.name || 'pending'" />
+            </div>
+            <h3 class="text-base font-black text-slate-800 leading-tight mb-2 group-hover:text-emerald-700 transition-colors">{{ check.proposal?.title }}</h3>
+            <div class="flex items-center gap-4 text-[10px] font-black text-slate-400 capitalize tracking-widest">
               <span class="flex items-center gap-1.5">
-                <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23" stroke-width="2"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" stroke-width="2"/></svg>
+                <i class="fas fa-coins text-emerald-400"></i>
                 {{ formatCurrency(check.proposal?.budget) }}
               </span>
-              <span v-if="check.checker?.name">Checker: {{ check.checker?.name }}</span>
+              <span v-if="check.checker?.name" class="flex items-center gap-1.5">
+                <i class="fas fa-user-check"></i>
+                {{ check.checker?.name }}
+              </span>
             </div>
-            <StatusBadge :status="check.status?.name || 'pending'" />
           </div>
-          <div class="flex gap-2">
-            <button @click="approveCheck(check)" class="btn btn-primary" style="padding: 6px 14px; font-size: 11px; background: #10b981">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7" /></svg>
-              Approve
-            </button>
-            <button @click="rejectCheck(check)" class="btn btn-danger" style="padding: 6px 14px; font-size: 11px">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M6 18L18 6M6 6l12 12" /></svg>
-              Reject
-            </button>
+          <div class="w-12 h-12 rounded-2xl bg-linear-to-br from-emerald-400 to-teal-600 text-white flex items-center justify-center font-black shadow-lg shadow-emerald-500/30 shrink-0">
+             <i class="fas fa-dollar-sign text-xl"></i>
           </div>
+        </div>
+        
+        <div class="mt-auto pt-4 border-t border-slate-100 flex items-center gap-3">
+          <button @click="approveCheck(check)" class="flex-1 btn btn-primary h-10 text-[11px] font-black capitalize tracking-widest bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-500/20 border-0">
+            Approve
+          </button>
+          <button @click="rejectCheck(check)" class="flex-1 btn btn-secondary h-10 text-[11px] font-black capitalize tracking-widest text-rose-600 bg-rose-50 hover:bg-rose-100 border-0">
+            Reject
+          </button>
         </div>
       </div>
     </div>

@@ -1,7 +1,7 @@
 <template>
   <div class="w-full">
     <div v-if="showLabels" class="flex justify-between items-end mb-1.5 px-0.5">
-      <span class="text-xs font-black uppercase tracking-widest text-slate-500">{{ label || 'Progress' }}</span>
+      <span class="text-xs font-black capitalize tracking-widest text-slate-500">{{ label || 'Progress' }}</span>
       <span class="text-xs font-black text-slate-700">{{ formattedValue }} {{ unit }}</span>
     </div>
     
@@ -15,14 +15,14 @@
         :class="barColor"
         :style="{ width: clampedPercentage + '%' }"
       >
-        <span v-if="showInnerLabel && height >= 16" class="text-[10px] font-bold text-white tracking-widest uppercase truncate mix-blend-overlay">
+        <span v-if="showInnerLabel && height >= 16" class="text-[10px] font-bold text-white tracking-widest capitalize truncate mix-blend-overlay">
           {{ Math.round(clampedPercentage) }}%
         </span>
       </div>
     </div>
     
     <div v-if="helpText" class="mt-1 px-0.5 space-x-1">
-      <span class="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{{ helpText }}</span>
+      <span class="text-[10px] font-bold text-slate-400 capitalize tracking-widest">{{ helpText }}</span>
     </div>
   </div>
 </template>

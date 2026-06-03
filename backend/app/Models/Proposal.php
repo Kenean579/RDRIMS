@@ -101,8 +101,7 @@ class Proposal extends Model
                 'overall_score', 'overall_comments', 'decision_id'
             )
             ->withTimestamps()
-            ->using(ProposalReviewer::class)
-            ->as('reviewPivot');
+            ->using(ProposalReviewer::class);
     }
 
     public function financeChecks(): HasMany

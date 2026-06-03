@@ -29,7 +29,7 @@ const routes = [
       
       // Research Core
       { path: 'proposals', name: 'Proposals', component: () => import('@/views/proposals/ProposalListView.vue'), meta: { title: 'Proposals' } },
-      { path: 'proposals/create', name: 'CreateProposal', component: () => import('@/views/proposals/CreateProposalView.vue'), meta: { title: 'Create Proposal', permissions: 'submit_proposals' } },
+      { path: 'proposals/create', name: 'CreateProposal', component: () => import('@/views/proposals/CreateProposalView.vue'), meta: { title: 'Create Proposal' } },
       { path: 'proposals/:id', name: 'ProposalDetail', component: () => import('@/views/proposals/ProposalDetailView.vue'), meta: { title: 'Proposal Detail' } },
       { path: 'proposals/:id/edit', name: 'EditProposal', component: () => import('@/views/proposals/ProposalEditView.vue'), meta: { title: 'Edit Proposal' } },
       

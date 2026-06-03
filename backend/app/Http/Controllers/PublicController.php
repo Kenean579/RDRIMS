@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Project;
 use App\Models\Publication;
 use App\Models\Event;
+use App\Models\User;
 use Illuminate\Http\JsonResponse;
 
 class PublicController extends Controller
@@ -27,5 +28,12 @@ class PublicController extends Controller
     public function projectDetails(Project $project): JsonResponse
     {
         return response()->json($project->load('pi', 'academicYear', 'proposal.investigators.user', 'outputs'));
+    }
+
+    public function researchers(): JsonResponse
+    {
+        return response()->json(User::with('department.faculty', 'expertise')
+            ->whereHas('roles', fn($q) => $q->where('name', 'researcher'))
+            ->get());
     }
 }

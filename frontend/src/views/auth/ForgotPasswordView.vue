@@ -11,7 +11,7 @@
           R
         </div>
         <h1 class="text-3xl font-black text-slate-800 tracking-tight">Recover Account</h1>
-        <p class="text-slate-500 font-medium text-sm mt-1 uppercase tracking-widest text-center">We'll help you back in</p>
+        <p class="text-slate-500 font-medium text-sm mt-1 capitalize tracking-widest text-center">We'll help you back in</p>
       </div>
 
       <!-- Forgot Password Card -->
@@ -24,7 +24,7 @@
           </p>
 
           <div class="space-y-2">
-            <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">E-mail Address</label>
+            <label class="block text-[10px] font-black text-slate-400 capitalize tracking-widest ml-1">E-mail Address</label>
             <div class="relative group">
               <div class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand transition-colors">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
@@ -42,7 +42,7 @@
           <button 
             type="submit" 
             :disabled="loading"
-            class="w-full bg-brand text-white font-black uppercase tracking-widest text-xs py-5 rounded-2xl shadow-xl shadow-brand/20 hover:bg-brand-hover hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-70 flex items-center justify-center gap-3"
+            class="w-full bg-brand text-white font-black capitalize tracking-widest text-xs py-5 rounded-2xl shadow-xl shadow-brand/20 hover:bg-brand-hover hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-70 flex items-center justify-center gap-3"
           >
             <span v-if="loading" class="w-5 h-5 border-3 border-white/30 border-t-white rounded-full animate-spin"></span>
             <span>{{ loading ? 'Sending Mail...' : 'Send Recovery Link' }}</span>
@@ -50,7 +50,7 @@
         </form>
 
         <div class="mt-10 pt-8 border-t border-slate-100 text-center">
-          <router-link to="/login" class="text-[11px] font-black text-brand uppercase tracking-widest hover:underline underline-offset-4 flex items-center justify-center gap-2">
+          <router-link to="/login" class="text-[11px] font-black text-brand capitalize tracking-widest hover:underline underline-offset-4 flex items-center justify-center gap-2">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
             Back to Sign In
           </router-link>

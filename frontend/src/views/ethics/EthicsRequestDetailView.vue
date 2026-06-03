@@ -3,12 +3,12 @@
     <!-- Header -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div>
-        <router-link to="/app/ethics-requests" class="flex items-center gap-2 text-brand font-black uppercase tracking-widest text-[10px] mb-3 hover:translate-x-1 transition-transform">
+        <router-link to="/app/ethics-requests" class="flex items-center gap-2 text-brand font-black capitalize tracking-widest text-[10px] mb-3 hover:translate-x-1 transition-transform">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
           Back to list
         </router-link>
         <h1 class="text-3xl font-black text-slate-900 tracking-tight">Ethics Approval</h1>
-        <p class="text-slate-500 font-medium mt-1 uppercase tracking-widest text-[9px]">Reviewing submission details for safety and ethics.</p>
+        <p class="text-slate-500 font-medium mt-1 capitalize tracking-widest text-[9px]">Reviewing submission details for safety and ethics.</p>
       </div>
       <div v-if="!loading" class="flex items-center gap-3">
         <StatusBadge :status="request.status?.name" size="lg" />
@@ -31,7 +31,7 @@
             </div>
             <div>
               <h2 class="text-lg font-black text-slate-900 tracking-tight">About the Work</h2>
-              <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-0.5">Submission details and goals.</p>
+              <p class="text-[9px] font-black text-slate-400 capitalize tracking-widest mt-0.5">Submission details and goals.</p>
             </div>
           </div>
 
@@ -40,11 +40,11 @@
           
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-slate-50 rounded-2xl border border-slate-100 shadow-inner">
              <div>
-               <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Applicant</p>
+               <p class="text-[9px] font-black text-slate-400 capitalize tracking-widest mb-1">Applicant</p>
                <p class="text-sm font-black text-slate-800">{{ request.proposal?.pi?.name }}</p>
              </div>
              <div>
-               <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mb-1">Focus Area</p>
+               <p class="text-[9px] font-black text-slate-400 capitalize tracking-widest mb-1">Focus Area</p>
                <p class="text-sm font-black text-slate-800">{{ request.proposal?.thematic_area?.name || 'N/A' }}</p>
              </div>
           </div>
@@ -58,7 +58,7 @@
             </div>
             <div>
               <h2 class="text-lg font-black text-slate-900 tracking-tight">Documents</h2>
-              <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-0.5">Supported files for review.</p>
+              <p class="text-[9px] font-black text-slate-400 capitalize tracking-widest mt-0.5">Supported files for review.</p>
             </div>
           </div>
 
@@ -66,13 +66,13 @@
              <div v-for="f in request.files" :key="f.id" class="flex items-center justify-between p-4 bg-white border border-slate-100 rounded-2xl hover:border-brand hover:shadow-lg transition-all group overflow-hidden relative shadow-sm">
                 <div class="flex items-center gap-4 relative z-10">
                    <div class="w-10 h-10 bg-slate-50 flex items-center justify-center rounded-xl text-slate-400 font-bold group-hover:text-brand transition-colors">📄</div>
-                   <span class="text-xs font-black text-slate-700 truncate max-w-[140px] uppercase tracking-widest text-[9px]">{{ f.file_path.split('/').pop() }}</span>
+                   <span class="text-xs font-black text-slate-700 truncate max-w-[140px] capitalize tracking-widest text-[9px]">{{ f.file_path.split('/').pop() }}</span>
                 </div>
-                <button @click="downloadFile(f)" class="btn btn-secondary h-9 px-4 text-[9px] font-black uppercase tracking-widest relative z-10 hover:bg-brand hover:text-white transition-all">Download</button>
+                <button @click="downloadFile(f)" class="btn btn-secondary h-9 px-4 text-[9px] font-black capitalize tracking-widest relative z-10 hover:bg-brand hover:text-white transition-all">Download</button>
              </div>
           </div>
           <div v-else class="p-12 text-center bg-slate-50/50 rounded-3xl border border-dashed border-slate-200">
-             <p class="text-xs font-black text-slate-400 uppercase tracking-widest italic leading-relaxed">No specific ethics documents were uploaded with this submission.</p>
+             <p class="text-xs font-black text-slate-400 capitalize tracking-widest italic leading-relaxed">No specific ethics documents were uploaded with this submission.</p>
           </div>
         </div>
       </div>
@@ -89,38 +89,38 @@
             
             <div class="space-y-6">
                <div>
-                  <label class="block text-[9px] font-black text-slate-500 uppercase tracking-widest mb-3 ml-1">Your Comments</label>
+                  <label class="block text-[9px] font-black text-slate-500 capitalize tracking-widest mb-3 ml-1">Your Comments</label>
                   <textarea v-model="decisionNote" rows="5" class="w-full bg-white/5 border border-white/10 rounded-2xl p-4 text-sm font-medium text-white focus:ring-2 focus:ring-brand outline-none resize-none shadow-inner" placeholder="Explain your decision..."></textarea>
                </div>
                
                <div class="flex flex-col gap-3 pt-4">
-                  <button @click="submitDecision('approved')" class="btn bg-emerald-500 hover:bg-emerald-600 text-white h-12 rounded-2xl font-black uppercase tracking-widest text-[11px] shadow-lg shadow-emerald-500/20 border-0">
+                  <button @click="submitDecision('approved')" class="btn bg-emerald-500 hover:bg-emerald-600 text-white h-12 rounded-2xl font-black capitalize tracking-widest text-[11px] shadow-lg shadow-emerald-500/20 border-0">
                     Approve Work
                   </button>
-                  <button @click="submitDecision('needs_revision')" class="btn bg-amber-500 hover:bg-amber-600 text-white h-12 rounded-2xl font-black uppercase tracking-widest text-[11px] shadow-lg shadow-amber-500/20 border-0">
+                  <button @click="submitDecision('needs_revision')" class="btn bg-amber-500 hover:bg-amber-600 text-white h-12 rounded-2xl font-black capitalize tracking-widest text-[11px] shadow-lg shadow-amber-500/20 border-0">
                     Ask for Changes
                   </button>
-                  <button @click="submitDecision('rejected')" class="btn bg-rose-600 hover:bg-rose-700 text-white h-12 rounded-2xl font-black uppercase tracking-widest text-[11px] shadow-lg shadow-rose-600/20 border-0">
+                  <button @click="submitDecision('rejected')" class="btn bg-rose-600 hover:bg-rose-700 text-white h-12 rounded-2xl font-black capitalize tracking-widest text-[11px] shadow-lg shadow-rose-600/20 border-0">
                     Reject It
                   </button>
                </div>
                
                <div class="pt-6 mt-6 border-t border-white/5">
-                 <p class="text-[9px] font-black text-slate-500 uppercase tracking-widest italic leading-relaxed">Warning: Decisions are final and will notify the researcher immediately.</p>
+                 <p class="text-[9px] font-black text-slate-500 capitalize tracking-widest italic leading-relaxed">Warning: Decisions are final and will notify the researcher immediately.</p>
                </div>
             </div>
           </div>
         </div>
 
         <div class="card p-6 bg-slate-50 border border-slate-100 shadow-inner rounded-3xl">
-          <h4 class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-4">Quick Stats</h4>
+          <h4 class="text-[10px] font-black text-slate-400 capitalize tracking-widest mb-4">Quick Stats</h4>
           <div class="space-y-4">
             <div class="flex justify-between items-center group">
-              <span class="text-[11px] font-black text-slate-500 uppercase tracking-widest group-hover:text-brand transition-colors">ID</span>
+              <span class="text-[11px] font-black text-slate-500 capitalize tracking-widest group-hover:text-brand transition-colors">ID</span>
               <span class="text-xs font-black text-slate-800">#{{ request.id }}</span>
             </div>
             <div class="flex justify-between items-center group">
-              <span class="text-[11px] font-black text-slate-500 uppercase tracking-widest group-hover:text-brand transition-colors">Revision Level</span>
+              <span class="text-[11px] font-black text-slate-500 capitalize tracking-widest group-hover:text-brand transition-colors">Revision Level</span>
               <span class="text-xs font-black text-slate-800">v1.2</span>
             </div>
           </div>

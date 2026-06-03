@@ -18,7 +18,7 @@
         </div>
         <div class="overflow-x-auto">
           <table class="min-w-full">
-            <thead class="bg-gray-50"><tr><th class="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase">Name</th><th class="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase">Email</th><th class="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase">Status</th><th class="text-left px-5 py-3 text-xs font-medium text-gray-500 uppercase">Actions</th></tr></thead>
+            <thead class="bg-gray-50"><tr><th class="text-left px-5 py-3 text-xs font-medium text-gray-500 capitalize">Name</th><th class="text-left px-5 py-3 text-xs font-medium text-gray-500 capitalize">Email</th><th class="text-left px-5 py-3 text-xs font-medium text-gray-500 capitalize">Status</th><th class="text-left px-5 py-3 text-xs font-medium text-gray-500 capitalize">Actions</th></tr></thead>
             <tbody class="divide-y divide-gray-100">
               <tr v-for="reg in registrations" :key="reg.id" class="hover:bg-gray-50">
                 <td class="px-5 py-3 text-sm font-medium text-gray-800">{{ reg.user?.name }}</td>

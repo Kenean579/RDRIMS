@@ -15,7 +15,7 @@
           <select 
             v-model="selectedYear" 
             @change="fetchDashboard" 
-            class="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl px-5 py-3 text-xs font-black uppercase tracking-widest text-slate-700 focus:border-brand focus:ring-4 focus:ring-brand/10 transition-all appearance-none cursor-pointer"
+            class="w-full bg-white border-2 border-slate-200 rounded-2xl px-5 py-3 text-xs font-black capitalize tracking-widest text-slate-700 focus:border-brand focus:ring-4 focus:ring-brand/10 transition-all appearance-none cursor-pointer"
           >
             <option value="">Aggregate All-Time</option>
             <option v-for="y in academicYears" :key="y.id" :value="y.id">{{ y.name }}{{ y.is_current ? ' (Current)' : '' }}</option>
@@ -46,18 +46,18 @@
             :style="{ background: stat.iconBg + '20', color: stat.iconColor }">
             <span v-html="stat.svgIcon"></span>
           </div>
-          <div class="px-2 py-1 bg-slate-50 text-[10px] font-black text-slate-400 rounded-lg border border-slate-100 italic">
+          <div class="px-2 py-1 text-[10px] font-black text-slate-500 rounded-lg border border-slate-200 italic">
             {{ stat.sub }}
           </div>
         </div>
         
         <div class="relative z-10">
-          <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mb-1">{{ stat.label }}</p>
+          <p class="text-[10px] font-black text-slate-400 capitalize tracking-widest mb-1">{{ stat.label }}</p>
           <h2 class="text-4xl font-black text-slate-800 tracking-tighter">{{ stat.value }}</h2>
         </div>
         
         <!-- Subtle Trend Line Concept -->
-        <div class="mt-4 h-1 w-full bg-slate-50 rounded-full overflow-hidden">
+        <div class="mt-4 h-1 w-full border-t border-slate-200 rounded-full overflow-hidden">
           <div class="h-full rounded-full transition-all duration-1000" :style="{ width: '60%', background: stat.iconColor }"></div>
         </div>
       </div>
@@ -68,7 +68,7 @@
       
       <!-- Chart Distribution -->
       <div class="bg-white rounded-[40px] border border-slate-200 shadow-sm overflow-hidden flex flex-col p-8 relative">
-        <h3 class="text-sm font-black text-slate-800 tracking-widest uppercase mb-2">Status Distribution</h3>
+        <h3 class="text-sm font-black text-slate-800 tracking-widest capitalize mb-2">Status Distribution</h3>
         <p class="text-xs text-slate-400 font-bold mb-6">Proportional split of current workload</p>
         
         <div v-if="loadingStats" class="flex-1 min-h-[300px] flex items-center justify-center">
@@ -77,14 +77,14 @@
         <div v-else-if="donutSeries.length > 0" class="flex-1 min-h-[300px] flex items-center justify-center -ml-4">
           <apexchart type="donut" height="320" width="100%" :options="donutOptions" :series="donutSeries"></apexchart>
         </div>
-        <div v-else class="flex-1 min-h-[300px] flex items-center justify-center text-xs font-black text-slate-300 uppercase tracking-widest italic">
+        <div v-else class="flex-1 min-h-[300px] flex items-center justify-center text-xs font-black text-slate-300 capitalize tracking-widest italic">
           No data available
         </div>
       </div>
 
       <!-- General Activity Overview -->
       <div class="bg-white rounded-[40px] border border-slate-200 shadow-sm overflow-hidden flex flex-col p-8">
-        <h3 class="text-sm font-black text-slate-800 tracking-widest uppercase mb-2">Progress Overview</h3>
+        <h3 class="text-sm font-black text-slate-800 tracking-widest capitalize mb-2">Progress Overview</h3>
         <p class="text-xs text-slate-400 font-bold mb-6">Metrics tracked against active lifecycle</p>
         
         <div v-if="loadingStats" class="flex-1 min-h-[300px] flex items-center justify-center">
@@ -98,52 +98,52 @@
 
     <!-- Tier 3: Recent Activity Table -->
     <div class="bg-white rounded-[40px] border border-slate-200 shadow-sm overflow-hidden">
-      <div class="px-8 py-6 border-b border-slate-100 flex items-center justify-between bg-slate-50/20">
+    <div class="px-8 py-6 border-b border-slate-100 flex items-center justify-between">
         <h3 class="text-lg font-black text-slate-800 tracking-tight">Recent Research Activity</h3>
-        <button class="text-[10px] font-black text-slate-400 uppercase tracking-widest hover:text-brand transition-colors">See Live Feed</button>
+        <button class="text-[10px] font-black text-slate-400 capitalize tracking-widest hover:text-brand transition-colors">See Live Feed</button>
       </div>
 
       <div class="overflow-x-auto">
         <table class="w-full text-left border-collapse">
           <thead>
             <tr class="bg-slate-50/50">
-              <th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">Project Reference</th>
-              <th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100">Principal Author</th>
-              <th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 text-center">Status Tracking</th>
-              <th class="px-8 py-5 text-[10px] font-black text-slate-400 uppercase tracking-widest border-b border-slate-100 text-right">Modified</th>
+              <th class="px-8 py-5 text-[10px] font-black text-slate-400 capitalize tracking-widest border-b border-slate-100">Project Reference</th>
+              <th class="px-8 py-5 text-[10px] font-black text-slate-400 capitalize tracking-widest border-b border-slate-100">Principal Author</th>
+              <th class="px-8 py-5 text-[10px] font-black text-slate-400 capitalize tracking-widest border-b border-slate-100 text-center">Status Tracking</th>
+              <th class="px-8 py-5 text-[10px] font-black text-slate-400 capitalize tracking-widest border-b border-slate-100 text-right">Modified</th>
             </tr>
           </thead>
           <tbody class="divide-y divide-slate-50">
             <tr v-for="p in recentProposals" :key="p.id" 
               @click="$router.push(`/app/proposals/${p.id}`)"
-              class="group hover:bg-brand/[0.03] transition-all cursor-pointer"
+              class="group hover:bg-slate-50/30 transition-all cursor-pointer"
             >
               <td class="px-8 py-5">
                 <div class="flex items-center gap-4">
-                   <div class="w-10 h-10 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center font-black group-hover:bg-brand/10 group-hover:text-brand transition-all">
+                   <div class="w-10 h-10 rounded-xl border border-slate-200 text-slate-400 flex items-center justify-center font-black group-hover:border-brand group-hover:text-brand transition-all">
                      #{{ p.id }}
                    </div>
                    <div>
                      <p class="text-sm font-black text-slate-800 group-hover:text-brand transition-colors line-clamp-1 max-w-sm">{{ p.title }}</p>
-                     <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-0.5">{{ p.type?.name || 'Research Unit' }}</p>
+                     <p class="text-[10px] font-black text-slate-400 capitalize tracking-widest mt-0.5">{{ p.type?.name || 'Research Unit' }}</p>
                    </div>
                 </div>
               </td>
               <td class="px-8 py-5">
                 <p class="text-xs font-black text-slate-600 mb-0.5">{{ p.submitted_by?.name || 'Researcher Identity Protected' }}</p>
-                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Faculty Investigator</p>
+                <p class="text-[9px] font-black text-slate-400 capitalize tracking-widest">Faculty Investigator</p>
               </td>
               <td class="px-8 py-5 text-center">
                 <StatusBadge :status="p.status?.name || 'draft'" />
               </td>
               <td class="px-8 py-5 text-right">
                 <p class="text-xs font-black text-slate-800 tracking-tight">{{ formatDate(p.updated_at || p.created_at) }}</p>
-                <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest mt-0.5">Last Sync</p>
+                <p class="text-[9px] font-black text-slate-400 capitalize tracking-widest mt-0.5">Last Sync</p>
               </td>
             </tr>
             <tr v-if="recentProposals.length === 0">
               <td colspan="4" class="px-8 py-20 text-center">
-                 <p class="text-[11px] font-black text-slate-300 uppercase tracking-[0.2em] italic">Archive empty for current selection</p>
+                 <p class="text-[11px] font-black text-slate-300 capitalize tracking-[0.2em] italic">Archive empty for current selection</p>
               </td>
             </tr>
           </tbody>

@@ -4,7 +4,7 @@
     <div v-if="notif.show" :class="notifBg" class="fixed top-20 right-6 z-9999 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-4 min-w-[300px] max-w-md border border-white/20 backdrop-blur-sm">
       <div class="text-2xl">{{ notifIcon }}</div>
       <div class="flex-1">
-        <p class="font-bold text-xs uppercase tracking-widest opacity-70">{{ notif.type }}</p>
+        <p class="font-bold text-xs capitalize tracking-widest opacity-70">{{ notif.type }}</p>
         <p class="text-sm font-semibold">{{ notif.message }}</p>
       </div>
       <button @click="notif.show = false" class="text-white/50 hover:text-white transition text-2xl">&times;</button>

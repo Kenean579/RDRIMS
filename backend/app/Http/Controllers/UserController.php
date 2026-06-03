@@ -29,7 +29,7 @@ class UserController extends Controller
             $query->whereHas('roles', fn($q) => $q->where('name', $request->role));
         }
 
-        return response()->json($query->paginate($request->get('per_page', 15)));
+        return response()->json($query->paginate($request->input('per_page', 15)));
     }
 
     public function store(UserRequest $request): JsonResponse

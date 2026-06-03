@@ -81,7 +81,7 @@ class ProposalController extends Controller
         $this->authorize('view', $proposal);
         return response()->json($proposal->load(
             'status', 'type', 'submittedBy.department', 'approvedBy', 'call',
-            'reviewers.reviewPivot.scores.criterion',
+            'reviewers',
             'financeChecks', 'ethicsRequests', 'file',
             'investigators.user', 'investigators.role', 'academicYear'
         ));

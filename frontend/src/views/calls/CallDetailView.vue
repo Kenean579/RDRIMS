@@ -13,6 +13,14 @@
     </div>
 
     <template v-else>
+      <!-- Apply Button -->
+      <div v-if="call.status?.name === 'open' || !call.status" class="mb-6">
+        <router-link :to="`/app/proposals/create?call_id=${call.id}`" class="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+          Apply for this Call
+        </router-link>
+      </div>
+
       <!-- Call Info -->
       <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
         <h2 class="text-base font-semibold text-gray-800 mb-4">Call Details</h2>

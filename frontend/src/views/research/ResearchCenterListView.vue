@@ -15,83 +15,80 @@
     <!-- Content -->
     <div v-if="loading" class="card p-24 flex flex-col justify-center items-center gap-4">
       <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-brand"></div>
-      <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Loading centers...</p>
+      <p class="text-xs font-bold text-slate-400 capitalize tracking-widest">Loading centers...</p>
     </div>
     
     <div v-else-if="centers.length === 0" class="card">
-      <EmptyState icon="🔬" title="No centers found" description="Add research centers to organize projects and budget." action-label="Add First Center" @action="showCreate = true" />
+       <EmptyState icon="🔬" title="No centers found" description="Add research centers to organize projects and budget." action-label="Add First Center" @action="showCreate = true" />
     </div>
 
     <div v-else class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
-      <div v-for="center in centers" :key="center.id" class="card p-6 flex flex-col group card-hover relative border-l-4 border-l-transparent hover:border-l-brand transition-all">
-        <div class="flex items-start gap-4 mb-5">
-           <div class="w-12 h-12 rounded-2xl bg-brand-light text-brand flex items-center justify-center font-black text-xs tracking-tighter shadow-sm shrink-0">{{ center.code || 'RC' }}</div>
-           <div class="min-w-0">
-             <h3 class="text-base font-black text-slate-900 leading-tight group-hover:text-brand transition-colors line-clamp-2">{{ center.name }}</h3>
-             <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest mt-1.5">Code: {{ center.code }}</p>
-           </div>
+      <div v-for="center in centers" :key="center.id" class="card p-6 flex flex-col group card-hover relative overflow-hidden border-l-4 border-l-brand hover:border-l-indigo-600 transition-all">
+        <div class="flex items-start justify-between mb-4">
+          <div class="flex-1 pr-4 min-w-0">
+            <h3 class="text-base font-black text-slate-900 leading-tight group-hover:text-brand transition-colors line-clamp-2 min-h-10">{{ center.name }}</h3>
+            <div class="flex items-center gap-2 mt-2">
+              <span class="px-2 py-0.5 bg-slate-100 text-slate-500 text-[10px] font-black capitalize tracking-widest rounded-md border border-slate-200">
+                CODE: {{ center.code }}
+              </span>
+            </div>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-linear-to-br from-brand to-indigo-600 text-white flex items-center justify-center font-black shadow-lg shadow-brand/30 shrink-0 capitalize tracking-tighter text-xs">
+             {{ center.code?.substring(0,3) || 'RC' }}
+          </div>
         </div>
         
-        <p class="text-sm text-slate-500 font-medium flex-1 line-clamp-3 leading-relaxed mb-6">{{ center.description || 'No description found for this center.' }}</p>
+        <p class="text-sm text-slate-500 font-medium flex-1 line-clamp-2 leading-relaxed mb-6">{{ center.description || 'Institutional research hub for advanced academic pursuit.' }}</p>
         
-        <div class="flex flex-col gap-3 text-[9px] font-black text-slate-400 uppercase tracking-widest mb-6 pt-5 border-t border-slate-50">
+        <div class="flex flex-col gap-2 text-[9px] font-black text-slate-400 capitalize tracking-widest mb-6 pt-5 border-t border-slate-100">
           <div class="flex items-center gap-1.5" v-if="center.university">
-            <svg class="w-3.5 h-3.5 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+            <i class="fas fa-university text-brand/60"></i>
             <span class="text-slate-800">{{ center.university.name }}</span>
-            <template v-if="center.campus">
-              <span class="text-slate-300">/</span>
-              <span>{{ center.campus.name }}</span>
-            </template>
-            <template v-if="center.faculty">
-              <span class="text-slate-300">/</span>
-              <span>{{ center.faculty.name }}</span>
-            </template>
           </div>
-          <div class="flex items-center gap-1.5" v-if="center.director">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" /></svg>
-            Director: <span class="text-slate-800">{{ center.director.name }}</span>
+          <div class="flex items-center gap-1.5" v-if="center.campus || center.faculty">
+            <i class="fas fa-map-marker-alt text-slate-300"></i>
+            <span class="truncate">{{ center.campus?.name || 'Main Campus' }} <template v-if="center.faculty">/ {{ center.faculty?.name }}</template></span>
           </div>
         </div>
 
-        <div class="flex items-center justify-between bg-slate-50/50 rounded-xl p-2">
-          <button @click="editCenter(center)" class="btn btn-ghost hover:bg-white flex-1 justify-center text-[11px] font-black uppercase tracking-wider py-2">Edit</button>
-          <div class="w-px h-4 bg-slate-200"></div>
-          <button @click="confirmDelete(center)" class="btn btn-ghost text-red-500 hover:bg-red-50 flex-1 justify-center text-[11px] font-black uppercase tracking-wider py-2">Delete</button>
+        <div class="flex items-center justify-between bg-slate-50/50 rounded-xl p-1 gap-1">
+          <button @click="editCenter(center)" class="btn btn-ghost bg-white hover:bg-indigo-50 hover:text-indigo-600 flex-1 justify-center text-[11px] font-black capitalize tracking-wider py-2 shadow-xs">Edit</button>
+          <button @click="confirmDelete(center)" class="btn btn-ghost text-rose-500 hover:bg-rose-50 flex-1 justify-center text-[11px] font-black capitalize tracking-wider py-2">Delete</button>
         </div>
       </div>
-    </div>
+    </div>iv>
 
     <!-- Modals -->
     <Modal :show="showCreate || !!editingCenter" :title="editingCenter ? 'Edit Center' : 'Add New Center'" size="lg" @close="closeModal">
       <form @submit.prevent="saveCenter" class="space-y-6">
         <div>
-          <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest mb-2 ml-1">Name *</label>
+          <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest mb-2 ml-1">Name *</label>
           <input v-model="form.name" type="text" required class="input h-12 font-bold" placeholder="e.g. Center for AI" />
         </div>
         
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
-            <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest mb-2 ml-1">Code *</label>
+            <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest mb-2 ml-1">Code *</label>
             <input v-model="form.code" type="text" required class="input h-12 font-black" placeholder="e.g. CAIR-01" />
           </div>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
           <div>
-            <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest mb-2 ml-1">University</label>
+            <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest mb-2 ml-1">University</label>
             <select v-model="form.parent_university_id" class="input h-12 font-bold">
               <option value="">Select University</option>
               <option v-for="u in universities" :key="u.id" :value="u.id">{{ u.name }}</option>
             </select>
           </div>
           <div>
-            <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest mb-2 ml-1">Campus</label>
+            <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest mb-2 ml-1">Campus</label>
             <select v-model="form.campus_id" class="input h-12 font-bold">
               <option value="">Select Campus</option>
               <option v-for="c in campuses" :key="c.id" :value="c.id">{{ c.name }}</option>
             </select>
           </div>
           <div>
-            <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest mb-2 ml-1">Faculty</label>
+            <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest mb-2 ml-1">Faculty</label>
             <select v-model="form.faculty_id" class="input h-12 font-bold">
               <option value="">Select Faculty</option>
               <option v-for="f in faculties" :key="f.id" :value="f.id">{{ f.name }}</option>
@@ -100,7 +97,7 @@
         </div>
         
         <div>
-          <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest mb-2 ml-1">Description</label>
+          <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest mb-2 ml-1">Description</label>
           <textarea v-model="form.description" rows="3" class="input resize-none pt-3" placeholder="Tell us more about this center..."></textarea>
         </div>
 
@@ -157,14 +154,14 @@ watch(() => form.campus_id, () => {
   form.faculty_id = ''
 })
 
-async function fetchData() {
+async function fetchCenters() {
   loading.value = true
   try {
     const [centersRes, uniRes, campRes, facRes] = await Promise.all([
       api.get('/research-centers'),
-      api.get('/universities'),
-      api.get('/campuses'),
-      api.get('/faculties')
+      api.get('/academic/universities'),
+      api.get('/academic/campuses'),
+      api.get('/academic/faculties')
     ])
     centers.value = centersRes.data.data || centersRes.data
     universities.value = uniRes.data.data || uniRes.data
@@ -215,17 +212,5 @@ async function deleteCenter() {
   catch (err) { notif.error('Failed') }
 }
 
-onMounted(async () => {
-  await fetchCenters()
-  try { 
-    const [uR, cR, fR] = await Promise.all([
-      api.get('/universities'),
-      api.get('/campuses'),
-      api.get('/faculties')
-    ])
-    universities.value = uR.data
-    campuses.value = cR.data
-    faculties.value = fR.data
-  } catch (e) {}
-})
+onMounted(() => fetchCenters())
 </script>

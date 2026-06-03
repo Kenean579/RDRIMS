@@ -27,7 +27,7 @@
            {{ getLogo(p) }}
         </div>
         <h3 class="text-sm font-bold text-slate-800 line-clamp-1 group-hover:text-blue-600 transition" :title="p.name">{{ p.name }}</h3>
-        <p class="text-[10px] font-bold text-slate-400 mt-2 uppercase tracking-widest">{{ p.type?.name || 'Partner' }}</p>
+        <p class="text-[10px] font-bold text-slate-400 mt-2 capitalize tracking-widest">{{ p.type?.name || 'Partner' }}</p>
         
         <div class="mt-4 pt-4 border-t border-slate-50 w-full">
            <a v-if="p.website_url" :href="p.website_url" target="_blank" class="text-[11px] font-bold text-blue-600 hover:text-blue-700 underline-offset-4 hover:underline transition">

@@ -6,7 +6,7 @@
         <h1 class="text-3xl font-black text-slate-900 tracking-tight">Research Outputs</h1>
         <p class="text-slate-500 font-medium mt-1">Track research results, student projects, and intellectual outcomes.</p>
       </div>
-      <button @click="showCreate = true" class="btn btn-primary h-11 px-8 shadow-lg shadow-blue-500/20 text-[11px] font-black uppercase tracking-widest">
+      <button @click="showCreate = true" class="btn btn-primary h-11 px-8 shadow-lg shadow-blue-500/20 text-[11px] font-black capitalize tracking-widest">
         Add Output
       </button>
     </div>
@@ -32,7 +32,7 @@
     <!-- Content -->
     <div v-if="loading" class="card p-24 flex flex-col justify-center items-center gap-4">
        <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-brand"></div>
-       <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Loading Repository...</p>
+       <p class="text-[10px] font-black text-slate-400 capitalize tracking-widest">Loading Repository...</p>
     </div>
 
     <div v-else-if="outputs.length === 0" class="card">
@@ -48,14 +48,14 @@
             </div>
             <p class="text-sm text-slate-500 font-medium line-clamp-2 leading-relaxed mb-4 italic">{{ o.abstract || 'No abstract provided.' }}</p>
             <div class="flex flex-wrap gap-2">
-              <span class="px-2.5 py-1 bg-blue-50 text-blue-600 text-[10px] font-black uppercase tracking-widest rounded-lg border border-blue-100">{{ o.category?.name || 'Output' }}</span>
-              <span v-if="o.subtype?.name" class="px-2.5 py-1 bg-indigo-50 text-indigo-600 text-[10px] font-black uppercase tracking-widest rounded-lg border border-indigo-100">{{ o.subtype.name }}</span>
-              <span v-if="o.participants?.length" class="px-2.5 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-widest rounded-lg border border-emerald-100">{{ o.participants.length }} Contributors</span>
+              <span class="px-2.5 py-1 bg-blue-50 text-blue-600 text-[10px] font-black capitalize tracking-widest rounded-lg border border-blue-100">{{ o.category?.name || 'Output' }}</span>
+              <span v-if="o.subtype?.name" class="px-2.5 py-1 bg-indigo-50 text-indigo-600 text-[10px] font-black capitalize tracking-widest rounded-lg border border-indigo-100">{{ o.subtype.name }}</span>
+              <span v-if="o.participants?.length" class="px-2.5 py-1 bg-emerald-50 text-emerald-600 text-[10px] font-black capitalize tracking-widest rounded-lg border border-emerald-100">{{ o.participants.length }} Contributors</span>
             </div>
           </div>
           <div class="flex md:flex-col gap-2 shrink-0">
-            <button @click="editOutput(o)" class="btn btn-secondary text-[11px] font-black tracking-widest uppercase py-2.5 px-6">Edit</button>
-            <button @click="confirmDelete(o)" class="btn btn-ghost text-red-500 hover:bg-red-50 text-[11px] font-black tracking-widest uppercase py-2.5 px-6">Delete</button>
+            <button @click="editOutput(o)" class="btn btn-secondary text-[11px] font-black tracking-widest capitalize py-2.5 px-6">Edit</button>
+            <button @click="confirmDelete(o)" class="btn btn-ghost text-red-500 hover:bg-red-50 text-[11px] font-black tracking-widest capitalize py-2.5 px-6">Delete</button>
           </div>
       </div>
       <div class="card p-4 bg-slate-50/50">
@@ -69,25 +69,25 @@
         <!-- Step 1: Basic Info -->
         <div class="space-y-6">
           <div>
-            <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest mb-2 ml-1">Title <span class="text-rose-500">*</span></label>
+            <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest mb-2 ml-1">Title <span class="text-rose-500">*</span></label>
             <input v-model="form.title" type="text" required class="input h-12 font-bold" />
           </div>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest mb-2 ml-1">Category <span class="text-rose-500">*</span></label>
+              <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest mb-2 ml-1">Category <span class="text-rose-500">*</span></label>
               <select v-model="form.category_id" required class="input h-12 font-bold">
                 <option v-for="c in outputCategories" :key="c.id" :value="c.id">{{ c.name }}</option>
               </select>
             </div>
             <div>
-              <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest mb-2 ml-1">Subtype <span class="text-rose-500">*</span></label>
+              <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest mb-2 ml-1">Subtype <span class="text-rose-500">*</span></label>
               <select v-model="form.subtype_id" required class="input h-12 font-bold">
                 <option v-for="s in outputSubtypes" :key="s.id" :value="s.id">{{ s.name }}</option>
               </select>
             </div>
           </div>
           <div>
-            <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest mb-2 ml-1">Abstract / Description</label>
+            <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest mb-2 ml-1">Abstract / Description</label>
             <textarea v-model="form.abstract" rows="4" class="input pt-3 font-medium resize-none"></textarea>
           </div>
         </div>
@@ -95,17 +95,17 @@
         <!-- Step 2: Contributors -->
         <div class="bg-slate-50/50 p-8 rounded-3xl border border-slate-100">
            <div class="flex items-center justify-between mb-6">
-              <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+              <h3 class="text-[10px] font-black text-slate-400 capitalize tracking-widest flex items-center gap-2">
                 <span class="w-1 h-3 bg-brand rounded-full"></span>
                 Contributors
               </h3>
-              <button type="button" @click="addParticipant" class="btn btn-secondary h-9 px-4 text-[10px] uppercase font-black tracking-widest">
+              <button type="button" @click="addParticipant" class="btn btn-secondary h-9 px-4 text-[10px] capitalize font-black tracking-widest">
                 Add Contributor
               </button>
            </div>
            
            <div v-if="form.participants.length === 0" class="text-center py-8">
-             <p class="text-[10px] font-black text-slate-300 uppercase tracking-widest italic">No other contributors added.</p>
+             <p class="text-[10px] font-black text-slate-300 capitalize tracking-widest italic">No other contributors added.</p>
            </div>
 
            <div v-else class="space-y-4">
@@ -115,18 +115,18 @@
                 </button>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label class="block text-[9px] font-black text-slate-400 uppercase mb-1">User (Optional)</label>
+                    <label class="block text-[9px] font-black text-slate-400 capitalize mb-1">User (Optional)</label>
                     <select v-model="p.user_id" class="input h-9 text-xs font-bold bg-slate-50/50">
                       <option value="">External Person</option>
                       <option v-for="u in users" :key="u.id" :value="u.id">{{ u.name }}</option>
                     </select>
                   </div>
                   <div v-if="!p.user_id">
-                    <label class="block text-[9px] font-black text-slate-400 uppercase mb-1">Name</label>
+                    <label class="block text-[9px] font-black text-slate-400 capitalize mb-1">Name</label>
                     <input v-model="p.name" type="text" class="input h-9 text-xs font-bold" />
                   </div>
                   <div v-if="!p.user_id">
-                    <label class="block text-[9px] font-black text-slate-400 uppercase mb-1">Email</label>
+                    <label class="block text-[9px] font-black text-slate-400 capitalize mb-1">Email</label>
                     <input v-model="p.email" type="email" class="input h-9 text-xs font-bold" />
                   </div>
                 </div>

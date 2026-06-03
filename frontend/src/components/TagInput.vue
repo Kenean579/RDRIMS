@@ -1,15 +1,15 @@
 <template>
   <div>
-    <label v-if="label" class="block text-xs font-black text-slate-400 uppercase tracking-widest mb-2 ml-1">
+    <label v-if="label" class="block text-xs font-black text-slate-400 capitalize tracking-widest mb-2 ml-1">
       {{ label }}
       <span v-if="required" class="text-rose-500">*</span>
     </label>
     
     <div 
-      class="w-full relative bg-slate-50 border rounded-xl overflow-hidden transition-colors focus-within:ring-2 focus-within:ring-brand focus-within:border-brand"
+      class="w-full relative bg-white border rounded-xl overflow-hidden transition-colors focus-within:ring-2 focus-within:ring-brand focus-within:border-brand"
       :class="[
-        error ? 'border-rose-400 focus-within:ring-rose-500 focus-within:border-rose-500 bg-rose-50' : 'border-slate-200 hover:border-slate-300',
-        disabled ? 'opacity-60 cursor-not-allowed bg-slate-100' : ''
+        error ? 'border-rose-400 focus-within:ring-rose-500 focus-within:border-rose-500' : 'border-slate-200 hover:border-slate-300',
+        disabled ? 'opacity-60 cursor-not-allowed' : ''
       ]"
       @click="focusInput"
     >
@@ -45,10 +45,10 @@
     </div>
     
     <div class="flex justify-between items-center mt-1.5 px-1">
-      <p v-if="error" class="text-[10px] font-black uppercase tracking-widest text-rose-500">{{ error }}</p>
-      <p v-else-if="helpText" class="text-[10px] font-black uppercase tracking-widest text-slate-400">{{ helpText }}</p>
+      <p v-if="error" class="text-[10px] font-black capitalize tracking-widest text-rose-500">{{ error }}</p>
+      <p v-else-if="helpText" class="text-[10px] font-black capitalize tracking-widest text-slate-400">{{ helpText }}</p>
       
-      <p v-if="min > 0" class="text-[10px] font-black tracking-widest uppercase transition-colors" 
+      <p v-if="min > 0" class="text-[10px] font-black tracking-widest capitalize transition-colors" 
          :class="modelValue.length < min ? 'text-amber-500' : 'text-emerald-500'">
         {{ modelValue.length }} / {{ min }} min
       </p>

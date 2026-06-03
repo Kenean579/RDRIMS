@@ -1,86 +1,134 @@
 <template>
-  <div card>
-    <div class="mb-6">
-      <router-link to="/app/users" class="text-sm text-blue-600 hover:underline mb-2 inline-block">← Back to Users</router-link>
-      <h1 class="text-xl font-bold text-gray-800">{{ user.name || 'User Detail' }}</h1>
+  <div class="flex flex-col gap-8 pb-12 animate-fade card">
+    <!-- Header & Navigation -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
+      <div class="flex-1">
+        <router-link to="/app/users" class="flex items-center gap-2 text-brand font-black capitalize tracking-widest text-[10px] mb-3 hover:translate-x-1 transition-transform">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
+          Back to Users
+        </router-link>
+        <h1 class="text-3xl font-black text-slate-900 tracking-tight leading-tight">{{ user.name || 'User Profile' }}</h1>
+        <p class="text-slate-500 font-bold mt-1">{{ user.email }}</p>
+      </div>
+      <div class="flex items-center gap-3">
+         <span :class="user.is_active ? 'text-emerald-600 border-emerald-200' : 'text-slate-400 border-slate-200'" class="px-4 py-1 rounded-full text-[10px] font-black capitalize tracking-widest border">
+           {{ user.is_active ? 'Active Status' : 'Inactive Account' }}
+         </span>
+      </div>
     </div>
 
-    <div v-if="loading" class="bg-white rounded-lg shadow-sm p-6">
-      <div class="space-y-4 animate-pulse"><div v-for="i in 6" :key="i" class="h-5 bg-gray-200 rounded"></div></div>
-    </div>
-
-    <div v-else-if="error" class="bg-red-50 border border-red-200 rounded-lg p-6 text-center">
-      <p class="text-red-700 text-sm">{{ error }}</p>
+    <div v-if="loading" class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div class="card h-96 animate-pulse bg-slate-50/50"></div>
+      <div class="lg:col-span-2 space-y-8">
+        <div class="card h-48 animate-pulse bg-slate-50/50"></div>
+        <div class="card h-48 animate-pulse bg-slate-50/50"></div>
+      </div>
     </div>
 
     <template v-else>
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <!-- Profile Card -->
-        <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 text-center">
-          <div class="w-20 h-20 bg-blue-600 rounded-full flex items-center justify-center text-3xl font-bold text-white mx-auto mb-4">
-            {{ getInitials(user.name) }}
-          </div>
-          <h2 class="text-lg font-semibold text-gray-800">{{ user.name }}</h2>
-          <p class="text-sm text-gray-500">{{ user.email }}</p>
-          <span :class="user.is_active ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'"
-            class="inline-block mt-2 px-3 py-0.5 rounded-full text-xs font-medium">
-            {{ user.is_active ? 'Active' : 'Inactive' }}
-          </span>
-          <div class="mt-3 text-sm text-gray-600">
-            <p v-if="user.department"><strong>Department:</strong> {{ user.department.name }}</p>
-            <p v-if="user.orcid_id">ORCID: {{ user.orcid_id }}</p>
-            <p v-if="user.bio" class="mt-2 text-xs">{{ user.bio }}</p>
+      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 font-bold">
+        <!-- Profile Widget -->
+        <div class="space-y-8">
+          <div class="card p-8 flex flex-col items-center text-center relative overflow-hidden">
+            <div class="absolute top-0 left-0 w-full h-24 bg-linear-to-br from-brand to-indigo-600 opacity-10"></div>
+            <div class="w-24 h-24 rounded-[2.5rem] bg-linear-to-br from-brand to-indigo-600 flex items-center justify-center text-3xl font-black text-white shadow-xl shadow-brand/20 mb-6 relative z-10 border-4 border-white">
+              {{ getInitials(user.name) }}
+            </div>
+            <h3 class="text-xl font-black text-slate-900 mb-1">{{ user.name }}</h3>
+            <p class="text-xs text-slate-400 font-black capitalize tracking-widest mb-6">{{ user.department?.name || 'Academic Staff' }}</p>
+            
+            <div class="w-full space-y-4 text-left">
+              <div class="p-4 rounded-2xl border border-slate-200">
+                <p class="text-[9px] font-black text-slate-400 capitalize tracking-widest mb-1.5 flex items-center gap-1.5">
+                   <i class="far fa-envelope text-brand"></i>
+                   Contact Email
+                </p>
+                <p class="text-xs text-slate-700 truncate">{{ user.email }}</p>
+              </div>
+              <div v-if="user.orcid_id" class="p-4 rounded-2xl border border-slate-200">
+                <p class="text-[9px] font-black text-slate-400 capitalize tracking-widest mb-1.5 flex items-center gap-1.5">
+                   <i class="fab fa-orcid text-[#A6CE39]"></i>
+                   ORCID Identifier
+                </p>
+                <p class="text-xs text-slate-700 font-black">{{ user.orcid_id }}</p>
+              </div>
+            </div>
+
+            <div v-if="user.bio" class="mt-8 text-left">
+              <p class="text-[10px] font-black text-slate-400 capitalize tracking-widest mb-2 ml-1">biography</p>
+              <p class="text-xs text-slate-600 leading-relaxed font-medium italic p-4 bg-indigo-50/30 rounded-2xl border border-indigo-100/30">{{ user.bio }}</p>
+            </div>
           </div>
         </div>
 
-        <!-- Roles & Permissions -->
-        <div class="lg:col-span-2 space-y-6">
-          <!-- Roles -->
-          <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-            <div class="flex items-center justify-between mb-4">
-              <h2 class="text-base font-semibold text-gray-800">Roles</h2>
-              <button @click="showAssignRole = true" class="text-sm text-blue-600 hover:text-blue-800 font-medium">+ Assign Role</button>
-            </div>
-            <div v-if="user.roles?.length" class="flex flex-wrap gap-2">
-              <span v-for="role in user.roles" :key="role.id"
-                class="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2">
-                {{ role.name }}
-                <button @click="revokeRole(role)" class="text-blue-400 hover:text-red-500 text-lg leading-none">&times;</button>
-              </span>
-            </div>
-            <p v-else class="text-sm text-gray-400">No roles assigned.</p>
-          </div>
+        <!-- Details Widget -->
+        <div class="lg:col-span-2 space-y-8">
+           <!-- Roles & Permissions -->
+           <div class="card p-8">
+             <div class="flex items-center justify-between mb-8">
+               <h2 class="text-xs font-black text-slate-400 capitalize tracking-widest flex items-center gap-2">
+                 <span class="w-1 h-3 bg-brand rounded-full"></span>
+                 Access Roles
+               </h2>
+               <button @click="showAssignRole = true" class="text-[10px] font-black text-brand capitalize tracking-widest hover:underline">+ Assign Role</button>
+             </div>
+             
+             <div v-if="user.roles?.length" class="flex flex-wrap gap-3">
+               <div v-for="role in user.roles" :key="role.id" class="flex items-center gap-3 px-4 py-2 text-indigo-700 rounded-xl border border-indigo-300 group">
+                  <span class="text-xs font-black capitalize tracking-widest">{{ role.name }}</span>
+                  <button @click="revokeRole(role)" class="text-indigo-300 hover:text-rose-500 transition-colors">
+                    <i class="fas fa-times-circle"></i>
+                  </button>
+               </div>
+             </div>
+             <div v-else class="p-12 text-center bg-slate-50 rounded-3xl border border-dashed border-slate-200">
+               <p class="text-xs font-black text-slate-300 capitalize tracking-widest">No access roles assigned</p>
+             </div>
+           </div>
 
-          <!-- Research Centers -->
-          <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-            <div class="flex items-center justify-between mb-4">
-              <h2 class="text-base font-semibold text-gray-800">Research Centers</h2>
-              <button @click="showAssignCenter = true" class="text-sm text-blue-600 hover:text-blue-800 font-medium">+ Assign Center</button>
-            </div>
-            <div v-if="user.research_centers?.length" class="space-y-2">
-              <div v-for="rc in user.research_centers" :key="rc.id" class="flex items-center justify-between p-2 rounded bg-gray-50">
-                <span class="text-sm text-gray-800">{{ rc.name }}</span>
-                <button @click="detachCenter(rc)" class="text-red-500 text-sm">Remove</button>
-              </div>
-            </div>
-            <p v-else class="text-sm text-gray-400">No research centers assigned.</p>
-          </div>
+           <!-- Multi-Column Center & Expertise -->
+           <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+             <!-- Centers -->
+             <div class="card p-6">
+               <div class="flex items-center justify-between mb-6">
+                 <h2 class="text-[10px] font-black text-slate-400 capitalize tracking-widest">Research Hubs</h2>
+                 <button @click="showAssignCenter = true" class="text-[10px] font-black text-brand capitalize tracking-widest hover:underline">+ Add Hub</button>
+               </div>
+               
+               <div v-if="user.research_centers?.length" class="space-y-3">
+                 <div v-for="rc in user.research_centers" :key="rc.id" class="flex items-center justify-between p-4 bg-white rounded-2xl border border-slate-100 shadow-sm group">
+                   <div class="min-w-0">
+                      <p class="text-xs font-black text-slate-800 truncate mb-1">{{ rc.name }}</p>
+                      <p class="text-[9px] text-slate-400 capitalize tracking-widest">{{ rc.code || 'HUB' }} Center</p>
+                   </div>
+                   <button @click="detachCenter(rc)" class="text-slate-300 hover:text-rose-500 transition-colors">
+                      <i class="fas fa-unlink text-[10px]"></i>
+                   </button>
+                 </div>
+               </div>
+               <div v-else class="p-8 text-center bg-white rounded-2xl border border-dashed border-slate-100">
+                  <p class="text-[9px] font-black text-slate-300 capitalize tracking-widest">Not assigned to any hub</p>
+               </div>
+             </div>
 
-          <!-- Expertise -->
-          <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-            <div class="flex items-center justify-between mb-4">
-              <h2 class="text-base font-semibold text-gray-800">Expertise</h2>
-              <button @click="showAssignExpertise = true" class="text-sm text-blue-600 hover:text-blue-800 font-medium">+ Assign Expertise</button>
-            </div>
-            <div v-if="user.expertise?.length" class="flex flex-wrap gap-2">
-              <span v-for="exp in user.expertise" :key="exp.id"
-                class="bg-green-100 text-green-700 px-3 py-1 rounded-full text-sm font-medium flex items-center gap-2">
-                {{ exp.name }}
-                <button @click="detachExpertise(exp)" class="text-green-400 hover:text-red-500 text-lg leading-none">&times;</button>
-              </span>
-            </div>
-            <p v-else class="text-sm text-gray-400">No expertise assigned.</p>
-          </div>
+             <!-- Expertise -->
+             <div class="card p-6">
+               <div class="flex items-center justify-between mb-6">
+                 <h2 class="text-[10px] font-black text-slate-400 capitalize tracking-widest">Domain Expertise</h2>
+                 <button @click="showAssignExpertise = true" class="text-[10px] font-black text-brand capitalize tracking-widest hover:underline">+ Add Tag</button>
+               </div>
+               
+               <div v-if="user.expertise?.length" class="flex flex-wrap gap-2">
+                 <span v-for="exp in user.expertise" :key="exp.id" class="inline-flex items-center gap-2.5 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-[10px] font-black text-slate-600 capitalize tracking-tighter">
+                   {{ exp.name }}
+                   <button @click="detachExpertise(exp)" class="text-slate-300 hover:text-rose-500 transition-colors">&times;</button>
+                 </span>
+               </div>
+               <div v-else class="p-8 text-center bg-white rounded-2xl border border-dashed border-slate-100">
+                  <p class="text-[9px] font-black text-slate-300 capitalize tracking-widest">No expertise tags</p>
+               </div>
+             </div>
+           </div>
         </div>
       </div>
     </template>

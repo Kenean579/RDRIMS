@@ -18,7 +18,7 @@
     <div class="card p-5 bg-slate-50/50">
       <div class="flex flex-col sm:flex-row gap-5 items-start">
         <div class="flex-1 w-full relative">
-          <label class="block text-[11px] text-slate-500 font-bold uppercase tracking-widest mb-2 ml-1">Search</label>
+          <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-widest mb-2 ml-1">Search</label>
           <div class="relative group">
             <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand transition-colors">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -27,7 +27,7 @@
           </div>
         </div>
         <div class="w-full sm:w-56">
-          <label class="block text-[11px] text-slate-500 font-bold uppercase tracking-widest mb-2 ml-1">Status</label>
+          <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-widest mb-2 ml-1">Status</label>
           <select v-model="status" @change="fetchProjects(1)" class="input font-semibold">
             <option value="">All Statuses</option>
             <option value="active">Active</option>
@@ -41,62 +41,59 @@
     <!-- Content -->
     <div v-if="loading" class="card p-24 flex flex-col justify-center items-center gap-4">
       <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-brand"></div>
-      <p class="text-xs font-bold text-slate-400 uppercase tracking-widest">Loading projects...</p>
+      <p class="text-xs font-bold text-slate-400 capitalize tracking-widest">Loading projects...</p>
     </div>
     
     <div v-else-if="projects.length === 0" class="card">
        <EmptyState icon="📁" title="No projects found" description="There are no research projects matching your search." />
-    </div>
+    </div>    <div v-else class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+      <div v-for="p in projects" :key="p.id" 
+        class="card p-6 flex flex-col group card-hover relative overflow-hidden border-l-4 border-l-emerald-500 hover:border-l-emerald-600 transition-all cursor-pointer"
+        @click="$router.push(`/app/projects/${p.id}`)"
+      >
+        <div class="flex items-start justify-between mb-4">
+          <div class="flex-1 pr-4 min-w-0">
+            <p class="text-[10px] font-black text-slate-400 capitalize tracking-widest mb-1.5 flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-300"></span>
+              ID: {{ String(p.id).padStart(4, '0') }}
+            </p>
+            <h3 class="text-base font-black text-slate-800 leading-tight group-hover:text-emerald-700 transition-colors line-clamp-2 min-h-10">{{ p.title }}</h3>
+          </div>
+          <div class="w-12 h-12 rounded-2xl bg-linear-to-br from-emerald-500 to-teal-600 text-white flex items-center justify-center font-black shadow-lg shadow-emerald-500/30 shrink-0">
+             <i class="fas fa-project-diagram"></i>
+          </div>
+        </div>
+        
+        <div class="flex items-center gap-3 mb-6">
+           <div class="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center text-[10px] font-black text-slate-500 border border-slate-100 group-hover:bg-emerald-50 group-hover:text-emerald-700 transition-all">{{ getInitials(p.proposal?.submitted_by?.name) }}</div>
+           <div class="min-w-0">
+             <p class="text-[9px] font-black text-slate-400 capitalize tracking-widest leading-none mb-1">Lead PI</p>
+             <p class="text-xs font-bold text-slate-700 truncate">{{ p.proposal?.submitted_by?.name || 'Researcher' }}</p>
+           </div>
+        </div>
 
-    <div v-else class="card overflow-hidden">
-      <div class="overflow-x-auto">
-        <table class="table-auto">
-          <thead>
-            <tr>
-              <th class="px-6 py-4">Title & ID</th>
-              <th>Lead Researcher</th>
-              <th>Status</th>
-              <th style="width:160px">Progress</th>
-              <th class="text-right px-6">Ends</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="p in projects" :key="p.id" @click="$router.push(`/app/projects/${p.id}`)" class="cursor-pointer group hover:bg-slate-50/50 transition-colors">
-              <td class="px-6 py-5">
-                <div class="max-w-md">
-                  <p class="font-black text-slate-900 group-hover:text-brand transition-colors text-sm leading-snug line-clamp-2">{{ p.title }}</p>
-                  <p class="text-[10px] text-slate-400 mt-2 font-black uppercase tracking-widest">ID: {{ String(p.id).padStart(4, '0') }}</p>
-                </div>
-              </td>
-              <td>
-                <div class="flex items-center gap-3">
-                   <div class="w-8 h-8 rounded-xl bg-slate-100 flex items-center justify-center text-[10px] font-black text-slate-500 border border-slate-200 group-hover:bg-brand-light group-hover:text-brand group-hover:border-brand/20 transition-all">{{ getInitials(p.proposal?.submitted_by?.name) }}</div>
-                   <span class="text-xs font-bold text-slate-700">{{ p.proposal?.submitted_by?.name || 'Researcher' }}</span>
-                </div>
-              </td>
-              <td><StatusBadge :status="p.status?.name || 'active'" /></td>
-              <td>
-                <div class="flex flex-col gap-2">
-                  <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden shadow-inner">
-                    <div class="h-full bg-brand rounded-full transition-all duration-1000 ease-out" :style="{ width: calculateProgress(p) + '%' }"></div>
-                  </div>
-                  <p class="text-[10px] font-black text-slate-400 uppercase tracking-tighter">{{ calculateProgress(p) }}% Done</p>
-                </div>
-              </td>
-              <td class="text-right px-6">
-                <div class="flex items-center justify-end gap-2 text-xs font-bold text-slate-500 uppercase tracking-tight">
-                  <svg class="w-3.5 h-3.5 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
-                  {{ formatDate(p.end_date) }}
-                </div>
-              </td>
-            </tr>
-          </tbody>
-        </table>
+        <div class="space-y-3 mb-6">
+           <div class="flex items-center justify-between text-[10px] font-black capitalize tracking-widest text-slate-400">
+              <span>Execution Progress</span>
+              <span class="text-emerald-600">{{ calculateProgress(p) }}%</span>
+           </div>
+           <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden shadow-inner border border-slate-50">
+             <div class="h-full bg-emerald-500 rounded-full transition-all duration-1000 ease-out shadow-sm" :style="{ width: calculateProgress(p) + '%' }"></div>
+           </div>
+        </div>
+
+        <div class="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between">
+           <div class="flex flex-col">
+             <span class="text-[9px] font-black text-slate-400 capitalize tracking-widest">Target End Date</span>
+             <span class="text-xs font-bold text-slate-700">{{ formatDate(p.end_date) }}</span>
+           </div>
+           <StatusBadge :status="p.status?.name || 'active'" />
+        </div>
       </div>
-      <div class="px-6 py-4 bg-slate-50/50 border-t border-slate-100 overflow-hidden">
+      <div class="lg:col-span-2 xl:col-span-3 px-8 py-4 bg-slate-50/50 rounded-2xl border border-slate-100 overflow-hidden mt-2">
         <Pagination :current-page="pagination.current_page" :total-pages="pagination.last_page" :total="pagination.total" @page-change="fetchProjects" />
       </div>
-    </div>
+    </div>iv>
   </div>
 </template>
 <script setup>

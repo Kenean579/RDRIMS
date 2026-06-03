@@ -39,7 +39,7 @@
           <span class="text-lg">{{ getIcon(result.type) }}</span>
           <div class="flex-1">
             <div class="flex items-center gap-2">
-              <span class="text-xs font-medium bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full uppercase">
+              <span class="text-xs font-medium bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full capitalize">
                 {{ result.type }}
               </span>
               <p class="text-sm font-semibold text-gray-800">{{ result.title }}</p>

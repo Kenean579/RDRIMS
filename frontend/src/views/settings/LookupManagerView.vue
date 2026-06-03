@@ -10,7 +10,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
       <!-- Sidebar -->
       <div class="lg:col-span-1 space-y-2">
-        <label class="block text-[10px] font-black text-slate-400 uppercase tracking-widest mb-3 ml-1">Select Table</label>
+        <label class="block text-[10px] font-black text-slate-400 capitalize tracking-widest mb-3 ml-1">Select Table</label>
         <button 
           v-for="table in tables" :key="table.id"
           @click="selectTable(table)"
@@ -39,10 +39,10 @@
                </div>
                <div>
                  <h2 class="text-lg font-black text-slate-800 tracking-tight">{{ activeTable.label }}</h2>
-                 <p class="text-[9px] font-black text-slate-400 uppercase tracking-widest">Table: {{ activeTable.id }}</p>
+                 <p class="text-[9px] font-black text-slate-400 capitalize tracking-widest">Table: {{ activeTable.id }}</p>
                </div>
              </div>
-             <button @click="showAdd = true" class="btn btn-primary h-10 px-6 text-[10px] font-black uppercase tracking-widest shadow-lg shadow-blue-500/10">Add Option</button>
+             <button @click="showAdd = true" class="btn btn-primary h-10 px-6 text-[10px] font-black capitalize tracking-widest shadow-lg shadow-blue-500/10">Add Option</button>
           </div>
 
           <div v-if="loading" class="card p-24 flex justify-center"><div class="animate-spin rounded-full h-10 w-10 border-b-2 border-brand"></div></div>
@@ -52,28 +52,28 @@
               <table class="table-auto">
                 <thead>
                   <tr>
-                    <th class="w-20 pl-8 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">ID</th>
-                    <th class="py-4 text-[10px] font-black uppercase tracking-widest text-slate-400">Name / Label</th>
-                    <th class="pr-8 py-4 text-[10px] font-black uppercase tracking-widest text-slate-400 text-right">Actions</th>
+                    <th class="w-20 pl-8 py-4 text-[10px] font-black capitalize tracking-widest text-slate-400">ID</th>
+                    <th class="py-4 text-[10px] font-black capitalize tracking-widest text-slate-400">Name / Label</th>
+                    <th class="pr-8 py-4 text-[10px] font-black capitalize tracking-widest text-slate-400 text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody class="divide-y divide-slate-50">
                   <tr v-for="item in items" :key="item.id" class="hover:bg-slate-50/30 transition-colors group">
                     <td class="pl-8 py-4 text-xs font-bold text-slate-400">{{ item.id }}</td>
                     <td class="py-4">
-                      <span class="px-3 py-1 bg-slate-100 text-slate-700 text-xs font-black uppercase tracking-tight rounded-lg border border-slate-200">{{ item.name }}</span>
+                      <span class="px-3 py-1 bg-slate-100 text-slate-700 text-xs font-black capitalize tracking-tight rounded-lg border border-slate-200">{{ item.name }}</span>
                     </td>
                     <td class="pr-8 py-4 text-right">
                       <div class="flex justify-end gap-2">
-                        <button @click="editItem(item)" class="btn btn-ghost text-[10px] font-black uppercase tracking-widest py-1.5 px-3">Rename</button>
-                        <button @click="confirmDelete(item)" class="btn btn-ghost text-rose-500 hover:bg-rose-50 text-[10px] font-black uppercase tracking-widest py-1.5 px-3">Delete</button>
+                        <button @click="editItem(item)" class="btn btn-ghost text-[10px] font-black capitalize tracking-widest py-1.5 px-3">Rename</button>
+                        <button @click="confirmDelete(item)" class="btn btn-ghost text-rose-500 hover:bg-rose-50 text-[10px] font-black capitalize tracking-widest py-1.5 px-3">Delete</button>
                       </div>
                     </td>
                   </tr>
                 </tbody>
               </table>
             </div>
-            <div v-if="items.length === 0" class="p-12 text-center text-xs font-black text-slate-400 uppercase tracking-widest italic">No records in this lookup.</div>
+            <div v-if="items.length === 0" class="p-12 text-center text-xs font-black text-slate-400 capitalize tracking-widest italic">No records in this lookup.</div>
           </div>
         </div>
       </div>
@@ -83,7 +83,7 @@
     <Modal :show="showAdd || !!editingItem" :title="editingItem ? 'Edit Lookup' : 'Add New Option'" @close="closeModal">
       <form @submit.prevent="saveItem" class="space-y-4">
         <div>
-          <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest mb-2 ml-1">Option Name *</label>
+          <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest mb-2 ml-1">Option Name *</label>
           <input v-model="form.name" type="text" required placeholder="e.g. In Progress" class="input h-12 font-bold" />
         </div>
         <div class="flex justify-end gap-3 pt-6 border-t border-slate-100">

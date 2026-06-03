@@ -16,12 +16,12 @@
             {{ getInitials(auth.user?.name) }}
           </div>
           <h2 class="text-xl font-bold text-slate-800">{{ auth.user?.name }}</h2>
-          <p class="text-sm font-medium text-slate-400 mt-1 uppercase tracking-widest">{{ auth.user?.email }}</p>
+          <p class="text-sm font-medium text-slate-400 mt-1 capitalize tracking-widest">{{ auth.user?.email }}</p>
           
           <div class="mt-6 pt-6 border-t border-slate-50 w-full">
-            <p class="text-[10px] font-bold text-slate-400 uppercase tracking-widest mb-3">Assigned Permissions</p>
+            <p class="text-[10px] font-bold text-slate-400 capitalize tracking-widest mb-3">Assigned Permissions</p>
             <div class="flex flex-wrap justify-center gap-2">
-              <span v-for="r in auth.user?.roles" :key="r.id" class="px-3 py-1 rounded-full bg-blue-50 border border-blue-100 text-blue-700 text-[10px] font-bold uppercase tracking-tight">
+              <span v-for="r in auth.user?.roles" :key="r.id" class="px-3 py-1 rounded-full bg-blue-50 border border-blue-100 text-blue-700 text-[10px] font-bold capitalize tracking-tight">
                 {{ r.name }}
               </span>
             </div>
@@ -32,7 +32,7 @@
            <h3 class="text-sm font-bold text-slate-800 mb-4">Research Visibility</h3>
            <div class="space-y-4">
               <div class="p-3 bg-slate-50 rounded-xl border border-slate-100/50">
-                 <p class="text-[10px] font-bold text-slate-400 uppercase mb-1">ORCID ID</p>
+                 <p class="text-[10px] font-bold text-slate-400 capitalize mb-1">ORCID ID</p>
                  <p class="text-xs font-mono font-bold text-blue-600">{{ auth.user?.orcid_id || 'Not Linked' }}</p>
               </div>
            </div>
@@ -46,38 +46,38 @@
           <form @submit.prevent="updateProfile" class="flex flex-col gap-6">
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div>
-                <label class="block text-[11px] text-slate-500 font-bold uppercase tracking-wider mb-2 ml-1">Full Display Name</label>
+                <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-wider mb-2 ml-1">Full Display Name</label>
                 <input v-model="form.name" type="text" class="input" placeholder="Enter your full name" />
               </div>
               <div>
-                <label class="block text-[11px] text-slate-500 font-bold uppercase tracking-wider mb-2 ml-1">Email Address</label>
+                <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-wider mb-2 ml-1">Email Address</label>
                 <input v-model="form.email" type="email" class="input" placeholder="email@institution.edu" />
               </div>
             </div>
             
             <div>
-              <label class="block text-[11px] text-slate-500 font-bold uppercase tracking-wider mb-2 ml-1">Persistent Researcher Identifier (ORCID)</label>
+              <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-wider mb-2 ml-1">Persistent Researcher Identifier (ORCID)</label>
               <input v-model="form.orcid_id" type="text" class="input" placeholder="0000-0000-0000-0000" />
             </div>
             
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div>
-                <label class="block text-[11px] text-slate-500 font-bold uppercase tracking-wider mb-2 ml-1">Google Scholar ID</label>
+                <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-wider mb-2 ml-1">Google Scholar ID</label>
                 <input v-model="form.google_scholar_id" type="text" class="input" placeholder="Enter ID" />
               </div>
               <div>
-                <label class="block text-[11px] text-slate-500 font-bold uppercase tracking-wider mb-2 ml-1">Scopus ID</label>
+                <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-wider mb-2 ml-1">Scopus ID</label>
                 <input v-model="form.scopus_id" type="text" class="input" placeholder="Enter ID" />
               </div>
             </div>
 
             <div>
-              <label class="block text-[11px] text-slate-500 font-bold uppercase tracking-wider mb-2 ml-1">LinkedIn Profile URL</label>
+              <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-wider mb-2 ml-1">LinkedIn Profile URL</label>
               <input v-model="form.linkedin_url" type="url" class="input" placeholder="https://linkedin.com/in/..." />
             </div>
             
             <div>
-              <label class="block text-[11px] text-slate-500 font-bold uppercase tracking-wider mb-2 ml-1">Professional Bio & Research Focus</label>
+              <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-wider mb-2 ml-1">Professional Bio & Research Focus</label>
               <textarea v-model="form.bio" rows="4" class="input resize-none" placeholder="Describe your research interests..."></textarea>
             </div>
 

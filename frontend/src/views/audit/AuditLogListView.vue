@@ -62,7 +62,7 @@
     <div class="card p-5 bg-slate-50/50">
       <div class="flex flex-wrap gap-4 items-end">
         <div class="flex-1 min-w-[200px]">
-          <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest mb-2 ml-1">Search User</label>
+          <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest mb-2 ml-1">Search User</label>
           <div class="relative group">
             <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand transition-colors">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -71,7 +71,7 @@
           </div>
         </div>
         <div class="w-44">
-          <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest mb-2 ml-1">Action</label>
+          <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest mb-2 ml-1">Action</label>
           <select v-model="filterAction" @change="fetchLogs(1)" class="input font-bold">
             <option value="">All Actions</option>
             <option value="created">Created</option>
@@ -85,7 +85,7 @@
           </select>
         </div>
         <div class="w-44">
-          <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest mb-2 ml-1">Table</label>
+          <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest mb-2 ml-1">Table</label>
           <select v-model="filterTable" @change="fetchLogs(1)" class="input font-bold">
             <option value="">All Tables</option>
             <option value="proposals">Proposals</option>
@@ -98,14 +98,14 @@
           </select>
         </div>
         <div class="w-44">
-          <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest mb-2 ml-1">From</label>
+          <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest mb-2 ml-1">From</label>
           <input v-model="filterFrom" type="date" @change="fetchLogs(1)" class="input" />
         </div>
         <div class="w-44">
-          <label class="block text-[11px] text-slate-500 font-black uppercase tracking-widest mb-2 ml-1">To</label>
+          <label class="block text-[11px] text-slate-500 font-black capitalize tracking-widest mb-2 ml-1">To</label>
           <input v-model="filterTo" type="date" @change="fetchLogs(1)" class="input" />
         </div>
-        <button v-if="hasActiveFilters" @click="clearFilters" class="btn btn-secondary h-11 px-6 font-black uppercase tracking-widest text-[11px]">
+        <button v-if="hasActiveFilters" @click="clearFilters" class="btn btn-secondary h-11 px-6 font-black capitalize tracking-widest text-[11px]">
           Reset
         </button>
       </div>
@@ -114,7 +114,7 @@
     <!-- Content -->
     <div v-if="loading" class="card p-24 flex flex-col justify-center items-center gap-4">
       <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-brand"></div>
-      <p class="text-[10px] font-black text-slate-400 uppercase tracking-widest">Loading audit trail...</p>
+      <p class="text-[10px] font-black text-slate-400 capitalize tracking-widest">Loading audit trail...</p>
     </div>
 
     <div v-else-if="logs.length === 0" class="card">
@@ -370,7 +370,7 @@ onMounted(() => fetchLogs())
   font-size: 11px;
   color: #94a3b8;
   font-weight: 700;
-  text-transform: uppercase;
+  text-transform: capitalize;
   letter-spacing: 0.05em;
   margin-top: 2px;
 }
@@ -382,7 +382,7 @@ onMounted(() => fetchLogs())
   gap: 6px;
   font-size: 11px;
   font-weight: 800;
-  text-transform: uppercase;
+  text-transform: capitalize;
   letter-spacing: 0.05em;
   padding: 4px 10px;
   border-radius: 8px;
@@ -430,7 +430,7 @@ onMounted(() => fetchLogs())
 .diff-header-badge {
   font-size: 10px;
   font-weight: 800;
-  text-transform: uppercase;
+  text-transform: capitalize;
   letter-spacing: 0.1em;
   padding: 2px 8px;
   border-radius: 4px;

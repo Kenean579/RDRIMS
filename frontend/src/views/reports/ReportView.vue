@@ -28,11 +28,11 @@
 
         <form @submit.prevent="generateReport" class="flex flex-col gap-4">
           <div>
-            <label class="block text-[11px] text-slate-500 font-bold uppercase tracking-wider mb-1.5">Report Name *</label>
+            <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-wider mb-1.5">Report Name *</label>
             <input v-model="reportForm.name" type="text" required placeholder="e.g. Q1 Research Summary" class="input" />
           </div>
           <div>
-            <label class="block text-[11px] text-slate-500 font-bold uppercase tracking-wider mb-1.5">Report Type *</label>
+            <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-wider mb-1.5">Report Type *</label>
             <select v-model="reportForm.type" required class="input">
               <option value="">Select report type...</option>
               <option value="projects">Active Projects</option>

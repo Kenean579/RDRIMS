@@ -29,14 +29,14 @@
           </div>
           <div>
             <h3 class="font-black text-slate-800 text-lg leading-tight mb-1">{{ uni.name }}</h3>
-            <span class="inline-block px-2.5 py-0.5 bg-slate-100 text-slate-500 text-[10px] font-black uppercase tracking-widest rounded-md border border-slate-200">CODE: {{ uni.code }}</span>
+            <span class="inline-block px-2.5 py-0.5 bg-slate-100 text-slate-500 text-[10px] font-black capitalize tracking-widest rounded-md border border-slate-200">CODE: {{ uni.code }}</span>
           </div>
         </div>
         <div class="flex gap-2 shrink-0">
-          <button @click="editUni(uni)" class="btn btn-secondary h-9 px-4 text-[11px] font-bold uppercase tracking-widest">
+          <button @click="editUni(uni)" class="btn btn-secondary h-9 px-4 text-[11px] font-bold capitalize tracking-widest">
             Edit
           </button>
-          <button @click="confirmDelete(uni)" class="btn btn-danger h-9 px-4 text-[11px] font-bold uppercase tracking-widest shadow-lg shadow-rose-500/20">
+          <button @click="confirmDelete(uni)" class="btn btn-danger h-9 px-4 text-[11px] font-bold capitalize tracking-widest shadow-lg shadow-rose-500/20">
             Delete
           </button>
         </div>
