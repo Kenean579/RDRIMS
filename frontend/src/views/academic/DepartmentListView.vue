@@ -21,24 +21,24 @@
     </div>
 
     <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-      <div v-for="dept in departments" :key="dept.id" class="card p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-6 card-hover border-l-4 border-l-orange-500 hover:border-l-orange-600 transition-all">
+      <div v-for="dept in departments" :key="dept.id" class="card p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 card-hover transition-all">
         <div class="flex items-center gap-4">
-          <div class="w-12 h-12 rounded-2xl bg-linear-to-br from-orange-400 to-red-500 text-white flex items-center justify-center font-bold text-xl shadow-lg shadow-orange-500/30">
+          <div class="w-12 h-12 rounded-2xl bg-slate-100 text-white flex items-center justify-center font-bold text-xl">
             {{ dept.name.charAt(0) }}
           </div>
           <div>
             <h3 class="font-bold text-slate-800 text-lg leading-tight mb-1">{{ dept.name }}</h3>
             <div class="flex items-center gap-2">
-              <span class="inline-block px-2.5 py-0.5 bg-slate-100 text-slate-500 text-[10px] font-bold capitalize tracking-widest rounded-md border border-slate-200">CODE: {{ dept.code }}</span>
-              <span class="inline-block px-2 py-0.5 bg-fuchsia-50 text-fuchsia-600 text-[10px] font-bold capitalize tracking-widest rounded-md border border-fuchsia-100"><i class="fas fa-building mr-1"></i>{{ dept.faculty?.name || 'N/A' }}</span>
+              <span class="inline-block px-2.5 py-0.5 bg-slate-100 text-slate-500 text-[10px] font-medium rounded-md border border-slate-100">CODE: {{ dept.code }}</span>
+              <span class="inline-block px-2 py-0.5 bg-fuchsia-50 text-fuchsia-600 text-[10px] font-medium rounded-md border border-fuchsia-100"><i class="fas fa-building mr-1"></i>{{ dept.faculty?.name || 'N/A' }}</span>
             </div>
           </div>
         </div>
         <div class="flex gap-2 shrink-0">
-          <button @click="editDept(dept)" class="btn btn-secondary h-9 px-4 text-[11px] font-bold capitalize tracking-widest">
+          <button @click="editDept(dept)" class="btn btn-secondary h-9 px-4 text-[11px] font-medium">
             Edit
           </button>
-          <button @click="confirmDelete(dept)" class="btn btn-danger h-9 px-4 text-[11px] font-bold capitalize tracking-widest shadow-lg shadow-rose-500/20">
+          <button @click="confirmDelete(dept)" class="btn btn-danger h-9 px-4 text-[11px] font-medium">
             Delete
           </button>
         </div>

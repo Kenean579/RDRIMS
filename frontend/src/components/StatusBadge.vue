@@ -13,30 +13,26 @@ const props = defineProps({
 })
 
 const statusMap = {
-  // Success / Active
-  'approved':   { class: 'badge-green', color: '#10b981' },
-  'active':     { class: 'badge-green', color: '#10b981' },
-  'accepted':   { class: 'badge-green', color: '#10b981' },
-  'open':       { class: 'badge-green', color: '#10b981' },
-  'completed':  { class: 'badge-indigo', color: '#6366f1' },
-  'finished':   { class: 'badge-indigo', color: '#6366f1' },
-  
-  // Pending / Review
-  'pending':    { class: 'badge-yellow', color: '#f59e0b' },
-  'draft':      { class: 'badge-gray',   color: '#64748b' },
-  'review':     { class: 'badge-blue',   color: '#3b82f6' },
-  'submitted':  { class: 'badge-blue',   color: '#3b82f6' },
-  'under_review': { class: 'badge-blue', color: '#3b82f6' },
-  'processing': { class: 'badge-blue',   color: '#3b82f6' },
-  
-  // Danger / Negative
-  'rejected':   { class: 'badge-red',    color: '#ef4444' },
-  'failed':     { class: 'badge-red',    color: '#ef4444' },
-  'inactive':   { class: 'badge-gray',   color: '#94a3b8' },
-  'closed':     { class: 'badge-gray',   color: '#475569' },
+  'approved':     { class: 'badge-green',   color: '#1b7a42' },
+  'active':       { class: 'badge-green',   color: '#1b7a42' },
+  'accepted':     { class: 'badge-green',   color: '#1b7a42' },
+  'open':         { class: 'badge-green',   color: '#1b7a42' },
+  'completed':    { class: 'badge-blue',    color: '#1d4ed8' },
+  'finished':     { class: 'badge-blue',    color: '#1d4ed8' },
+  'pending':      { class: 'badge-yellow',  color: '#8a6914' },
+  'draft':        { class: 'badge-gray',    color: '#52596b' },
+  'review':       { class: 'badge-yellow',  color: '#8a6914' },
+  'submitted':    { class: 'badge-blue',    color: '#1d4ed8' },
+  'under_review': { class: 'badge-yellow',  color: '#8a6914' },
+  'processing':   { class: 'badge-yellow',  color: '#8a6914' },
+  'rejected':     { class: 'badge-red',     color: '#a12424' },
+  'failed':       { class: 'badge-red',     color: '#a12424' },
+  'inactive':     { class: 'badge-gray',    color: '#52596b' },
+  'closed':       { class: 'badge-gray',    color: '#52596b' },
+  'suspended':    { class: 'badge-red',     color: '#a12424' },
+  'published':    { class: 'badge-green',   color: '#1b7a42' },
 }
 
-// Safely extract status string from prop (handles objects, nulls, etc.)
 const statusStr = computed(() => {
   if (!props.status) return 'pending'
   if (typeof props.status === 'string') return props.status
@@ -49,27 +45,14 @@ const config = computed(() => {
   for (const key in statusMap) {
     if (s.includes(key)) return statusMap[key]
   }
-  return { class: 'badge-gray', color: '#94a3b8' }
+  return { class: 'badge-gray', color: '#52596b' }
 })
 
 const badgeClass = computed(() => config.value.class)
 const dotColor = computed(() => config.value.color)
 
 const formattedStatus = computed(() => {
-  return statusStr.value.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+  const s = statusStr.value.replace(/_/g, ' ')
+  return s.charAt(0).toUpperCase() + s.slice(1)
 })
 </script>
-
-<style scoped>
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  padding: 3px 10px;
-}
-.badge-dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-}
-</style>

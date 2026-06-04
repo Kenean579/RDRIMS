@@ -21,24 +21,24 @@
     </div>
 
     <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-      <div v-for="campus in campuses" :key="campus.id" class="card p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-6 card-hover border-l-4 border-l-emerald-500 hover:border-l-emerald-600 transition-all">
+      <div v-for="campus in campuses" :key="campus.id" class="card p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 card-hover transition-all">
         <div class="flex items-center gap-4">
-          <div class="w-12 h-12 rounded-2xl bg-linear-to-br from-emerald-400 to-teal-600 text-white flex items-center justify-center font-bold text-xl shadow-lg shadow-emerald-500/30">
+          <div class="w-12 h-12 rounded-2xl bg-slate-100 text-white flex items-center justify-center font-bold text-xl">
             {{ campus.name.charAt(0) }}
           </div>
           <div>
             <h3 class="font-bold text-slate-800 text-lg leading-tight mb-1">{{ campus.name }}</h3>
             <div class="flex items-center gap-2">
-              <span class="inline-block px-2.5 py-0.5 bg-slate-100 text-slate-500 text-[10px] font-bold capitalize tracking-widest rounded-md border border-slate-200">CODE: {{ campus.code }}</span>
-              <span class="inline-block px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-bold capitalize tracking-widest rounded-md border border-blue-100"><i class="fas fa-university mr-1"></i>{{ campus.university?.name || 'N/A' }}</span>
+              <span class="inline-block px-2.5 py-0.5 bg-slate-100 text-slate-500 text-[10px] font-medium rounded-md border border-slate-100">CODE: {{ campus.code }}</span>
+              <span class="inline-block px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-medium rounded-md border border-blue-100"><i class="fas fa-university mr-1"></i>{{ campus.university?.name || 'N/A' }}</span>
             </div>
           </div>
         </div>
         <div class="flex gap-2 shrink-0">
-          <button @click="editCampus(campus)" class="btn btn-secondary h-9 px-4 text-[11px] font-bold capitalize tracking-widest">
+          <button @click="editCampus(campus)" class="btn btn-secondary h-9 px-4 text-[11px] font-medium">
             Edit
           </button>
-          <button @click="confirmDelete(campus)" class="btn btn-danger h-9 px-4 text-[11px] font-bold capitalize tracking-widest shadow-lg shadow-rose-500/20">
+          <button @click="confirmDelete(campus)" class="btn btn-danger h-9 px-4 text-[11px] font-medium">
             Delete
           </button>
         </div>
@@ -49,15 +49,15 @@
     <Modal :show="showCreate || !!editingCampus" :title="editingCampus ? 'Edit Campus' : 'Add New Campus'" @close="closeModal">
       <form @submit.prevent="saveCampus" class="space-y-5 px-1 py-1">
         <div>
-          <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-wider mb-1.5 ml-1">Campus Name *</label>
+          <label class="block text-[11px] text-slate-500 font-medium  tracking-wider mb-1.5 ml-1">Campus Name *</label>
           <input v-model="form.name" type="text" required class="input" placeholder="e.g., Main Campus" />
         </div>
         <div>
-          <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-wider mb-1.5 ml-1">Campus Code *</label>
+          <label class="block text-[11px] text-slate-500 font-medium  tracking-wider mb-1.5 ml-1">Campus Code *</label>
           <input v-model="form.code" type="text" required class="input" placeholder="e.g., MC" />
         </div>
         <div>
-          <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-wider mb-1.5 ml-1">Parent University</label>
+          <label class="block text-[11px] text-slate-500 font-medium  tracking-wider mb-1.5 ml-1">Parent University</label>
           <select v-model="form.university_id" class="input">
             <option value="">Select University</option>
             <option v-for="u in universities" :key="u.id" :value="u.id">{{ u.name }}</option>

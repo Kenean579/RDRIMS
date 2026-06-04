@@ -1,11 +1,7 @@
 <template>
   <div 
     class="relative inline-flex items-center justify-center overflow-hidden bg-slate-100 shrink-0 select-none"
-    :class="[
-      sizeClasses,
-      rounded ? 'rounded-full' : 'rounded-xl',
-      border ? 'border-2 border-white shadow-sm ring-1 ring-slate-900/5' : ''
-    ]"
+    :class="[ sizeClasses, rounded ? 'rounded-full' : 'rounded-2xl', border ? 'border-2 border-white shadow-sm ring-1 ring-slate-900/5' : '' ]"
   >
     <img 
       v-if="src && !imgError" 
@@ -16,7 +12,7 @@
     />
     <span 
       v-else 
-      class="font-bold tracking-widest capitalize text-slate-500"
+      class="font-bold tracking-widest  text-slate-500"
       :class="textClasses"
     >
       {{ initials }}
@@ -26,10 +22,7 @@
     <span 
       v-if="showStatus"
       class="absolute bottom-0 right-0 block rounded-full ring-2 ring-white"
-      :class="[
-        statusSizeClasses,
-        isActive ? 'bg-emerald-500' : 'bg-slate-400'
-      ]"
+      :class="[ statusSizeClasses, isActive ? 'bg-emerald-500' : 'bg-slate-400' ]"
     ></span>
   </div>
 </template>
@@ -56,8 +49,8 @@ watch(() => props.src, () => {
 const initials = computed(() => {
   if (!props.name) return '?'
   const parts = props.name.trim().split(' ')
-  if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase()
-  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+  if (parts.length === 1) return parts[0].substring(0, 2)
+  return (parts[0][0] + parts[parts.length - 1][0])
 })
 
 const sizeClasses = computed(() => {

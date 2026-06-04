@@ -7,7 +7,7 @@
         <p class="text-slate-500 font-medium mt-1">Open applications for research grants.</p>
       </div>
       <div class="flex items-center gap-3">
-        <button v-if="auth.hasRole('super_admin','research_admin')" @click="showCreate = true" class="btn btn-primary h-11 px-6 shadow-lg shadow-blue-500/20">
+        <button v-if="auth.hasRole('super_admin','research_admin')" @click="showCreate = true" class="btn btn-primary h-11 px-6">
           <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" /></svg>
           Create Call
         </button>
@@ -20,10 +20,10 @@
 
     <!-- Content -->
     <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div v-for="i in 4" :key="i" class="card p-5 h-64 flex flex-col gap-4 bg-slate-50/50">
-        <div class="h-6 w-24 bg-slate-200 rounded-lg animate-pulse"></div>
-        <div class="h-8 w-3/4 bg-slate-100 rounded-lg animate-pulse"></div>
-        <div class="h-24 w-full bg-slate-100/50 rounded-lg animate-pulse"></div>
+      <div v-for="i in 4" :key="i" class="card p-8 h-64 flex flex-col gap-4 bg-slate-50/50">
+        <div class="h-6 w-24 bg-slate-200 rounded-2xl animate-pulse"></div>
+        <div class="h-8 w-3/4 bg-slate-100 rounded-2xl animate-pulse"></div>
+        <div class="h-24 w-full bg-slate-100/50 rounded-2xl animate-pulse"></div>
       </div>
     </div>
 
@@ -32,32 +32,37 @@
     </div>
 
     <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-      <div v-for="call in calls" :key="call.id" class="card group card-hover flex flex-col p-5 border-l-4 border-l-brand/20 hover:border-l-brand transition-all">
+      <div v-for="call in calls" :key="call.id" class="card group card-hover flex flex-col p-8/20 transition-all">
         <div class="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6">
           <StatusBadge :status="call.status?.name || 'open'" />
-          <div class="flex items-center gap-2 text-[10px] font-bold text-slate-400 capitalize tracking-widest bg-slate-100 px-3 py-1.5 rounded-xl">
+          <div class="flex items-center gap-2 text-[10px] font-medium text-slate-400 bg-slate-100 px-3 py-1.5 rounded-2xl">
             <svg class="w-4 h-4 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z" /></svg>
             Ends: {{ formatDate(call.deadline) }}
           </div>
         </div>
 
         <h3 class="text-xl font-bold text-slate-900 group-hover:text-brand transition-colors mb-4 leading-tight">{{ call.title }}</h3>
-        <p class="text-sm text-slate-500 font-medium mb-5 flex-1 line-clamp-3 leading-relaxed">{{ call.description }}</p>
+        <div class="flex-1 mb-5 min-h-0">
+          <p class="text-sm text-slate-500 font-medium line-clamp-3 leading-relaxed">{{ call.description }}</p>
+        </div>
 
         <div class="flex items-center justify-between mt-auto pt-6 border-t border-slate-100">
           <div class="flex items-center gap-2">
-            <router-link v-if="auth.hasPermission('submit_proposals')" :to="`/app/proposals/create?call_id=${call.id}`" class="btn btn-primary shadow-lg shadow-blue-500/20 px-6 text-[11px] font-bold capitalize tracking-widest h-10">
+            <router-link v-if="auth.hasPermission('submit_proposals')" :to="`/app/proposals/create?call_id=${call.id}`" class="btn btn-primary px-6 text-[11px] font-medium h-10">
               Apply
             </router-link>
-            <button @click="viewCall(call)" class="btn btn-ghost border border-slate-200 hover:border-brand hover:text-brand text-[11px] font-bold capitalize tracking-widest h-10 px-5">
+            <button v-else @click="handleGuestApply" class="btn btn-primary px-6 text-[11px] font-medium h-10">
+              Apply
+            </button>
+            <button @click="viewCall(call)" class="btn btn-ghost border border-slate-100 hover:border-brand hover:text-brand text-[11px] font-medium h-10 px-5">
               Info
             </button>
-            <button v-if="auth.hasRole('super_admin','research_admin')" @click="editCall(call)" class="btn btn-ghost border border-slate-200 hover:border-amber-600 text-[11px] font-bold capitalize tracking-widest h-10 px-5 text-amber-600 hover:text-amber-700">
+            <button v-if="auth.hasRole('super_admin','research_admin')" @click="editCall(call)" class="btn btn-ghost border border-slate-100 hover:border-amber-600 text-[11px] font-medium h-10 px-5 text-amber-600 hover:text-amber-700">
               Edit
             </button>
           </div>
           <div class="text-right">
-             <p class="text-[9px] font-bold text-slate-400 capitalize tracking-widest mb-0.5">Award High</p>
+             <p class="text-[9px] font-medium text-slate-400 mb-0.5">Award High</p>
              <p class="text-base font-bold text-brand">{{ formatCurrency(call.budget_limit) }}</p>
           </div>
         </div>
@@ -67,33 +72,36 @@
     <!-- Detail Modal -->
     <Modal :show="!!selectedCall && !editingCall" :title="selectedCall?.title" size="lg" @close="selectedCall = null">
       <div v-if="selectedCall" class="flex flex-col gap-5">
-          <div class="p-6 rounded-2xl border border-slate-200 shadow-inner">
-           <h4 class="text-[10px] font-bold text-slate-400 capitalize tracking-widest mb-3">About this call</h4>
+          <div class="p-6 rounded-2xl border border-slate-100">
+           <h4 class="text-[10px] font-medium text-slate-400 mb-3">About this call</h4>
            <p class="text-base text-slate-700 font-medium whitespace-pre-line leading-relaxed">{{ selectedCall.description }}</p>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          <div class="p-5 bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col gap-1 text-center font-bold capitalize">
+          <div class="p-5 bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col gap-1 text-center font-bold ">
              <p class="text-[10px] text-slate-400 tracking-widest">Award High</p>
              <p class="text-lg text-brand">{{ formatCurrency(selectedCall.budget_limit) }}</p>
           </div>
-          <div class="p-5 bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col gap-1 text-center font-bold capitalize">
+          <div class="p-5 bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col gap-1 text-center font-bold ">
              <p class="text-[10px] text-slate-400 tracking-widest">Ending Date</p>
              <p class="text-lg text-slate-900">{{ formatDate(selectedCall.deadline) }}</p>
           </div>
-          <div class="p-5 bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col gap-1 text-center font-bold capitalize">
+          <div class="p-5 bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col gap-1 text-center font-bold ">
              <p class="text-[10px] text-slate-400 tracking-widest">Target Year</p>
              <p class="text-lg text-slate-900">{{ selectedCall.academic_year?.name || 'N/A' }}</p>
           </div>
-           <div class="p-5 bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col gap-1 text-center font-bold capitalize">
+           <div class="p-5 bg-white rounded-2xl border border-slate-100 shadow-sm flex flex-col gap-1 text-center font-bold ">
              <p class="text-[10px] text-slate-400 tracking-widest">Thematic Area</p>
              <p class="text-lg text-slate-900">{{ selectedCall.thematic_areas || 'Multi-disciplinary' }}</p>
           </div>
         </div>
         <div class="pt-6 border-t border-slate-100 flex justify-end gap-3">
-           <button @click="selectedCall = null" class="btn btn-secondary px-5 h-12 text-[11px] font-bold capitalize tracking-widest">Close</button>
-           <router-link v-if="auth.hasPermission('submit_proposals')" :to="`/proposals/create?call_id=${selectedCall.id}`" @click="selectedCall = null" class="btn btn-primary px-5 h-12 shadow-lg shadow-blue-500/20 text-[11px] font-bold capitalize tracking-widest">
+           <button @click="selectedCall = null" class="btn btn-secondary px-5 h-12 text-[11px] font-medium">Close</button>
+           <router-link v-if="auth.hasPermission('submit_proposals')" :to="`/app/proposals/create?call_id=${selectedCall.id}`" @click="selectedCall = null" class="btn btn-primary px-5 h-12 text-[11px] font-medium">
               Apply Now
            </router-link>
+           <button v-else @click="handleGuestApply" class="btn btn-primary px-5 h-12 text-[11px] font-medium">
+              Apply Now
+           </button>
         </div>
       </div>
     </Modal>
@@ -102,33 +110,33 @@
     <Modal :show="showCreate || editingCall" :title="editingCall ? 'Edit Call for Proposal' : 'Create New Call for Proposal'" size="lg" @close="closeCallModal">
       <form @submit.prevent="saveCall" class="space-y-6">
         <div>
-          <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-widest mb-2 ml-1">Title *</label>
+          <label class="block text-[11px] text-slate-500 font-medium mb-2 ml-1">Title *</label>
           <input v-model="callForm.title" type="text" required class="input h-12 font-bold" placeholder="e.g. National Research Innovation Grant 2025" />
         </div>
         <div>
-          <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-widest mb-2 ml-1">Description *</label>
+          <label class="block text-[11px] text-slate-500 font-medium mb-2 ml-1">Description *</label>
           <textarea v-model="callForm.description" required rows="4" class="input resize-none pt-3" placeholder="Describe the research areas and what is expected..."></textarea>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
-            <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-widest mb-2 ml-1">Deadline *</label>
+            <label class="block text-[11px] text-slate-500 font-medium mb-2 ml-1">Deadline *</label>
             <input v-model="callForm.deadline" type="date" required class="input h-12 font-bold" />
           </div>
           <div>
-            <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-widest mb-2 ml-1">Budget Limit (ETB)</label>
+            <label class="block text-[11px] text-slate-500 font-medium mb-2 ml-1">Budget Limit (ETB)</label>
             <input v-model.number="callForm.budget_limit" type="number" min="0" step="1000" class="input h-12 font-bold" placeholder="500000" />
           </div>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
-            <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-widest mb-2 ml-1">Academic Year</label>
+            <label class="block text-[11px] text-slate-500 font-medium mb-2 ml-1">Academic Year</label>
             <select v-model="callForm.academic_year_id" class="input h-12 font-bold">
               <option value="">Select Year</option>
               <option v-for="y in academicYears" :key="y.id" :value="y.id">{{ y.name }}</option>
             </select>
           </div>
           <div>
-            <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-widest mb-2 ml-1">Thematic Area</label>
+            <label class="block text-[11px] text-slate-500 font-medium mb-2 ml-1">Thematic Area</label>
             <select v-model="callForm.thematic_areas" class="input h-12 font-bold">
               <option value="">Select Area</option>
               <option v-for="t in thematicAreas" :key="t.id" :value="t.name">{{ t.name }}</option>
@@ -137,11 +145,11 @@
         </div>
 
         <!-- Hierarchical Scope Fields -->
-        <div class="bg-slate-50 rounded-xl p-6 border border-slate-200 space-y-6">
-          <h4 class="text-xs font-bold text-slate-400 capitalize tracking-widest border-b border-slate-200 pb-3">Scope & Targeting</h4>
+        <div class="bg-slate-50 rounded-2xl p-6 border border-slate-100 space-y-6">
+          <h4 class="text-xs font-medium text-slate-400 border-b border-slate-100 pb-3">Scope & Targeting</h4>
           <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <div>
-              <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-widest mb-2 ml-1">University</label>
+              <label class="block text-[11px] text-slate-500 font-medium mb-2 ml-1">University</label>
               <select v-model="callForm.university_id" :disabled="auth.hasRole('research_admin','director','department_head')" class="input h-12 font-bold" :class="{ 'bg-slate-100 cursor-not-allowed': auth.hasRole('research_admin','director','department_head') }">
                 <option value="">All Universities</option>
                 <option v-for="u in universities" :key="u.id" :value="u.id">{{ u.name }}</option>
@@ -149,7 +157,7 @@
               <p v-if="auth.hasRole('research_admin','director','department_head')" class="text-[9px] text-slate-400 mt-1 ml-1">Auto-set by role</p>
             </div>
             <div>
-              <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-widest mb-2 ml-1">Campus</label>
+              <label class="block text-[11px] text-slate-500 font-medium mb-2 ml-1">Campus</label>
               <select v-model="callForm.campus_id" :disabled="auth.hasRole('director','department_head')" class="input h-12 font-bold" :class="{ 'bg-slate-100 cursor-not-allowed': auth.hasRole('director','department_head') }">
                 <option value="">All Campuses</option>
                 <option v-for="c in campuses" :key="c.id" :value="c.id">{{ c.name }}</option>
@@ -157,7 +165,7 @@
               <p v-if="auth.hasRole('director','department_head')" class="text-[9px] text-slate-400 mt-1 ml-1">Auto-set by role</p>
             </div>
             <div>
-              <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-widest mb-2 ml-1">Faculty</label>
+              <label class="block text-[11px] text-slate-500 font-medium mb-2 ml-1">Faculty</label>
               <select v-model="callForm.faculty_id" :disabled="auth.hasRole('director','department_head')" class="input h-12 font-bold" :class="{ 'bg-slate-100 cursor-not-allowed': auth.hasRole('director','department_head') }">
                 <option value="">All Faculties</option>
                 <option v-for="f in faculties" :key="f.id" :value="f.id">{{ f.name }}</option>
@@ -165,7 +173,7 @@
               <p v-if="auth.hasRole('director','department_head')" class="text-[9px] text-slate-400 mt-1 ml-1">Auto-set by role</p>
             </div>
             <div>
-              <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-widest mb-2 ml-1">Department</label>
+              <label class="block text-[11px] text-slate-500 font-medium mb-2 ml-1">Department</label>
               <select v-model="callForm.department_id" :disabled="auth.hasRole('director','department_head')" class="input h-12 font-bold" :class="{ 'bg-slate-100 cursor-not-allowed': auth.hasRole('director','department_head') }">
                 <option value="">All Departments</option>
                 <option v-for="d in departments" :key="d.id" :value="d.id">{{ d.name }}</option>
@@ -173,7 +181,7 @@
               <p v-if="auth.hasRole('director','department_head')" class="text-[9px] text-slate-400 mt-1 ml-1">Auto-set by role</p>
             </div>
             <div>
-              <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-widest mb-2 ml-1">Research Center</label>
+              <label class="block text-[11px] text-slate-500 font-medium mb-2 ml-1">Research Center</label>
               <select v-model="callForm.research_center_id" :disabled="auth.hasRole('director','department_head')" class="input h-12 font-bold" :class="{ 'bg-slate-100 cursor-not-allowed': auth.hasRole('director','department_head') }">
                 <option value="">All Centers</option>
                 <option v-for="rc in researchCenters" :key="rc.id" :value="rc.id">{{ rc.name }}</option>
@@ -185,14 +193,14 @@
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
-            <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-widest mb-2 ml-1">Status</label>
+            <label class="block text-[11px] text-slate-500 font-medium mb-2 ml-1">Status</label>
             <select v-model="callForm.status_id" class="input h-12 font-bold">
               <option value="">Select Status</option>
               <option v-for="s in callStatuses" :key="s.id" :value="s.id">{{ s.name }}</option>
             </select>
           </div>
           <div>
-            <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-widest mb-2 ml-1">Guideline (File Reference)</label>
+            <label class="block text-[11px] text-slate-500 font-medium mb-2 ml-1">Guideline (File Reference)</label>
             <select v-model="callForm.guideline_file_id" class="input h-12 font-bold">
               <option value="">No Guideline Attached</option>
               <option v-for="f in files" :key="f.id" :value="f.id">{{ f.original_name }}</option>
@@ -200,8 +208,8 @@
           </div>
         </div>
         <div class="flex justify-end gap-4 pt-6 border-t border-slate-100">
-          <button type="button" @click="closeCallModal" class="btn btn-secondary px-5 h-11 text-[11px] font-bold capitalize tracking-widest">Cancel</button>
-          <button type="submit" :disabled="saving" class="btn btn-primary px-5 h-11 shadow-lg shadow-blue-500/20 text-[11px] font-bold capitalize tracking-widest">
+          <button type="button" @click="closeCallModal" class="btn btn-secondary px-5 h-11 text-[11px] font-medium">Cancel</button>
+          <button type="submit" :disabled="saving" class="btn btn-primary px-5 h-11 text-[11px] font-medium">
             {{ saving ? 'Saving...' : (editingCall ? 'Update Call' : 'Create Call') }}
           </button>
         </div>
@@ -254,6 +262,10 @@ async function fetchCalls() {
 }
 
 function viewCall(call) { selectedCall.value = call }
+
+function handleGuestApply() {
+  notif.warning('You do not have permission to submit proposals. If this was recently granted, please refresh the page to reload your permissions.')
+}
 
 function editCall(call) {
   editingCall.value = call

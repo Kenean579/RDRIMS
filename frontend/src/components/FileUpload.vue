@@ -1,6 +1,6 @@
 <template>
   <div class="w-full">
-    <label v-if="label" class="block text-xs font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">
+    <label v-if="label" class="block text-xs font-medium text-slate-400 mb-2 ml-1">
       {{ label }}
       <span v-if="required" class="text-rose-500">*</span>
     </label>
@@ -10,10 +10,7 @@
       @dragleave.prevent="dragover = false"
       @drop.prevent="handleDrop"
       class="border-2 border-dashed rounded-2xl p-5 flex flex-col items-center justify-center transition-all bg-slate-50 relative overflow-hidden"
-      :class="[
-        dragover ? 'border-brand bg-brand/5' : 'border-slate-300 hover:border-slate-400',
-        error ? 'border-rose-400 bg-rose-50' : ''
-      ]"
+      :class="[ dragover ? 'border-brand bg-brand/5' : 'border-slate-300 hover:border-slate-400', error ? 'border-rose-400 bg-rose-50' : '' ]"
     >
       <input 
         type="file" 
@@ -30,20 +27,20 @@
           </svg>
         </div>
         <p class="text-sm font-bold text-slate-700">Click to upload or drag and drop</p>
-        <p class="text-[10px] capitalize tracking-widest text-slate-400 font-bold mt-2">
-          {{ allowedExtensions.replace(/\./g, '').toUpperCase() }} (MAX. {{ maxSizeMb }}MB)
+        <p class="text-[10px] text-slate-400 font-medium mt-2">
+          {{ allowedExtensions.replace(/\./g, '') }} (MAX. {{ maxSizeMb }}MB)
         </p>
       </div>
 
-      <div v-else class="w-full relative z-10 bg-white border border-slate-200 rounded-xl p-4 flex items-center gap-4 shadow-sm">
-        <div class="h-10 w-10 shrink-0 rounded-lg bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-500">
+      <div v-else class="w-full relative z-10 bg-white border border-slate-100 rounded-2xl p-4 flex items-center gap-4 shadow-sm">
+        <div class="h-10 w-10 shrink-0 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-500">
           <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
           </svg>
         </div>
         <div class="flex-1 min-w-0">
           <p class="text-sm font-bold text-slate-800 truncate">{{ selectedFile.name }}</p>
-          <p class="text-[10px] font-bold tracking-widest text-slate-400 mt-1">{{ formatBytes(selectedFile.size) }}</p>
+          <p class="text-[10px] font-medium tracking-widest text-slate-400 mt-1">{{ formatBytes(selectedFile.size) }}</p>
         </div>
         <button type="button" @click.prevent="clearFile" class="shrink-0 h-8 w-8 rounded-full bg-slate-100 hover:bg-rose-100 text-slate-500 hover:text-rose-600 flex items-center justify-center transition-colors">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -52,7 +49,7 @@
         </button>
       </div>
     </div>
-    <p v-if="error || internalError" class="mt-2 text-[10px] font-bold capitalize tracking-widest text-rose-500 ml-1">
+    <p v-if="error || internalError" class="mt-2 text-[10px] font-medium text-rose-500 ml-1">
       {{ error || internalError }}
     </p>
   </div>

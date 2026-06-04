@@ -7,15 +7,15 @@
     <div class="w-full max-w-md animate-fade">
       <!-- Branding / Logo -->
       <div class="flex flex-col items-center mb-5">
-        <div class="h-14 w-14 bg-brand rounded-2xl flex items-center justify-center text-white font-bold text-2xl shadow-lg shadow-brand/20 mb-6 group hover:rotate-6 transition-transform">
+        <div class="h-14 w-14 bg-brand rounded-2xl flex items-center justify-center text-white font-bold text-2xl mb-6 group hover:rotate-6 transition-transform">
           R
         </div>
         <h1 class="text-xl font-bold text-slate-800 tracking-tight">Recover Account</h1>
-        <p class="text-slate-500 font-medium text-sm mt-1 capitalize tracking-widest text-center">We'll help you back in</p>
+        <p class="text-slate-500 font-medium text-sm mt-1 text-center">We'll help you back in</p>
       </div>
 
       <!-- Forgot Password Card -->
-      <div class="bg-white rounded-[32px] border border-slate-200/60 shadow-2xl shadow-slate-200/50 p-5 relative overflow-hidden">
+      <div class="bg-white rounded-[32px] border border-slate-100/60 shadow-2xl shadow-slate-200/50 p-5 relative overflow-hidden">
         <div class="absolute top-0 left-0 w-full h-1.5 bg-brand"></div>
         
         <form @submit.prevent="submit" class="space-y-8">
@@ -24,7 +24,7 @@
           </p>
 
           <div class="space-y-2">
-            <label class="block text-[10px] font-bold text-slate-400 capitalize tracking-widest ml-1">E-mail Address</label>
+            <label class="block text-[10px] font-medium text-slate-400 ml-1">E-mail Address</label>
             <div class="relative group">
               <div class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand transition-colors">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
@@ -34,7 +34,7 @@
                 type="email" 
                 required 
                 placeholder="name@university.edu"
-                class="w-full bg-slate-50 border border-slate-200 rounded-2xl pl-12 pr-4 py-4 text-sm font-medium focus:bg-white focus:border-brand focus:ring-4 focus:ring-brand/10 transition-all outline-none" 
+                class="w-full bg-slate-50 border border-slate-100 rounded-2xl pl-12 pr-4 py-4 text-sm font-medium focus:bg-white focus:border-brand focus:ring-4 focus:ring-brand/10 transition-all outline-none" 
               />
             </div>
           </div>
@@ -42,7 +42,7 @@
           <button 
             type="submit" 
             :disabled="loading"
-            class="w-full bg-brand text-white font-bold capitalize tracking-widest text-xs py-5 rounded-2xl shadow-xl shadow-brand/20 hover:bg-brand-hover hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-70 flex items-center justify-center gap-3"
+            class="w-full bg-brand text-white font-bold text-xs py-5 rounded-2xl shadow-xl shadow-brand/20 hover:bg-brand-hover hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-70 flex items-center justify-center gap-3"
           >
             <span v-if="loading" class="w-5 h-5 border-3 border-white/30 border-t-white rounded-full animate-spin"></span>
             <span>{{ loading ? 'Sending Mail...' : 'Send Recovery Link' }}</span>
@@ -50,7 +50,7 @@
         </form>
 
         <div class="mt-5 pt-4 border-t border-slate-100 text-center">
-          <router-link to="/login" class="text-[11px] font-bold text-brand capitalize tracking-widest hover:underline underline-offset-4 flex items-center justify-center gap-2">
+          <router-link to="/login" class="text-[11px] font-medium text-brand hover:underline underline-offset-4 flex items-center justify-center gap-2">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
             Back to Sign In
           </router-link>

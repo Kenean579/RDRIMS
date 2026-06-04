@@ -38,7 +38,7 @@ class AuthController extends Controller
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
-            'user' => $user->load('roles.permissions'),
+            'user' => $user->load('roles.permissions', 'expertise'),
             'access_token' => $token,
             'token_type' => 'Bearer',
         ]);
@@ -62,16 +62,22 @@ class AuthController extends Controller
             'google_scholar_id'  => 'nullable|string',
             'scopus_id'          => 'nullable|string',
             'profile_image_id'   => 'nullable|exists:files,id',
+            'expertise'          => 'nullable|array',
+            'expertise.*'        => 'exists:expertises,id',
         ]);
         
         $user->update($validated);
+
+        if ($request->has('expertise')) {
+            $user->expertise()->sync($request->expertise);
+        }
         
         if ($request->has('password') && $request->filled('password')) {
             $request->validate(['password' => 'string|min:8|confirmed']);
             $user->update(['password' => \Hash::make($request->password)]);
         }
 
-        return response()->json($user->load('roles.permissions', 'profile_image'));
+        return response()->json($user->load('roles.permissions', 'profile_image', 'expertise'));
     }
 
     public function forgotPassword(Request $request): JsonResponse
@@ -105,6 +111,6 @@ class AuthController extends Controller
 
     public function user(Request $request): JsonResponse
     {
-        return response()->json($request->user()->load('roles.permissions', 'department.faculty', 'profile_image'));
+        return response()->json($request->user()->load('roles.permissions', 'department.faculty', 'profile_image', 'expertise'));
     }
 }

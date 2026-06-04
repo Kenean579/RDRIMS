@@ -9,7 +9,7 @@
         This public section is currently under construction as part of Phase 20 rollout. 
         It will be launched shortly to provide transparent access to our research ecosystem.
       </p>
-      <router-link to="/" class="inline-flex items-center gap-2 px-5 py-3.5 bg-brand text-white font-bold rounded-xl shadow-lg shadow-brand/30 hover:-translate-y-0.5 transition-transform">
+      <router-link to="/" class="inline-flex items-center gap-2 px-5 py-3.5 bg-brand text-white font-bold rounded-2xl hover:-translate-y-0.5 transition-transform">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
         Back to Home
       </router-link>

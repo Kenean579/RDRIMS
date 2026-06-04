@@ -1,13 +1,15 @@
 <template>
   <!-- Global Notifications -->
   <transition name="slide">
-    <div v-if="notif.show" :class="notifBg" class="fixed top-20 right-6 z-9999 text-white px-6 py-4 rounded-2xl shadow-2xl flex items-center gap-4 min-w-[300px] max-w-md border border-white/20 backdrop-blur-sm">
-      <div class="text-2xl">{{ notifIcon }}</div>
-      <div class="flex-1">
-        <p class="font-bold text-xs capitalize tracking-widest opacity-70">{{ notif.type }}</p>
-        <p class="text-sm font-semibold">{{ notif.message }}</p>
+    <div v-if="notif.show" :class="notifTypeClass" class="fixed top-20 right-6 z-9999 px-5 py-3 rounded-2xl shadow-xl flex items-center gap-3 min-w-[320px] max-w-md border animate-fade">
+      <div class="shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-white/50 border border-current opacity-80">
+        <span class="text-lg">{{ notifIcon }}</span>
       </div>
-      <button @click="notif.show = false" class="text-white/50 hover:text-white transition text-2xl">&times;</button>
+      <div class="flex-1">
+        <h4 class="text-xs font-bold  tracking-wider opacity-60 mb-0.5">{{ notif.type }}</h4>
+        <p class="text-[13px] font-semibold leading-snug">{{ notif.message }}</p>
+      </div>
+      <button @click="notif.show = false" class="text-current opacity-40 hover:opacity-100 transition text-xl p-1">&times;</button>
     </div>
   </transition>
 
@@ -24,26 +26,28 @@ const auth = useAuthStore()
 const notif = useNotificationStore()
 const lookupStore = useLookupStore()
 
-if (auth.isAuthenticated && !auth.user) auth.fetchUser()
+// Always refresh user permissions from backend on app boot.
+// Using cached localStorage user first, then syncing fresh data.
+if (auth.isAuthenticated) auth.fetchUser()
 lookupStore.initialize()
 
-const notifBg = computed(() => {
+const notifTypeClass = computed(() => {
   switch(notif.type) {
-    case 'success': return 'bg-emerald-600'
-    case 'error': return 'bg-rose-600'
-    case 'warning': return 'bg-amber-600'
-    case 'info': return 'bg-blue-600'
-    default: return 'bg-slate-700'
+    case 'success': return 'bg-emerald-50 text-emerald-900 border-emerald-200'
+    case 'error':   return 'bg-rose-50 text-rose-900 border-rose-200'
+    case 'warning': return 'bg-amber-50 text-amber-900 border-amber-200'
+    case 'info':    return 'bg-blue-50 text-blue-900 border-blue-200'
+    default:        return 'bg-slate-50 text-slate-900 border-slate-200'
   }
 })
 
 const notifIcon = computed(() => {
   switch(notif.type) {
-    case 'success': return '✅'
-    case 'error': return '❌'
-    case 'warning': return '⚠️'
-    case 'info': return 'ℹ️'
-    default: return '🔔'
+    case 'success': return '✓'
+    case 'error':   return '✕'
+    case 'warning': return '!'
+    case 'info':    return 'i'
+    default:        return '•'
   }
 })
 </script>

@@ -7,11 +7,11 @@
     </div>
 
     <!-- Sign In Required State -->
-    <div v-else-if="!allowPublicSubmission" class="bg-white rounded-2xl border border-slate-200 p-6 text-center">
+    <div v-else-if="!allowPublicSubmission" class="bg-white rounded-2xl border border-slate-100 p-6 text-center">
       <div class="w-16 h-16 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-6 text-xl">🔒</div>
       <h2 class="text-2xl font-bold text-slate-800 mb-4">Sign In Required</h2>
       <p class="text-slate-500 mb-5">Please sign in to submit a community problem.</p>
-      <router-link to="/login" class="inline-block px-5 py-3 bg-brand text-white font-bold rounded-xl hover:bg-brand-dark transition-colors">
+      <router-link to="/login" class="inline-block px-5 py-3 bg-brand text-white font-bold rounded-2xl hover:bg-brand-dark transition-colors">
         Sign In
       </router-link>
     </div>
@@ -48,7 +48,7 @@
       </div>
 
       <!-- Submission Form -->
-      <div class="bg-white rounded-2xl border border-slate-200 p-5">
+      <div class="bg-white rounded-2xl border border-slate-100 p-5">
         <form @submit.prevent="submitProblem" class="space-y-6">
           
           <!-- Problem Title -->
@@ -60,7 +60,7 @@
               required
               maxlength="255"
               :class="{ 'border-rose-500': errors.title }"
-              class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none transition-colors"
+              class="w-full border border-slate-300 rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none transition-colors"
               placeholder="e.g., Water Shortage in Dessie Town"
             />
             <p v-if="errors.title" class="text-xs text-rose-500 mt-1">{{ errors.title }}</p>
@@ -75,7 +75,7 @@
               rows="5"
               minlength="50"
               :class="{ 'border-rose-500': errors.description }"
-              class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none resize-none transition-colors"
+              class="w-full border border-slate-300 rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none resize-none transition-colors"
               placeholder="Describe the problem in detail. What is happening? Who is affected? How long has this been going on?"
             ></textarea>
             <div class="flex items-center justify-between mt-1">
@@ -93,7 +93,7 @@
               required
               maxlength="255"
               :class="{ 'border-rose-500': errors.location }"
-              class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none transition-colors"
+              class="w-full border border-slate-300 rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none transition-colors"
               placeholder="e.g., Dessie, South Wollo, Ethiopia"
             />
             <p v-if="errors.location" class="text-xs text-rose-500 mt-1">{{ errors.location }}</p>
@@ -106,7 +106,7 @@
               v-model="form.contact_info" 
               type="text" 
               maxlength="255"
-              class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none transition-colors"
+              class="w-full border border-slate-300 rounded-2xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none transition-colors"
               placeholder="Email or phone so researchers can contact you for follow-up"
             />
           </div>
@@ -126,7 +126,7 @@
           <button 
             type="submit" 
             :disabled="submitting"
-            class="w-full px-6 py-3 bg-brand text-white font-bold rounded-xl shadow-lg shadow-brand/30 hover:shadow-brand/50 hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-y-0 flex items-center justify-center gap-2"
+            class="w-full px-6 py-3 bg-brand text-white font-bold rounded-2xl hover:shadow-brand/50 hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:cursor-not-allowed disabled:shadow-none disabled:translate-y-0 flex items-center justify-center gap-2"
           >
             <svg v-if="submitting" class="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" viewBox="0 0 24 24"></svg>
             {{ submitting ? 'Submitting...' : 'Submit Problem' }}
@@ -137,7 +137,7 @@
             v-if="showSuccess"
             type="button"
             @click="resetForm"
-            class="w-full px-6 py-3 bg-white text-slate-700 font-bold rounded-xl border border-slate-300 hover:border-brand hover:text-brand transition-all"
+            class="w-full px-6 py-3 bg-white text-slate-700 font-bold rounded-2xl border border-slate-300 hover:border-brand hover:text-brand transition-all"
           >
             Submit Another Problem
           </button>

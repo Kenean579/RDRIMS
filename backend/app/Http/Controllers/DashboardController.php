@@ -7,6 +7,10 @@ use App\Models\Proposal;
 use App\Models\User;
 use App\Models\Publication;
 use App\Models\ResearchCenter;
+use App\Models\University;
+use App\Models\Campus;
+use App\Models\Faculty;
+use App\Models\Call;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -37,40 +41,42 @@ class DashboardController extends Controller
     private function adminDashboard(User $user): JsonResponse
     {
         $request = request();
-        $contextActive = $request->hasAny(['university_id', 'campus_id', 'faculty_id', 'department_id']);
-
-        // Build a base user-ID set scoped to the selected hierarchy
-        $userIdsQuery = null;
-        if ($contextActive) {
-            $userIdsQuery = User::query()
-                ->join('departments', 'users.department_id', '=', 'departments.id')
+        
+        $proposalsQuery = Proposal::hierarchical($user, 'submitted_by');
+        $projectsQuery = Project::hierarchical($user, 'pi_id');
+        $usersQuery = User::query();
+        
+        if ($request->hasAny(['university_id', 'campus_id', 'faculty_id', 'department_id'])) {
+            $usersQuery->join('departments', 'users.department_id', '=', 'departments.id')
                 ->join('faculties', 'departments.faculty_id', '=', 'faculties.id')
                 ->join('campuses', 'faculties.campus_id', '=', 'campuses.id')
                 ->when($request->department_id, fn($q) => $q->where('departments.id', $request->department_id))
                 ->when($request->faculty_id, fn($q) => $q->where('faculties.id', $request->faculty_id))
                 ->when($request->campus_id, fn($q) => $q->where('campuses.id', $request->campus_id))
                 ->when($request->university_id, fn($q) => $q->where('campuses.university_id', $request->university_id))
-                ->pluck('users.id');
+                ->select('users.*');
         }
 
-        $proposalsQuery = Proposal::query();
-        $projectsQuery = Project::query();
-        $usersQuery = User::query();
-        $pubsQuery = Publication::query();
+        $pubsQuery = Publication::whereHas('project', function($q) use ($user) {
+            $q->hierarchical($user, 'pi_id');
+        });
 
-        if ($userIdsQuery) {
-            $proposalsQuery->whereIn('submitted_by', $userIdsQuery);
-            $projectsQuery->whereIn('pi_id', $userIdsQuery);
-            $usersQuery->whereIn('id', $userIdsQuery);
-            // Publications don't have a direct user FK, scope via project
-            $pubsQuery->whereHas('project', fn($q) => $q->whereIn('pi_id', $userIdsQuery));
-        }
-
-        $statusBreakdown = DB::table('proposals')
+        $statusBreakdown = Proposal::hierarchical($user, 'submitted_by')
             ->join('proposal_statuses', 'proposals.status_id', '=', 'proposal_statuses.id')
-            ->when($userIdsQuery, fn($q) => $q->whereIn('proposals.submitted_by', $userIdsQuery))
             ->select('proposal_statuses.name', DB::raw('count(*) as count'))
             ->groupBy('proposal_statuses.id', 'proposal_statuses.name')
+            ->get();
+
+        $countsByStatus = $statusBreakdown->pluck('count', 'name');
+
+        $universityStats = University::query()
+            ->leftJoin('campuses', 'universities.id', '=', 'campuses.university_id')
+            ->leftJoin('faculties', 'campuses.id', '=', 'faculties.campus_id')
+            ->leftJoin('departments', 'faculties.id', '=', 'departments.faculty_id')
+            ->leftJoin('users', 'departments.id', '=', 'users.department_id')
+            ->leftJoin('proposals', 'users.id', '=', 'proposals.submitted_by')
+            ->select('universities.name', 'universities.code', DB::raw('count(proposals.id) as proposals_count'))
+            ->groupBy('universities.id', 'universities.name', 'universities.code')
             ->get();
 
         return response()->json([
@@ -78,10 +84,21 @@ class DashboardController extends Controller
             'projects_count' => $projectsQuery->count(),
             'users_count' => $usersQuery->count(),
             'centers_count' => ResearchCenter::count(),
+            'universities_count' => University::count(),
+            'campuses_count' => Campus::count(),
+            'faculties_count' => Faculty::count(),
+            'calls_count' => Call::whereHas('status', fn($s) => $s->where('name', 'open'))->count(),
             'publications_count' => $pubsQuery->count(),
+            
+            // Status-specific counts for the new admin grid
+            'completed_count' => ($countsByStatus['approved'] ?? 0) + ($countsByStatus['rejected'] ?? 0),
+            'in_progress_count' => ($countsByStatus['under_review'] ?? 0) + ($countsByStatus['revision_requested'] ?? 0),
+            'pending_count' => $countsByStatus['submitted'] ?? 0,
+            
+            'university_stats' => $universityStats,
             'status_breakdown' => $statusBreakdown,
-            'recent_proposals' => Proposal::with(['submittedBy', 'status'])
-                ->when($userIdsQuery, fn($q) => $q->whereIn('submitted_by', $userIdsQuery))
+            'recent_proposals' => Proposal::hierarchical($user, 'submitted_by')
+                ->with(['submittedBy', 'status'])
                 ->latest()->limit(8)->get(),
         ]);
     }
@@ -89,7 +106,6 @@ class DashboardController extends Controller
     private function reviewerDashboard(User $user): JsonResponse
     {
         $reviews = DB::table('proposal_reviewers')->where('reviewer_id', $user->id)->get();
-        
         $pending = $reviews->whereNull('submitted_at')->count();
         $completed = $reviews->whereNotNull('submitted_at')->count();
         $avgScore = $reviews->whereNotNull('submitted_at')->avg('overall_score') ?? 0;
@@ -102,20 +118,24 @@ class DashboardController extends Controller
                 ['name' => 'Pending', 'count' => $pending],
                 ['name' => 'Completed', 'count' => $completed],
             ],
-            'recent_proposals' => $user->reviewedProposals()->with('status')->latest()->limit(8)->get(),
+            'recent_proposals' => $user->reviewedProposals()->with(['status', 'submittedBy'])->latest()->limit(8)->get(),
         ]);
     }
 
     private function financeDashboard(User $user): JsonResponse
     {
-        // FinanceCheck uses status_id (FK to finance_check_statuses)
-        $pendingStatusId = DB::table('finance_check_statuses')->where('name', 'pending')->value('id');
-        $approvedStatusId = DB::table('finance_check_statuses')->where('name', 'approved')->value('id');
-
-        $pendingChecks = \App\Models\FinanceCheck::where('status_id', $pendingStatusId)->count();
-        $approvedBudgets = \App\Models\FinanceCheck::where('status_id', $approvedStatusId)->count();
-        $totalExpenses = \App\Models\Expense::sum('amount');
-        $activeProjects = Project::whereHas('status', fn($q) => $q->where('name', 'active'))->count();
+        $pendingChecks = \App\Models\FinanceCheck::whereHas('status', fn($q) => $q->where('name', 'pending'))
+            ->whereHas('proposal', fn($q) => $q->hierarchical($user, 'submitted_by'))
+            ->count();
+            
+        $approvedBudgets = \App\Models\FinanceCheck::whereHas('status', fn($q) => $q->where('name', 'approved'))
+            ->whereHas('proposal', fn($q) => $q->hierarchical($user, 'submitted_by'))
+            ->count();
+            
+        $totalExpenses = \App\Models\Expense::whereHas('project', fn($q) => $q->hierarchical($user, 'pi_id'))->sum('amount');
+        
+        $activeProjects = Project::hierarchical($user, 'pi_id')
+            ->whereHas('status', fn($q) => $q->where('name', 'active'))->count();
 
         return response()->json([
             'pending_finance_checks' => $pendingChecks,
@@ -127,20 +147,25 @@ class DashboardController extends Controller
                 ['name' => 'Approved Budgets', 'count' => $approvedBudgets],
                 ['name' => 'Active Projects', 'count' => $activeProjects],
             ],
-            'recent_proposals' => Proposal::with('status')->latest()->limit(8)->get(),
+            'recent_proposals' => Proposal::hierarchical($user, 'submitted_by')
+                ->with(['status', 'submittedBy'])
+                ->latest()->limit(8)->get(),
         ]);
     }
 
     private function ethicsDashboard(User $user): JsonResponse
     {
-        // EthicsRequest uses approval_status_id (FK to ethics_approval_statuses)
-        $pendingId = DB::table('ethics_approval_statuses')->where('name', 'pending')->value('id');
-        $approvedId = DB::table('ethics_approval_statuses')->where('name', 'approved')->value('id');
-        $rejectedId = DB::table('ethics_approval_statuses')->where('name', 'rejected')->value('id');
-
-        $pending = \App\Models\EthicsRequest::where('approval_status_id', $pendingId)->count();
-        $cleared = \App\Models\EthicsRequest::where('approval_status_id', $approvedId)->count();
-        $rejected = \App\Models\EthicsRequest::where('approval_status_id', $rejectedId)->count();
+        $pending = \App\Models\EthicsRequest::whereHas('approvalStatus', fn($q) => $q->where('name', 'pending'))
+            ->whereHas('proposal', fn($q) => $q->hierarchical($user, 'submitted_by'))
+            ->count();
+            
+        $cleared = \App\Models\EthicsRequest::whereHas('approvalStatus', fn($q) => $q->where('name', 'approved'))
+            ->whereHas('proposal', fn($q) => $q->hierarchical($user, 'submitted_by'))
+            ->count();
+            
+        $rejected = \App\Models\EthicsRequest::whereHas('approvalStatus', fn($q) => $q->where('name', 'rejected'))
+            ->whereHas('proposal', fn($q) => $q->hierarchical($user, 'submitted_by'))
+            ->count();
 
         return response()->json([
             'pending_ethics' => $pending,
@@ -152,23 +177,23 @@ class DashboardController extends Controller
                 ['name' => 'Cleared', 'count' => $cleared],
                 ['name' => 'Rejected', 'count' => $rejected],
             ],
-            'recent_proposals' => Proposal::with('status')->latest()->limit(8)->get(),
+            'recent_proposals' => Proposal::hierarchical($user, 'submitted_by')
+                ->with(['status', 'submittedBy'])
+                ->latest()->limit(8)->get(),
         ]);
     }
 
     private function departmentHeadDashboard(User $user): JsonResponse
     {
         $deptId = $user->department_id;
-
-        $deptProposals = Proposal::whereHas('submittedBy', fn($q) => $q->where('department_id', $deptId))->count();
-        $deptProjects = Project::whereHas('pi', fn($q) => $q->where('department_id', $deptId))->count();
+        
+        $deptProposals = Proposal::hierarchical($user, 'submitted_by')->count();
+        $deptProjects = Project::hierarchical($user, 'pi_id')->count();
         $deptStaff = User::where('department_id', $deptId)->count();
-        $deptPublications = Publication::whereHas('authors', fn($q) => $q->where('department_id', $deptId))->count();
+        $deptPublications = Publication::whereHas('project', fn($q) => $q->hierarchical($user, 'pi_id'))->count();
 
-        $statusBreakdown = DB::table('proposals')
+        $statusBreakdown = Proposal::hierarchical($user, 'submitted_by')
             ->join('proposal_statuses', 'proposals.status_id', '=', 'proposal_statuses.id')
-            ->join('users', 'proposals.submitted_by', '=', 'users.id')
-            ->where('users.department_id', $deptId)
             ->select('proposal_statuses.name', DB::raw('count(*) as count'))
             ->groupBy('proposal_statuses.id', 'proposal_statuses.name')
             ->get();
@@ -179,8 +204,8 @@ class DashboardController extends Controller
             'staff_count' => $deptStaff,
             'publications_count' => $deptPublications,
             'status_breakdown' => $statusBreakdown,
-            'recent_proposals' => Proposal::with(['submittedBy', 'status'])
-                ->whereHas('submittedBy', fn($q) => $q->where('department_id', $deptId))
+            'recent_proposals' => Proposal::hierarchical($user, 'submitted_by')
+                ->with(['submittedBy', 'status'])
                 ->latest()->limit(8)->get(),
         ]);
     }
@@ -189,21 +214,25 @@ class DashboardController extends Controller
     {
         $centerIds = $user->researchCenters()->pluck('research_centers.id');
         
-        $centerProjects = Project::whereHas('proposal', function($q) use ($centerIds) {
-            // projects linked through proposals by researchers in centers
-        })->count();
+        $proposalsQuery = Proposal::hierarchical($user, 'submitted_by');
+        $projectsQuery = Project::hierarchical($user, 'pi_id');
+        $pubsQuery = Publication::whereHas('project', fn($q) => $q->hierarchical($user, 'pi_id'));
+
+        $statusBreakdown = Proposal::hierarchical($user, 'submitted_by')
+            ->join('proposal_statuses', 'proposals.status_id', '=', 'proposal_statuses.id')
+            ->select('proposal_statuses.name', DB::raw('count(*) as count'))
+            ->groupBy('proposal_statuses.id', 'proposal_statuses.name')
+            ->get();
 
         return response()->json([
-            'proposals_count' => Proposal::count(),
-            'projects_count' => Project::count(),
-            'centers_managed' => $centerIds->count() ?: 1,
-            'publications_count' => Publication::count(),
-            'status_breakdown' => DB::table('proposals')
-                ->join('proposal_statuses', 'proposals.status_id', '=', 'proposal_statuses.id')
-                ->select('proposal_statuses.name', DB::raw('count(*) as count'))
-                ->groupBy('proposal_statuses.id', 'proposal_statuses.name')
-                ->get(),
-            'recent_proposals' => Proposal::with(['submittedBy', 'status'])->latest()->limit(8)->get(),
+            'proposals_count' => $proposalsQuery->count(),
+            'projects_count' => $projectsQuery->count(),
+            'centers_managed' => $centerIds->count(),
+            'publications_count' => $pubsQuery->count(),
+            'status_breakdown' => $statusBreakdown,
+            'recent_proposals' => Proposal::hierarchical($user, 'submitted_by')
+                ->with(['submittedBy', 'status'])
+                ->latest()->limit(8)->get(),
         ]);
     }
 

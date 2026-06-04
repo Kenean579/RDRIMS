@@ -11,19 +11,19 @@
       </button>
     </div>
 
-    <div v-if="loading" class="card p-5"><LoadingSkeleton :rows="3" /></div>
+    <div v-if="loading" class="card p-8"><LoadingSkeleton :rows="3" /></div>
     <div v-else-if="years.length === 0" class="card">
       <EmptyState icon="📆" title="No academic years" description="Create academic years to organize your institution's timeline." action-label="Add Year" @action="showCreate = true" />
     </div>
 
     <div v-else class="space-y-4">
-      <div v-for="year in years" :key="year.id" class="card p-5 group card-hover flex items-center justify-between">
+      <div v-for="year in years" :key="year.id" class="card p-8 group card-hover flex items-center justify-between">
         <div>
           <div class="flex items-center gap-3 mb-1">
             <h3 class="text-base font-bold text-slate-800 group-hover:text-blue-600 transition">{{ year.name }}</h3>
             <span v-if="year.is_current" class="badge badge-green">Current</span>
           </div>
-          <p class="text-[11px] font-bold text-slate-400 capitalize tracking-widest">{{ formatDate(year.start_date) }} – {{ formatDate(year.end_date) }}</p>
+          <p class="text-[11px] font-medium text-slate-400">{{ formatDate(year.start_date) }} – {{ formatDate(year.end_date) }}</p>
         </div>
         <div class="flex gap-2">
           <button v-if="!year.is_current" @click="setCurrent(year)" class="btn btn-ghost text-green-600 font-bold" style="padding: 6px 10px; font-size: 11px">Set Current</button>
@@ -36,16 +36,16 @@
     <Modal :show="showCreate || !!editingYear" :title="editingYear ? 'Edit Academic Year' : 'Add New Year'" @close="closeModal">
       <form @submit.prevent="saveYear" class="space-y-5 px-1 py-1">
         <div>
-          <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-wider mb-1.5 ml-1">Year Name *</label>
+          <label class="block text-[11px] text-slate-500 font-medium  tracking-wider mb-1.5 ml-1">Year Name *</label>
           <input v-model="form.name" type="text" required class="input" placeholder="e.g., 2024/2025" />
         </div>
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-wider mb-1.5 ml-1">Start Date *</label>
+            <label class="block text-[11px] text-slate-500 font-medium  tracking-wider mb-1.5 ml-1">Start Date *</label>
             <input v-model="form.start_date" type="date" required class="input" />
           </div>
           <div>
-            <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-wider mb-1.5 ml-1">End Date *</label>
+            <label class="block text-[11px] text-slate-500 font-medium  tracking-wider mb-1.5 ml-1">End Date *</label>
             <input v-model="form.end_date" type="date" required class="input" />
           </div>
         </div>

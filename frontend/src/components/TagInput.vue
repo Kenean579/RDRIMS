@@ -1,23 +1,20 @@
 <template>
   <div>
-    <label v-if="label" class="block text-xs font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">
+    <label v-if="label" class="block text-xs font-medium text-slate-400 mb-2 ml-1">
       {{ label }}
       <span v-if="required" class="text-rose-500">*</span>
     </label>
     
     <div 
-      class="w-full relative bg-white border rounded-xl overflow-hidden transition-colors focus-within:ring-2 focus-within:ring-brand focus-within:border-brand"
-      :class="[
-        error ? 'border-rose-400 focus-within:ring-rose-500 focus-within:border-rose-500' : 'border-slate-200 hover:border-slate-300',
-        disabled ? 'opacity-60 cursor-not-allowed' : ''
-      ]"
+      class="w-full relative bg-white border rounded-2xl overflow-hidden transition-colors focus-within:ring-2 focus-within:ring-brand focus-within:border-brand"
+      :class="[ error ? 'border-rose-400 focus-within:ring-rose-500 focus-within:border-rose-500' : 'border-slate-100 hover:border-slate-300', disabled ? 'opacity-60 cursor-not-allowed' : '' ]"
       @click="focusInput"
     >
       <div class="p-2 flex flex-wrap gap-2">
         <span 
           v-for="(tag, index) in modelValue" 
           :key="tag"
-          class="inline-flex items-center gap-1.5 px-3 py-1 bg-white border border-slate-200 text-slate-700 text-xs font-bold rounded-lg shadow-sm"
+          class="inline-flex items-center gap-1.5 px-3 py-1 bg-white border border-slate-100 text-slate-700 text-xs font-bold rounded-2xl shadow-sm"
         >
           {{ tag }}
           <button 
@@ -45,10 +42,10 @@
     </div>
     
     <div class="flex justify-between items-center mt-1.5 px-1">
-      <p v-if="error" class="text-[10px] font-bold capitalize tracking-widest text-rose-500">{{ error }}</p>
-      <p v-else-if="helpText" class="text-[10px] font-bold capitalize tracking-widest text-slate-400">{{ helpText }}</p>
+      <p v-if="error" class="text-[10px] font-medium text-rose-500">{{ error }}</p>
+      <p v-else-if="helpText" class="text-[10px] font-medium text-slate-400">{{ helpText }}</p>
       
-      <p v-if="min > 0" class="text-[10px] font-bold tracking-widest capitalize transition-colors" 
+      <p v-if="min > 0" class="text-[10px] font-medium tracking-widest  transition-colors" 
          :class="modelValue.length < min ? 'text-amber-500' : 'text-emerald-500'">
         {{ modelValue.length }} / {{ min }} min
       </p>

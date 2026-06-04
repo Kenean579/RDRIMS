@@ -6,17 +6,17 @@
         <h1 class="text-xl font-bold text-slate-900 tracking-tight">Submissions</h1>
         <p class="text-slate-500 font-medium mt-1">See where your work is in the system.</p>
       </div>
-      <router-link v-if="auth.hasPermission('submit_proposals') || auth.hasRole('super_admin','research_admin')" to="/app/proposals/create" class="btn btn-primary h-11 px-5 shadow-lg shadow-blue-500/20">
+      <router-link v-if="auth.hasPermission('submit_proposals') || auth.hasRole('super_admin','research_admin')" to="/app/proposals/create" class="btn btn-primary h-11 px-5">
         <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" /></svg>
         Start Submission
       </router-link>
     </div>
 
     <!-- Filters -->
-    <div class="card p-5 bg-slate-50/50">
+    <div class="card p-8 bg-slate-50/50">
       <div class="flex flex-wrap gap-5 items-end">
         <div class="flex-1 min-w-[300px]">
-          <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-widest mb-2 ml-1">Search Keywords</label>
+          <label class="block text-[11px] text-slate-500 font-medium mb-2 ml-1">Search Keywords</label>
           <div class="relative group">
             <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand transition-colors">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -25,34 +25,34 @@
           </div>
         </div>
         <div class="w-56">
-          <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-widest mb-2 ml-1">Status</label>
+          <label class="block text-[11px] text-slate-500 font-medium mb-2 ml-1">Status</label>
           <select v-model="filters.status" @change="fetchProposals(1)" class="input font-bold">
             <option value="">All Statuses</option>
             <option v-for="s in proposalStatuses" :key="s.id" :value="s.name">{{ formatStatusName(s.name) }}</option>
           </select>
         </div>
         <div class="w-56">
-          <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-widest mb-2 ml-1">Type</label>
+          <label class="block text-[11px] text-slate-500 font-medium mb-2 ml-1">Type</label>
           <select v-model="filters.type" @change="fetchProposals(1)" class="input font-bold">
             <option value="">All Types</option>
-            <option v-for="t in proposalTypes" :key="t.id" :value="t.name">{{ t.name.toUpperCase() }}</option>
+            <option v-for="t in proposalTypes" :key="t.id" :value="t.name">{{ t.name }}</option>
           </select>
         </div>
-        <button v-if="hasActiveFilters" @click="clearFilters" class="btn btn-secondary h-11 px-6 font-bold capitalize tracking-widest text-[11px]">
+        <button v-if="hasActiveFilters" @click="clearFilters" class="btn btn-secondary h-11 px-6 font-bold text-[11px]">
           Reset
         </button>
       </div>
     </div>
 
     <!-- Content -->
-    <div v-if="loading" class="card p-5 flex flex-col justify-center items-center gap-4">
+    <div v-if="loading" class="card p-8 flex flex-col justify-center items-center gap-4">
       <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-brand"></div>
-      <p class="text-[10px] font-bold text-slate-400 capitalize tracking-widest">Loading Submissions...</p>
+      <p class="text-[10px] font-medium text-slate-400">Loading Submissions...</p>
     </div>
     
-    <div v-else-if="error" class="card p-6 text-center">
-      <p class="text-rose-500 font-bold capitalize tracking-widest text-xs mb-4">{{ error }}</p>
-      <button @click="fetchProposals(1)" class="btn btn-ghost text-xs font-bold capitalize tracking-widest border border-slate-100 px-6">Retry</button>
+    <div v-else-if="error" class="card p-8 text-center">
+      <p class="text-rose-500 font-bold text-xs mb-4">{{ error }}</p>
+      <button @click="fetchProposals(1)" class="btn btn-ghost text-xs font-bold border border-slate-100 px-6">Retry</button>
     </div>
 
     <div v-else-if="proposals.length === 0" class="card">
@@ -62,45 +62,42 @@
     <div v-else class="space-y-6">
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-6">
         <div v-for="p in proposals" :key="p.id" 
-          class="card p-6 flex flex-col group card-hover relative overflow-hidden border-l-4 border-l-brand hover:border-l-indigo-500 transition-all cursor-pointer"
+          class="bg-white rounded-2xl border border-slate-100 p-4 flex flex-col group hover:shadow-md transition-all cursor-pointer"
           @click="$router.push(`/app/proposals/${p.id}`)"
         >
           <div class="flex items-start justify-between mb-4">
             <div class="flex-1 pr-4">
-              <p class="text-[10px] font-bold text-slate-400 capitalize tracking-widest mb-1.5 flex items-center gap-1.5">
+              <p class="text-[10px] font-medium text-slate-400 mb-1.5 flex items-center gap-1.5">
                 <span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
                 ID: {{ String(p.id).padStart(4, '0') }}
               </p>
               <h3 class="text-base font-bold text-slate-800 leading-tight group-hover:text-brand transition-colors line-clamp-2 min-h-10">{{ p.title }}</h3>
             </div>
-            <div class="w-12 h-12 rounded-2xl bg-linear-to-br from-blue-500 to-indigo-600 text-white flex items-center justify-center font-bold shadow-lg shadow-blue-500/30 shrink-0">
-               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" /></svg>
-            </div>
           </div>
           
           <div class="flex flex-wrap gap-2 mb-6">
-            <span class="px-2.5 py-1 bg-indigo-50 text-indigo-600 border border-indigo-100 text-[9px] font-bold capitalize tracking-widest rounded-lg">
-              {{ p.type?.name?.toUpperCase() || 'GENERAL' }}
+            <span class="px-2.5 py-1 bg-indigo-50 text-indigo-600 border border-indigo-100 text-[9px] font-medium rounded-2xl">
+              {{ p.type?.name || 'General' }}
             </span>
             <StatusBadge :status="p.status?.name || 'draft'" />
           </div>
 
           <div class="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between">
              <div class="flex flex-col">
-               <span class="text-[10px] font-bold text-slate-400 capitalize tracking-widest mb-0.5">Estimated Budget</span>
+               <span class="text-[10px] font-medium text-slate-400 mb-0.5">Estimated Budget</span>
                <span class="text-sm font-bold text-slate-900 tracking-tight">{{ formatCurrency(p.budget) }}</span>
              </div>
              <div class="flex gap-2">
                <router-link v-if="auth.hasRole('super_admin','research_admin') || p.submitted_by?.id === auth.user?.id" 
                  :to="`/app/proposals/${p.id}/edit`" 
-                 class="btn btn-ghost text-[10px] font-bold capitalize tracking-widest py-1.5 px-3 text-amber-600 hover:bg-amber-50"
+                 class="btn btn-ghost text-[10px] font-medium py-1.5 px-3 text-amber-600 hover:bg-amber-50"
                  @click.stop
                >
                  Edit
                </router-link>
                <button v-if="auth.hasRole('super_admin')" 
                  @click.stop="deleteProposal(p.id)" 
-                 class="btn btn-ghost text-[10px] font-bold capitalize tracking-widest py-1.5 px-3 text-rose-500 hover:bg-rose-50"
+                 class="btn btn-ghost text-[10px] font-medium py-1.5 px-3 text-rose-500 hover:bg-rose-50"
                >
                  Delete
                </button>

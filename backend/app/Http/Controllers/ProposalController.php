@@ -7,10 +7,12 @@ use App\Http\Requests\StoreProposalRequest;
 use App\Http\Requests\SubmitProposalRequest;
 use App\Http\Requests\UpdateProposalRequest;
 use App\Models\Proposal;
+use App\Models\ProposalStatus;
 use App\Services\ProposalService;
 use App\Services\ReviewerSuggestionService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class ProposalController extends Controller
 {
@@ -39,41 +41,35 @@ class ProposalController extends Controller
 
     public function store(StoreProposalRequest $request): JsonResponse
     {
-        $proposal = Proposal::create([
-            ...$request->safe()->except(['investigators', 'proposal_file']),
-            'submitted_by' => $request->user()->id,
-            'submitted_at' => now(),
-            'status_id' => Proposal::getStatusId('draft'),
-        ]);
-
-        // Handle file upload
-        if ($request->hasFile('proposal_file')) {
-            $path = $request->file('proposal_file')->store('proposals', 'public');
-            $file = \App\Models\File::create([
-                'original_name' => $request->file('proposal_file')->getClientOriginalName(),
-                'path' => $path,
-                'mime_type' => $request->file('proposal_file')->getMimeType(),
-                'size' => $request->file('proposal_file')->getSize(),
-                'uploaded_by' => $request->user()->id,
+        return DB::transaction(function () use ($request) {
+            $proposal = Proposal::create([
+                ...$request->safe()->except(['investigators', 'proposal_file']),
+                'submitted_by' => $request->user()->id,
+                'status_id' => ProposalStatus::where('name', 'draft')->first()->id ?? 1,
             ]);
-            $proposal->update(['file_id' => $file->id]);
-        }
 
-        // Attach investigators
-        $investigators = $request->investigators ?? [];
-        foreach ($investigators as $investigator) {
-            $proposal->investigators()->create([
-                'user_id' => $investigator['user_id'] ?? null,
-                'name' => $investigator['name'] ?? null,
-                'email' => $investigator['email'] ?? null,
-                'institution' => $investigator['institution'] ?? null,
-                'role_id' => $investigator['role_id'],
-                'status_id' => 1, // pending
-                'invited_at' => now(),
-            ]);
-        }
+            // Handle file upload
+            if ($request->hasFile('proposal_file')) {
+                $file = $this->fileService->upload($request->file('proposal_file'), $request->user()->id, false);
+                $proposal->update(['file_id' => $file->id]);
+            }
 
-        return response()->json($proposal->load('investigators', 'file'), 201);
+            // Attach investigators
+            $investigators = $request->investigators ?? [];
+            foreach ($investigators as $investigator) {
+                $proposal->investigators()->create([
+                    'user_id' => $investigator['user_id'] ?? null,
+                    'name' => $investigator['name'] ?? null,
+                    'email' => $investigator['email'] ?? null,
+                    'institution' => $investigator['institution'] ?? null,
+                    'role_id' => $investigator['role_id'],
+                    'status_id' => 1, // pending
+                    'invited_at' => now(),
+                ]);
+            }
+
+            return response()->json($proposal->load('investigators', 'file'), 201);
+        });
     }
 
     public function show(Proposal $proposal): JsonResponse
@@ -91,29 +87,37 @@ class ProposalController extends Controller
     {
         $this->authorize('update', $proposal);
 
-        $validated = $request->validated();
-        $investigators = $validated['investigators'] ?? null;
-        unset($validated['investigators']);
+        return DB::transaction(function () use ($request, $proposal) {
+            $validated = $request->validated();
+            $investigators = $validated['investigators'] ?? null;
+            unset($validated['investigators']);
 
-        $proposal->update($validated);
+            $proposal->update($validated);
 
-        // Replace investigators if provided
-        if ($investigators !== null) {
-            $proposal->investigators()->delete();
-            foreach ($investigators as $inv) {
-                $proposal->investigators()->create([
-                    'user_id'     => $inv['user_id'] ?: null,
-                    'name'        => $inv['name'] ?? null,
-                    'email'       => $inv['email'] ?? null,
-                    'institution' => $inv['institution'] ?? null,
-                    'role_id'     => $inv['role_id'],
-                    'status_id'   => 1,
-                    'invited_at'  => now(),
-                ]);
+            // Handle file upload if provided
+            if ($request->hasFile('proposal_file')) {
+                $file = $this->fileService->upload($request->file('proposal_file'), $request->user()->id, false);
+                $proposal->update(['file_id' => $file->id]);
             }
-        }
 
-        return response()->json($proposal->load('investigators', 'file', 'status', 'type'));
+            // Replace investigators if provided
+            if ($investigators !== null) {
+                $proposal->investigators()->delete();
+                foreach ($investigators as $inv) {
+                    $proposal->investigators()->create([
+                        'user_id'     => $inv['user_id'] ?: null,
+                        'name'        => $inv['name'] ?? null,
+                        'email'       => $inv['email'] ?? null,
+                        'institution' => $inv['institution'] ?? null,
+                        'role_id'     => $inv['role_id'],
+                        'status_id'   => 1,
+                        'invited_at'  => now(),
+                    ]);
+                }
+            }
+
+            return response()->json($proposal->load('investigators', 'file', 'status', 'type'));
+        });
     }
 
     public function destroy(Proposal $proposal): JsonResponse
@@ -125,13 +129,14 @@ class ProposalController extends Controller
 
     public function submit(SubmitProposalRequest $request, Proposal $proposal): JsonResponse
     {
+        $this->authorize('submit', $proposal);
         $this->proposalService->submit($proposal, $request->user());
         return response()->json(['message' => 'Proposal submitted successfully.', 'proposal' => $proposal]);
     }
 
     public function approve(Proposal $proposal, Request $request): JsonResponse
     {
-        $this->authorize('update', $proposal);
+        $this->authorize('update', $proposal); // This should ideally be a more specific permission
         $this->proposalService->approve($proposal, $request->user());
         return response()->json(['message' => 'Proposal approved. Project created.']);
     }
@@ -146,12 +151,14 @@ class ProposalController extends Controller
 
     public function assignReviewers(AssignReviewersRequest $request, Proposal $proposal): JsonResponse
     {
+        $this->authorize('assignReviewers', Proposal::class);
         $this->proposalService->assignReviewers($proposal, $request->reviewer_ids, $request->user());
         return response()->json(['message' => 'Reviewers assigned.']);
     }
 
     public function suggestReviewers(Proposal $proposal): JsonResponse
     {
+        $this->authorize('assignReviewers', Proposal::class);
         $suggestions = $this->reviewerSuggestionService->suggest($proposal);
         return response()->json($suggestions);
     }

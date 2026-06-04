@@ -172,7 +172,7 @@
 
       <!-- ── Main Content ─────────────────────────── -->
       <main class="main-content" :class="{ 'main-expanded': !sidebarOpen }">
-        <div v-if="isGuestOnly" class="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-xl text-yellow-800 text-sm font-medium flex items-start gap-3">
+        <div v-if="isGuestOnly" class="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-2xl text-yellow-800 text-sm font-medium flex items-start gap-3">
           <span class="text-xl">⚠️</span>
           <div>
             <p class="font-bold mb-0.5">Limited Access</p>
@@ -262,7 +262,8 @@ function goSearch() {
 
 function formatRole(role) {
   if (!role) return 'User'
-  return role.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+  const s = role.replace(/_/g, ' ')
+  return s.charAt(0).toUpperCase() + s.slice(1)
 }
 
 function logout() {
@@ -324,9 +325,21 @@ const isGuestOnly = computed(() => {
 
 const contactEmail = computed(() => lookupStore.getSetting('contact_email', 'admin@rdrims.local'))
 
+// ═══════════════════════════════════════════════════════════════
+// FIXED: Guest navigation now has Dashboard & Notifications
+// as a separate group above "Community & Public"
+// ═══════════════════════════════════════════════════════════════
 const navigation = computed(() => {
   if (isGuestOnly.value) {
     return [
+      // First group: Dashboard & Notifications (no title = no collapsible header)
+      {
+        items: [
+          { name: 'Dashboard', path: '/app/dashboard', icon: icons.home },
+          { name: 'Notifications', path: '/app/notifications', icon: icons.events },
+        ]
+      },
+      // Second group: Community & Public (with collapsible title)
       {
         title: 'Community & Public',
         items: [
@@ -464,23 +477,23 @@ const navigation = computed(() => {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 24px;
+  padding: 0 32px;
   z-index: 50;
-  gap: 16px;
+  gap: 20px;
   box-shadow: var(--shadow-sm);
 }
 
 .topbar-left {
   display: flex;
   align-items: center;
-  gap: 16px;
+  gap: 20px;
   flex-shrink: 0;
 }
 
 .icon-btn {
-  width: 38px; height: 38px;
+  width: 40px; height: 40px;
   display: flex; align-items: center; justify-content: center;
-  border-radius: 10px;
+  border-radius: 12px;
   border: 1px solid transparent;
   background: transparent;
   color: var(--text-secondary);
@@ -497,25 +510,24 @@ const navigation = computed(() => {
 .brand {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   text-decoration: none;
 }
 .brand-icon {
-  width: 34px; height: 34px;
-  background: linear-gradient(135deg, var(--color-brand), #4f46e5);
-  border-radius: 10px;
+  width: 36px; height: 36px;
+  background: var(--color-brand);
+  border-radius: 12px;
   display: flex; align-items: center; justify-content: center;
-  color: white; font-weight: 800; font-size: 16px;
-  box-shadow: 0 4px 6px -1px rgba(37, 99, 235, 0.25);
+  color: white; font-weight: 700; font-size: 18px;
 }
 .brand-text {
-  display: flex; flex-direction: column; line-height: 1;
+  display: flex; flex-direction: column; line-height: 1.1;
 }
 .brand-name {
-  font-size: 15px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.02em;
+  font-size: 16px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.02em;
 }
 .brand-sub {
-  font-size: 10.5px; color: var(--text-muted); font-weight: 500; text-transform: capitalize; letter-spacing: 0.05em; margin-top: 2px;
+  font-size: 10px; color: var(--text-muted); font-weight: 600; margin-top: 1px;
 }
 
 /* Search Box Enhancement */
@@ -527,14 +539,14 @@ const navigation = computed(() => {
   align-items: center;
 }
 .search-icon {
-  position: absolute; left: 14px;
+  position: absolute; left: 16px;
   color: var(--text-muted); pointer-events: none;
 }
 .search-input {
   width: 100%;
-  padding: 10px 42px 10px 42px;
+  padding: 12px 42px 12px 46px;
   border: 1px solid var(--color-border);
-  border-radius: 12px;
+  border-radius: 14px;
   font-size: 13.5px;
   color: var(--text-primary);
   background: #f1f5f9;
@@ -547,11 +559,12 @@ const navigation = computed(() => {
   box-shadow: 0 0 0 4px var(--color-brand-light);
 }
 .search-kbd {
-  position: absolute; right: 12px;
-  font-size: 11px; color: var(--text-muted);
+  position: absolute; right: 14px;
+  font-size: 10px; color: var(--text-muted);
   background: #fff; border: 1px solid var(--color-border);
-  border-radius: 6px; padding: 2px 6px;
+  border-radius: 6px; padding: 3px 7px;
   display: flex; align-items: center; justify-content: center;
+  font-weight: 700;
 }
 
 /* Context Switcher */
@@ -561,50 +574,51 @@ const navigation = computed(() => {
   gap: 12px;
   background: white;
   border: 1px solid var(--color-border);
-  border-radius: 12px;
-  padding: 4px 12px;
+  border-radius: 14px;
+  padding: 4px 14px;
   margin-left: 20px;
-  margin-right: -10px;
-  height: 40px;
+  margin-right: 0;
+  height: 44px;
   box-shadow: var(--shadow-sm);
   max-width: 600px;
   overflow: hidden;
 }
 .context-label {
   font-size: 10px;
-  font-weight: 800;
-  text-transform: capitalize;
-  letter-spacing: 0.05em;
+  font-weight: 700;
   color: var(--color-brand);
   background: var(--color-brand-light);
-  padding: 2px 6px;
-  border-radius: 4px;
+  padding: 3px 8px;
+  border-radius: 6px;
   white-space: nowrap;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 .context-breadcrumb {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
 }
 .context-item {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
 }
 .context-sep {
   color: var(--text-muted);
-  font-size: 14px;
-  opacity: 0.5;
+  font-size: 16px;
+  opacity: 0.4;
+  font-weight: 300;
 }
 .context-select {
   border: none;
   background: transparent;
-  font-size: 12.5px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--text-primary);
   outline: none;
   cursor: pointer;
-  max-width: 130px;
+  max-width: 140px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -617,34 +631,34 @@ const navigation = computed(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   border-radius: 50%;
   border: none;
-  background: #fee2e2;
+  background: #fef2f2;
   color: #ef4444;
   cursor: pointer;
   transition: all 0.2s;
   flex-shrink: 0;
 }
 .context-reset:hover {
-  background: #ef4444;
-  color: white;
+  background: #fee2e2;
+  color: #dc2626;
   transform: scale(1.1);
 }
 
 .topbar-right {
-  display: flex; align-items: center; gap: 8px; flex-shrink: 0;
+  display: flex; align-items: center; gap: 12px; flex-shrink: 0;
 }
 .topbar-divider {
-  width: 1px; height: 32px;
+  width: 1px; height: 36px;
   background: var(--color-border); margin: 0 8px;
 }
 
 .profile-btn {
   display: flex; align-items: center; gap: 12px;
-  padding: 6px 14px 6px 6px;
-  border-radius: 12px;
+  padding: 6px 16px 6px 6px;
+  border-radius: 14px;
   text-decoration: none;
   transition: all 0.2s;
   cursor: pointer;
@@ -657,22 +671,22 @@ const navigation = computed(() => {
 }
 
 .avatar {
-  width: 36px; height: 36px;
-  background: linear-gradient(135deg, var(--color-brand), var(--color-accent));
-  border-radius: 10px;
+  width: 38px; height: 38px;
+  background: var(--color-brand);
+  border-radius: 12px;
   display: flex; align-items: center; justify-content: center;
-  font-size: 13px; font-weight: 800;
+  font-size: 14px; font-weight: 700;
   color: white; border: 2px solid #fff;
   box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 .profile-info {
-  display: flex; flex-direction: column; line-height: 1.25;
+  display: flex; flex-direction: column; line-height: 1.2;
 }
 .profile-name {
-  font-size: 13.5px; font-weight: 700; color: var(--text-primary);
+  font-size: 14px; font-weight: 800; color: var(--text-primary);
 }
 .profile-role {
-  font-size: 11px; color: var(--text-muted); font-weight: 500;
+  font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;
 }
 
 /* ── App Body ────────────────────────────────── */
@@ -706,40 +720,41 @@ const navigation = computed(() => {
 .sidebar-nav {
   flex: 1;
   overflow-y: auto;
-  padding: 20px 0;
+  padding: 24px 0;
   scrollbar-width: none;
 }
 .sidebar-nav::-webkit-scrollbar { display: none; }
 
-.nav-group { margin-bottom: 24px; }
+.nav-group { margin-bottom: 28px; }
 .nav-group-header {
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 8px 24px;
+  padding: 8px 32px;
   background: transparent;
   border: none;
   cursor: pointer;
   color: var(--text-muted);
 }
 .nav-group-label {
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
   letter-spacing: 0.1em;
-  text-transform: capitalize;
 }
 
 .sidebar-link {
   display: flex !important;
   align-items: center;
-  gap: 12px;
-  padding: 10px 24px;
-  margin: 2px 12px;
-  border-radius: 10px;
+  gap: 14px;
+  padding: 12px 32px;
+  margin: 2px 14px;
+  border-radius: 12px;
   color: var(--text-secondary);
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 600;
   text-decoration: none;
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
@@ -750,7 +765,7 @@ const navigation = computed(() => {
 .sidebar-link.router-link-exact-active {
   background: var(--color-brand-light);
   color: var(--color-brand);
-  font-weight: 700;
+  font-weight: 800;
 }
 .sidebar-link.router-link-exact-active .nav-icon {
   color: var(--color-brand);
@@ -758,22 +773,25 @@ const navigation = computed(() => {
 
 .nav-icon {
   color: var(--text-muted);
+  width: 20px;
+  display: flex;
+  justify-content: center;
 }
 
 .sidebar-footer {
-  padding: 20px 24px;
+  padding: 24px 32px;
   border-top: 1px solid var(--color-border);
   background: #fcfdfe;
 }
 .sidebar-footer-inner {
-  display: flex; align-items: center; gap: 10px;
-  font-size: 12.5px; color: var(--text-secondary); font-weight: 700;
+  display: flex; align-items: center; gap: 12px;
+  font-size: 12px; color: var(--text-secondary); font-weight: 700;
 }
 .footer-dot {
   width: 10px; height: 10px;
   background: var(--color-success);
   border-radius: 50%;
-  box-shadow: 0 0 0 3px rgba(16,185,129,0.1);
+  box-shadow: 0 0 0 4px rgba(16,185,129,0.1);
   animation: pulse 2s infinite;
 }
 
@@ -787,7 +805,7 @@ const navigation = computed(() => {
 .main-content {
   flex: 1;
   margin-left: var(--sidebar-w);
-  padding: 24px;
+  padding: 40px;
   min-height: calc(100vh - var(--topbar-h));
   background: var(--color-surface-2);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -802,15 +820,17 @@ const navigation = computed(() => {
 
 /* ── Responsive ───────────────────────────────── */
 @media (max-width: 1024px) {
-  .main-content { padding: 24px; }
+  .main-content { padding: 32px; }
+  .topbar { padding: 0 24px; }
 }
 
 @media (max-width: 767px) {
   .topbar-search { display: none; }
   .profile-info  { display: none; }
-  .sidebar { width: 260px; }
+  .sidebar { width: 280px; }
   .sidebar-closed { transform: translateX(-100%); }
-  .main-content { margin-left: 0 !important; padding: 20px; }
+  .main-content { margin-left: 0 !important; padding: 24px; }
   .brand-text { display: none; }
+  .topbar-context-shell { display: none; }
 }
 </style>

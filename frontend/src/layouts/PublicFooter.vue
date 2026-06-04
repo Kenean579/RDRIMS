@@ -5,7 +5,7 @@
         <!-- Brand & Description -->
         <div class="md:col-span-1">
           <router-link to="/" class="flex items-center gap-2 mb-4">
-            <div class="h-8 w-8 rounded-lg flex items-center justify-center text-brand font-bold text-xl shadow-sm border border-brand">
+            <div class="h-8 w-8 rounded-2xl flex items-center justify-center text-brand font-bold text-xl shadow-sm border border-brand">
               R
             </div>
             <span class="font-bold text-xl tracking-tight text-white">{{ appName }}</span>
@@ -17,29 +17,29 @@
 
         <!-- Quick Links -->
         <div>
-          <h3 class="text-xs font-bold tracking-widest capitalize text-slate-300 mb-6">Explore</h3>
+          <h3 class="text-xs font-bold tracking-widest  text-slate-300 mb-6">Explore</h3>
           <ul class="space-y-3">
-            <li><router-link to="/calls" class="text-sm font-bold text-slate-500 hover:text-white transition-colors">Research Calls</router-link></li>
-            <li><router-link to="/publications" class="text-sm font-bold text-slate-500 hover:text-white transition-colors">Publications</router-link></li>
-            <li><router-link to="/events" class="text-sm font-bold text-slate-500 hover:text-white transition-colors">Events</router-link></li>
-            <li><router-link to="/researchers" class="text-sm font-bold text-slate-500 hover:text-white transition-colors">Researchers</router-link></li>
+            <li><router-link to="/calls" class="text-sm font-medium text-slate-500 hover:text-white transition-colors">Research Calls</router-link></li>
+            <li><router-link to="/publications" class="text-sm font-medium text-slate-500 hover:text-white transition-colors">Publications</router-link></li>
+            <li><router-link to="/events" class="text-sm font-medium text-slate-500 hover:text-white transition-colors">Events</router-link></li>
+            <li><router-link to="/researchers" class="text-sm font-medium text-slate-500 hover:text-white transition-colors">Researchers</router-link></li>
           </ul>
         </div>
 
         <!-- Resources -->
         <div>
-          <h3 class="text-xs font-bold tracking-widest capitalize text-slate-300 mb-6">Resources</h3>
+          <h3 class="text-xs font-bold tracking-widest  text-slate-300 mb-6">Resources</h3>
           <ul class="space-y-3">
-            <li><router-link to="/community" class="text-sm font-bold text-slate-500 hover:text-white transition-colors">Community Problems</router-link></li>
-            <li><router-link to="/login" class="text-sm font-bold text-slate-500 hover:text-white transition-colors">Researcher Portal</router-link></li>
-            <li><a href="#" class="text-sm font-bold text-slate-500 hover:text-white transition-colors">Ethics Guidelines</a></li>
-            <li><a href="#" class="text-sm font-bold text-slate-500 hover:text-white transition-colors">Support Center</a></li>
+            <li><router-link to="/community" class="text-sm font-medium text-slate-500 hover:text-white transition-colors">Community Problems</router-link></li>
+            <li><router-link to="/login" class="text-sm font-medium text-slate-500 hover:text-white transition-colors">Researcher Portal</router-link></li>
+            <li><a href="#" class="text-sm font-medium text-slate-500 hover:text-white transition-colors">Ethics Guidelines</a></li>
+            <li><a href="#" class="text-sm font-medium text-slate-500 hover:text-white transition-colors">Support Center</a></li>
           </ul>
         </div>
 
         <!-- Contact Info -->
         <div>
-          <h3 class="text-xs font-bold tracking-widest capitalize text-slate-300 mb-6">Contact Us</h3>
+          <h3 class="text-xs font-bold tracking-widest  text-slate-300 mb-6">Contact Us</h3>
           <ul class="space-y-4">
             <li v-if="contactEmail" class="flex items-start gap-3 text-slate-400">
               <svg class="w-5 h-5 shrink-0 mt-0.5 text-slate-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -65,7 +65,7 @@
       </div>
 
       <div class="pt-4 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4">
-        <p class="text-xs font-bold text-slate-500">
+        <p class="text-xs font-medium text-slate-500">
           &copy; {{ new Date().getFullYear() }} {{ appName }}. All rights reserved.
         </p>
         <div class="flex gap-4">

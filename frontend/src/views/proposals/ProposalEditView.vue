@@ -2,7 +2,7 @@
   <div class="flex flex-col gap-5 pb-6 animate-fade card">
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
       <div>
-        <router-link :to="`/app/proposals/${proposal.id}`" class="flex items-center gap-2 text-brand font-bold capitalize tracking-widest text-[10px] mb-3 hover:translate-x-1 transition-transform">
+        <router-link :to="`/app/proposals/${proposal.id}`" class="flex items-center gap-2 text-brand font-bold text-[10px] mb-3 hover:translate-x-1 transition-transform">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
           Back to Proposal
         </router-link>
@@ -17,69 +17,83 @@
 
     <form v-else @submit.prevent="handleSubmit" class="space-y-8 font-bold">
       <!-- Section: Summary -->
-      <div class="card p-5">
-        <h2 class="text-xs font-bold text-slate-400 capitalize tracking-widest mb-5 flex items-center gap-2">
+      <div class="card p-8">
+        <h2 class="text-xs font-medium text-slate-400 mb-5 flex items-center gap-2">
           <span class="w-1 h-3 bg-brand rounded-full"></span>
           Quick Summary
         </h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="md:col-span-2">
-            <label class="block text-[11px] text-slate-500 capitalize tracking-widest mb-2 ml-1">Title *</label>
+            <label class="block text-[11px] text-slate-500 mb-2 ml-1">Title *</label>
             <input v-model="form.title" type="text" required class="input h-12 font-bold" />
           </div>
           <div>
-            <label class="block text-[11px] text-slate-500 capitalize tracking-widest mb-2 ml-1">Proposal Type</label>
+            <label class="block text-[11px] text-slate-500 mb-2 ml-1">Proposal Type</label>
             <select v-model="form.type_id" class="input h-12 font-bold">
-              <option v-for="t in proposalTypes" :key="t.id" :value="t.id">{{ t.name.toUpperCase() }}</option>
+              <option v-for="t in proposalTypes" :key="t.id" :value="t.id">{{ t.name }}</option>
             </select>
           </div>
           <div>
-            <label class="block text-[11px] text-slate-500 capitalize tracking-widest mb-2 ml-1">Budget (ETB) *</label>
+            <label class="block text-[11px] text-slate-500 mb-2 ml-1">Budget (ETB) *</label>
             <input v-model.number="form.budget" type="number" required class="input h-12 font-bold" />
           </div>
         </div>
       </div>
 
       <!-- Section: Details -->
-      <div class="card p-5">
-        <h2 class="text-xs font-bold text-slate-400 capitalize tracking-widest mb-5 flex items-center gap-2">
+      <div class="card p-8">
+        <h2 class="text-xs font-medium text-slate-400 mb-5 flex items-center gap-2">
           <span class="w-1 h-3 bg-brand rounded-full"></span>
           Research Details
         </h2>
         <div class="space-y-6">
           <div>
-            <label class="block text-[11px] text-slate-500 capitalize tracking-widest mb-2 ml-1">Keywords *</label>
-            <input v-model="form.keywords" type="text" required class="input h-12 font-bold" placeholder="AI, Biology..." />
+            <label class="block text-[11px] text-slate-500 mb-2 ml-1">Keywords (Expertise Areas) *</label>
+            <div class="flex flex-wrap gap-2 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+              <button
+                v-for="exp in availableExpertises"
+                :key="exp.id"
+                type="button"
+                @click="toggleKeyword(exp.name)"
+                class="px-3 py-1.5 rounded-2xl text-[10px] font-bold transition-all border shadow-sm"
+                :class="isKeywordSelected(exp.name) ? 'bg-brand text-white border-brand shadow-brand/20' : 'bg-white text-slate-600 border-slate-200 hover:border-brand/40 hover:text-brand'"
+              >
+                {{ exp.name }}
+              </button>
+              <div v-if="availableExpertises.length === 0" class="text-xs text-slate-400 italic font-medium w-full text-center py-2">
+                No expertise tags configured.
+              </div>
+            </div>
           </div>
           <div>
-            <label class="block text-[11px] text-slate-500 capitalize tracking-widest mb-2 ml-1">Abstract *</label>
+            <label class="block text-[11px] text-slate-500 mb-2 ml-1">Abstract *</label>
             <textarea v-model="form.abstract" required rows="4" class="input pt-3 font-medium resize-none"></textarea>
           </div>
           <div>
-            <label class="block text-[11px] text-slate-500 capitalize tracking-widest mb-2 ml-1">Objectives *</label>
+            <label class="block text-[11px] text-slate-500 mb-2 ml-1">Objectives *</label>
             <textarea v-model="form.objectives" required rows="4" class="input pt-3 font-medium resize-none"></textarea>
           </div>
           <div>
-            <label class="block text-[11px] text-slate-500 capitalize tracking-widest mb-2 ml-1">Methodology *</label>
+            <label class="block text-[11px] text-slate-500 mb-2 ml-1">Methodology *</label>
             <textarea v-model="form.methodology" required rows="5" class="input pt-3 font-medium resize-none"></textarea>
           </div>
         </div>
       </div>
 
       <!-- Section: Team -->
-      <div class="card p-5">
+      <div class="card p-8">
         <div class="flex items-center justify-between mb-5">
-          <h2 class="text-xs font-bold text-slate-400 capitalize tracking-widest flex items-center gap-2">
+          <h2 class="text-xs font-medium text-slate-400 flex items-center gap-2">
             <span class="w-1 h-3 bg-brand rounded-full"></span>
             Research Team
           </h2>
-          <button type="button" @click="addInvestigator" class="btn btn-secondary h-10 px-6 text-[10px] font-bold capitalize tracking-widest border border-slate-200">
+          <button type="button" @click="addInvestigator" class="btn btn-secondary h-10 px-6 text-[10px] font-medium border border-slate-100">
             Add Member
           </button>
         </div>
 
-        <div v-if="form.investigators.length === 0" class="p-6 text-center bg-slate-50 rounded-3xl border border-dashed border-slate-200">
-          <p class="text-[10px] font-bold text-slate-400 capitalize tracking-widest italic">No co-investigators added.</p>
+        <div v-if="form.investigators.length === 0" class="p-6 text-center bg-slate-50 rounded-3xl border border-dashed border-slate-100">
+          <p class="text-[10px] font-medium text-slate-400 italic">No co-investigators added.</p>
         </div>
 
         <div v-else class="space-y-4">
@@ -90,28 +104,28 @@
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div class="md:col-span-2">
-                <label class="block text-[10px] font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">User Affiliation</label>
+                <label class="block text-[10px] font-medium text-slate-400 mb-2 ml-1">User Affiliation</label>
                 <select v-model="inv.user_id" @change="onUserSelected(index)" class="input h-11 font-bold">
                   <option value="">External Person</option>
                   <option v-for="u in availableUsers" :key="u.id" :value="u.id">{{ u.name }} ({{ u.email }})</option>
                 </select>
               </div>
               <div>
-                <label class="block text-[10px] font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">Role</label>
+                <label class="block text-[10px] font-medium text-slate-400 mb-2 ml-1">Role</label>
                 <select v-model="inv.role_id" required class="input h-11 font-bold">
                   <option v-for="r in investigatorRoles" :key="r.id" :value="r.id">{{ r.name }}</option>
                 </select>
               </div>
               <div v-if="!inv.user_id">
-                <label class="block text-[10px] font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">Full Name</label>
+                <label class="block text-[10px] font-medium text-slate-400 mb-2 ml-1">Full Name</label>
                 <input v-model="inv.name" type="text" required class="input h-11 font-bold" />
               </div>
               <div v-if="!inv.user_id">
-                <label class="block text-[10px] font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">Email</label>
+                <label class="block text-[10px] font-medium text-slate-400 mb-2 ml-1">Email</label>
                 <input v-model="inv.email" type="email" required class="input h-11 font-bold" />
               </div>
               <div v-if="!inv.user_id">
-                <label class="block text-[10px] font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">Institution</label>
+                <label class="block text-[10px] font-medium text-slate-400 mb-2 ml-1">Institution</label>
                 <input v-model="inv.institution" type="text" class="input h-11 font-bold" placeholder="University of..." />
               </div>
             </div>
@@ -121,7 +135,7 @@
 
       <div class="flex items-center gap-3 justify-end pt-6 border-t border-slate-100">
         <router-link :to="`/app/proposals/${proposal.id}`" class="btn btn-secondary px-5 h-12">Discard</router-link>
-        <button type="submit" :disabled="submitting" class="btn btn-primary px-6 h-12 shadow-lg shadow-blue-500/20">
+        <button type="submit" :disabled="submitting" class="btn btn-primary px-6 h-12">
           {{ submitting ? 'Processing...' : 'Save Changes' }}
         </button>
       </div>
@@ -137,7 +151,7 @@ import api from '@/services/api'
 
 const route = useRoute(); const router = useRouter(); const notif = useNotificationStore()
 const proposal = ref({}); const loading = ref(true); const error = ref(null); const submitting = ref(false)
-const proposalTypes = ref([]); const availableUsers = ref([]); const investigatorRoles = ref([])
+const proposalTypes = ref([]); const availableUsers = ref([]); const investigatorRoles = ref([]); const availableExpertises = ref([])
 const form = reactive({ title: '', type_id: '', budget: null, keywords: '', abstract: '', objectives: '', methodology: '', investigators: [] })
 
 async function fetchProposal() {
@@ -178,6 +192,21 @@ function onUserSelected(i) {
   if (inv.user_id) { inv.name = ''; inv.email = ''; inv.institution = '' }
 }
 
+function isKeywordSelected(name) {
+  if (!form.keywords) return false
+  return form.keywords.split(',').map(k => k.trim()).includes(name)
+}
+
+function toggleKeyword(name) {
+  let keys = form.keywords ? form.keywords.split(',').map(k => k.trim()).filter(k => k) : []
+  if (keys.includes(name)) {
+    keys = keys.filter(k => k !== name)
+  } else {
+    keys.push(name)
+  }
+  form.keywords = keys.join(', ')
+}
+
 async function handleSubmit() {
   submitting.value = true
   try {
@@ -191,14 +220,16 @@ async function handleSubmit() {
 onMounted(async () => {
   await fetchProposal()
   try {
-    const [typesRes, usersRes, rolesRes] = await Promise.all([
+    const [typesRes, usersRes, rolesRes, expertisesRes] = await Promise.all([
       api.get('/lookups/proposal_types'),
       api.get('/users', { params: { per_page: 200 } }),
-      api.get('/lookups/investigator_roles')
+      api.get('/lookups/investigator_roles'),
+      api.get('/expertise')
     ])
     proposalTypes.value = typesRes.data
     availableUsers.value = usersRes.data.data || usersRes.data
     investigatorRoles.value = rolesRes.data
+    availableExpertises.value = expertisesRes.data
   } catch (e) {}
 })
 </script>

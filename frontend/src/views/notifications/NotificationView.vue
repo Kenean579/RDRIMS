@@ -13,8 +13,8 @@
     </div>
 
     <!-- Content -->
-    <div v-if="loading" class="card p-5"><LoadingSkeleton :rows="4" /></div>
-    <div v-else-if="error" class="card border-red-100 bg-red-50/30 p-5 text-center">
+    <div v-if="loading" class="card p-8"><LoadingSkeleton :rows="4" /></div>
+    <div v-else-if="error" class="card border-red-100 bg-red-50/30 p-8 text-center">
       <p class="text-sm text-red-600 font-medium">{{ error }}</p>
     </div>
     <div v-else-if="notifications.length === 0" class="card">
@@ -26,13 +26,13 @@
         :class="[!n.read_at ? 'border-blue-200 bg-blue-50/30' : '']"
         class="card p-4 group card-hover cursor-pointer" @click="markRead(n)">
         <div class="flex items-start gap-3">
-          <div class="w-9 h-9 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
+          <div class="w-9 h-9 rounded-2xl flex items-center justify-center text-lg flex-shrink-0"
                :class="!n.read_at ? 'bg-blue-100' : 'bg-slate-50'">
             {{ getIcon(n.type) }}
           </div>
           <div class="flex-1 min-w-0">
             <p class="text-sm text-slate-700 leading-relaxed" :class="{ 'font-bold': !n.read_at }">{{ n.message }}</p>
-            <p class="text-[11px] text-slate-400 font-bold capitalize tracking-widest mt-1.5">{{ formatDateTime(n.created_at) }}</p>
+            <p class="text-[11px] text-slate-400 font-medium mt-1.5">{{ formatDateTime(n.created_at) }}</p>
           </div>
           <span v-if="!n.read_at" class="w-2.5 h-2.5 bg-blue-600 rounded-full mt-2 flex-shrink-0 ring-4 ring-blue-100"></span>
         </div>

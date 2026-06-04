@@ -21,16 +21,16 @@
     </div>
 
     <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-      <div v-for="perm in permissions" :key="perm.id" class="card p-6 flex flex-col group card-hover relative overflow-hidden border-l-4 border-l-cyan-500 hover:border-l-cyan-600 transition-all">
+      <div v-for="perm in permissions" :key="perm.id" class="card p-8 flex flex-col group card-hover relative overflow-hidden transition-all">
         <div class="flex items-start justify-between mb-4">
           <div class="flex-1 pr-4">
             <h3 class="text-base font-bold font-mono text-slate-800 group-hover:text-cyan-700 transition leading-tight break-all">{{ perm.name }}</h3>
             <div class="flex flex-wrap gap-1.5 mt-2">
-              <span v-for="role in perm.roles" :key="role.id" class="inline-block px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-bold capitalize tracking-widest rounded-md border border-blue-100">{{ role.name }}</span>
-              <span v-if="!perm.roles?.length" class="inline-block px-2 py-0.5 bg-slate-100 text-slate-500 text-[10px] font-bold capitalize tracking-widest rounded-md border border-slate-200">Unassigned</span>
+              <span v-for="role in perm.roles" :key="role.id" class="inline-block px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-medium rounded-md border border-blue-100">{{ role.name }}</span>
+              <span v-if="!perm.roles?.length" class="inline-block px-2 py-0.5 bg-slate-100 text-slate-500 text-[10px] font-medium rounded-md border border-slate-100">Unassigned</span>
             </div>
           </div>
-          <div class="w-12 h-12 rounded-2xl bg-linear-to-br from-cyan-400 to-blue-600 text-white flex items-center justify-center font-bold shadow-lg shadow-cyan-500/30 shrink-0">
+          <div class="w-12 h-12 rounded-2xl bg-slate-100 text-white flex items-center justify-center font-bold shrink-0">
              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z" /></svg>
           </div>
         </div>
@@ -50,12 +50,12 @@
     <Modal :show="showCreate || !!editingPerm" :title="editingPerm ? 'Modify Permission' : 'Create New Permission'" @close="closeModal">
       <form @submit.prevent="savePermission" class="space-y-5 px-1 py-1">
         <div>
-          <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-wider mb-1.5 ml-1">Permission Key *</label>
+          <label class="block text-[11px] text-slate-500 font-medium  tracking-wider mb-1.5 ml-1">Permission Key *</label>
           <input v-model="form.name" type="text" required class="input" placeholder="e.g., submit_proposals" />
           <p class="text-[10px] text-slate-400 mt-1.5 ml-1">Use lowercase with underscores. Must be unique.</p>
         </div>
         <div>
-          <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-wider mb-1.5 ml-1">Description</label>
+          <label class="block text-[11px] text-slate-500 font-medium  tracking-wider mb-1.5 ml-1">Description</label>
           <textarea v-model="form.description" rows="2" class="input resize-none" placeholder="What does this permission allow?"></textarea>
         </div>
         <div class="flex justify-end gap-3 pt-4">

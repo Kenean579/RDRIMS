@@ -1,5 +1,5 @@
 <template>
-  <div card>
+  <div class="card p-8">
     <div class="mb-6">
       <router-link to="/app/patents" class="text-sm text-blue-600 hover:underline mb-2 inline-block">← Back to Patents</router-link>
       <h1 class="text-xl font-bold text-gray-800">Licenses</h1>
@@ -8,14 +8,14 @@
 
     <div class="flex justify-between items-center mb-4">
       <h2 class="text-base font-semibold text-gray-800">License Agreements</h2>
-      <button @click="showCreate = true" class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 text-sm font-medium">+ Add License</button>
+      <button @click="showCreate = true" class="bg-blue-600 text-white px-4 py-2 rounded-2xl hover:bg-blue-700 text-sm font-medium">+ Add License</button>
     </div>
 
-    <div v-if="loading" class="bg-white rounded-lg shadow-sm p-6"><div class="space-y-4 animate-pulse"><div v-for="i in 3" :key="i" class="h-6 bg-gray-200 rounded"></div></div></div>
-    <div v-else-if="licenses.length === 0" class="bg-white rounded-lg shadow-sm p-6 text-center"><p class="text-2xl mb-3">📜</p><h3 class="text-base font-medium text-gray-800">No licenses</h3></div>
+    <div v-if="loading" class="card p-8"><div class="space-y-4 animate-pulse"><div v-for="i in 3" :key="i" class="h-6 bg-gray-200 rounded"></div></div></div>
+    <div v-else-if="licenses.length === 0" class="card p-8 text-center"><p class="text-2xl mb-3">📜</p><h3 class="text-base font-medium text-gray-800">No licenses</h3></div>
 
     <div v-else class="space-y-3">
-      <div v-for="l in licenses" :key="l.id" class="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
+      <div v-for="l in licenses" :key="l.id" class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
         <div class="flex items-center justify-between">
           <div>
             <p class="text-sm font-medium text-gray-800">{{ l.company_name }}</p>
@@ -32,13 +32,13 @@
 
     <Modal :show="showCreate || !!editingLicense" :title="editingLicense ? 'Edit License' : 'Add License'" @close="closeModal">
       <form @submit.prevent="saveLicense" class="space-y-4">
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Company *</label><input v-model="form.company_name" type="text" required class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" /></div>
+        <div><label class="block text-sm font-medium text-gray-700 mb-1">Company *</label><input v-model="form.company_name" type="text" required class="w-full border border-gray-300 rounded-2xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" /></div>
         <div class="grid grid-cols-2 gap-3">
-          <div><label class="block text-sm font-medium text-gray-700 mb-1">Start *</label><input v-model="form.start_date" type="date" required class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" /></div>
-          <div><label class="block text-sm font-medium text-gray-700 mb-1">End *</label><input v-model="form.end_date" type="date" required class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" /></div>
+          <div><label class="block text-sm font-medium text-gray-700 mb-1">Start *</label><input v-model="form.start_date" type="date" required class="w-full border border-gray-300 rounded-2xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" /></div>
+          <div><label class="block text-sm font-medium text-gray-700 mb-1">End *</label><input v-model="form.end_date" type="date" required class="w-full border border-gray-300 rounded-2xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" /></div>
         </div>
-        <div><label class="block text-sm font-medium text-gray-700 mb-1">Royalty Rate (%) *</label><input v-model.number="form.royalty_rate" type="number" required min="0" max="100" step="0.01" class="w-full border border-gray-300 rounded-lg px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" /></div>
-        <div class="flex justify-end gap-3"><button type="button" @click="closeModal" class="px-4 py-2 text-sm border border-gray-300 rounded-lg">Cancel</button><button type="submit" class="px-4 py-2 text-sm bg-blue-600 text-white rounded-lg">{{ editingLicense ? 'Update' : 'Add' }}</button></div>
+        <div><label class="block text-sm font-medium text-gray-700 mb-1">Royalty Rate (%) *</label><input v-model.number="form.royalty_rate" type="number" required min="0" max="100" step="0.01" class="w-full border border-gray-300 rounded-2xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-blue-500 outline-none" /></div>
+        <div class="flex justify-end gap-3"><button type="button" @click="closeModal" class="px-4 py-2 text-sm border border-gray-300 rounded-2xl">Cancel</button><button type="submit" class="px-4 py-2 text-sm bg-blue-600 text-white rounded-2xl">{{ editingLicense ? 'Update' : 'Add' }}</button></div>
       </form>
     </Modal>
 

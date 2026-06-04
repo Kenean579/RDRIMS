@@ -13,9 +13,9 @@
     </div>
 
     <!-- Content -->
-    <div v-if="loading" class="card p-5 flex flex-col justify-center items-center gap-4">
+    <div v-if="loading" class="card p-8 flex flex-col justify-center items-center gap-4">
       <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-brand"></div>
-      <p class="text-xs font-bold text-slate-400 capitalize tracking-widest">Loading files...</p>
+      <p class="text-xs font-medium text-slate-400">Loading files...</p>
     </div>
 
     <div v-else-if="files.length === 0" class="card">
@@ -23,7 +23,7 @@
     </div>
 
     <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-      <div v-for="file in files" :key="file.id" class="card p-5 flex flex-col group card-hover relative border-l-4 border-l-transparent hover:border-l-brand transition-all">
+      <div v-for="file in files" :key="file.id" class="card p-8 flex flex-col group card-hover relative border-l-4 border-l-transparent transition-all">
         <div class="flex items-start gap-4 mb-5">
           <div class="w-12 h-12 rounded-2xl bg-brand-light text-brand flex items-center justify-center shadow-sm group-hover:bg-brand group-hover:text-white transition-all duration-300 shrink-0">
              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" /></svg>
@@ -33,19 +33,19 @@
               {{ file.file?.file_path?.split('/').pop() || 'Agreement File' }}
             </p>
             <div class="flex flex-wrap items-center gap-2">
-              <span class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[9px] font-bold capitalize tracking-widest">{{ file.parent_type?.name || 'File' }}</span>
-              <span class="text-[9px] font-bold text-slate-400 capitalize tracking-widest">ID: {{ String(file.parent_id).padStart(4, '0') }}</span>
+              <span class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded text-[9px] font-medium">{{ file.parent_type?.name || 'File' }}</span>
+              <span class="text-[9px] font-medium text-slate-400">ID: {{ String(file.parent_id).padStart(4, '0') }}</span>
             </div>
           </div>
         </div>
         
         <div class="flex items-center justify-between gap-3 pt-5 border-t border-slate-50 mt-auto">
-          <button @click="downloadFile(file)" class="btn btn-ghost hover:bg-brand-light hover:text-brand flex-1 justify-center text-[10px] font-bold capitalize tracking-widest py-2">
+          <button @click="downloadFile(file)" class="btn btn-ghost hover:bg-brand-light hover:text-brand flex-1 justify-center text-[10px] font-medium py-2">
              <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
              Download
           </button>
           <div class="w-px h-4 bg-slate-100"></div>
-          <button @click="confirmDelete(file)" class="btn btn-ghost text-red-400 hover:bg-red-50 hover:text-red-600 flex-1 justify-center text-[10px] font-bold capitalize tracking-widest py-2">Delete</button>
+          <button @click="confirmDelete(file)" class="btn btn-ghost text-red-400 hover:bg-red-50 hover:text-red-600 flex-1 justify-center text-[10px] font-medium py-2">Delete</button>
         </div>
       </div>
     </div>

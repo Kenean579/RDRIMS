@@ -13,9 +13,9 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
       <!-- Generate Report Card -->
-      <div class="card p-6 flex flex-col gap-5">
+      <div class="card p-8 flex flex-col gap-5">
         <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-xl bg-blue-50 flex items-center justify-center shrink-0">
+          <div class="w-10 h-10 rounded-2xl bg-blue-50 flex items-center justify-center shrink-0">
             <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
             </svg>
@@ -28,11 +28,11 @@
 
         <form @submit.prevent="generateReport" class="flex flex-col gap-4">
           <div>
-            <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-wider mb-1.5">Report Name *</label>
+            <label class="block text-[11px] text-slate-500 font-medium  tracking-wider mb-1.5">Report Name *</label>
             <input v-model="reportForm.name" type="text" required placeholder="e.g. Q1 Research Summary" class="input" />
           </div>
           <div>
-            <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-wider mb-1.5">Report Type *</label>
+            <label class="block text-[11px] text-slate-500 font-medium  tracking-wider mb-1.5">Report Type *</label>
             <select v-model="reportForm.type" required class="input">
               <option value="">Select report type...</option>
               <option value="projects">Active Projects</option>
@@ -80,7 +80,7 @@
         <div v-else class="divide-y divide-slate-100">
           <div v-for="r in reports" :key="r.id"
             class="flex items-center gap-3 px-5 py-4 hover:bg-slate-50 transition-all group">
-            <div class="w-10 h-10 rounded-xl bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0 group-hover:bg-blue-100 transition-colors">
+            <div class="w-10 h-10 rounded-2xl bg-blue-50 border border-blue-100 flex items-center justify-center shrink-0 group-hover:bg-blue-100 transition-colors">
               <svg class="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
               </svg>
@@ -90,7 +90,7 @@
               <p class="text-xs text-slate-400 mt-0.5 font-medium">{{ formatDateTime(r.generated_at) }}</p>
             </div>
             <button @click="downloadReport(r)"
-              class="btn btn-secondary border-slate-200 hover:border-blue-300 hover:text-blue-600 shrink-0 shadow-sm"
+              class="btn btn-secondary border-slate-100 hover:border-blue-300 hover:text-blue-600 shrink-0 shadow-sm"
               style="padding: 6px 14px; font-size: 11px;">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/>

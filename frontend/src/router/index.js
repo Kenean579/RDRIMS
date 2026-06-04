@@ -105,7 +105,14 @@ const routes = [
   { path: '/:pathMatch(.*)*', name: 'NotFound', component: () => import('@/views/errors/NotFoundView.vue'), meta: { title: 'Not Found' } },
 ]
 
-const router = createRouter({ history: createWebHistory(), routes, scrollBehavior() { return { top: 0 } } })
+const router = createRouter({ 
+  history: createWebHistory(), 
+  routes, 
+  scrollBehavior() { return { top: 0 } },
+  // Optimize router performance
+  linkActiveClass: 'active',
+  linkExactActiveClass: 'exact-active',
+})
 
 router.beforeEach((to, from) => {
   const auth = useAuthStore()

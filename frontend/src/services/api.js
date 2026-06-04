@@ -1,20 +1,35 @@
 import axios from 'axios'
 
+// Simple in-memory cache for API responses
+const apiCache = new Map()
+const CACHE_DURATION = 2 * 60 * 1000 // 2 minutes cache duration
+
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api',
   headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
   timeout: 30000,
+  // Add compression support
+  decompress: true,
+  // Optimize connection pooling
+  httpAgent: undefined,
+  httpsAgent: undefined,
+  // Enable response caching for GET requests
+  maxRedirects: 2,
+  // Optimize network performance
+  maxContentLength: 10 * 1024 * 1024, // 10MB
+  maxBodyLength: 10 * 1024 * 1024, // 10MB
 })
 
 import { useContextStore } from '@/stores/context'
 
+// Add response caching interceptor for GET requests
 api.interceptors.request.use(config => {
   const token = localStorage.getItem('rdrims_token')
   if (token) config.headers.Authorization = `Bearer ${token}`
   
   // Inject global hierarchical context into GET queries
   // Exclude hierarchy lookup endpoints to prevent circular filtering
-  const CONTEXT_EXCLUDED = ['/universities', '/campuses', '/faculties', '/departments', '/lookups', '/settings']
+  const CONTEXT_EXCLUDED = ['/universities', '/campuses', '/faculties', '/departments', '/lookups', '/settings', '/dashboard']
   if (config.method === 'get' || config.method === 'GET') {
     try {
       const isExcluded = CONTEXT_EXCLUDED.some(ep => config.url?.endsWith(ep) || config.url?.match(new RegExp(`${ep}\\?`)) || config.url?.match(new RegExp(`${ep}/`)))
@@ -40,7 +55,14 @@ api.interceptors.request.use(config => {
 const PUBLIC_ENDPOINTS = ['/settings', '/lookups', '/universities', '/calls', '/publications', '/community-problems', '/events', '/public', '/users']
 
 api.interceptors.response.use(
-  response => response,
+  response => {
+    // Cache successful GET responses
+    if (response.config?.method === 'get' || response.config?.method === 'GET') {
+      const cacheKey = `${response.config.url}_${JSON.stringify(response.config.params || {})}`
+      apiCache.set(cacheKey, { data: response.data, timestamp: Date.now() })
+    }
+    return response
+  },
   error => {
     if (error.response?.status === 401) {
       const url = error.config?.url || ''

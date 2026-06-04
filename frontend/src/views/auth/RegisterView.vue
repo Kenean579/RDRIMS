@@ -7,7 +7,7 @@
     <div class="w-full max-w-lg animate-fade">
       <!-- Branding / Logo -->
       <div class="flex flex-col items-center mb-5">
-        <div class="h-14 w-14 bg-brand rounded-2xl flex items-center justify-center text-white font-bold text-2xl shadow-lg shadow-brand/20 mb-6 hover:rotate-6 transition-transform cursor-pointer" @click="router.push('/')">
+        <div class="h-14 w-14 bg-brand rounded-2xl flex items-center justify-center text-white font-bold text-2xl mb-6 hover:rotate-6 transition-transform cursor-pointer" @click="router.push('/')">
           R
         </div>
         <h1 class="text-xl font-bold text-slate-800 tracking-tight">Create Account</h1>
@@ -15,7 +15,7 @@
       </div>
 
       <!-- Register Card -->
-      <div class="bg-white rounded-[32px] border border-slate-200/60 shadow-2xl shadow-slate-200/50 p-5 relative overflow-hidden">
+      <div class="bg-white rounded-[32px] border border-slate-100/60 shadow-2xl shadow-slate-200/50 p-5 relative overflow-hidden">
         <div class="absolute top-0 left-0 w-full h-1.5 bg-brand"></div>
         
         <form @submit.prevent="handleRegister" class="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -27,20 +27,20 @@
 
           <!-- Full Name -->
           <div class="space-y-2 md:col-span-2">
-            <label class="block text-[10px] font-bold text-slate-400 capitalize tracking-widest ml-1">Full Name *</label>
-            <input v-model="form.name" type="text" required placeholder="Dr. Abebe Kebede" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-4 text-sm font-medium focus:bg-white focus:border-brand focus:ring-4 focus:ring-brand/10 transition-all outline-none" />
+            <label class="block text-[10px] font-medium text-slate-400 ml-1">Full Name *</label>
+            <input v-model="form.name" type="text" required placeholder="Dr. Abebe Kebede" class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-4 py-4 text-sm font-medium focus:bg-white focus:border-brand focus:ring-4 focus:ring-brand/10 transition-all outline-none" />
           </div>
 
           <!-- Email -->
           <div class="space-y-2 md:col-span-2">
-            <label class="block text-[10px] font-bold text-slate-400 capitalize tracking-widest ml-1">E-mail Address *</label>
-            <input v-model="form.email" type="email" required placeholder="name@university.edu" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-4 text-sm font-medium focus:bg-white focus:border-brand focus:ring-4 focus:ring-brand/10 transition-all outline-none" />
+            <label class="block text-[10px] font-medium text-slate-400 ml-1">E-mail Address *</label>
+            <input v-model="form.email" type="email" required placeholder="name@university.edu" class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-4 py-4 text-sm font-medium focus:bg-white focus:border-brand focus:ring-4 focus:ring-brand/10 transition-all outline-none" />
           </div>
 
           <!-- Department -->
           <div class="space-y-2 md:col-span-2">
-            <label class="block text-[10px] font-bold text-slate-400 capitalize tracking-widest ml-1">Affiliated Department</label>
-            <select v-model="form.department_id" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-4 text-sm font-medium focus:bg-white focus:border-brand focus:ring-4 focus:ring-brand/10 transition-all outline-none">
+            <label class="block text-[10px] font-medium text-slate-400 ml-1">Affiliated Department</label>
+            <select v-model="form.department_id" class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-4 py-4 text-sm font-medium focus:bg-white focus:border-brand focus:ring-4 focus:ring-brand/10 transition-all outline-none">
               <option value="">Select Department (Optional)</option>
               <option v-for="dept in departments" :key="dept.id" :value="dept.id">{{ dept.name }}</option>
             </select>
@@ -48,21 +48,21 @@
 
           <!-- Password -->
           <div class="space-y-2">
-            <label class="block text-[10px] font-bold text-slate-400 capitalize tracking-widest ml-1">Password *</label>
-            <input v-model="form.password" type="password" required minlength="8" placeholder="••••••••" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-4 text-sm font-medium focus:bg-white focus:border-brand focus:ring-4 focus:ring-brand/10 transition-all outline-none" />
+            <label class="block text-[10px] font-medium text-slate-400 ml-1">Password *</label>
+            <input v-model="form.password" type="password" required minlength="8" placeholder="••••••••" class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-4 py-4 text-sm font-medium focus:bg-white focus:border-brand focus:ring-4 focus:ring-brand/10 transition-all outline-none" />
           </div>
 
           <!-- Confirm Password -->
           <div class="space-y-2">
-            <label class="block text-[10px] font-bold text-slate-400 capitalize tracking-widest ml-1">Confirm Password *</label>
-            <input v-model="form.password_confirmation" type="password" required minlength="8" placeholder="••••••••" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-4 text-sm font-medium focus:bg-white focus:border-brand focus:ring-4 focus:ring-brand/10 transition-all outline-none" />
+            <label class="block text-[10px] font-medium text-slate-400 ml-1">Confirm Password *</label>
+            <input v-model="form.password_confirmation" type="password" required minlength="8" placeholder="••••••••" class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-4 py-4 text-sm font-medium focus:bg-white focus:border-brand focus:ring-4 focus:ring-brand/10 transition-all outline-none" />
           </div>
 
           <!-- Submit -->
           <button 
             type="submit" 
             :disabled="auth.loading"
-            class="md:col-span-2 w-full bg-brand text-white font-bold capitalize tracking-widest text-xs py-5 rounded-2xl shadow-xl shadow-brand/20 hover:bg-brand-hover hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-70 flex items-center justify-center gap-3 mt-4"
+            class="md:col-span-2 w-full bg-brand text-white font-bold text-xs py-5 rounded-2xl shadow-xl shadow-brand/20 hover:bg-brand-hover hover:scale-[1.01] active:scale-[0.99] transition-all disabled:opacity-70 flex items-center justify-center gap-3 mt-4"
           >
             <span v-if="auth.loading" class="w-5 h-5 border-3 border-white/30 border-t-white rounded-full animate-spin"></span>
             <span>{{ auth.loading ? 'Creating Account...' : 'Continue to Dashboard' }}</span>
@@ -70,7 +70,7 @@
         </form>
 
         <div class="mt-5 pt-4 border-t border-slate-100 text-center">
-          <p class="text-[11px] font-bold text-slate-400 capitalize tracking-widest">
+          <p class="text-[11px] font-medium text-slate-400">
             Already have an account? 
             <router-link to="/login" class="text-brand font-bold hover:underline underline-offset-4">Sign In Instead</router-link>
           </p>
@@ -79,7 +79,7 @@
 
       <!-- Footer Info -->
       <div class="mt-5 text-center">
-        <p class="text-[10px] font-bold text-slate-400 capitalize tracking-widest flex items-center justify-center gap-4">
+        <p class="text-[10px] font-medium text-slate-400 flex items-center justify-center gap-4">
           <router-link to="/" class="hover:text-brand">Home</router-link>
           <span class="text-slate-200">•</span>
           <a href="#" class="hover:text-brand">Security Policy</a>

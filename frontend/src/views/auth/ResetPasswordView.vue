@@ -7,37 +7,37 @@
     <div class="w-full max-w-md animate-fade">
       <!-- Branding / Logo -->
       <div class="flex flex-col items-center mb-5">
-        <div class="h-14 w-14 bg-brand rounded-2xl flex items-center justify-center text-white font-bold text-2xl shadow-lg shadow-brand/20 mb-6 group hover:rotate-6 transition-transform">
+        <div class="h-14 w-14 bg-brand rounded-2xl flex items-center justify-center text-white font-bold text-2xl mb-6 group hover:rotate-6 transition-transform">
           R
         </div>
         <h1 class="text-xl font-bold text-slate-800 tracking-tight">Set New Password</h1>
-        <p class="text-slate-500 font-medium text-sm mt-1 capitalize tracking-widest text-center">Security Update</p>
+        <p class="text-slate-500 font-medium text-sm mt-1 text-center">Security Update</p>
       </div>
 
       <!-- Reset Password Card -->
-      <div class="bg-white rounded-[32px] border border-slate-200/60 shadow-2xl shadow-slate-200/50 p-5 relative overflow-hidden">
+      <div class="bg-white rounded-[32px] border border-slate-100/60 shadow-2xl shadow-slate-200/50 p-5 relative overflow-hidden">
         <div class="absolute top-0 left-0 w-full h-1.5 bg-brand"></div>
         
         <form @submit.prevent="submit" class="space-y-6">
           <div class="space-y-2">
-            <label class="block text-[10px] font-bold text-slate-400 capitalize tracking-widest ml-1">Account Email</label>
-            <input v-model="form.email" type="email" required readonly class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-4 py-4 text-sm font-bold text-slate-400 cursor-not-allowed outline-none" />
+            <label class="block text-[10px] font-medium text-slate-400 ml-1">Account Email</label>
+            <input v-model="form.email" type="email" required readonly class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-4 py-4 text-sm font-medium text-slate-400 cursor-not-allowed outline-none" />
           </div>
 
           <div class="space-y-2">
-            <label class="block text-[10px] font-bold text-slate-400 capitalize tracking-widest ml-1">New Password</label>
-            <input v-model="form.password" type="password" required minlength="8" placeholder="••••••••" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-4 text-sm font-medium focus:bg-white focus:border-brand focus:ring-4 focus:ring-brand/10 transition-all outline-none" />
+            <label class="block text-[10px] font-medium text-slate-400 ml-1">New Password</label>
+            <input v-model="form.password" type="password" required minlength="8" placeholder="••••••••" class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-4 py-4 text-sm font-medium focus:bg-white focus:border-brand focus:ring-4 focus:ring-brand/10 transition-all outline-none" />
           </div>
 
           <div class="space-y-2">
-            <label class="block text-[10px] font-bold text-slate-400 capitalize tracking-widest ml-1">Confirm New Password</label>
-            <input v-model="form.password_confirmation" type="password" required minlength="8" placeholder="••••••••" class="w-full bg-slate-50 border border-slate-200 rounded-2xl px-4 py-4 text-sm font-medium focus:bg-white focus:border-brand focus:ring-4 focus:ring-brand/10 transition-all outline-none" />
+            <label class="block text-[10px] font-medium text-slate-400 ml-1">Confirm New Password</label>
+            <input v-model="form.password_confirmation" type="password" required minlength="8" placeholder="••••••••" class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-4 py-4 text-sm font-medium focus:bg-white focus:border-brand focus:ring-4 focus:ring-brand/10 transition-all outline-none" />
           </div>
 
           <button 
             type="submit" 
             :disabled="loading"
-            class="w-full bg-brand text-white font-bold capitalize tracking-widest text-xs py-5 rounded-2xl shadow-xl shadow-brand/20 hover:bg-brand-hover hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-70 flex items-center justify-center gap-3"
+            class="w-full bg-brand text-white font-bold text-xs py-5 rounded-2xl shadow-xl shadow-brand/20 hover:bg-brand-hover hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-70 flex items-center justify-center gap-3"
           >
             <span v-if="loading" class="w-5 h-5 border-3 border-white/30 border-t-white rounded-full animate-spin"></span>
             <span>{{ loading ? 'Updating...' : 'Update Password' }}</span>
@@ -45,7 +45,7 @@
         </form>
 
         <div class="mt-5 pt-4 border-t border-slate-100 text-center">
-          <router-link to="/login" class="text-[11px] font-bold text-slate-400 capitalize tracking-widest hover:text-brand transition-colors">
+          <router-link to="/login" class="text-[11px] font-medium text-slate-400 hover:text-brand transition-colors">
             Cancel and Sign In
           </router-link>
         </div>

@@ -6,17 +6,17 @@
         <h1 class="text-xl font-bold text-slate-900 tracking-tight">Users</h1>
         <p class="text-slate-500 font-medium mt-1">People with access to the system.</p>
       </div>
-      <button @click="showCreate = true" class="btn btn-primary h-11 px-6 shadow-lg shadow-blue-500/20">
+      <button @click="showCreate = true" class="btn btn-primary h-11 px-6">
         <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" /></svg>
         Add Person
       </button>
     </div>
 
     <!-- Filters -->
-    <div class="card p-5 bg-slate-50/50">
+    <div class="card p-8 bg-slate-50/50">
       <div class="flex flex-col sm:flex-row gap-5 items-start">
         <div class="flex-1 w-full relative">
-          <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-widest mb-2 ml-1">Search</label>
+          <label class="block text-[11px] text-slate-500 font-medium mb-2 ml-1">Search</label>
           <div class="relative group">
             <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand transition-colors">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -25,7 +25,7 @@
           </div>
         </div>
         <div class="w-full sm:w-56">
-          <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-widest mb-2 ml-1">Role Filter</label>
+          <label class="block text-[11px] text-slate-500 font-medium mb-2 ml-1">Role Filter</label>
           <select v-model="roleFilter" @change="fetchUsers(1)" class="input font-bold">
             <option value="">All Roles</option>
             <option v-for="r in roles" :key="r.id" :value="r.name">{{ r.name }}</option>
@@ -35,16 +35,16 @@
     </div>
 
     <!-- Content -->
-    <div v-if="loading" class="card p-5 flex justify-center items-center">
+    <div v-if="loading" class="card p-8 flex justify-center items-center">
       <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-brand"></div>
     </div>
-    <div v-else-if="error" class="card p-6 text-center text-rose-500 font-bold capitalize tracking-widest text-xs">{{ error }}</div>
+    <div v-else-if="error" class="card p-8 text-center text-rose-500 text-xs">{{ error }}</div>
     <div v-else-if="!users || users.length === 0" class="card">
       <EmptyState icon="👥" title="No users found" description="Add researchers or admins to give them access." action-label="Add First Person" action-icon="add" @action="showCreate = true" />
     </div>
 
     <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      <div v-for="u in users" :key="u.id" class="p-6 card flex flex-col items-center text-center group card-hover relative overflow-hidden border-t-4 border-t-brand hover:border-t-indigo-600 transition-all">
+      <div v-for="u in users" :key="u.id" class="p-6 card flex flex-col items-center text-center group card-hover relative overflow-hidden transition-all">
         <!-- Status Indicator -->
         <div class="absolute top-4 right-4">
            <span :class="u.is_active ? 'bg-emerald-500' : 'bg-slate-300'" class="w-2.5 h-2.5 rounded-full block shadow-sm ring-4 ring-white"></span>
@@ -52,28 +52,28 @@
 
         <!-- Role Badge -->
         <div class="mb-4">
-           <span class="px-2 py-0.5 bg-slate-100 text-slate-500 text-[9px] font-bold capitalize tracking-widest rounded-md border border-slate-200">
+           <span class="px-2 py-0.5 bg-slate-100 text-slate-500 text-[9px] font-medium rounded-md border border-slate-100">
              {{ u.roles?.[0]?.name || 'Guest' }}
            </span>
         </div>
 
         <!-- Avatar -->
-        <div class="w-20 h-20 rounded-3xl bg-linear-to-br from-slate-50 to-slate-100 flex items-center justify-center text-2xl font-bold text-slate-300 mb-4 border border-slate-100 group-hover:scale-110 transition-transform duration-500">
+        <div class="w-20 h-20 rounded-3xl bg-slate-100 flex items-center justify-center text-2xl font-bold text-slate-300 mb-4 border border-slate-100 transition-transform duration-500">
           {{ u.name.charAt(0) }}
         </div>
 
-        <h3 class="text-base font-bold text-slate-800 leading-tight mb-1 group-hover:text-brand transition-colors">{{ u.name }}</h3>
-        <p class="text-[10px] text-slate-400 font-bold capitalize tracking-widest mb-4 truncate w-full px-2">{{ u.email }}</p>
+        <h3 class="text-base font-semibold text-slate-800 leading-tight mb-1 group-hover:text-brand transition-colors">{{ u.name }}</h3>
+        <p class="text-[10px] text-slate-400 font-medium mb-4 truncate w-full px-2">{{ u.email }}</p>
 
         <div class="w-full pt-4 border-t border-slate-50 mt-auto flex flex-col gap-2">
            <div class="flex items-center gap-1.5 justify-center mb-4">
              <i class="fas fa-building text-[10px] text-slate-300"></i>
-             <span class="text-[9px] font-bold text-slate-400 capitalize tracking-widest">{{ u.department?.name || 'Central Unit' }}</span>
+             <span class="text-[9px] font-medium text-slate-400">{{ u.department?.name || 'Central Unit' }}</span>
            </div>
            
            <div class="grid grid-cols-2 gap-2">
-             <button @click="editUser(u)" class="btn btn-ghost border border-slate-200 hover:border-brand hover:text-brand text-[10px] font-bold capitalize tracking-widest py-2 rounded-xl">Profile</button>
-             <button @click="confirmDelete(u)" class="btn btn-ghost border border-rose-300 hover:bg-rose-50 text-rose-500 text-[10px] font-bold capitalize tracking-widest py-2 rounded-xl">Manage</button>
+             <button @click="editUser(u)" class="btn btn-ghost border border-slate-100 hover:border-brand hover:text-brand text-[10px] font-medium py-2 rounded-2xl">Profile</button>
+             <button @click="confirmDelete(u)" class="btn btn-ghost border border-rose-300 hover:bg-rose-50 text-rose-500 text-[10px] font-medium py-2 rounded-2xl">Manage</button>
            </div>
         </div>
       </div>
@@ -88,47 +88,47 @@
       <form @submit.prevent="saveUser" class="space-y-6">
         <div class="grid grid-cols-1 gap-6">
            <div class="space-y-2">
-              <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-widest ml-1">Full Name *</label>
-              <input v-model="form.name" type="text" required placeholder="e.g. John Doe" class="input h-12 font-bold" />
+              <label class="block text-[11px] text-slate-500 font-medium ml-1">Full Name *</label>
+              <input v-model="form.name" type="text" required placeholder="e.g. John Doe" class="input h-12 font-medium" />
            </div>
            <div class="space-y-2">
-              <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-widest ml-1">Email Address *</label>
-              <input v-model="form.email" type="email" required placeholder="e.g. john@university.edu" class="input h-12 font-bold" />
+              <label class="block text-[11px] text-slate-500 font-medium ml-1">Email Address *</label>
+              <input v-model="form.email" type="email" required placeholder="e.g. john@university.edu" class="input h-12 font-medium" />
            </div>
         </div>
         
         <div class="space-y-2" v-if="!editingUser">
-          <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-widest ml-1">Password *</label>
+          <label class="block text-[11px] text-slate-500 font-medium ml-1">Password *</label>
           <input v-model="form.password" type="password" required minlength="8" placeholder="••••••••" class="input h-12 font-bold" />
-          <p class="text-[10px] text-slate-400 font-bold capitalize tracking-widest mt-2 ml-1">Min. 8 characters</p>
+          <p class="text-[10px] text-slate-400 font-medium mt-2 ml-1">Min. 8 characters</p>
         </div>
 
         <div class="space-y-4">
-          <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-widest ml-1 mb-2">Assign to Hierarchy</label>
+          <label class="block text-[11px] text-slate-500 font-medium ml-1 mb-2">Assign to Hierarchy</label>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div class="space-y-2">
-              <label class="block text-[10px] text-slate-400 font-bold ml-1">University</label>
+              <label class="block text-[10px] text-slate-400 font-medium ml-1">University</label>
               <select v-model="form.university_id" class="input h-11 text-sm font-bold text-slate-700">
                 <option value="">Select University</option>
                 <option v-for="u in universities" :key="u.id" :value="u.id">{{ u.name }}</option>
               </select>
             </div>
             <div class="space-y-2">
-              <label class="block text-[10px] text-slate-400 font-bold ml-1">Campus</label>
+              <label class="block text-[10px] text-slate-400 font-medium ml-1">Campus</label>
               <select v-model="form.campus_id" class="input h-11 text-sm font-bold text-slate-700" :disabled="!form.university_id">
                 <option value="">Select Campus</option>
                 <option v-for="c in filteredCampuses" :key="c.id" :value="c.id">{{ c.name }}</option>
               </select>
             </div>
             <div class="space-y-2">
-              <label class="block text-[10px] text-slate-400 font-bold ml-1">Faculty / College</label>
+              <label class="block text-[10px] text-slate-400 font-medium ml-1">Faculty / College</label>
               <select v-model="form.faculty_id" class="input h-11 text-sm font-bold text-slate-700" :disabled="!form.campus_id">
                 <option value="">Select Faculty</option>
                 <option v-for="f in filteredFaculties" :key="f.id" :value="f.id">{{ f.name }}</option>
               </select>
             </div>
             <div class="space-y-2">
-              <label class="block text-[10px] text-slate-400 font-bold ml-1">Department</label>
+              <label class="block text-[10px] text-slate-400 font-medium ml-1">Department</label>
               <select v-model="form.department_id" class="input h-11 text-sm font-bold text-slate-700" :disabled="!form.faculty_id">
                 <option value="">Select Department</option>
                 <option v-for="d in filteredDepartments" :key="d.id" :value="d.id">{{ d.name }}</option>
@@ -138,18 +138,18 @@
         </div>
 
         <div class="space-y-3">
-          <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-widest ml-1">Roles</label>
+          <label class="block text-[11px] text-slate-500 font-medium ml-1">Roles</label>
           <div class="grid grid-cols-2 gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-100 max-h-48 overflow-y-auto">
-            <label v-for="r in roles" :key="r.id" class="flex items-center gap-2.5 text-xs font-bold text-slate-600 p-2.5 cursor-pointer hover:bg-white rounded-xl transition-all shadow-sm border border-transparent hover:border-slate-100">
-              <input type="checkbox" :value="r.id" v-model="form.role_ids" class="w-4.5 h-4.5 rounded-lg border-slate-300 text-brand focus:ring-brand shadow-sm" />
+            <label v-for="r in roles" :key="r.id" class="flex items-center gap-2.5 text-xs font-bold text-slate-600 p-2.5 cursor-pointer hover:bg-white rounded-2xl transition-all shadow-sm border border-transparent hover:border-slate-100">
+              <input type="checkbox" :value="r.id" v-model="form.role_ids" class="w-4.5 h-4.5 rounded-2xl border-slate-300 text-brand focus:ring-brand shadow-sm" />
               {{ r.name }}
             </label>
           </div>
         </div>
 
         <div class="flex justify-end gap-3 pt-6 mt-6 border-t border-slate-100">
-          <button type="button" @click="closeModal" class="btn btn-secondary px-6 font-bold capitalize tracking-widest text-[11px]">Discard</button>
-          <button type="submit" class="btn btn-primary px-5 shadow-lg shadow-blue-500/20 font-bold capitalize tracking-widest text-[11px]">
+          <button type="button" @click="closeModal" class="btn btn-secondary px-6 font-bold text-[11px]">Discard</button>
+          <button type="submit" class="btn btn-primary px-5 font-bold text-[11px]">
             {{ editingUser ? 'Save Changes' : 'Add Person' }}
           </button>
         </div>

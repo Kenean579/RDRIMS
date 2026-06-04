@@ -1,118 +1,228 @@
 <template>
-  <div class="flex flex-col gap-6 card">
+  <div class="flex flex-col gap-8 animate-fade pb-8">
     <!-- Header -->
-    <div class="section-header">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-6 px-1">
       <div>
-        <h1 class="section-title">Budget Reviews</h1>
-        <p class="section-subtitle">Review and approve proposal budget allocations</p>
+        <h1 class="text-2xl font-bold text-slate-900 tracking-tight leading-tight">Budget Reviews</h1>
+        <p class="text-slate-500 font-medium mt-2 text-xs flex items-center gap-2  tracking-widest">
+          <span class="w-2 h-2 rounded-full bg-brand"></span>
+          Review and approve proposal budget allocations
+        </p>
       </div>
-      <button @click="fetchChecks" class="btn btn-secondary">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-        Sync
-      </button>
+      <div class="flex items-center gap-3">
+        <!-- Status filter -->
+        <select v-model="statusFilter" @change="fetchChecks" class="input h-10 px-4 text-[12px] font-bold w-48">
+          <option value="">All Reviews</option>
+          <option v-for="s in financeStatuses" :key="s.id" :value="s.name">{{ s.name }}</option>
+        </select>
+        <button @click="fetchChecks" class="btn btn-secondary h-10 px-4 group">
+          <svg class="w-4 h-4 group-hover:rotate-180 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        </button>
+      </div>
     </div>
 
-    <!-- Content -->
-    <div v-if="loading" class="card p-5"><LoadingSkeleton :rows="5" /></div>
-    <div v-else-if="checks.length === 0" class="card">
-      <EmptyState icon="💰" title="No finance checks pending" description="Great job! All proposal budget reviews are up to date." />
+    <!-- Loading -->
+    <div v-if="loading" class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div v-for="i in 4" :key="i" class="bg-white rounded-3xl h-48 animate-pulse border border-slate-100"></div>
     </div>
 
+    <!-- Empty -->
+    <div v-else-if="checks.length === 0" class="card p-16 text-center">
+      <div class="w-20 h-20 bg-emerald-50 rounded-3xl flex items-center justify-center mx-auto mb-6 border border-emerald-100">
+        <svg class="w-10 h-10 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+      </div>
+      <h3 class="text-lg font-bold text-slate-800 mb-2">All clear!</h3>
+      <p class="text-sm text-slate-500 font-medium">No budget reviews are pending at the moment.</p>
+    </div>
+
+    <!-- Finance Check Cards -->
     <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <div v-for="check in checks" :key="check.id" class="card p-6 flex flex-col group card-hover relative overflow-hidden border-l-4 border-l-emerald-500 hover:border-l-emerald-600 transition-all">
-        <div class="flex items-start justify-between mb-4">
-          <div class="flex-1 pr-4">
-            <div class="flex items-center gap-3 mb-2">
-              <span class="px-2.5 py-0.5 bg-emerald-50 text-emerald-600 text-[10px] font-bold capitalize tracking-widest rounded-md border border-emerald-100">
-                Budget Review
-              </span>
-              <StatusBadge :status="check.status?.name || 'pending'" />
-            </div>
-            <h3 class="text-base font-bold text-slate-800 leading-tight mb-2 group-hover:text-emerald-700 transition-colors">{{ check.proposal?.title }}</h3>
-            <div class="flex items-center gap-4 text-[10px] font-bold text-slate-400 capitalize tracking-widest">
-              <span class="flex items-center gap-1.5">
-                <i class="fas fa-coins text-emerald-400"></i>
-                {{ formatCurrency(check.proposal?.budget) }}
-              </span>
-              <span v-if="check.checker?.name" class="flex items-center gap-1.5">
-                <i class="fas fa-user-check"></i>
-                {{ check.checker?.name }}
-              </span>
-            </div>
+      <div v-for="check in checks" :key="check.id"
+        class="bg-white rounded-3xl border border-slate-100 hover:border-emerald-200 hover:shadow-xl hover:shadow-emerald-500/5 transition-all overflow-hidden group flex flex-col"
+      >
+        <div class="p-6 flex-1">
+          <!-- Status row -->
+          <div class="flex items-center gap-3 mb-4">
+            <span class="px-3 py-1 bg-emerald-50 text-emerald-700 text-[10px] font-bold rounded-full border border-emerald-100  tracking-wider">Budget Review</span>
+            <span
+              class="px-3 py-1 rounded-full text-[10px] font-bold"
+              :class="{
+                'bg-amber-100 text-amber-700': check.status?.name === 'pending',
+                'bg-emerald-100 text-emerald-700': check.status?.name === 'approved',
+                'bg-rose-100 text-rose-700': check.status?.name === 'rejected',
+              }"
+            >{{ check.status?.name || 'pending' }}</span>
           </div>
-          <div class="w-12 h-12 rounded-2xl bg-linear-to-br from-emerald-400 to-teal-600 text-white flex items-center justify-center font-bold shadow-lg shadow-emerald-500/30 shrink-0">
-             <i class="fas fa-dollar-sign text-xl"></i>
+
+          <!-- Proposal title -->
+          <h3 class="text-base font-bold text-slate-800 group-hover:text-emerald-700 transition-colors leading-tight mb-4">
+            {{ check.proposal?.title || 'Untitled Proposal' }}
+          </h3>
+
+          <!-- Details grid -->
+          <div class="grid grid-cols-2 gap-3">
+            <div class="bg-slate-50 rounded-2xl p-3 border border-slate-100">
+              <p class="text-[9px] font-bold text-slate-400  tracking-widest mb-1">Budget</p>
+              <p class="text-sm font-bold text-slate-800">{{ formatCurrency(check.proposal?.budget) }}</p>
+            </div>
+            <div class="bg-slate-50 rounded-2xl p-3 border border-slate-100">
+              <p class="text-[9px] font-bold text-slate-400  tracking-widest mb-1">Reviewer</p>
+              <p class="text-sm font-bold text-slate-800 truncate">{{ check.checker?.name || 'Unassigned' }}</p>
+            </div>
+            <div v-if="check.approved_budget" class="bg-emerald-50 rounded-2xl p-3 border border-emerald-100 col-span-2">
+              <p class="text-[9px] font-bold text-emerald-600  tracking-widest mb-1">Approved Amount</p>
+              <p class="text-sm font-bold text-emerald-700">{{ formatCurrency(check.approved_budget) }}</p>
+            </div>
+            <div v-if="check.comments" class="bg-slate-50 rounded-2xl p-3 border border-slate-100 col-span-2">
+              <p class="text-[9px] font-bold text-slate-400  tracking-widest mb-1">Comments</p>
+              <p class="text-xs text-slate-600 font-medium line-clamp-2">{{ check.comments }}</p>
+            </div>
           </div>
         </div>
-        
-        <div class="mt-auto pt-4 border-t border-slate-100 flex items-center gap-3">
-          <button @click="approveCheck(check)" class="flex-1 btn btn-primary h-10 text-[11px] font-bold capitalize tracking-widest bg-emerald-600 hover:bg-emerald-700 shadow-lg shadow-emerald-500/20 border-0">
+
+        <!-- Actions footer (only for pending reviews) -->
+        <div v-if="check.status?.name === 'pending'" class="px-6 py-4 bg-slate-50/60 border-t border-slate-100 flex gap-3">
+          <button
+            @click="openApprove(check)"
+            class="flex-1 h-10 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold transition-colors flex items-center justify-center gap-2"
+          >
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
             Approve
           </button>
-          <button @click="rejectCheck(check)" class="flex-1 btn btn-secondary h-10 text-[11px] font-bold capitalize tracking-widest text-rose-600 bg-rose-50 hover:bg-rose-100 border-0">
+          <button
+            @click="openReject(check)"
+            class="flex-1 h-10 rounded-2xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-[11px] font-bold border border-rose-100 transition-colors flex items-center justify-center gap-2"
+          >
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/></svg>
             Reject
           </button>
         </div>
+        <div v-else class="px-6 py-4 bg-slate-50/60 border-t border-slate-100">
+          <span class="text-[10px] font-bold text-slate-400  tracking-wider">Review completed</span>
+        </div>
       </div>
     </div>
 
-    <ConfirmDialog :show="showReject" title="Reject Budget Review" message="Please provide a reason for rejection:" confirmText="Confirm Rejection" variant="danger" @confirm="confirmReject" @cancel="showReject = false">
-      <template #extra>
-        <textarea v-model="rejectComment" rows="2" class="input resize-none mt-3" placeholder="Reason for rejection..."></textarea>
-      </template>
-    </ConfirmDialog>
+    <!-- Approve Modal -->
+    <Modal :show="showApprove" title="Approve Budget" size="sm" @close="showApprove = false">
+      <form @submit.prevent="confirmApprove" class="space-y-5">
+        <div>
+          <label class="block text-[11px] text-slate-500 font-bold mb-2 ml-1">Approved Budget Amount</label>
+          <input v-model.number="approveForm.approved_budget" type="number" step="0.01" class="input h-12 font-bold" :placeholder="approvingCheck?.proposal?.budget" />
+          <p class="text-[10px] text-slate-400 mt-1 ml-1">Leave blank to approve as-is ({{ formatCurrency(approvingCheck?.proposal?.budget) }})</p>
+        </div>
+        <div>
+          <label class="block text-[11px] text-slate-500 font-bold mb-2 ml-1">Comments (optional)</label>
+          <textarea v-model="approveForm.comments" rows="3" class="input resize-none pt-3 font-medium" placeholder="Approval notes..."></textarea>
+        </div>
+        <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+          <button type="button" @click="showApprove = false" class="btn btn-secondary px-6 h-11 font-bold text-[11px]">Cancel</button>
+          <button type="submit" class="h-11 px-8 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold transition-colors">Confirm Approval</button>
+        </div>
+      </form>
+    </Modal>
+
+    <!-- Reject Modal -->
+    <Modal :show="showReject" title="Reject Budget Review" size="sm" @close="showReject = false">
+      <form @submit.prevent="confirmReject" class="space-y-5">
+        <div>
+          <label class="block text-[11px] text-slate-500 font-bold mb-2 ml-1">Reason for Rejection *</label>
+          <textarea v-model="rejectForm.comments" required rows="4" class="input resize-none pt-3 font-medium" placeholder="Provide a clear reason..."></textarea>
+        </div>
+        <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
+          <button type="button" @click="showReject = false" class="btn btn-secondary px-6 h-11 font-bold text-[11px]">Cancel</button>
+          <button type="submit" class="h-11 px-8 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-bold transition-colors">Confirm Rejection</button>
+        </div>
+      </form>
+    </Modal>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, reactive, onMounted } from 'vue'
 import { useNotificationStore } from '@/stores/notification'
 import api from '@/services/api'
-import StatusBadge from '@/components/StatusBadge.vue'
-import LoadingSkeleton from '@/components/LoadingSkeleton.vue'
-import ConfirmDialog from '@/components/ConfirmDialog.vue'
-import EmptyState from '@/components/EmptyState.vue'
+import Modal from '@/components/Modal.vue'
 import { formatCurrency } from '@/utils/formatters'
 
 const notif = useNotificationStore()
-const checks = ref([]); const loading = ref(true)
-const showReject = ref(false); const rejectComment = ref(''); const rejectingCheck = ref(null)
+const checks = ref([])
+const loading = ref(true)
+const statusFilter = ref('')
+const financeStatuses = ref([])
+
+// Approve flow
+const showApprove = ref(false)
+const approvingCheck = ref(null)
+const approveForm = reactive({ approved_budget: null, comments: '' })
+
+// Reject flow
+const showReject = ref(false)
+const rejectingCheck = ref(null)
+const rejectForm = reactive({ comments: '' })
 
 async function fetchChecks() {
   loading.value = true
   try {
-    const { data } = await api.get('/proposals?status=finance_check')
+    const params = {}
+    if (statusFilter.value) params.status = statusFilter.value
+    const { data } = await api.get('/finance-checks', { params })
     checks.value = data.data || data
-  } catch (e) {} finally { loading.value = false }
+  } catch (e) {
+    notif.error('Failed to load finance checks')
+  } finally {
+    loading.value = false
+  }
 }
 
-async function approveCheck(check) {
+function openApprove(check) {
+  approvingCheck.value = check
+  approveForm.approved_budget = null
+  approveForm.comments = ''
+  showApprove.value = true
+}
+
+async function confirmApprove() {
   try {
-    const existing = check.finance_checks?.[0]
-    if (existing) {
-      await api.put(`/finance-checks/${existing.id}`, { status_id: 2 })
-    } else {
-      await api.post(`/proposals/${check.id}/finance-checks`, { status_id: 2 })
+    const payload = {
+      comments: approveForm.comments || null,
     }
-    notif.success('Finance check approved!')
+    if (approveForm.approved_budget) {
+      payload.approved_budget = approveForm.approved_budget
+    }
+    await api.post(`/finance-checks/${approvingCheck.value.id}/approve`, payload)
+    notif.success('Budget approved!')
+    showApprove.value = false
     fetchChecks()
-  } catch (err) { notif.error('Failed to update finance check') }
+  } catch (err) {
+    notif.error(err.response?.data?.message || 'Failed to approve')
+  }
 }
 
-function rejectCheck(check) { rejectingCheck.value = check; showReject.value = true }
+function openReject(check) {
+  rejectingCheck.value = check
+  rejectForm.comments = ''
+  showReject.value = true
+}
 
 async function confirmReject() {
   try {
-    const existing = rejectingCheck.value.finance_checks?.[0]
-    if (existing) {
-      await api.put(`/finance-checks/${existing.id}`, { status_id: 3, comments: rejectComment.value })
-    } else {
-      await api.post(`/proposals/${rejectingCheck.value.id}/finance-checks`, { status_id: 3, comments: rejectComment.value })
-    }
-    notif.success('Finance check rejected!')
-    showReject.value = false; fetchChecks()
-  } catch (err) { notif.error('Failed to reject finance check') }
+    await api.post(`/finance-checks/${rejectingCheck.value.id}/reject`, {
+      comments: rejectForm.comments,
+    })
+    notif.success('Budget review rejected')
+    showReject.value = false
+    fetchChecks()
+  } catch (err) {
+    notif.error(err.response?.data?.message || 'Failed to reject')
+  }
 }
 
-onMounted(fetchChecks)
+onMounted(async () => {
+  fetchChecks()
+  try {
+    const { data } = await api.get('/lookups/finance_check_statuses')
+    financeStatuses.value = data
+  } catch (e) {}
+})
 </script>

@@ -1,93 +1,119 @@
 <template>
-  <div class="flex flex-col gap-5 pb-6 animate-fade card">
+  <div class="space-y-6 animate-fade pb-10">
     <!-- Header -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 px-1">
       <div>
-        <h1 class="text-xl font-bold text-slate-900 tracking-tight">Expertise Tags</h1>
-        <p class="text-slate-500 font-medium mt-1">Manage keywords used to label research areas and researcher skills</p>
+        <h1 class="text-2xl font-black text-slate-900 tracking-tighter  leading-none">Expertise Taxonomy</h1>
+        <p class="text-[10px] font-bold text-slate-400 mt-2  tracking-widest flex items-center gap-2">
+           <span class="w-1.5 h-1.5 rounded-full bg-brand animate-pulse"></span>
+           Institutional keyword registry for scientific classification
+        </p>
       </div>
-      <button @click="showCreate = true" class="btn btn-primary h-11 px-6 shadow-lg shadow-blue-500/20">
-        <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" /></svg>
-        Add New Tag
+      <button v-if="auth.hasRole('super_admin')" @click="showCreate = true" class="btn btn-primary h-14 px-8 text-[11px] font-black  tracking-widest shadow-xl shadow-brand/20 flex items-center gap-3">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" /></svg>
+        Register New Domain
       </button>
     </div>
 
+    <!-- Stats & Search -->
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6">
-      <div class="card p-6 bg-linear-to-br from-brand to-indigo-600 border-0 text-white shadow-xl shadow-brand/20">
-        <p class="text-[10px] font-bold capitalize tracking-widest mb-1 opacity-80">Indexed Expertise</p>
-        <p class="text-xl font-bold">{{ expertise.length }} Tags</p>
+      <div class="card p-8 bg-slate-900 border-0 text-white shadow-2xl shadow-slate-900/10 flex flex-col justify-between overflow-hidden relative group">
+        <div class="absolute -right-6 -bottom-6 w-32 h-32 bg-white/5 rounded-full group-hover:scale-110 transition-transform duration-700"></div>
+        <p class="text-[9px] font-black mb-1 opacity-60  tracking-widest relative z-10">Active Index</p>
+        <p class="text-4xl font-black tracking-tighter relative z-10">{{ expertise.length }}<span class="text-brand">.</span></p>
       </div>
-      <div class="md:col-span-3 card p-2 bg-slate-50/50 flex items-center">
+      
+      <div class="md:col-span-3 card p-2 bg-white flex items-center shadow-lg shadow-slate-200/50">
         <div class="w-full relative group">
-          <span class="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand transition-colors">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          <span class="absolute left-6 top-1/2 -translate-y-1/2 text-slate-300 group-focus-within:text-brand transition-colors">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
           </span>
-          <input v-model="searchQuery" type="text" placeholder="Filter through academic skills & domain tags..." class="w-full bg-transparent h-14 pl-14 pr-6 text-sm font-bold text-slate-700 placeholder:text-slate-400 focus:outline-none" />
+          <input v-model="searchQuery" type="text" placeholder="Filter institutional knowledge domains..." class="w-full bg-transparent h-14 pl-16 pr-8 text-[11px] font-black  tracking-widest text-slate-700 placeholder:text-slate-300 focus:outline-none" />
         </div>
       </div>
     </div>
 
-    <!-- Content -->
-    <div v-if="loading" class="card p-5 flex flex-col justify-center items-center gap-4">
-      <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-brand"></div>
-      <p class="text-xs font-bold text-slate-400 capitalize tracking-widest">Synergizing tags...</p>
+    <!-- Content Area -->
+    <div v-if="loading" class="card p-20 flex flex-col justify-center items-center gap-6">
+      <div class="w-16 h-16 border-4 border-slate-100 border-t-brand rounded-full animate-spin"></div>
+      <p class="text-[10px] font-black text-slate-400  tracking-widest">Synchronizing Registry...</p>
     </div>
     
-    <div v-else-if="filteredExpertise.length === 0" class="card">
-      <EmptyState icon="🧠" title="No matching expertise" :description="searchQuery ? 'No skills found matching \'' + searchQuery + '\'' : 'Expand the institutional knowledge base by adding tags.'" action-label="Add First Tag" action-icon="add" @action="showCreate = true" />
+    <div v-else-if="filteredExpertise.length === 0" class="card p-20 text-center border-dashed border-2">
+       <div class="w-24 h-24 rounded-[2rem] bg-slate-50 border border-slate-100 flex items-center justify-center text-4xl mx-auto mb-8 shadow-inner">🧠</div>
+       <h2 class="text-[13px] font-black text-slate-900  tracking-widest mb-2">No Matching Domains</h2>
+       <p class="text-[10px] font-bold text-slate-400  tracking-widest max-w-sm mx-auto leading-relaxed">
+         The current search query does not match any registered institutional knowledge areas.
+       </p>
+       <button v-if="auth.hasRole('super_admin')" @click="showCreate = true" class="mt-8 btn btn-secondary h-12 px-8 text-[10px] font-black  tracking-widest border border-slate-200">Reset & Add New</button>
     </div>
 
-    <div v-else class="card p-5 bg-white border-dashed border-2 border-slate-100">
+    <div v-else class="card p-8 bg-white/50 backdrop-blur-xl border-dashed border-2 border-slate-100">
       <div class="flex flex-wrap gap-4">
         <div v-for="exp in filteredExpertise" :key="exp.id" 
-          class="inline-flex items-center gap-3 px-5 py-2.5 rounded-2xl bg-white border border-slate-200 shadow-sm hover:shadow-indigo-500/10 hover:border-indigo-400 hover:-translate-y-0.5 active:translate-y-0 transition-all duration-300 group cursor-default">
-          <span class="text-xs font-bold text-slate-700 tracking-tight group-hover:text-indigo-600 transition-colors capitalize">{{ exp.name }}</span>
-          <button @click="confirmDelete(exp)" class="w-6 h-6 rounded-lg flex items-center justify-center text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-all duration-300" title="Delete Tag">
-            <i class="fas fa-times text-[10px]"></i>
-          </button>
+          class="inline-flex items-center gap-4 px-6 py-3.5 rounded-[1.25rem] bg-white border border-slate-200 shadow-sm hover:shadow-xl hover:shadow-brand/5 hover:border-brand/40 hover:-translate-y-1 transition-all duration-500 group cursor-default">
+          <div class="w-8 h-8 rounded-xl bg-slate-50 flex items-center justify-center text-xs text-slate-400 group-hover:bg-brand/10 group-hover:text-brand transition-colors font-black">
+            {{ exp.name.charAt(0).toUpperCase() }}
+          </div>
+          <span class="text-[11px] font-black text-slate-900  tracking-widest group-hover:text-brand transition-colors">{{ exp.name }}</span>
+          
+          <div v-if="auth.hasRole('super_admin')" class="flex items-center gap-1 border-l border-slate-100 pl-4 ml-2 opacity-0 group-hover:opacity-100 transition-opacity translate-x-2 group-hover:translate-x-0 transition-all duration-300">
+            <button @click="editItem(exp)" class="w-8 h-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-brand hover:bg-brand/5 transition-all" title="Edit Domain">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+            </button>
+            <button @click="confirmDelete(exp)" class="w-8 h-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all" title="Retire Domain">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+          </div>
         </div>
       </div>
     </div>
 
     <!-- Modals -->
-    <Modal :show="showCreate" title="Add New Tag" size="md" @close="showCreate = false">
-      <form @submit.prevent="saveExpertise" class="space-y-6">
+    <Modal :show="showCreate || !!editingItem" :title="editingItem ? 'Update Knowledge Area' : 'Register New Expertise'" size="md" @close="closeModal">
+      <form @submit.prevent="saveExpertise" class="space-y-8 p-4">
         <div>
-          <label class="block text-[11px] text-slate-500 font-bold capitalize tracking-widest mb-2 ml-1">Tag Name *</label>
-          <input v-model="form.name" type="text" required class="input h-12 font-bold focus:ring-4 focus:ring-brand/5" placeholder="e.g. Machine Learning, Biology" />
-          <p class="text-[10px] text-slate-400 font-bold mt-2 ml-1 capitalize tracking-wide">Enter the name of the expertise area</p>
+          <label class="block text-[10px] font-black text-slate-400  tracking-widest mb-4 ml-1">Domain Title <span class="text-rose-500">*</span></label>
+          <input v-model="form.name" type="text" required class="input h-14 font-black  tracking-widest text-slate-800" placeholder="e.g. MOLECULAR GENETICS" />
+          <p class="text-[9px] font-bold text-slate-400 mt-4 ml-1  tracking-tighter">This keyword will be available for researcher categorization and proposal tagging.</p>
         </div>
         
-        <div class="flex justify-end gap-3 pt-6 border-t border-slate-100">
-          <button type="button" @click="showCreate = false" class="btn btn-secondary px-6">Cancel</button>
-          <button type="submit" class="btn btn-primary px-5 shadow-lg shadow-blue-500/20">Save Tag</button>
+        <div class="flex justify-end gap-4 pt-8 border-t border-slate-50">
+          <button type="button" @click="closeModal" class="btn btn-secondary h-12 px-8 text-[10px] font-black  tracking-widest border border-slate-100">Abort Changes</button>
+          <button type="submit" :disabled="submitting" class="btn btn-primary h-12 px-10 text-[10px] font-black  tracking-widest shadow-lg shadow-brand/20">
+             {{ editingItem ? 'Commit Update' : 'Register Domain' }}
+          </button>
         </div>
       </form>
     </Modal>
 
-    <ConfirmDialog :show="showDelete" title="Delete Tag" :message="'Are you sure you want to delete the \'' + (deletingExp?.name) + '\' tag? This will remove it from the system.'" confirmText="Delete Now" variant="danger" @confirm="deleteExpertise" @cancel="showDelete = false" />
+    <ConfirmDialog :show="showDelete" title="Retire Domain" :message="'Confirming the permanent retirement of \'' + (deletingExp?.name) + '\' from the institutional registry. This cannot be undone.'" confirmText="Retire Keyword" variant="danger" @confirm="deleteExpertise" @cancel="showDelete = false" />
   </div>
 </template>
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useAuthStore } from '@/stores/auth'
 import { useNotificationStore } from '@/stores/notification'
 import api from '@/services/api'
 import Modal from '@/components/Modal.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
-import LoadingSkeleton from '@/components/LoadingSkeleton.vue'
 import EmptyState from '@/components/EmptyState.vue'
 
+const auth = useAuthStore()
 const notif = useNotificationStore()
 const expertise = ref([])
 const loading = ref(true)
+const submitting = ref(false)
 const searchQuery = ref('')
 const showCreate = ref(false)
+const editingItem = ref(null)
 const showDelete = ref(false)
 const deletingExp = ref(null)
 const form = ref({ name: '' })
 
 const filteredExpertise = computed(() => {
+  if (!expertise.value) return []
   if (!searchQuery.value) return expertise.value
   const q = searchQuery.value.toLowerCase()
   return expertise.value.filter(e => e.name.toLowerCase().includes(q))
@@ -97,12 +123,23 @@ async function fetchExpertise() {
   loading.value = true
   try {
     const { data } = await api.get('/expertise')
-    expertise.value = data
+    expertise.value = Array.isArray(data) ? data : (data.data || [])
   } catch (e) {
     console.error(e)
   } finally {
     loading.value = false
   }
+}
+
+function editItem(item) {
+  editingItem.value = item
+  form.value.name = item.name
+}
+
+function closeModal() {
+  showCreate.value = false
+  editingItem.value = null
+  form.value.name = ''
 }
 
 function confirmDelete(e) {
@@ -111,27 +148,40 @@ function confirmDelete(e) {
 }
 
 async function saveExpertise() {
+  submitting.value = true
   try {
-    await api.post('/expertise', form.value)
-    notif.success('Expertise tag added!')
-    showCreate.value = false
-    form.value.name = ''
+    if (editingItem.value) {
+      await api.put(`/expertise/${editingItem.value.id}`, form.value)
+      notif.success('Domain updated successfully')
+    } else {
+      await api.post('/expertise', form.value)
+      notif.success('New domain registered')
+    }
+    closeModal()
     fetchExpertise()
   } catch (err) {
-    notif.error('Failed to add tag')
+    notif.error('Protocol synchronization failure')
+  } finally {
+    submitting.value = false
   }
 }
 
 async function deleteExpertise() {
   try {
     await api.delete(`/expertise/${deletingExp.value.id}`)
-    notif.success('Tag deleted')
+    notif.success('Domain retired from registry')
     showDelete.value = false
     fetchExpertise()
   } catch (err) {
-    notif.error('Failed to delete tag')
+    notif.error('Retirement protocol failed')
   }
 }
 
 onMounted(fetchExpertise)
 </script>
+
+<style scoped>
+.card { @apply bg-white border border-slate-200 rounded-[2.5rem] shadow-sm; }
+.btn { @apply inline-flex items-center justify-center rounded-2xl transition-all active:scale-95 disabled:opacity-50; }
+.input { @apply w-full bg-slate-50 border border-slate-100 rounded-2xl px-5 outline-none focus:ring-4 focus:ring-brand/10 focus:border-brand/40 transition-all text-sm; }
+</style>

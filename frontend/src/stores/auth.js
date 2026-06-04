@@ -24,14 +24,15 @@ export const useAuthStore = defineStore('auth', () => {
     return perms
   })
 
-  const hasRole = computed(() => (...names) => {
+  function hasRole(...names) {
     if (userRoles.value.includes('super_admin')) return true
     return names.length === 0 || names.some(r => userRoles.value.includes(r))
-  })
-  const hasPermission = computed(() => name => {
+  }
+
+  function hasPermission(name) {
     if (userRoles.value.includes('super_admin')) return true
     return !name || userPermissions.value.includes(name)
-  })
+  }
   const primaryRole = computed(() => userRoles.value.length ? userRoles.value[0].replace(/_/g, ' ') : 'Guest')
 
   async function login(email, password) {
@@ -69,6 +70,7 @@ export const useAuthStore = defineStore('auth', () => {
       user.value = data
       localStorage.setItem('rdrims_user', JSON.stringify(data))
     } catch (err) {
+      console.error('Failed to fetch user data:', err)
       if (err.response?.status === 401) {
         // Silently clear stale credentials – do NOT redirect.
         // The router guard will handle redirect only if the user
@@ -77,6 +79,10 @@ export const useAuthStore = defineStore('auth', () => {
         user.value = null
         localStorage.removeItem('rdrims_token')
         localStorage.removeItem('rdrims_user')
+      } else if (err.response?.status === 500) {
+        // Handle server errors gracefully - use cached user data if available
+        console.warn('Server error fetching user data, using cached data')
+        error.value = 'Server error - using cached data'
       }
     }
   }

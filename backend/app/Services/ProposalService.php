@@ -5,7 +5,9 @@ namespace App\Services;
 use App\Models\Proposal;
 use App\Models\User;
 use App\Models\ProposalStatus;
+use App\Models\Project;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Facades\DB;
 
 class ProposalService
 {
@@ -38,6 +40,10 @@ class ProposalService
 
     public function approve(Proposal $proposal, User $approvedBy): void
     {
+        if ($proposal->status->name === 'approved') {
+             throw ValidationException::withMessages(['status' => 'Proposal is already approved.']);
+        }
+
         // Checklist 1: Reviews
         $reviewCount = $proposal->reviewers()->count();
         $submittedReviews = $proposal->reviewers()->whereNotNull('submitted_at')->count();
@@ -64,22 +70,36 @@ class ProposalService
             ]);
         }
 
-        $proposal->update([
-            'status_id' => ProposalStatus::where('name', 'approved')->first()->id,
-            'approved_by' => $approvedBy->id,
-            'approved_at' => now(),
-        ]);
+        DB::transaction(function() use ($proposal, $approvedBy) {
+            $proposal->update([
+                'status_id' => ProposalStatus::where('name', 'approved')->first()->id,
+                'approved_by' => $approvedBy->id,
+                'approved_at' => now(),
+            ]);
 
-        // Automatically create a project from approved proposal
-        $proposal->project()->create([
-            'title' => $proposal->title,
-            'start_date' => now(),
-            'end_date' => now()->addMonths(config('app.default_project_duration', 12)),
-            'total_budget' => $proposal->budget,
-            'status_id' => \App\Models\Project::getStatusId('active'),
-            'pi_id' => $proposal->submitted_by,
-            'academic_year_id' => $proposal->academic_year_id,
-        ]);
+            // Automatically create a project from approved proposal
+            $project = $proposal->project()->create([
+                'title' => $proposal->title,
+                'start_date' => now(),
+                'end_date' => now()->addMonths(config('app.default_project_duration', 12)),
+                'total_budget' => $proposal->budget,
+                'status_id' => \App\Models\ProjectStatus::where('name', 'active')->first()->id ?? 1,
+                'pi_id' => $proposal->submitted_by,
+                'academic_year_id' => $proposal->academic_year_id,
+            ]);
+
+            // Copy investigators to the project
+            foreach ($proposal->investigators as $inv) {
+                $project->investigators()->create([
+                    'user_id' => $inv->user_id,
+                    'name' => $inv->name,
+                    'email' => $inv->email,
+                    'institution' => $inv->institution,
+                    'role_id' => $inv->role_id,
+                    'status_id' => 1, // active
+                ]);
+            }
+        });
 
         $this->auditLogService->log('approved', 'proposals', $proposal->id, request());
     }

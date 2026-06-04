@@ -1,28 +1,28 @@
 <template>
-  <div card>
+  <div class="card p-8">
     <div class="mb-6">
       <router-link :to="`/events/${event.id}`" class="text-sm text-blue-600 hover:underline mb-2 inline-block">← Back to Event</router-link>
       <h1 class="text-xl font-bold text-gray-800">Attendance: {{ event.title }}</h1>
       <p class="text-sm text-gray-500 mt-1">Mark attendance and generate certificates</p>
     </div>
 
-    <div v-if="loading" class="bg-white rounded-lg shadow-sm p-6"><LoadingSkeleton :rows="6" /></div>
+    <div v-if="loading" class="card p-8"><LoadingSkeleton :rows="6" /></div>
 
     <template v-else>
-      <div class="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden mb-6">
-        <div class="p-5 border-b border-gray-200 flex justify-between items-center">
+      <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden mb-6">
+        <div class="p-5 border-b border-slate-100 flex justify-between items-center">
           <h2 class="text-base font-semibold text-gray-800">Registrations ({{ registrations.length }})</h2>
-          <button @click="generateAllCertificates" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 text-sm font-medium">
+          <button @click="generateAllCertificates" class="bg-green-600 text-white px-4 py-2 rounded-2xl hover:bg-green-700 text-sm font-medium">
             Generate All Certificates
           </button>
         </div>
         <div class="overflow-x-auto">
           <table class="min-w-full">
             <thead class="bg-gray-50"><tr>
-              <th class="text-left px-5 py-3 text-xs font-medium text-gray-500 capitalize">Participant</th>
-              <th class="text-left px-5 py-3 text-xs font-medium text-gray-500 capitalize">Email</th>
-              <th class="text-left px-5 py-3 text-xs font-medium text-gray-500 capitalize">Status</th>
-              <th class="text-left px-5 py-3 text-xs font-medium text-gray-500 capitalize">Actions</th>
+              <th class="text-left px-5 py-3 text-xs font-medium text-gray-500 ">Participant</th>
+              <th class="text-left px-5 py-3 text-xs font-medium text-gray-500 ">Email</th>
+              <th class="text-left px-5 py-3 text-xs font-medium text-gray-500 ">Status</th>
+              <th class="text-left px-5 py-3 text-xs font-medium text-gray-500 ">Actions</th>
             </tr></thead>
             <tbody class="divide-y divide-gray-100">
               <tr v-for="reg in registrations" :key="reg.id" class="hover:bg-gray-50">

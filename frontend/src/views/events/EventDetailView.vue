@@ -1,25 +1,25 @@
 <template>
-  <div card>
+  <div class="card p-8">
     <div class="mb-6">
       <router-link to="/app/events" class="text-sm text-blue-600 hover:underline mb-2 inline-block">← Back to Events</router-link>
       <h1 class="text-xl font-bold text-gray-800">{{ event.title || 'Event Detail' }}</h1>
     </div>
 
-    <div v-if="loading" class="bg-white rounded-lg shadow-sm p-6"><LoadingSkeleton :rows="6" /></div>
+    <div v-if="loading" class="card p-8"><LoadingSkeleton :rows="6" /></div>
 
     <template v-else>
       <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <div class="lg:col-span-2">
-          <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 mb-6">
             <div class="flex justify-between items-start mb-4">
                <h2 class="text-base font-semibold text-gray-800">Event Details</h2>
                <!-- Registration Action -->
                <template v-if="!isRegistered">
-                 <button v-if="canRegister" @click="registerForEvent" class="btn bg-brand hover:bg-brand-dark text-white px-6 font-bold capitalize tracking-widest text-[11px] shadow-lg shadow-blue-500/20">Register</button>
-                 <span v-else class="text-[10px] text-rose-500 font-bold capitalize tracking-widest py-2">Registration Closed</span>
+                 <button v-if="canRegister" @click="registerForEvent" class="btn bg-brand hover:bg-brand-dark text-white px-6 font-bold text-[11px]">Register</button>
+                 <span v-else class="text-[10px] text-rose-500 font-medium py-2">Registration Closed</span>
                </template>
                <template v-else>
-                 <span class="btn bg-emerald-100 text-emerald-700 px-6 font-bold capitalize tracking-widest text-[11px] pointer-events-none">Registered ✓</span>
+                 <span class="btn bg-emerald-100 text-emerald-700 px-6 font-bold text-[11px] pointer-events-none">Registered ✓</span>
                </template>
             </div>
             <dl class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
@@ -35,7 +35,7 @@
         </div>
 
         <div>
-          <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-5">
+          <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
             <h2 class="text-base font-semibold text-gray-800 mb-4">Registrations</h2>
             <div v-if="event.registrations?.length" class="space-y-2">
               <div v-for="reg in event.registrations" :key="reg.id" class="flex items-center justify-between p-2 rounded hover:bg-gray-50">

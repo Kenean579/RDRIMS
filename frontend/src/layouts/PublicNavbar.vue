@@ -1,11 +1,11 @@
   <template>
-  <header class="bg-white border-b border-slate-200 sticky top-0 z-50">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-5">
+  <header class="bg-white border-b border-slate-100 sticky top-0 z-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex justify-between h-16">
         <!-- Logo and brand name -->
         <div class="flex items-center">
           <router-link to="/" class="shrink-0 flex items-center gap-2 group">
-            <div class="h-8 w-8 rounded-lg flex items-center justify-center text-brand font-bold text-xl shadow-sm group-hover:text-brand-dark transition-colors">
+            <div class="h-8 w-8 rounded-2xl flex items-center justify-center text-brand font-bold text-xl shadow-sm group-hover:text-brand-dark transition-colors">
               R
             </div>
             <span class="font-bold text-xl tracking-tight text-slate-800">{{ appName }}</span>
@@ -18,11 +18,7 @@
               :key="link.path" 
               :to="link.path"
               class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-bold transition-colors"
-              :class="[
-                $route.path === link.path 
-                  ? 'border-brand text-brand' 
-                  : 'border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300'
-              ]"
+              :class="[ $route.path === link.path ? 'border-brand text-brand' : 'border-transparent text-slate-500 hover:text-slate-900 hover:border-slate-300' ]"
             >
               {{ link.name }}
             </router-link>
@@ -32,17 +28,17 @@
         <!-- Right side actions -->
         <div class="flex items-center gap-4">
           <!-- Language Toggle -->
-          <button @click="toggleLanguage" class="px-3 py-1.5 rounded-full border border-slate-200 text-xs font-bold text-slate-600 hover:text-brand transition-colors">
+          <button @click="toggleLanguage" class="px-3 py-1.5 rounded-full border border-slate-100 text-xs font-bold text-slate-600 hover:text-brand transition-colors">
             {{ currentLang === 'en' ? 'አማ' : 'EN' }}
           </button>
 
           <!-- Auth Buttons -->
           <div class="hidden md:flex items-center gap-3">
             <template v-if="auth.isAuthenticated">
-              <router-link to="/app/dashboard" class="px-4 py-2 rounded-xl text-sm font-bold text-brand border border-brand hover:text-white hover:bg-brand transition-colors">
+              <router-link to="/app/dashboard" class="px-4 py-2 rounded-2xl text-sm font-bold text-brand border border-brand hover:text-white hover:bg-brand transition-colors">
                 {{ $t('nav.dashboard') }}
               </router-link>
-              <button @click="auth.logout()" class="text-sm font-bold text-slate-500 hover:text-rose-600 transition-colors">
+              <button @click="auth.logout()" class="text-sm font-medium text-slate-500 hover:text-rose-600 transition-colors">
                 {{ $t('nav.signOut') }}
               </button>
             </template>
@@ -50,7 +46,7 @@
               <router-link to="/login" class="text-sm font-bold text-slate-600 hover:text-brand transition-colors">
                 {{ $t('nav.signIn') }}
               </router-link>
-              <router-link v-if="allowRegistration" to="/register" class="px-4 py-2 rounded-xl text-sm font-bold text-brand border-2 border-brand hover:bg-brand hover:text-white transition-colors">
+              <router-link v-if="allowRegistration" to="/register" class="px-4 py-2 rounded-2xl text-sm font-bold text-brand border-2 border-brand hover:bg-brand hover:text-white transition-colors">
                 {{ $t('nav.signUp') }}
               </router-link>
             </template>
@@ -70,7 +66,7 @@
     </div>
 
     <!-- Mobile Navigation -->
-    <div v-show="mobileMenuOpen" class="md:hidden border-t border-slate-200 bg-white">
+    <div v-show="mobileMenuOpen" class="md:hidden border-t border-slate-100 bg-white">
       <div class="pt-2 pb-4 space-y-1">
         <router-link 
           v-for="link in localizedNavLinks" 
@@ -78,28 +74,24 @@
           :to="link.path"
           @click="mobileMenuOpen = false"
           class="block pl-3 pr-4 py-2 border-l-4 text-base font-bold transition-colors"
-          :class="[
-            $route.path === link.path 
-              ? 'border-brand text-brand bg-brand/5' 
-              : 'border-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-50 hover:border-slate-300'
-          ]"
+          :class="[ $route.path === link.path ? 'border-brand text-brand bg-brand/5' : 'border-transparent text-slate-500 hover:text-slate-900 hover:bg-slate-50 hover:border-slate-300' ]"
         >
           {{ link.name }}
         </router-link>
       </div>
-      <div v-if="auth.isAuthenticated" class="pt-4 pb-3 border-t border-slate-200 px-4 flex flex-col gap-3">
-        <router-link to="/app/dashboard" @click="mobileMenuOpen = false" class="block text-center w-full px-4 py-2 text-base font-bold rounded-xl text-brand border border-brand">
+      <div v-if="auth.isAuthenticated" class="pt-4 pb-3 border-t border-slate-100 px-4 flex flex-col gap-3">
+        <router-link to="/app/dashboard" @click="mobileMenuOpen = false" class="block text-center w-full px-4 py-2 text-base font-bold rounded-2xl text-brand border border-brand">
           {{ $t('nav.goToDashboard') }}
         </router-link>
-        <button @click="auth.logout(); mobileMenuOpen = false" class="block text-center w-full px-4 py-2 text-base font-bold rounded-xl text-slate-500 border border-slate-300">
+        <button @click="auth.logout(); mobileMenuOpen = false" class="block text-center w-full px-4 py-2 text-base font-bold rounded-2xl text-slate-500 border border-slate-300">
           {{ $t('nav.signOut') }}
         </button>
       </div>
-      <div v-else class="pt-4 pb-3 border-t border-slate-200 px-4 flex flex-col gap-3">
-        <router-link to="/login" @click="mobileMenuOpen = false" class="block text-center w-full px-4 py-2 text-base font-bold rounded-xl text-slate-600 border border-slate-300">
+      <div v-else class="pt-4 pb-3 border-t border-slate-100 px-4 flex flex-col gap-3">
+        <router-link to="/login" @click="mobileMenuOpen = false" class="block text-center w-full px-4 py-2 text-base font-bold rounded-2xl text-slate-600 border border-slate-300">
           {{ $t('nav.signIn') }}
         </router-link>
-        <router-link v-if="allowRegistration" to="/register" @click="mobileMenuOpen = false" class="block text-center w-full px-4 py-2 text-base font-bold rounded-xl text-brand border-2 border-brand">
+        <router-link v-if="allowRegistration" to="/register" @click="mobileMenuOpen = false" class="block text-center w-full px-4 py-2 text-base font-bold rounded-2xl text-brand border-2 border-brand">
           {{ $t('nav.signUp') }}
         </router-link>
       </div>
