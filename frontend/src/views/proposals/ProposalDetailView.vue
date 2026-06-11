@@ -493,12 +493,18 @@ async function uploadDocument() {
   if (!selectedFile.value) return
   uploading.value = true
   const formData = new FormData()
-  formData.append('document', selectedFile.value)
+  formData.append('file', selectedFile.value)
+  formData.append('parent_type', 'proposal')
+  formData.append('parent_id', proposal.value.id)
+  formData.append('is_public', '0')
   
   try {
-    await api.post(`/proposals/${proposal.value.id}/upload-document`, formData, {
+    // Step 1: Upload the file and get its ID
+    const { data: uploadedFile } = await api.post('/files', formData, {
       headers: { 'Content-Type': 'multipart/form-data' }
     })
+    // Step 2: Attach the file to the proposal
+    await api.post(`/proposals/${proposal.value.id}/files`, { file_id: uploadedFile.id })
     notif.success('Research document attached successfully')
     selectedFile.value = null
     fetchProposal()

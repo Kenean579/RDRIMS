@@ -159,12 +159,10 @@ watch(() => form.parent_campus_id, () => {
 async function fetchCenters() {
   loading.value = true
   try {
-    const [centersRes, uniRes, campRes, facRes] = await Promise.all([
-      api.get('/research-centers'),
-      api.get('/universities'),
-      api.get('/campuses'),
-      api.get('/faculties')
-    ])
+    const centersRes = await api.get('/research-centers')
+    const uniRes = await api.get('/universities')
+    const campRes = await api.get('/campuses')
+    const facRes = await api.get('/faculties')
     centers.value = centersRes.data.data || centersRes.data
     universities.value = uniRes.data.data || uniRes.data
     allCampuses.value = campRes.data.data || campRes.data

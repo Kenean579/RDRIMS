@@ -112,7 +112,10 @@ watch(() => form.campus_id, () => { form.faculty_id = '' })
 async function fetchData() {
   loading.value = true
   try { 
-    const [dRes, fRes, cRes, uRes] = await Promise.all([api.get('/departments'), api.get('/faculties'), api.get('/campuses'), api.get('/universities')])
+    const dRes = await api.get('/departments')
+    const fRes = await api.get('/faculties')
+    const cRes = await api.get('/campuses')
+    const uRes = await api.get('/universities')
     departments.value = dRes.data; faculties.value = fRes.data; campuses.value = cRes.data; universities.value = uRes.data 
   }
   catch (e) {} finally { loading.value = false }

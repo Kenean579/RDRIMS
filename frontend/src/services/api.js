@@ -2,7 +2,7 @@ import axios from 'axios'
 
 // Simple in-memory cache for API responses
 const apiCache = new Map()
-const CACHE_DURATION = 2 * 60 * 1000 // 2 minutes cache duration
+const CACHE_DURATION = 50000 // 50 seconds cache duration
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api',

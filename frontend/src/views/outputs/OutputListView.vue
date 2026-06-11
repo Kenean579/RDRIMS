@@ -252,13 +252,11 @@ async function deleteOutput() {
 onMounted(async () => {
   fetchOutputs()
   try {
-    const [ss, cs, subs, lvls, ur] = await Promise.all([
-      api.get('/lookups/output_statuses'),
-      api.get('/lookups/output_categories'),
-      api.get('/lookups/output_subtypes'),
-      api.get('/lookups/student_levels'),
-      api.get('/users', { params: { per_page: 200 } })
-    ])
+    const ss = await api.get('/lookups/output_statuses')
+    const cs = await api.get('/lookups/output_categories')
+    const subs = await api.get('/lookups/output_subtypes')
+    const lvls = await api.get('/lookups/student_levels')
+    const ur = await api.get('/users', { params: { per_page: 200 } })
     outputStatuses.value = ss.data; outputCategories.value = cs.data; outputSubtypes.value = subs.data
     studentLevels.value = lvls.data
     users.value = ur.data.data || ur.data

@@ -63,7 +63,8 @@ const form = reactive({ company_name: '', start_date: '', end_date: '', royalty_
 async function fetchData() {
   loading.value = true
   try {
-    const [pRes, lRes] = await Promise.all([api.get(`/patents/${route.params.id}`), api.get(`/patents/${route.params.id}/licenses`)])
+    const pRes = await api.get(`/patents/${route.params.id}`)
+    const lRes = await api.get(`/patents/${route.params.id}/licenses`)
     patent.value = pRes.data; licenses.value = lRes.data.data || lRes.data
   } catch (e) {} finally { loading.value = false }
 }

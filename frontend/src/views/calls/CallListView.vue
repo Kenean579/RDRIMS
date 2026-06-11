@@ -384,26 +384,24 @@ async function saveCall() {
 onMounted(async () => {
   fetchCalls()
   try {
-    const [ys, ss, ts, fs, univ, camp, fac, dept, rc] = await Promise.all([
-      api.get('/academic-years'),
-      api.get('/lookups/call_statuses'),
-      api.get('/lookups/thematic_areas'),
-      api.get('/files'),
-      api.get('/universities'),
-      api.get('/campuses'),
-      api.get('/faculties'),
-      api.get('/departments'),
-      api.get('/research-centers')
-    ])
-    academicYears.value = ys.data
-    callStatuses.value = ss.data
-    thematicAreas.value = ts.data
-    files.value = fs.data.data || fs.data
-    universities.value = univ.data.data || univ.data
-    campuses.value = camp.data.data || camp.data
-    faculties.value = fac.data.data || fac.data
-    departments.value = dept.data.data || dept.data
-    researchCenters.value = rc.data.data || rc.data
+    const ysRes = await api.get('/academic-years').catch(() => ({ data: [] }))
+    const ssRes = await api.get('/lookups/call_statuses').catch(() => ({ data: [] }))
+    const tsRes = await api.get('/lookups/thematic_areas').catch(() => ({ data: [] }))
+    const fsRes = await api.get('/files').catch(() => ({ data: [] }))
+    const univRes = await api.get('/universities').catch(() => ({ data: [] }))
+    const campRes = await api.get('/campuses').catch(() => ({ data: [] }))
+    const facRes = await api.get('/faculties').catch(() => ({ data: [] }))
+    const deptRes = await api.get('/departments').catch(() => ({ data: [] }))
+    const rcRes = await api.get('/research-centers').catch(() => ({ data: [] }))
+    academicYears.value = ysRes.data
+    callStatuses.value = ssRes.data
+    thematicAreas.value = tsRes.data
+    files.value = fsRes.data.data || fsRes.data
+    universities.value = univRes.data.data || univRes.data
+    campuses.value = campRes.data.data || campRes.data
+    faculties.value = facRes.data.data || facRes.data
+    departments.value = deptRes.data.data || deptRes.data
+    researchCenters.value = rcRes.data.data || rcRes.data
   } catch (e) {}
 })
 

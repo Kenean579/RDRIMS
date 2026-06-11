@@ -83,7 +83,8 @@ const form = reactive({ start_date: '', end_date: '' })
 async function fetchData() {
   loading.value = true
   try {
-    const [pRes, mRes] = await Promise.all([api.get(`/partners/${route.params.id}`), api.get(`/partners/${route.params.id}/mo-us`)])
+    const pRes = await api.get(`/partners/${route.params.id}`)
+    const mRes = await api.get(`/partners/${route.params.id}/mo-us`)
     partner.value = pRes.data; mous.value = mRes.data.data || mRes.data
   } catch (e) {} finally { loading.value = false }
 }

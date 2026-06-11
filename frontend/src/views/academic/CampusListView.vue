@@ -88,7 +88,7 @@ const campuses = ref([]); const loading = ref(true); const universities = ref([]
 const showCreate = ref(false); const editingCampus = ref(null); const showDelete = ref(false); const deletingCampus = ref(null)
 const form = reactive({ name: '', code: '', university_id: '' })
 
-async function fetchData() { loading.value = true; try { const [cRes, uRes] = await Promise.all([api.get('/campuses'), api.get('/universities')]); campuses.value = cRes.data; universities.value = uRes.data } catch (e) {} finally { loading.value = false } }
+async function fetchData() { loading.value = true; try { const cRes = await api.get('/campuses'); const uRes = await api.get('/universities'); campuses.value = cRes.data; universities.value = uRes.data } catch (e) {} finally { loading.value = false } }
 function editCampus(c) { editingCampus.value = c; Object.assign(form, { name: c.name, code: c.code, university_id: c.university_id || '' }) }
 function closeModal() { showCreate.value = false; editingCampus.value = null; Object.assign(form, { name: '', code: '', university_id: '' }) }
 function confirmDelete(c) { deletingCampus.value = c; showDelete.value = true }

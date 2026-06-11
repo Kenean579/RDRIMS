@@ -1,11 +1,11 @@
 <template>
   <div class="flex flex-col gap-5 pb-6 animate-fade">
-    <div class="card p-8 bg-slate-50 border-slate-100 relative overflow-hidden">
+    <div class="mb-4 p-6 rounded-2xl bg-linear-to-br from-indigo-500 to-purple-600 text-white shadow-lg overflow-hidden relative">
       <div class="relative z-10">
-        <h1 class="text-xl font-bold text-slate-900 tracking-tight">Research Repository</h1>
-        <p class="text-slate-500 font-medium mt-1">Institutional publications, journal papers, and technical reports.</p>
+        <h1 class="text-xl font-bold text-white tracking-tight">Research Repository</h1>
+        <p class="text-indigo-100 font-medium mt-1">Institutional publications, journal papers, and technical reports.</p>
       </div>
-      <div class="absolute right-0 top-0 w-32 h-32 bg-brand/5 rounded-full translate-x-8 -translate-y-8"></div>
+      <div class="absolute right-0 top-0 w-32 h-32 bg-white/10 rounded-full translate-x-8 -translate-y-8"></div>
     </div>
 
     <div class="card p-8 flex flex-col gap-5">
@@ -70,7 +70,7 @@
     <div v-else class="space-y-4">
       <div v-for="pub in publications" :key="pub.id" class="card p-4 flex flex-col md:flex-row gap-4 group card-hover relative border-l-4 border-l-transparent transition-all">
         <div class="w-16 h-20 rounded-2xl overflow-hidden shrink-0 bg-blue-50 border border-slate-100 shadow-sm flex items-center justify-center">
-          <div class="w-full h-full flex items-center justify-center bg-gradient-to-br from-indigo-50 to-blue-100">
+          <div class="w-full h-full flex items-center justify-center bg-linear-to-br from-indigo-50 to-blue-100">
             <svg class="w-6 h-6 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
           </div>
         </div>
@@ -153,13 +153,11 @@ async function fetchPublications(page = 1) {
 
 onMounted(async () => {
   try {
-    const [u, c, f, d, pubs] = await Promise.all([
-      api.get('/universities'),
-      api.get('/campuses'),
-      api.get('/faculties'),
-      api.get('/departments'),
-      api.get('/publications', { params: { per_page: 200 } })
-    ])
+    const u = await api.get('/universities')
+    const c = await api.get('/campuses')
+    const f = await api.get('/faculties')
+    const d = await api.get('/departments')
+    const pubs = await api.get('/publications', { params: { per_page: 200 } })
     universities.value = (u.data.data || u.data)
     campuses.value = (c.data.data || c.data)
     faculties.value = (f.data.data || f.data)

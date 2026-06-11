@@ -266,9 +266,11 @@ onMounted(async () => {
   await fetchUsers()
   try { 
     const rolesPath = auth.hasRole('super_admin') ? '/admin/roles' : '/institution/roles'
-    const [rr, dr, ur, cr, fr] = await Promise.all([
-      api.get(rolesPath), api.get('/departments'), api.get('/universities'), api.get('/campuses'), api.get('/faculties')
-    ])
+    const rr = await api.get(rolesPath)
+    const dr = await api.get('/departments')
+    const ur = await api.get('/universities')
+    const cr = await api.get('/campuses')
+    const fr = await api.get('/faculties')
     roles.value = rr.data; departments.value = dr.data; universities.value = ur.data; campuses.value = cr.data; faculties.value = fr.data
   } catch (e) {}
 })

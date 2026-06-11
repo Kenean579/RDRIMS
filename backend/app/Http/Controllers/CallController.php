@@ -6,51 +6,78 @@ use App\Http\Requests\StoreCallRequest;
 use App\Http\Requests\UpdateCallRequest;
 use App\Models\Call;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class CallController extends Controller
 {
-    public function index(): JsonResponse
+    /**
+     * List calls – scoped by user’s role and call’s institution columns.
+     */
+    public function index(Request $request): JsonResponse
     {
-        $user = request()->user();
+        $user = $request->user();
+
         $calls = Call::with('status', 'academicYear', 'createdBy.profileImage', 'guidelineFile')
-            ->when(request('status'), fn($q) => $q->whereHas('status', fn($s) => $s->where('name', request('status'))))
-            ->when($user && !$user->hasRole('super_admin'), function ($query) use ($user) {
-                $query->where(function ($q) use ($user) {
-                    if ($user->hasRole('research_admin') && $user->university_id) {
-                        $q->orWhere('university_id', $user->university_id)
-                            ->orWhereHas('createdBy', fn($u) => $u->where('university_id', $user->university_id));
+            ->when($request->filled('status'), fn($q) =>
+                $q->whereHas('status', fn($s) => $s->where('name', $request->input('status')))
+            )
+            ->when($request->filled('search'), fn($q) =>
+                $q->where('title', 'LIKE', '%' . $request->input('search') . '%')
+                  ->orWhere('thematic_areas', 'LIKE', '%' . $request->input('search') . '%')
+            )
+            // Apply hierarchical filters if provided
+            ->when($request->filled('university_id'), fn($q) => $q->where('university_id', $request->input('university_id')))
+            ->when($request->filled('campus_id'), fn($q) => $q->where('campus_id', $request->input('campus_id')))
+            ->when($request->filled('faculty_id'), fn($q) => $q->where('faculty_id', $request->input('faculty_id')))
+            ->when($request->filled('department_id'), fn($q) => $q->where('department_id', $request->input('department_id')))
+            ->when($request->filled('research_center_id'), fn($q) => $q->where('research_center_id', $request->input('research_center_id')))
+            // Scoping by user role (if no explicit filter is already applied)
+            ->when(!$request->filled(['university_id','campus_id','faculty_id','department_id','research_center_id']),
+                function ($query) use ($user) {
+                    if ($user->hasRole('super_admin')) {
+                        // Super Admin sees all calls (platform-wide)
+                        return;
                     }
-                    if ($user->hasRole('campus_admin') && $user->department_id) {
-                        $q->orWhere('campus_id', $user->department->faculty->campus_id);
-                    }
-                    if ($user->hasRole('faculty_admin') && $user->department_id) {
-                        $q->orWhere('faculty_id', $user->department->faculty_id);
-                    }
-                    if ($user->hasRole('department_head') && $user->department_id) {
-                        $q->orWhere('department_id', $user->department_id);
-                    }
-                    if ($user->hasRole('director')) {
-                        $centerIds = $user->research_centers->pluck('id');
-                        $q->orWhereIn('research_center_id', $centerIds);
-                    }
-                });
-            })
-            ->when(request('university_id'), fn($q) => $q->where('university_id', request('university_id')))
-            ->when(request('campus_id'), fn($q) => $q->where('campus_id', request('campus_id')))
-            ->when(request('faculty_id'), fn($q) => $q->where('faculty_id', request('faculty_id')))
-            ->when(request('department_id'), fn($q) => $q->where('department_id', request('department_id')))
+                    // For institutional admins, restrict to their scope
+                    $query->where(function ($q) use ($user) {
+                        if ($user->hasRole('research_admin')) {
+                            // Calls created by users in their university
+                            $q->whereHas('createdBy', fn($u) =>
+                                $u->where('university_id', $user->university_id)
+                            );
+                        }
+                        if ($user->hasRole('campus_admin')) {
+                            $q->orWhere('campus_id', $user->campus_id);
+                        }
+                        if ($user->hasRole('faculty_admin')) {
+                            $q->orWhere('faculty_id', $user->faculty_id);
+                        }
+                        if ($user->hasRole('department_head')) {
+                            $q->orWhere('department_id', $user->department_id);
+                        }
+                        if ($user->hasRole('director')) {
+                            $q->orWhereIn('research_center_id', $user->researchCenters->pluck('id'));
+                        }
+                        // Researchers, reviewers, students – they see calls open to their scope,
+                        // but that's handled by the existing public scoping; authenticated users without admin
+                        // roles generally see all open calls anyway.
+                    });
+                }
+            )
             ->orderBy('deadline', 'desc')
             ->paginate(20);
 
         return response()->json($calls);
     }
 
+    /**
+     * Store a new call (admin).
+     */
     public function store(StoreCallRequest $request): JsonResponse
     {
         $user = $request->user();
-        
         $this->validateScopeForRole($request, $user);
-        
+
         $call = Call::create([
             ...$request->validated(),
             'created_by' => $user->id,
@@ -59,82 +86,72 @@ class CallController extends Controller
         return response()->json($call, 201);
     }
 
+    /**
+     * Show a single call.
+     */
     public function show(Call $call): JsonResponse
     {
-        $user = request()->user();
-        
-        // Allow unauthenticated access for public view of open calls
-        if (!$user) {
-            return response()->json($call->load('status', 'academicYear', 'guidelineFile', 'proposals'));
-        }
-
-        if (!$user->hasRole('super_admin') && !$call->isManageableBy($user)) {
-            abort(403, 'You do not have permission to view this call.');
-        }
-        
+        // Public access is allowed for open calls
         return response()->json($call->load('status', 'academicYear', 'guidelineFile', 'proposals'));
     }
 
+    /**
+     * Update a call (admin).
+     */
     public function update(UpdateCallRequest $request, Call $call): JsonResponse
     {
-        $user = request()->user();
-        
-        if (!$user || (!$user->hasRole('super_admin') && !$call->isManageableBy($user))) {
-            abort(403, 'You do not have permission to update this call.');
-        }
-        
         $call->update($request->validated());
         return response()->json($call);
     }
 
+    /**
+     * Delete a call (admin).
+     */
     public function destroy(Call $call): JsonResponse
     {
-        $user = request()->user();
-        
-        if (!$user || (!$user->hasRole('super_admin') && !$call->isManageableBy($user))) {
-            abort(403, 'You do not have permission to delete this call.');
-        }
-        
         $call->delete();
         return response()->json(['message' => 'Call deleted.']);
     }
-    
+
+    /**
+     * Validate that the admin creating/updating a call doesn't exceed their authority.
+     */
     private function validateScopeForRole($request, $user): void
     {
         if ($user->hasRole('super_admin')) {
             return;
         }
-        
-        if ($user->hasRole('research_admin') && $user->department_id) {
-            $userUniversity = $user->department->faculty->campus->university_id;
+
+        // Helper to extract the user's institution chain
+        $userUniversity = $user->department?->faculty?->campus?->university_id;
+        $userCampus    = $user->department?->faculty?->campus_id;
+        $userFaculty   = $user->department?->faculty_id;
+        $userDept      = $user->department_id;
+
+        if ($user->hasRole('research_admin')) {
             if ($request->filled('university_id') && $request->input('university_id') != $userUniversity) {
-                abort(403, 'Research admins can only scope to their university or lower levels.');
+                abort(403, 'You can only scope calls to your own university.');
             }
         }
-        
-        if ($user->hasRole('campus_admin') && $user->department_id) {
-            $userCampus = $user->department->faculty->campus_id;
+        if ($user->hasRole('campus_admin')) {
             if ($request->filled('campus_id') && $request->input('campus_id') != $userCampus) {
-                abort(403, 'Campus admins can only scope to their campus or lower levels.');
+                abort(403, 'You can only scope calls to your own campus.');
             }
         }
-        
-        if ($user->hasRole('faculty_admin') && $user->department_id) {
-            $userFaculty = $user->department->faculty_id;
+        if ($user->hasRole('faculty_admin')) {
             if ($request->filled('faculty_id') && $request->input('faculty_id') != $userFaculty) {
-                abort(403, 'Faculty admins can only scope to their faculty or lower levels.');
+                abort(403, 'You can only scope calls to your own faculty.');
             }
         }
-        
-        if ($user->hasRole('department_head') && $user->department_id) {
-            if (!$request->filled('department_id') || $request->input('department_id') != $user->department_id) {
-                abort(403, 'Department heads can only scope to their department.');
+        if ($user->hasRole('department_head')) {
+            if ($request->filled('department_id') && $request->input('department_id') != $userDept) {
+                abort(403, 'You can only scope calls to your own department.');
             }
         }
-        
         if ($user->hasRole('director')) {
-            if (!$request->filled('research_center_id') || !$user->research_centers->contains($request->input('research_center_id'))) {
-                abort(403, 'Directors can only scope to their research centers.');
+            $centerIds = $user->researchCenters->pluck('id');
+            if ($request->filled('research_center_id') && !$centerIds->contains($request->input('research_center_id'))) {
+                abort(403, 'You can only scope calls to your own research centre.');
             }
         }
     }

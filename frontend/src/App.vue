@@ -27,9 +27,14 @@ const notif = useNotificationStore()
 const lookupStore = useLookupStore()
 
 // Always refresh user permissions from backend on app boot.
-// Using cached localStorage user first, then syncing fresh data.
-if (auth.isAuthenticated) auth.fetchUser()
-lookupStore.initialize()
+// Use an async function to ensure sequential fetching and avoid deadlocking the PHP dev server.
+const initializeApp = async () => {
+  if (auth.isAuthenticated) {
+    await auth.fetchUser()
+  }
+  await lookupStore.initialize()
+}
+initializeApp()
 
 const notifTypeClass = computed(() => {
   switch(notif.type) {

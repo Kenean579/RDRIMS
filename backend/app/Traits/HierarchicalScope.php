@@ -49,8 +49,8 @@ trait HierarchicalScope
                     $sub->select('u.id')->from('users as u')
                         ->join('departments as d', 'u.department_id', '=', 'd.id')
                         ->where('d.faculty_id', function ($facSub) use ($user) {
-                            $facSub->select('d2.faculty_id')->from('users as u2')
-                                ->join('departments as d2', 'u2.department_id', '=', 'd2.id')
+                            $facSub->select('d2.faculty_id')->from('departments as d2')
+                                ->join('users as u2', 'u2.department_id', '=', 'd2.id')
                                 ->where('u2.id', $user->id)->take(1);
                         });
                 });
@@ -62,9 +62,9 @@ trait HierarchicalScope
                         ->join('departments as d', 'u.department_id', '=', 'd.id')
                         ->join('faculties as f', 'd.faculty_id', '=', 'f.id')
                         ->where('f.campus_id', function ($camSub) use ($user) {
-                            $camSub->select('f2.campus_id')->from('users as u2')
-                                ->join('departments as d2', 'u2.department_id', '=', 'd2.id')
-                                ->join('faculties as f2', 'd2.faculty_id', '=', 'f2.id')
+                            $camSub->select('f2.campus_id')->from('faculties as f2')
+                                ->join('departments as d2', 'd2.faculty_id', '=', 'f2.id')
+                                ->join('users as u2', 'u2.department_id', '=', 'd2.id')
                                 ->where('u2.id', $user->id)->take(1);
                         });
                 });
@@ -89,13 +89,24 @@ trait HierarchicalScope
         if ($request->hasAny(['university_id', 'campus_id', 'faculty_id', 'department_id'])) {
             $query->whereIn($this->getTable().'.'.$userColumn, function ($sub) use ($request) {
                 $sub->select('users.id')->from('users')
-                    ->join('departments', 'users.department_id', '=', 'departments.id')
-                    ->join('faculties', 'departments.faculty_id', '=', 'faculties.id')
-                    ->join('campuses', 'faculties.campus_id', '=', 'campuses.id')
-                    ->when($request->department_id, fn($q) => $q->where('departments.id', $request->department_id))
-                    ->when($request->faculty_id, fn($q) => $q->where('faculties.id', $request->faculty_id))
-                    ->when($request->campus_id, fn($q) => $q->where('campuses.id', $request->campus_id))
-                    ->when($request->university_id, fn($q) => $q->where('campuses.university_id', $request->university_id));
+                    ->leftJoin('departments', 'users.department_id', '=', 'departments.id')
+                    ->leftJoin('faculties', 'departments.faculty_id', '=', 'faculties.id')
+                    ->leftJoin('campuses', 'faculties.campus_id', '=', 'campuses.id')
+                    ->where(function($q) use ($request) {
+                        if ($request->department_id) {
+                            $q->where('departments.id', $request->department_id);
+                        }
+                        if ($request->faculty_id) {
+                            $q->orWhere('faculties.id', $request->faculty_id);
+                        }
+                        if ($request->campus_id) {
+                            $q->orWhere('campuses.id', $request->campus_id);
+                        }
+                        if ($request->university_id) {
+                            $q->orWhere('campuses.university_id', $request->university_id)
+                              ->orWhere('users.university_id', $request->university_id);
+                        }
+                    });
             });
         }
 

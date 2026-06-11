@@ -242,7 +242,9 @@ async function detachExpertise(exp) {
 onMounted(async () => {
   await fetchUser()
   try {
-    const [rRes, cRes, eRes] = await Promise.all([api.get('/roles'), api.get('/research-centers'), api.get('/expertise')])
+    const rRes = await api.get('/roles')
+    const cRes = await api.get('/research-centers')
+    const eRes = await api.get('/expertise')
     allRoles.value = rRes.data; allCenters.value = cRes.data; allExpertise.value = eRes.data
   } catch (e) {}
 })

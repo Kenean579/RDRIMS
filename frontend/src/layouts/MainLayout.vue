@@ -230,12 +230,10 @@ watch(() => [context.university_id, context.campus_id, context.faculty_id, conte
 
 async function fetchContextOptions() {
   try {
-    const [uRes, cRes, fRes, dRes] = await Promise.all([
-      api.get('/universities'),
-      api.get('/campuses'),
-      api.get('/faculties'),
-      api.get('/departments')
-    ])
+    const uRes = await api.get('/universities')
+    const cRes = await api.get('/campuses')
+    const fRes = await api.get('/faculties')
+    const dRes = await api.get('/departments')
     universities.value = uRes.data
     campuses.value     = cRes.data
     faculties.value    = fRes.data

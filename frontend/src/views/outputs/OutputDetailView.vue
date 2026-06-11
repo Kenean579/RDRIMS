@@ -219,11 +219,9 @@ async function removeParticipant(p) {
 onMounted(async () => {
   await fetchOutput()
   try {
-    const [ss, us, pts] = await Promise.all([
-      api.get('/lookups/output_statuses'), 
-      api.get('/users', { params: { per_page: 200 } }), 
-      api.get('/lookups/participant_types')
-    ])
+    const ss = await api.get('/lookups/output_statuses')
+    const us = await api.get('/users', { params: { per_page: 200 } })
+    const pts = await api.get('/lookups/participant_types')
     outputStatuses.value = ss.data
     users.value = us.data.data || us.data
     participantTypes.value = pts.data

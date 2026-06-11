@@ -151,6 +151,10 @@ async function deletePatent() {
 
 onMounted(async () => {
   await fetchPatents()
-  try { const [ss, ps] = await Promise.all([api.get('/lookups/patent_statuses'), api.get('/projects',{params:{per_page:100}})]); patentStatuses.value = ss.data; projects.value = ps.data.data || ps.data } catch (e) {}
+  try {
+    const ss = await api.get('/lookups/patent_statuses')
+    const ps = await api.get('/projects', { params: { per_page: 100 } })
+    patentStatuses.value = ss.data; projects.value = ps.data.data || ps.data
+  } catch (e) {}
 })
 </script>

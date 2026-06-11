@@ -160,12 +160,10 @@ function updateStrength() {
 
 onMounted(async () => { 
   try { 
-    const [u, c, f, d] = await Promise.all([
-      api.get('/universities'),
-      api.get('/campuses'),
-      api.get('/faculties'),
-      api.get('/departments')
-    ])
+    const u = await api.get('/universities')
+    const c = await api.get('/campuses')
+    const f = await api.get('/faculties')
+    const d = await api.get('/departments')
     universities.value = (u.data.data || u.data)
     campuses.value = (c.data.data || c.data)
     faculties.value = (f.data.data || f.data)

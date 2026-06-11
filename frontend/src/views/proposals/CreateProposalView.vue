@@ -358,11 +358,9 @@ onMounted(async () => {
   }
 
   try {
-    const [cr, yr, ur] = await Promise.all([
-      api.get('/calls', { params: { status: 'open' } }),
-      api.get('/academic-years'),
-      api.get('/users', { params: { per_page: 100 } })
-    ])
+    const cr = await api.get('/calls', { params: { status: 'open' } })
+    const yr = await api.get('/academic-years')
+    const ur = await api.get('/users', { params: { per_page: 100 } })
     openCalls.value = cr.data.data || cr.data
     academicYears.value = yr.data.data || yr.data
     availableUsers.value = ur.data.data || ur.data

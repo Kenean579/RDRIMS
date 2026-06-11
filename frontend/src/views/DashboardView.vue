@@ -260,16 +260,14 @@ async function fetchDashboard() {
     const useCachedUniversities = cachedUniversities.value && (now - cacheTimestamps.value.universities < CACHE_DURATION)
     const useCachedCalls = cachedCalls.value && (now - cacheTimestamps.value.calls < CACHE_DURATION)
     
-    // Make API calls in parallel for faster response time
-    const [dashRes, universitiesRes, callsRes] = await Promise.all([
-      api.get('/dashboard', { params }).catch(() => ({ data: {} })),
-      useCachedUniversities 
-        ? Promise.resolve({ data: { data: cachedUniversities.value } })
-        : api.get('/universities').catch(() => ({ data: { data: [] } })),
-      useCachedCalls
-        ? Promise.resolve({ data: { data: cachedCalls.value } })
-        : api.get('/calls', { params: { status: 'open' } }).catch(() => ({ data: { data: [] } }))
-    ])
+    // Sequential API calls to prevent PHP dev server deadlock
+    const dashRes = await api.get('/dashboard', { params }).catch(() => ({ data: {} }))
+    const universitiesRes = useCachedUniversities
+      ? { data: { data: cachedUniversities.value } }
+      : await api.get('/universities').catch(() => ({ data: { data: [] } }))
+    const callsRes = useCachedCalls
+      ? { data: { data: cachedCalls.value } }
+      : await api.get('/calls', { params: { status: 'open' } }).catch(() => ({ data: { data: [] } }))
     
     const { data } = dashRes
     const d = data || {}

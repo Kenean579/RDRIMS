@@ -220,12 +220,10 @@ async function handleSubmit() {
 onMounted(async () => {
   await fetchProposal()
   try {
-    const [typesRes, usersRes, rolesRes, expertisesRes] = await Promise.all([
-      api.get('/lookups/proposal_types'),
-      api.get('/users', { params: { per_page: 200 } }),
-      api.get('/lookups/investigator_roles'),
-      api.get('/expertise')
-    ])
+    const typesRes = await api.get('/lookups/proposal_types')
+    const usersRes = await api.get('/users', { params: { per_page: 200 } })
+    const rolesRes = await api.get('/lookups/investigator_roles')
+    const expertisesRes = await api.get('/expertise')
     proposalTypes.value = typesRes.data
     availableUsers.value = usersRes.data.data || usersRes.data
     investigatorRoles.value = rolesRes.data

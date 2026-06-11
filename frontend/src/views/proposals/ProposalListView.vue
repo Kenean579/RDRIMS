@@ -161,7 +161,8 @@ async function deleteProposal(id) {
 onMounted(async () => {
   fetchProposals()
   try {
-    const [ss, ts] = await Promise.all([api.get('/lookups/proposal_statuses'), api.get('/lookups/proposal_types')])
+    const ss = await api.get('/lookups/proposal_statuses')
+    const ts = await api.get('/lookups/proposal_types')
     proposalStatuses.value = ss.data; proposalTypes.value = ts.data
   } catch (e) {}
 })

@@ -282,10 +282,8 @@ async function submitReview() {
 onMounted(async () => {
   await fetchProposal()
   try {
-    const [criteriaRes, decisionsRes] = await Promise.all([
-      api.get('/review-criteria'),
-      api.get('/lookups/review_decisions')
-    ])
+    const criteriaRes = await api.get('/review-criteria')
+    const decisionsRes = await api.get('/lookups/review_decisions')
     reviewCriteria.value = criteriaRes.data.filter(c => c.is_active)
     reviewDecisions.value = decisionsRes.data
     reviewCriteria.value.forEach(c => { scores.value[c.id] = 0 })
