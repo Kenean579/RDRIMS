@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Output extends Model
 {
-    use HasFactory, \App\Traits\HasDynamicStatus, \App\Traits\HierarchicalScope;
+    use HasFactory, \App\Traits\HasDynamicStatus;
 
     protected $fillable = [
         'category_id', 'student_level_id', 'subtype_id', 'proposal_id',

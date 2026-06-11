@@ -261,7 +261,7 @@ function goSearch() {
 function formatRole(role) {
   if (!role) return 'User'
   const s = role.replace(/_/g, ' ')
-  return s.charAt(0).to() + s.slice(1)
+  return s.charAt(0).toUpperCase() + s.slice(1)
 }
 
 function logout() {
