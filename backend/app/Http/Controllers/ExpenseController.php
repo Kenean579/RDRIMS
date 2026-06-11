@@ -25,7 +25,7 @@ class ExpenseController extends Controller
 
     public function show(Expense $expense): JsonResponse
     {
-        return response()->json($expense->load('project', 'approvedBy', 'evidence'));
+        return response()->json($expense->load('project', 'approvedBy'));
     }
 
     public function update(UpdateExpenseRequest $request, Expense $expense): JsonResponse

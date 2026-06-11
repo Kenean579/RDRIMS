@@ -16,14 +16,13 @@ class UpdateEventRequest extends FormRequest
         return [
             'title' => 'sometimes|string|max:255',
             'description' => 'nullable|string',
-            'location' => 'sometimes|string|max:255',
+            'venue' => 'sometimes|string|max:255',
             'start_date' => 'sometimes|date',
             'end_date' => 'sometimes|date|after_or_equal:start_date',
-            'max_participants' => 'nullable|integer|min:1',
-            'status_id' => 'sometimes|exists:event_statuses,id',
-            'organizer_id' => 'sometimes|exists:users,id',
+            'capacity' => 'nullable|integer|min:1',
             'registration_deadline' => 'nullable|date|before_or_equal:start_date',
-            'banner_id' => 'nullable|exists:files,id',
+            'image_file_id' => 'nullable|exists:files,id',
+            'research_center_id' => 'nullable|exists:research_centers,id',
         ];
     }
 }

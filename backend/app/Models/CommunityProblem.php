@@ -13,7 +13,8 @@ class CommunityProblem extends Model
     protected $fillable = [
         'title', 'description', 'location', 'submitted_by',
         'contact_info', 'status_id', 'claimed_by', 'claimed_at',
-        'completed_at', 'linked_project_id', 'results_summary', 'rating', 'is_anonymous'
+        'completed_at', 'linked_project_id', 'feedback', 'rating', 'is_anonymous',
+        'research_center_id'
     ];
 
     protected $casts = [
@@ -41,5 +42,10 @@ class CommunityProblem extends Model
     public function linkedProject(): BelongsTo
     {
         return $this->belongsTo(Project::class, 'linked_project_id');
+    }
+
+    public function researchCenter(): BelongsTo
+    {
+        return $this->belongsTo(ResearchCenter::class, 'research_center_id');
     }
 }

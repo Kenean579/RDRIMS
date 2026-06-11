@@ -35,11 +35,11 @@ class CommunityProblemService
         ]);
     }
 
-    public function addFeedback(CommunityProblem $problem, string $resultsSummary, int $rating): void
+    public function addFeedback(CommunityProblem $problem, string $feedback, int $rating): void
     {
         $problem->update([
-            'results_summary' => $resultsSummary,
-            'rating'          => $rating,
+            'feedback' => $feedback,
+            'rating'   => $rating,
         ]);
     }
 }

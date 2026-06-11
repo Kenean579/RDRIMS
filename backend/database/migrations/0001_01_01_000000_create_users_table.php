@@ -6,31 +6,33 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
         Schema::create('users', function (Blueprint $table) {
             $table->id();
-            $table->string('name')->index();
-            $table->string('email')->unique();
+            $table->string('name', 255);
+            $table->string('email', 255)->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             
-            // FKs to tables created later or potentially circular
             $table->unsignedBigInteger('department_id')->nullable()->index();
+            $table->unsignedBigInteger('university_id')->nullable()->index();
+            $table->unsignedBigInteger('research_center_id')->nullable()->index();
+            $table->unsignedTinyInteger('center_role_id')->nullable()->index();
             $table->unsignedBigInteger('profile_image_id')->nullable()->index();
-            
-            $table->string('orcid_id')->nullable()->index();
-            $table->string('google_scholar_id')->nullable()->index();
-            $table->string('scopus_id')->nullable()->index();
-            $table->string('linkedin_url')->nullable();
+
+            $table->string('orcid_id', 255)->nullable()->index();
+            $table->string('google_scholar_id', 255)->nullable()->index();
+            $table->string('scopus_id', 255)->nullable()->index();
+            $table->string('linkedin_url', 255)->nullable();
+            $table->text('expertise_keywords')->nullable();
             $table->boolean('is_active')->default(true)->index();
             $table->text('bio')->nullable();
             
             $table->rememberToken();
             $table->timestamps();
+
+            $table->index('name');
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {
@@ -49,9 +51,6 @@ return new class extends Migration
         });
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
         Schema::dropIfExists('users');

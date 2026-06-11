@@ -82,7 +82,7 @@
               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
             </div>
             <div>
-              <p class="text-[10px] font-medium text-slate-400">Deadline</p>
+              <p class="text-xs font-medium text-slate-400">Deadline</p>
               <p class="text-sm font-bold text-slate-700" :class="{ 'text-rose-600': isUrgent(call.deadline) }">
                 {{ formatDate(call.deadline) }}
               </p>
@@ -216,7 +216,7 @@
           <h3 class="text-lg font-bold text-slate-800 mb-2">{{ uni.name }}</h3>
           <span class="text-xs font-medium text-slate-500 bg-slate-100 rounded px-2 py-1">{{ uni.code || 'CODE' }}</span>
           <div class="mt-4 text-xs text-slate-500">
-            {{ uni.campuses_count || 0 }} Campuses · {{ uni.research_centers_count || 0 }} Research Ctrs
+            {{ (uni.campuses?.length || uni.campuses_count || 0) }} Campuses · {{ (uni.researchCenters?.length || uni.research_centers_count || 0) }} Research Ctrs
           </div>
         </div>
       </div>
@@ -263,25 +263,22 @@ const problemForm = ref({
 const submitting = ref(false)
 
 onMounted(async () => {
-  await Promise.all([
-    fetchStats(),
-    fetchCalls(),
-    fetchEvents(),
-    fetchPublications(),
-    fetchUniversities(),
-    fetchSettings()
-  ])
+  // Use sequential fetching to prevent deadlocking the PHP built-in dev server on Windows
+  await fetchStats()
+  await fetchCalls()
+  await fetchEvents()
+  await fetchPublications()
+  await fetchUniversities()
+  await fetchSettings()
 })
 
 async function fetchStats() {
   loading.value.stats = true
   try {
-    const [uniRes, callsRes, pubRes, commRes] = await Promise.all([
-      api.get('/universities'),
-      api.get('/calls', { params: { status: 'open', per_page: 1 } }),
-      api.get('/publications', { params: { per_page: 1 } }),
-      api.get('/community-problems', { params: { status: 'completed', per_page: 1 } })
-    ])
+    const uniRes = await api.get('/universities')
+    const callsRes = await api.get('/calls', { params: { status: 'open', per_page: 1 } })
+    const pubRes = await api.get('/publications', { params: { per_page: 1 } })
+    const commRes = await api.get('/community-problems', { params: { status: 'completed', per_page: 1 } })
     
     stats.value.universities = uniRes.data?.data?.length || uniRes.data?.length || 0
     stats.value.openCalls = callsRes.data?.meta?.total || callsRes.data?.total || 0
@@ -384,8 +381,10 @@ function formatAuthors(authors) {
     return `${authorList.slice(0, 3).join(', ')} et al.`
   }
   if (Array.isArray(authors)) {
-    if (authors.length <= 3) return authors.join(', ')
-    return `${authors.slice(0, 3).join(', ')} et al.`
+    const names = authors.map(a => a.user?.name || a.external_author_name).filter(Boolean)
+    if (names.length === 0) return 'Not specified'
+    if (names.length <= 3) return names.join(', ')
+    return `${names.slice(0, 3).join(', ')} et al.`
   }
   return authors
 }

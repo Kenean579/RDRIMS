@@ -16,17 +16,18 @@ class StoreOutputRequest extends FormRequest
         return [
             'category_id' => 'required|exists:output_categories,id',
             'student_level_id' => 'nullable|exists:student_levels,id',
-            'subtype_id' => 'nullable|exists:output_subtypes,id',
+            'subtype_id' => 'required|exists:output_subtypes,id',
             'proposal_id' => 'nullable|exists:proposals,id',
             'title' => 'required|string|max:255',
             'abstract' => 'nullable|string',
             'partner_id' => 'nullable|exists:partners,id',
             'project_id' => 'nullable|exists:projects,id',
-            'status_id' => 'nullable|exists:output_statuses,id',
+            'status_id' => 'required|exists:output_statuses,id',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'academic_year_id' => 'nullable|exists:academic_years,id',
             'budget' => 'nullable|numeric|min:0',
+            'research_center_id' => 'nullable|exists:research_centers,id',
         ];
     }
 }

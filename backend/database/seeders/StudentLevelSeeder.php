@@ -9,8 +9,8 @@ class StudentLevelSeeder extends Seeder
 {
     public function run(): void
     {
-        StudentLevel::create(['name' => 'undergraduate']);
-        StudentLevel::create(['name' => 'graduate']);
-        StudentLevel::create(['name' => 'phd']);
+        StudentLevel::firstOrCreate(['name' => 'undergraduate']);
+        StudentLevel::firstOrCreate(['name' => 'graduate']);
+        StudentLevel::firstOrCreate(['name' => 'phd']);
     }
 }

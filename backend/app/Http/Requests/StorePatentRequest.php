@@ -18,7 +18,7 @@ class StorePatentRequest extends FormRequest
             'title' => 'required|string|max:255',
             'inventors' => 'nullable|string',
             'filing_date' => 'nullable|date',
-            'application_number' => 'required|string|max:100',
+            'patent_number' => 'required|string|max:100',
             'status_id' => 'nullable|exists:patent_statuses,id',
         ];
     }

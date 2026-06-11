@@ -9,8 +9,8 @@ class TaskStatusSeeder extends Seeder
 {
     public function run(): void
     {
-        TaskStatus::create(['name' => 'not_started']);
-        TaskStatus::create(['name' => 'in_progress']);
-        TaskStatus::create(['name' => 'done']);
+        TaskStatus::firstOrCreate(['name' => 'not_started']);
+        TaskStatus::firstOrCreate(['name' => 'in_progress']);
+        TaskStatus::firstOrCreate(['name' => 'done']);
     }
 }

@@ -44,6 +44,10 @@ return new class extends Migration
             $table->unsignedTinyInteger('ethics_approval_status_id')->nullable()->index();
             $table->foreign('ethics_approval_status_id')->references('id')->on('ethics_approval_statuses')->restrictOnDelete();
 
+            // Hierarchical scope column
+            $table->unsignedBigInteger('research_center_id')->nullable()->index();
+            $table->foreign('research_center_id')->references('id')->on('research_centers')->nullOnDelete();
+
             $table->timestamps();
         });
     }

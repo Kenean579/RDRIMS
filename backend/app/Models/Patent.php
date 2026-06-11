@@ -13,7 +13,8 @@ class Patent extends Model
     use HasFactory, \App\Traits\HasDynamicStatus;
 
     protected $fillable = [
-        'project_id', 'title', 'inventors', 'filing_date', 'application_number', 'status_id'
+        'project_id', 'title', 'inventors', 'filing_date', 'patent_number', 'status_id',
+        'research_center_id'
     ];
 
     protected $casts = [
@@ -28,6 +29,11 @@ class Patent extends Model
     public function status(): BelongsTo
     {
         return $this->belongsTo(PatentStatus::class, 'status_id');
+    }
+
+    public function researchCenter(): BelongsTo
+    {
+        return $this->belongsTo(ResearchCenter::class, 'research_center_id');
     }
 
     public function licenses(): HasMany

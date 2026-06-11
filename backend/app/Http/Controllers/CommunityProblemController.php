@@ -64,11 +64,11 @@ class CommunityProblemController extends Controller
     public function addFeedback(Request $request, CommunityProblem $communityProblem): JsonResponse
     {
         $request->validate([
-            'results_summary' => 'required|string',
-            'rating'          => 'required|integer|min:1|max:5',
+            'feedback' => 'required|string',
+            'rating' => 'required|integer|min:1|max:5',
         ]);
 
-        $this->communityProblemService->addFeedback($communityProblem, $request->results_summary, $request->rating);
+        $this->communityProblemService->addFeedback($communityProblem, $request->feedback, $request->rating);
         return response()->json(['message' => 'Results summary added.']);
     }
 

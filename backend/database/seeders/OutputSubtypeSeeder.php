@@ -11,7 +11,7 @@ class OutputSubtypeSeeder extends Seeder
     {
         $subtypes = ['internship', 'final_year_project', 'semester_project', 'thesis', 'research_paper', 'dataset', 'report', 'patent'];
         foreach ($subtypes as $subtype) {
-            OutputSubtype::create(['name' => $subtype]);
+            OutputSubtype::firstOrCreate(['name' => $subtype]);
         }
     }
 }

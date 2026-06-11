@@ -12,20 +12,20 @@
     <div v-else class="card p-8 max-w-xl">
       <form @submit.prevent="savePreference" class="flex flex-col gap-6">
         <div>
-          <label class="block text-[11px] text-slate-500 font-medium  tracking-wider mb-3 ml-1">Interface Language</label>
+          <label class="block text-xs text-slate-500 font-medium  tracking-wider mb-3 ml-1">Interface Language</label>
           <div class="space-y-3">
             <label class="flex items-center gap-4 p-4 rounded-2xl border border-slate-100 cursor-pointer hover:border-blue-200 hover:bg-blue-50/30 transition group" :class="{ 'border-blue-300 bg-blue-50/50': locale === 'en' }">
               <input type="radio" v-model="locale" value="en" class="w-4 h-4 text-blue-600 focus:ring-blue-500" />
               <div>
                 <p class="text-sm font-bold text-slate-800 group-hover:text-blue-600 transition">English</p>
-                <p class="text-[11px] text-slate-400 font-medium mt-0.5">Default system language</p>
+                <p class="text-xs text-slate-400 font-medium mt-0.5">Default system language</p>
               </div>
             </label>
             <label class="flex items-center gap-4 p-4 rounded-2xl border border-slate-100 cursor-pointer hover:border-blue-200 hover:bg-blue-50/30 transition group" :class="{ 'border-blue-300 bg-blue-50/50': locale === 'am' }">
               <input type="radio" v-model="locale" value="am" class="w-4 h-4 text-blue-600 focus:ring-blue-500" />
               <div>
                 <p class="text-sm font-bold text-slate-800 group-hover:text-blue-600 transition">አማርኛ (Amharic)</p>
-                <p class="text-[11px] text-slate-400 font-medium mt-0.5">Amharic language interface</p>
+                <p class="text-xs text-slate-400 font-medium mt-0.5">Amharic language interface</p>
               </div>
             </label>
           </div>

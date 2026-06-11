@@ -14,6 +14,8 @@ class StoreUniversityRequest extends FormRequest
         return [
             'name' => 'required|string|max:255',
             'code' => 'required|string|max:50|unique:universities,code',
+            'location' => 'nullable|string|max:255',
+            'logo_file_id' => 'nullable|exists:files,id',
         ];
     }
 }

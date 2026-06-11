@@ -11,6 +11,9 @@ class ProposalReviewer extends Pivot
 {
     use HasFactory;
 
+    public $table = 'proposal_reviewers';
+    public $timestamps = true;
+
     protected $fillable = [
         'proposal_id', 'reviewer_id', 'assigned_by', 'assigned_at',
         'submitted_at', 'overall_score', 'overall_comments', 'decision_id'

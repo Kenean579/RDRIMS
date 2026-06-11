@@ -1,8 +1,10 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 @import "tailwindcss";
 
 /* ── Design Tokens ───────────────────────────────────────── */
 @theme {
+  --font-sans: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+
   --color-brand: #0250A3;
   --color-brand-hover: #0F56B3;
   --color-brand-light: #eef4fa;
@@ -43,7 +45,11 @@
 }
 
 /* ── Global Reset ───────────────────────────────────────── */
-*, *::before, *::after { box-sizing: border-box; }
+*, *::before, *::after { 
+  box-sizing: border-box;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
 
 html { 
   -webkit-text-size-adjust: 100%; 
@@ -51,13 +57,23 @@ html {
 }
 
 body {
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  font-family: var(--font-sans);
   background: var(--color-surface-2);
   color: var(--text-primary);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
   font-size: 14px;
   line-height: 1.6;
+  letter-spacing: -0.011em;
+}
+
+/* ── Modern Typography Refinements ────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  letter-spacing: -0.025em;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.font-mono {
+  font-family: var(--font-mono);
 }
 
 /* ── Scrollbar ───────────────────────────────────────────── */

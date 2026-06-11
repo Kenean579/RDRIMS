@@ -3,7 +3,7 @@
     <!-- Header & Navigation -->
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
       <div class="flex-1">
-        <router-link to="/app/users" class="flex items-center gap-2 text-brand font-bold text-[10px] mb-3 hover:translate-x-1 transition-transform">
+        <router-link to="/app/users" class="flex items-center gap-2 text-brand font-bold text-xs mb-3 hover:translate-x-1 transition-transform">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
           Back to Users
         </router-link>
@@ -11,7 +11,7 @@
         <p class="text-slate-500 font-bold mt-1">{{ user.email }}</p>
       </div>
       <div class="flex items-center gap-3">
-         <span :class="user.is_active ? 'text-emerald-600 border-emerald-200' : 'text-slate-400 border-slate-100'" class="px-4 py-1 rounded-full text-[10px] font-medium border">
+         <span :class="user.is_active ? 'text-emerald-600 border-emerald-200' : 'text-slate-400 border-slate-100'" class="px-4 py-1 rounded-full text-xs font-medium border">
            {{ user.is_active ? 'Active Status' : 'Inactive Account' }}
          </span>
       </div>
@@ -40,14 +40,14 @@
             
             <div class="w-full space-y-4 text-left">
               <div class="p-4 rounded-2xl border border-slate-100">
-                <p class="text-[9px] font-medium text-slate-400 mb-1.5 flex items-center gap-1.5">
+                <p class="text-xs font-medium text-slate-400 mb-1.5 flex items-center gap-1.5">
                    <i class="far fa-envelope text-brand"></i>
                    Contact Email
                 </p>
                 <p class="text-xs text-slate-700 truncate">{{ user.email }}</p>
               </div>
               <div v-if="user.orcid_id" class="p-4 rounded-2xl border border-slate-100">
-                <p class="text-[9px] font-medium text-slate-400 mb-1.5 flex items-center gap-1.5">
+                <p class="text-xs font-medium text-slate-400 mb-1.5 flex items-center gap-1.5">
                    <i class="fab fa-orcid text-[#A6CE39]"></i>
                    ORCID Identifier
                 </p>
@@ -56,7 +56,7 @@
             </div>
 
             <div v-if="user.bio" class="mt-5 text-left">
-              <p class="text-[10px] font-medium text-slate-400 mb-2 ml-1">biography</p>
+              <p class="text-xs font-medium text-slate-400 mb-2 ml-1">biography</p>
               <p class="text-xs text-slate-600 leading-relaxed font-medium italic p-4 bg-indigo-50/30 rounded-2xl border border-indigo-100/30">{{ user.bio }}</p>
             </div>
           </div>
@@ -71,7 +71,7 @@
                  <span class="w-1 h-3 bg-brand rounded-full"></span>
                  Access Roles
                </h2>
-               <button @click="showAssignRole = true" class="text-[10px] font-medium text-brand hover:underline">+ Assign Role</button>
+               <button @click="showAssignRole = true" class="text-xs font-medium text-brand hover:underline">+ Assign Role</button>
              </div>
              
              <div v-if="user.roles?.length" class="flex flex-wrap gap-3">
@@ -92,41 +92,41 @@
              <!-- Centers -->
              <div class="card p-8">
                <div class="flex items-center justify-between mb-6">
-                 <h2 class="text-[10px] font-medium text-slate-400">Research Hubs</h2>
-                 <button @click="showAssignCenter = true" class="text-[10px] font-medium text-brand hover:underline">+ Add Hub</button>
+                 <h2 class="text-xs font-medium text-slate-400">Research Hubs</h2>
+                 <button @click="showAssignCenter = true" class="text-xs font-medium text-brand hover:underline">+ Add Hub</button>
                </div>
                
                <div v-if="user.research_centers?.length" class="space-y-3">
                  <div v-for="rc in user.research_centers" :key="rc.id" class="flex items-center justify-between p-4 bg-white rounded-2xl border border-slate-100 shadow-sm group">
                    <div class="min-w-0">
                       <p class="text-xs font-bold text-slate-800 truncate mb-1">{{ rc.name }}</p>
-                      <p class="text-[9px] text-slate-400">{{ rc.code || 'HUB' }} Center</p>
+                      <p class="text-xs text-slate-400">{{ rc.code || 'HUB' }} Center</p>
                    </div>
                    <button @click="detachCenter(rc)" class="text-slate-300 hover:text-rose-500 transition-colors">
-                      <i class="fas fa-unlink text-[10px]"></i>
+                      <i class="fas fa-unlink text-xs"></i>
                    </button>
                  </div>
                </div>
                <div v-else class="p-5 text-center bg-white rounded-2xl border border-dashed border-slate-100">
-                  <p class="text-[9px] font-medium text-slate-300">Not assigned to any hub</p>
+                  <p class="text-xs font-medium text-slate-300">Not assigned to any hub</p>
                </div>
              </div>
 
              <!-- Expertise -->
              <div class="card p-8">
                <div class="flex items-center justify-between mb-6">
-                 <h2 class="text-[10px] font-medium text-slate-400">Domain Expertise</h2>
-                 <button @click="showAssignExpertise = true" class="text-[10px] font-medium text-brand hover:underline">+ Add Tag</button>
+                 <h2 class="text-xs font-medium text-slate-400">Domain Expertise</h2>
+                 <button @click="showAssignExpertise = true" class="text-xs font-medium text-brand hover:underline">+ Add Tag</button>
                </div>
                
                <div v-if="user.expertise?.length" class="flex flex-wrap gap-2">
-                 <span v-for="exp in user.expertise" :key="exp.id" class="inline-flex items-center gap-2.5 px-3 py-1.5 bg-white border border-slate-100 rounded-2xl text-[10px] font-medium text-slate-600  tracking-tighter">
+                 <span v-for="exp in user.expertise" :key="exp.id" class="inline-flex items-center gap-2.5 px-3 py-1.5 bg-white border border-slate-100 rounded-2xl text-xs font-medium text-slate-600  tracking-tighter">
                    {{ exp.name }}
                    <button @click="detachExpertise(exp)" class="text-slate-300 hover:text-rose-500 transition-colors">&times;</button>
                  </span>
                </div>
                <div v-else class="p-5 text-center bg-white rounded-2xl border border-dashed border-slate-100">
-                  <p class="text-[9px] font-medium text-slate-300">No expertise tags</p>
+                  <p class="text-xs font-medium text-slate-300">No expertise tags</p>
                </div>
              </div>
            </div>

@@ -22,7 +22,7 @@ class PublicationAuthorController extends Controller
 
     public function update(UpdatePublicationAuthorRequest $request, Publication $publication, int $authorId): JsonResponse
     {
-        $author = $publication->authors()->where('id', $authorId)->firstOrFail();
+        $author = $publication->authors()->findOrFail($authorId);
         $author->update($request->validated());
         return response()->json($author);
     }

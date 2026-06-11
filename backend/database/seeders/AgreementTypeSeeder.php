@@ -9,7 +9,7 @@ class AgreementTypeSeeder extends Seeder
 {
     public function run(): void
     {
-        AgreementType::create(['name' => 'mo_u']);
-        AgreementType::create(['name' => 'license']);
+        AgreementType::firstOrCreate(['name' => 'mo_u']);
+        AgreementType::firstOrCreate(['name' => 'license']);
     }
 }

@@ -25,6 +25,7 @@ class StoreProjectRequest extends FormRequest
             'pi_id' => 'nullable|exists:users,id',
             'academic_year_id' => 'nullable|exists:academic_years,id',
             'cover_image_id' => 'nullable|exists:files,id',
+            'research_center_id' => 'nullable|exists:research_centers,id',
         ];
     }
 }

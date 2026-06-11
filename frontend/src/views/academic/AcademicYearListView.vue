@@ -23,7 +23,7 @@
             <h3 class="text-base font-bold text-slate-800 group-hover:text-blue-600 transition">{{ year.name }}</h3>
             <span v-if="year.is_current" class="badge badge-green">Current</span>
           </div>
-          <p class="text-[11px] font-medium text-slate-400">{{ formatDate(year.start_date) }} – {{ formatDate(year.end_date) }}</p>
+          <p class="text-xs font-medium text-slate-400">{{ formatDate(year.start_date) }} – {{ formatDate(year.end_date) }}</p>
         </div>
         <div class="flex gap-2">
           <button v-if="!year.is_current" @click="setCurrent(year)" class="btn btn-ghost text-green-600 font-bold" style="padding: 6px 10px; font-size: 11px">Set Current</button>
@@ -36,16 +36,16 @@
     <Modal :show="showCreate || !!editingYear" :title="editingYear ? 'Edit Academic Year' : 'Add New Year'" @close="closeModal">
       <form @submit.prevent="saveYear" class="space-y-5 px-1 py-1">
         <div>
-          <label class="block text-[11px] text-slate-500 font-medium  tracking-wider mb-1.5 ml-1">Year Name *</label>
+          <label class="block text-xs text-slate-500 font-medium  tracking-wider mb-1.5 ml-1">Year Name *</label>
           <input v-model="form.name" type="text" required class="input" placeholder="e.g., 2024/2025" />
         </div>
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="block text-[11px] text-slate-500 font-medium  tracking-wider mb-1.5 ml-1">Start Date *</label>
+            <label class="block text-xs text-slate-500 font-medium  tracking-wider mb-1.5 ml-1">Start Date *</label>
             <input v-model="form.start_date" type="date" required class="input" />
           </div>
           <div>
-            <label class="block text-[11px] text-slate-500 font-medium  tracking-wider mb-1.5 ml-1">End Date *</label>
+            <label class="block text-xs text-slate-500 font-medium  tracking-wider mb-1.5 ml-1">End Date *</label>
             <input v-model="form.end_date" type="date" required class="input" />
           </div>
         </div>

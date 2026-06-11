@@ -20,17 +20,17 @@
         
         <form @submit.prevent="submit" class="space-y-6">
           <div class="space-y-2">
-            <label class="block text-[10px] font-medium text-slate-400 ml-1">Account Email</label>
+            <label class="block text-xs font-medium text-slate-400 ml-1">Account Email</label>
             <input v-model="form.email" type="email" required readonly class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-4 py-4 text-sm font-medium text-slate-400 cursor-not-allowed outline-none" />
           </div>
 
           <div class="space-y-2">
-            <label class="block text-[10px] font-medium text-slate-400 ml-1">New Password</label>
+            <label class="block text-xs font-medium text-slate-400 ml-1">New Password</label>
             <input v-model="form.password" type="password" required minlength="8" placeholder="••••••••" class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-4 py-4 text-sm font-medium focus:bg-white focus:border-brand focus:ring-4 focus:ring-brand/10 transition-all outline-none" />
           </div>
 
           <div class="space-y-2">
-            <label class="block text-[10px] font-medium text-slate-400 ml-1">Confirm New Password</label>
+            <label class="block text-xs font-medium text-slate-400 ml-1">Confirm New Password</label>
             <input v-model="form.password_confirmation" type="password" required minlength="8" placeholder="••••••••" class="w-full bg-slate-50 border border-slate-100 rounded-2xl px-4 py-4 text-sm font-medium focus:bg-white focus:border-brand focus:ring-4 focus:ring-brand/10 transition-all outline-none" />
           </div>
 
@@ -45,7 +45,7 @@
         </form>
 
         <div class="mt-5 pt-4 border-t border-slate-100 text-center">
-          <router-link to="/login" class="text-[11px] font-medium text-slate-400 hover:text-brand transition-colors">
+          <router-link to="/login" class="text-xs font-medium text-slate-400 hover:text-brand transition-colors">
             Cancel and Sign In
           </router-link>
         </div>

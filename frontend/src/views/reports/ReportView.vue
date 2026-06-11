@@ -28,18 +28,14 @@
 
         <form @submit.prevent="generateReport" class="flex flex-col gap-4">
           <div>
-            <label class="block text-[11px] text-slate-500 font-medium  tracking-wider mb-1.5">Report Name *</label>
+            <label class="block text-xs text-slate-500 font-medium  tracking-wider mb-1.5">Report Name *</label>
             <input v-model="reportForm.name" type="text" required placeholder="e.g. Q1 Research Summary" class="input" />
           </div>
           <div>
-            <label class="block text-[11px] text-slate-500 font-medium  tracking-wider mb-1.5">Report Type *</label>
+            <label class="block text-xs text-slate-500 font-medium  tracking-wider mb-1.5">Report Type *</label>
             <select v-model="reportForm.type" required class="input">
               <option value="">Select report type...</option>
-              <option value="projects">Active Projects</option>
-              <option value="outputs">Research Outputs</option>
-              <option value="publications">Publications</option>
-              <option value="expenses">Financial Expenses</option>
-              <option value="community">Community Impact</option>
+              <option v-for="t in reportTypes" :key="t.id" :value="t.name">{{ formatStatusName(t.name) }}</option>
             </select>
           </div>
           <button type="submit" :disabled="generating" class="btn btn-primary w-full justify-center">
@@ -97,30 +93,69 @@
               </svg>
               Download
             </button>
+            <button @click="confirmDeleteReport(r)"
+              class="btn btn-ghost text-rose-500 hover:bg-rose-50 shrink-0"
+              style="padding: 6px 14px; font-size: 11px;">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+              </svg>
+              Delete
+            </button>
           </div>
         </div>
       </div>
 
     </div>
+
+    <ConfirmDialog
+      :show="showDelete"
+      title="Delete Report"
+      :message="`Are you sure you want to delete '${deletingReport?.name}'? This cannot be undone.`"
+      confirmText="Delete"
+      variant="danger"
+      @confirm="deleteReport"
+      @cancel="showDelete = false"
+    />
   </div>
 </template>
 
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { useNotificationStore } from '@/stores/notification'
+import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import api from '@/services/api'
 import { formatDateTime } from '@/utils/formatters'
+import { formatStatusName } from '@/utils/colors'
 
 const notif      = useNotificationStore()
 const reports    = ref([])
 const generating = ref(false)
 const reportForm = reactive({ name: '', type: '' })
+const reportTypes = ref([])
+const showDelete = ref(false)
+const deletingReport = ref(null)
 
 async function fetchReports() {
   try {
     const { data } = await api.get('/reports')
     reports.value = data.data || data
   } catch (e) {}
+}
+
+function confirmDeleteReport(r) {
+  deletingReport.value = r
+  showDelete.value = true
+}
+
+async function deleteReport() {
+  try {
+    await api.delete(`/reports/${deletingReport.value.id}`)
+    notif.success('Report deleted')
+    showDelete.value = false
+    fetchReports()
+  } catch (e) {
+    notif.error('Failed to delete report')
+  }
 }
 
 async function generateReport() {
@@ -150,5 +185,8 @@ async function downloadReport(report) {
   }
 }
 
-onMounted(fetchReports)
+onMounted(async () => {
+  fetchReports()
+  try { const { data } = await api.get('/lookups/report_types'); reportTypes.value = data } catch (e) {}
+})
 </script>

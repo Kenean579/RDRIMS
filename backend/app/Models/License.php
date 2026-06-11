@@ -11,17 +11,23 @@ class License extends Model
     use HasFactory;
 
     protected $fillable = [
-        'patent_id', 'licensee_name', 'license_date', 'expiry_date', 'royalty_rate'
+        'patent_id', 'company_name', 'start_date', 'end_date', 'royalty_rate',
+        'research_center_id'
     ];
 
     protected $casts = [
-        'license_date' => 'date',
-        'expiry_date'  => 'date',
+        'start_date'   => 'date',
+        'end_date'     => 'date',
         'royalty_rate' => 'decimal:2',
     ];
 
     public function patent(): BelongsTo
     {
         return $this->belongsTo(Patent::class);
+    }
+
+    public function researchCenter(): BelongsTo
+    {
+        return $this->belongsTo(ResearchCenter::class, 'research_center_id');
     }
 }

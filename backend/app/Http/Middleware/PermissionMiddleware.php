@@ -14,11 +14,16 @@ class PermissionMiddleware
             return response()->json(['message' => 'Unauthenticated.'], 401);
         }
 
-        $hasPermission = $request->user()->roles()
-            ->whereHas('permissions', fn($q) => $q->where('name', $permission))
-            ->exists();
+        $user = $request->user();
+        
+        // Super Admin bypass
+        if ($user->hasRole('super_admin')) {
+            return $next($request);
+        }
 
-        if (! $hasPermission) {
+        $effectivePerms = app(\App\Services\PermissionService::class)->getEffectivePermissions($user);
+        
+        if (!$effectivePerms->contains('name', $permission)) {
             return response()->json(['message' => 'Forbidden. Missing permission: ' . $permission], 403);
         }
 

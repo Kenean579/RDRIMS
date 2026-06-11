@@ -12,6 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('name', 100)->unique();
             $table->text('description')->nullable();
+            $table->unsignedBigInteger('university_id')->nullable()->index();
             $table->timestamps();
         });
     }

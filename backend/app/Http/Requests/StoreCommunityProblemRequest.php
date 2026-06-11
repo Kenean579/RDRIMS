@@ -14,15 +14,14 @@ class StoreCommunityProblemRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'title'       => 'required|string|max:255',
+            'title' => 'required|string|max:255',
             'description' => 'required|string',
-            'location'    => 'required|string|max:255',
-            'contact_info'=> 'nullable|string|max:255',
-            'is_anonymous'=> 'nullable|boolean',
-            'status_id'   => 'nullable|exists:community_problem_statuses,id',
+            'location' => 'required|string|max:255',
+            'contact_info' => 'nullable|string|max:255',
+            'status_id' => 'nullable|exists:community_problem_statuses,id',
+            'is_anonymous' => 'sometimes|boolean',
             'linked_project_id' => 'nullable|exists:projects,id',
-            'results_summary' => 'nullable|string',
-            'rating'      => 'nullable|integer|min:1|max:5',
+            'research_center_id' => 'nullable|exists:research_centers,id',
         ];
     }
 }

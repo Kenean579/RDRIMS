@@ -9,12 +9,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Event extends Model
 {
-    use HasFactory, \App\Traits\HasDynamicStatus;
+    use HasFactory;
 
     protected $fillable = [
-        'title', 'start_date', 'end_date', 'location', 'description',
-        'max_participants', 'status_id', 'organizer_id', 'registration_deadline',
-        'image_file_id'
+        'title', 'start_date', 'end_date', 'venue', 'description',
+        'capacity', 'registration_deadline', 'image_file_id', 'research_center_id'
     ];
 
     protected $casts = [
@@ -23,18 +22,18 @@ class Event extends Model
         'registration_deadline' => 'datetime',
     ];
 
-    public function status(): BelongsTo
+    public function imageFile(): BelongsTo
     {
-        return $this->belongsTo(EventStatus::class, 'status_id');
+        return $this->belongsTo(File::class, 'image_file_id');
+    }
+
+    public function researchCenter(): BelongsTo
+    {
+        return $this->belongsTo(ResearchCenter::class, 'research_center_id');
     }
 
     public function registrations(): HasMany
     {
         return $this->hasMany(EventRegistration::class);
-    }
-
-    public function imageFile(): BelongsTo
-    {
-        return $this->belongsTo(File::class, 'image_file_id');
     }
 }

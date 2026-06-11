@@ -26,19 +26,19 @@
         <div class="p-6">
           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
-              <label class="block text-[10px] text-slate-400  font-medium tracking-widest mb-1.5 ml-1">Research Title</label>
+              <label class="block text-xs text-slate-400  font-medium tracking-widest mb-1.5 ml-1">Research Title</label>
               <div class="text-sm font-bold text-slate-800 bg-slate-50 border border-slate-100 p-3.5 rounded-2xl">{{ proposal.title }}</div>
             </div>
             <div>
-              <label class="block text-[10px] text-slate-400  font-medium tracking-widest mb-1.5 ml-1">Principal Investigator</label>
+              <label class="block text-xs text-slate-400  font-medium tracking-widest mb-1.5 ml-1">Principal Investigator</label>
               <div class="text-sm font-bold text-slate-800 bg-slate-50 border border-slate-100 p-3.5 rounded-2xl">{{ proposal.submitted_by?.name }}</div>
             </div>
             <div>
-              <label class="block text-[10px] text-slate-400  font-medium tracking-widest mb-1.5 ml-1">Academic Year</label>
+              <label class="block text-xs text-slate-400  font-medium tracking-widest mb-1.5 ml-1">Academic Year</label>
               <div class="text-sm font-bold text-slate-800 bg-slate-50 border border-slate-100 p-3.5 rounded-2xl">{{ proposal.academic_year?.name || 'N/A' }}</div>
             </div>
             <div>
-              <label class="block text-[10px] text-slate-400  font-medium tracking-widest mb-1.5 ml-1">Requested Budget</label>
+              <label class="block text-xs text-slate-400  font-medium tracking-widest mb-1.5 ml-1">Requested Budget</label>
               <div class="text-sm font-bold text-emerald-600 bg-emerald-50 border border-emerald-100 p-3.5 rounded-2xl">{{ formatCurrency(proposal.budget) }}</div>
             </div>
           </div>
@@ -70,7 +70,7 @@
               <input v-model.number="form.total_budget" type="number" step="0.01" required 
                 class="w-full border-2 border-emerald-200 bg-emerald-50 rounded-2xl px-4 py-4 text-emerald-800 font-bold text-lg focus:ring-2 focus:ring-emerald-500/30 focus:border-emerald-500 outline-none transition-all" 
                 placeholder="0.00" />
-              <p class="text-[10px] font-medium text-emerald-600 mt-2 ml-1">Initial proposal requested: {{ formatCurrency(proposal.budget) }}</p>
+              <p class="text-xs font-medium text-emerald-600 mt-2 ml-1">Initial proposal requested: {{ formatCurrency(proposal.budget) }}</p>
             </div>
           </div>
         </div>

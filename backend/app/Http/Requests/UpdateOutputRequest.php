@@ -16,7 +16,7 @@ class UpdateOutputRequest extends FormRequest
         return [
             'category_id' => 'sometimes|exists:output_categories,id',
             'student_level_id' => 'nullable|exists:student_levels,id',
-            'subtype_id' => 'nullable|exists:output_subtypes,id',
+            'subtype_id' => 'sometimes|exists:output_subtypes,id',
             'proposal_id' => 'nullable|exists:proposals,id',
             'title' => 'sometimes|string|max:255',
             'abstract' => 'nullable|string',
@@ -27,6 +27,7 @@ class UpdateOutputRequest extends FormRequest
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'academic_year_id' => 'sometimes|exists:academic_years,id',
             'budget' => 'nullable|numeric|min:0',
+            'research_center_id' => 'nullable|exists:research_centers,id',
         ];
     }
 }

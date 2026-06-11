@@ -25,6 +25,7 @@ class UpdateProjectRequest extends FormRequest
             'pi_id' => 'sometimes|exists:users,id',
             'academic_year_id' => 'sometimes|exists:academic_years,id',
             'cover_image_id' => 'nullable|exists:files,id',
+            'research_center_id' => 'nullable|exists:research_centers,id',
         ];
     }
 }

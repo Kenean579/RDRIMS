@@ -38,7 +38,7 @@
       </div>
 
       <!-- Hierarchical Context Switcher -->
-      <div class="topbar-context-shell" v-if="!isGuestOnly">
+      <div class="topbar-context-shell" v-if="showContextSwitcher">
         <label class="context-label">Context</label>
         <div class="context-breadcrumb">
           <!-- University -->
@@ -318,9 +318,23 @@ const icons = {
   audit:    `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`,
 }
 
+const isSuperAdminOnly = computed(() => {
+  if (!auth.userRoles) return false
+  // Only pure super_admin — not if they also hold an institutional role
+  return auth.userRoles.includes('super_admin') &&
+    !['research_admin','campus_admin','faculty_admin','department_head','director',
+      'researcher','reviewer','student','finance_officer','ethics_officer'].some(r => auth.userRoles.includes(r))
+})
+
 const isGuestOnly = computed(() => {
   if (!auth.userRoles) return true
   return auth.userRoles.length === 1 && auth.userRoles[0] === 'guest'
+})
+
+const showContextSwitcher = computed(() => {
+  if (isGuestOnly.value) return false
+  if (auth.userRoles?.includes('super_admin')) return false
+  return true
 })
 
 const contactEmail = computed(() => lookupStore.getSetting('contact_email', 'admin@rdrims.local'))
@@ -330,6 +344,28 @@ const contactEmail = computed(() => lookupStore.getSetting('contact_email', 'adm
 // as a separate group above "Community & Public"
 // ═══════════════════════════════════════════════════════════════
 const navigation = computed(() => {
+  // ── PLATFORM LAYER: Pure Super Admin ─────────────────────────────────
+  if (isSuperAdminOnly.value) {
+    return [
+      { items: [
+        { name: 'Dashboard',    path: '/app/dashboard',    icon: icons.home },
+        { name: 'Notifications', path: '/app/notifications', icon: icons.events },
+      ]},
+      { title: 'Platform Management', items: [
+        { name: 'Universities',  path: '/app/universities', icon: icons.academic },
+        { name: 'System Settings', path: '/app/settings',   icon: icons.perms },
+      ]},
+      { title: 'Access Control', items: [
+        { name: 'Roles',       path: '/app/roles',       icon: icons.roles },
+        { name: 'Permissions', path: '/app/permissions', icon: icons.perms },
+      ]},
+      { title: 'Administration', items: [
+        { name: 'System Logs', path: '/app/audit-logs',  icon: icons.audit },
+      ]},
+    ]
+  }
+
+  // ── GUEST LAYER ──────────────────────────────────────────────────────
   if (isGuestOnly.value) {
     return [
       // First group: Dashboard & Notifications (no title = no collapsible header)
@@ -351,6 +387,12 @@ const navigation = computed(() => {
       }
     ]
   }
+
+  // ── INSTITUTIONAL LAYER ───────────────────────────────────────────
+  // (researcher, reviewer, student, department_head, director,
+  //  faculty_admin, campus_admin, research_admin, finance_officer, ethics_officer)
+  const institutionalAdmins = ['research_admin','campus_admin','faculty_admin','department_head','director']
+  const isInstitutionalAdmin = auth.userRoles?.some(r => institutionalAdmins.includes(r))
 
   const nav = [
     {
@@ -379,9 +421,9 @@ const navigation = computed(() => {
       ]
     }
   ]
-  
-  // Insert Reviews for reviewers and admins
-  if (auth.userRoles?.some(r => ['reviewer', 'super_admin', 'research_admin'].includes(r))) {
+
+  // Reviews: any user can be a reviewer, so show for all institutional users
+  {
     const researchGroup = nav.find(g => g.title === 'Research')
     if (researchGroup) {
       const proposalsIdx = researchGroup.items.findIndex(i => i.name === 'Proposals')
@@ -391,8 +433,8 @@ const navigation = computed(() => {
     }
   }
   
-  // Rules group for ethics and detection
-  if (auth.userRoles?.some(r => ['super_admin', 'research_admin', 'ethics_officer'].includes(r))) {
+  // Rules group for ethics and detection (institutional only — no super_admin)
+  if (auth.userRoles?.some(r => ['research_admin', 'campus_admin', 'faculty_admin', 'ethics_officer'].includes(r))) {
     nav.push({
       title: 'Rules',
       items: [
@@ -402,8 +444,8 @@ const navigation = computed(() => {
     })
   }
 
-  // Finance group
-  if (auth.userRoles?.some(r => ['super_admin', 'research_admin', 'finance_officer'].includes(r))) {
+  // Finance group (institutional only — no super_admin)
+  if (auth.userRoles?.some(r => ['research_admin', 'campus_admin', 'faculty_admin', 'finance_officer'].includes(r))) {
     nav.push({
       title: 'Finance',
       items: [
@@ -412,8 +454,8 @@ const navigation = computed(() => {
     })
   }
 
-  // Reports for authorized roles
-  if (auth.userRoles?.some(r => ['super_admin', 'research_admin', 'director', 'department_head', 'finance_officer'].includes(r))) {
+  // Reports for institutional admins only (no super_admin)
+  if (auth.userRoles?.some(r => ['research_admin', 'campus_admin', 'faculty_admin', 'director', 'department_head', 'finance_officer'].includes(r))) {
     nav.push({
       title: 'Reports',
       items: [
@@ -422,18 +464,19 @@ const navigation = computed(() => {
     })
   }
 
-  // Users management
-  if (auth.userRoles?.some(r => ['super_admin', 'research_admin'].includes(r))) {
+  // Administration group (institutional only — no super_admin)
+  if (auth.userRoles?.some(r => ['research_admin', 'campus_admin', 'faculty_admin', 'department_head', 'director'].includes(r))) {
     nav.push({
-      title: 'Users',
+      title: 'Administration',
       items: [
-        { name: 'All Users',   path: '/app/users',       icon: icons.users },
-        { name: 'Roles',       path: '/app/roles',       icon: icons.roles },
-        { name: 'Permissions', path: '/app/permissions', icon: icons.perms },
+        { name: 'Roles',  path: '/app/institution/roles', icon: icons.roles },
+        { name: 'Users',  path: '/app/users',             icon: icons.users },
       ]
     })
+  }
     
-    // Settings (full for super_admin and research_admin)
+  // Settings: institutional hierarchy management (research_admin only, not super_admin)
+  if (auth.userRoles?.some(r => ['research_admin'].includes(r))) {
     nav.push({
       title: 'Settings',
       items: [
@@ -444,9 +487,7 @@ const navigation = computed(() => {
         { name: 'Departments',      path: '/app/departments',      icon: icons.dept },
         { name: 'Faculties',        path: '/app/faculties',        icon: icons.dept },
         { name: 'Campuses',         path: '/app/campuses',         icon: icons.centers },
-        { name: 'Universities',     path: '/app/universities',     icon: icons.academic },
         { name: 'Files',            path: '/app/files',            icon: icons.files },
-        { name: 'Settings',         path: '/app/settings',         icon: icons.perms },
         { name: 'System Logs',      path: '/app/audit-logs',       icon: icons.audit },
       ]
     })

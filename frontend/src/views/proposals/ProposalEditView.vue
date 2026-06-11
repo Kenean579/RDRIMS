@@ -2,7 +2,7 @@
   <div class="flex flex-col gap-5 pb-6 animate-fade card">
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-6">
       <div>
-        <router-link :to="`/app/proposals/${proposal.id}`" class="flex items-center gap-2 text-brand font-bold text-[10px] mb-3 hover:translate-x-1 transition-transform">
+        <router-link :to="`/app/proposals/${proposal.id}`" class="flex items-center gap-2 text-brand font-bold text-xs mb-3 hover:translate-x-1 transition-transform">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
           Back to Proposal
         </router-link>
@@ -24,17 +24,17 @@
         </h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="md:col-span-2">
-            <label class="block text-[11px] text-slate-500 mb-2 ml-1">Title *</label>
+            <label class="block text-xs text-slate-500 mb-2 ml-1">Title *</label>
             <input v-model="form.title" type="text" required class="input h-12 font-bold" />
           </div>
           <div>
-            <label class="block text-[11px] text-slate-500 mb-2 ml-1">Proposal Type</label>
+            <label class="block text-xs text-slate-500 mb-2 ml-1">Proposal Type</label>
             <select v-model="form.type_id" class="input h-12 font-bold">
               <option v-for="t in proposalTypes" :key="t.id" :value="t.id">{{ t.name }}</option>
             </select>
           </div>
           <div>
-            <label class="block text-[11px] text-slate-500 mb-2 ml-1">Budget (ETB) *</label>
+            <label class="block text-xs text-slate-500 mb-2 ml-1">Budget (ETB) *</label>
             <input v-model.number="form.budget" type="number" required class="input h-12 font-bold" />
           </div>
         </div>
@@ -48,14 +48,14 @@
         </h2>
         <div class="space-y-6">
           <div>
-            <label class="block text-[11px] text-slate-500 mb-2 ml-1">Keywords (Expertise Areas) *</label>
+            <label class="block text-xs text-slate-500 mb-2 ml-1">Keywords (Expertise Areas) *</label>
             <div class="flex flex-wrap gap-2 p-4 bg-slate-50 rounded-2xl border border-slate-100">
               <button
                 v-for="exp in availableExpertises"
                 :key="exp.id"
                 type="button"
                 @click="toggleKeyword(exp.name)"
-                class="px-3 py-1.5 rounded-2xl text-[10px] font-bold transition-all border shadow-sm"
+                class="px-3 py-1.5 rounded-2xl text-xs font-bold transition-all border shadow-sm"
                 :class="isKeywordSelected(exp.name) ? 'bg-brand text-white border-brand shadow-brand/20' : 'bg-white text-slate-600 border-slate-200 hover:border-brand/40 hover:text-brand'"
               >
                 {{ exp.name }}
@@ -66,15 +66,15 @@
             </div>
           </div>
           <div>
-            <label class="block text-[11px] text-slate-500 mb-2 ml-1">Abstract *</label>
+            <label class="block text-xs text-slate-500 mb-2 ml-1">Abstract *</label>
             <textarea v-model="form.abstract" required rows="4" class="input pt-3 font-medium resize-none"></textarea>
           </div>
           <div>
-            <label class="block text-[11px] text-slate-500 mb-2 ml-1">Objectives *</label>
+            <label class="block text-xs text-slate-500 mb-2 ml-1">Objectives *</label>
             <textarea v-model="form.objectives" required rows="4" class="input pt-3 font-medium resize-none"></textarea>
           </div>
           <div>
-            <label class="block text-[11px] text-slate-500 mb-2 ml-1">Methodology *</label>
+            <label class="block text-xs text-slate-500 mb-2 ml-1">Methodology *</label>
             <textarea v-model="form.methodology" required rows="5" class="input pt-3 font-medium resize-none"></textarea>
           </div>
         </div>
@@ -87,13 +87,13 @@
             <span class="w-1 h-3 bg-brand rounded-full"></span>
             Research Team
           </h2>
-          <button type="button" @click="addInvestigator" class="btn btn-secondary h-10 px-6 text-[10px] font-medium border border-slate-100">
+          <button type="button" @click="addInvestigator" class="btn btn-secondary h-10 px-6 text-xs font-medium border border-slate-100">
             Add Member
           </button>
         </div>
 
         <div v-if="form.investigators.length === 0" class="p-6 text-center bg-slate-50 rounded-3xl border border-dashed border-slate-100">
-          <p class="text-[10px] font-medium text-slate-400 italic">No co-investigators added.</p>
+          <p class="text-xs font-medium text-slate-400 italic">No co-investigators added.</p>
         </div>
 
         <div v-else class="space-y-4">
@@ -104,28 +104,28 @@
             
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div class="md:col-span-2">
-                <label class="block text-[10px] font-medium text-slate-400 mb-2 ml-1">User Affiliation</label>
+                <label class="block text-xs font-medium text-slate-400 mb-2 ml-1">User Affiliation</label>
                 <select v-model="inv.user_id" @change="onUserSelected(index)" class="input h-11 font-bold">
                   <option value="">External Person</option>
                   <option v-for="u in availableUsers" :key="u.id" :value="u.id">{{ u.name }} ({{ u.email }})</option>
                 </select>
               </div>
               <div>
-                <label class="block text-[10px] font-medium text-slate-400 mb-2 ml-1">Role</label>
+                <label class="block text-xs font-medium text-slate-400 mb-2 ml-1">Role</label>
                 <select v-model="inv.role_id" required class="input h-11 font-bold">
                   <option v-for="r in investigatorRoles" :key="r.id" :value="r.id">{{ r.name }}</option>
                 </select>
               </div>
               <div v-if="!inv.user_id">
-                <label class="block text-[10px] font-medium text-slate-400 mb-2 ml-1">Full Name</label>
+                <label class="block text-xs font-medium text-slate-400 mb-2 ml-1">Full Name</label>
                 <input v-model="inv.name" type="text" required class="input h-11 font-bold" />
               </div>
               <div v-if="!inv.user_id">
-                <label class="block text-[10px] font-medium text-slate-400 mb-2 ml-1">Email</label>
+                <label class="block text-xs font-medium text-slate-400 mb-2 ml-1">Email</label>
                 <input v-model="inv.email" type="email" required class="input h-11 font-bold" />
               </div>
               <div v-if="!inv.user_id">
-                <label class="block text-[10px] font-medium text-slate-400 mb-2 ml-1">Institution</label>
+                <label class="block text-xs font-medium text-slate-400 mb-2 ml-1">Institution</label>
                 <input v-model="inv.institution" type="text" class="input h-11 font-bold" placeholder="University of..." />
               </div>
             </div>

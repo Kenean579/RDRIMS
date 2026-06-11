@@ -4,13 +4,19 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Partner extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'sector', 'contact_email', 'website'];
+    protected $fillable = ['name', 'sector', 'contact_email', 'website', 'research_center_id'];
+
+    public function researchCenter(): BelongsTo
+    {
+        return $this->belongsTo(ResearchCenter::class, 'research_center_id');
+    }
 
     public function moUs(): HasMany
     {

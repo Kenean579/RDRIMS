@@ -15,7 +15,8 @@ class Output extends Model
     protected $fillable = [
         'category_id', 'student_level_id', 'subtype_id', 'proposal_id',
         'title', 'abstract', 'partner_id', 'project_id', 'status_id',
-        'start_date', 'end_date', 'feedback', 'academic_year_id', 'budget'
+        'start_date', 'end_date', 'feedback', 'academic_year_id', 'budget',
+        'research_center_id'
     ];
 
     protected $casts = [
@@ -59,14 +60,22 @@ class Output extends Model
         return $this->belongsTo(OutputStatus::class, 'status_id');
     }
 
+    public function researchCenter(): BelongsTo
+    {
+        return $this->belongsTo(ResearchCenter::class, 'research_center_id');
+    }
+
     public function academicYear(): BelongsTo
     {
         return $this->belongsTo(AcademicYear::class);
     }
 
-    public function participants(): HasMany
+    public function users(): BelongsToMany
     {
-        return $this->hasMany(OutputParticipant::class);
+        return $this->belongsToMany(User::class, 'output_participants', 'output_id', 'user_id')
+                    ->withPivot('participant_type_id')
+                    ->withTimestamps()
+                    ->using(OutputParticipant::class);
     }
 
     public function files(): BelongsToMany

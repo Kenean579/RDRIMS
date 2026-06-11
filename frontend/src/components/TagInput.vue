@@ -42,10 +42,10 @@
     </div>
     
     <div class="flex justify-between items-center mt-1.5 px-1">
-      <p v-if="error" class="text-[10px] font-medium text-rose-500">{{ error }}</p>
-      <p v-else-if="helpText" class="text-[10px] font-medium text-slate-400">{{ helpText }}</p>
+      <p v-if="error" class="text-xs font-medium text-rose-500">{{ error }}</p>
+      <p v-else-if="helpText" class="text-xs font-medium text-slate-400">{{ helpText }}</p>
       
-      <p v-if="min > 0" class="text-[10px] font-medium tracking-widest  transition-colors" 
+      <p v-if="min > 0" class="text-xs font-medium tracking-widest  transition-colors" 
          :class="modelValue.length < min ? 'text-amber-500' : 'text-emerald-500'">
         {{ modelValue.length }} / {{ min }} min
       </p>

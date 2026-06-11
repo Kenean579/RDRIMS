@@ -26,14 +26,14 @@ class SettingSeeder extends Seeder
             ['key' => 'max_file_upload_size_mb', 'value' => '10', 'description' => 'Maximum file upload size in megabytes.'],
             ['key' => 'allowed_file_types', 'value' => 'pdf,doc,docx,xlsx,csv,jpg,png', 'description' => 'Comma-separated list of allowed file extensions.'],
             ['key' => 'enable_notifications', 'value' => 'true', 'description' => 'Whether email/SMS notifications are enabled globally.'],
-            ['key' => 'smtp_host', 'value' => 'smtp.gmail.com', 'description' => 'SMTP server hostname.'],
-            ['key' => 'smtp_port', 'value' => '587', 'description' => 'SMTP server port.'],
-            ['key' => 'sender_email', 'value' => 'noreply@rdrims.local', 'description' => 'From address for system emails.'],
-            ['key' => 'sender_name', 'value' => 'RDRIMS Platform', 'description' => 'From name for system emails.'],
+            ['key' => 'contact_email', 'value' => 'contact@rdrims.local', 'description' => 'Public contact email.'],
+            ['key' => 'contact_phone', 'value' => '+251 900 000000', 'description' => 'Public contact phone.'],
+            ['key' => 'contact_address', 'value' => 'Main Campus, Research Hub', 'description' => 'Public contact address.'],
+            ['key' => 'app_description', 'value' => 'Research Data & Resource Information Management System orchestrating the complete lifecycle of academic research paradigms.', 'description' => 'Description shown in footer.'],
+            ['key' => 'allow_public_problem_submission', 'value' => 'true', 'description' => 'Whether guests can submit community problems without logging in.'],
         ];
-
         foreach ($settings as $setting) {
-            Setting::create($setting);
+            Setting::firstOrCreate($setting);
         }
     }
 }

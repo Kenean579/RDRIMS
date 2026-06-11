@@ -15,7 +15,6 @@ return new class extends Migration
             $table->date('deadline')->index();
             $table->text('thematic_areas');
             $table->foreignId('created_by')->constrained('users')->cascadeOnDelete();
-            // Lookup table reference (no cascade usually for lookups)
             $table->unsignedTinyInteger('status_id')->index();
             $table->foreign('status_id')->references('id')->on('call_statuses')->restrictOnDelete();
 
@@ -23,8 +22,19 @@ return new class extends Migration
                                 ->nullable()->constrained('academic_years')
                                 ->nullOnDelete();
 
-            // Files might be created later
             $table->unsignedBigInteger('guideline_file_id')->nullable()->index();
+
+            $table->unsignedBigInteger('university_id')->nullable()->index();
+            $table->foreign('university_id')->references('id')->on('universities')->nullOnDelete();
+            $table->unsignedBigInteger('research_center_id')->nullable()->index();
+            $table->foreign('research_center_id')->references('id')->on('research_centers')->nullOnDelete();
+            $table->unsignedBigInteger('campus_id')->nullable()->index();
+            $table->foreign('campus_id')->references('id')->on('campuses')->nullOnDelete();
+            $table->unsignedBigInteger('faculty_id')->nullable()->index();
+            $table->foreign('faculty_id')->references('id')->on('faculties')->nullOnDelete();
+            $table->unsignedBigInteger('department_id')->nullable()->index();
+            $table->foreign('department_id')->references('id')->on('departments')->nullOnDelete();
+
             $table->timestamps();
         });
     }

@@ -9,7 +9,6 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            // Phase 1: Academic structure (no foreign key dependencies)
             UniversitySeeder::class,
             CampusSeeder::class,
             FacultySeeder::class,
@@ -17,54 +16,41 @@ class DatabaseSeeder extends Seeder
             ResearchCenterSeeder::class,
             AcademicYearSeeder::class,
 
-            // Phase 2: Core security (roles and permissions)
             RoleSeeder::class,
             PermissionSeeder::class,
             RolePermissionSeeder::class,
             CenterRoleSeeder::class,
 
-            // Phase 3: Create users (needs departments, roles)
             SuperAdminSeeder::class,
 
-            // Phase 4: All 21 lookup tables (alphabetical order)
-            AgreementTypeSeeder::class,
             CallStatusSeeder::class,
+            ProposalTypeSeeder::class,
+            ProposalStatusSeeder::class,
+            ReviewDecisionSeeder::class,
+            FinanceCheckStatusSeeder::class,
+            EthicsApprovalStatusSeeder::class,
+            PatentStatusSeeder::class,
             CommunityProblemStatusSeeder::class,
+            ProjectStatusSeeder::class,
+            MilestoneStatusSeeder::class,
+            TaskStatusSeeder::class,
+            InvestigatorRoleSeeder::class,
+            InvitationStatusSeeder::class,
+            AgreementTypeSeeder::class,
+            OutputCategorySeeder::class,
+            StudentLevelSeeder::class,
+            OutputSubtypeSeeder::class,
             DetectionServiceSeeder::class,
             DetectionStatusSeeder::class,
-            EthicsApprovalStatusSeeder::class,
-            EventStatusSeeder::class,
-            ExpenseCategorySeeder::class,
-            ExpenseStatusSeeder::class,
-            FinanceCheckStatusSeeder::class,
-            InvitationStatusSeeder::class,
-            InvestigatorRoleSeeder::class,
-            LocaleSeeder::class,
-            MilestoneStatusSeeder::class,
-            OutputCategorySeeder::class,
-            OutputStatusSeeder::class,
-            OutputSubtypeSeeder::class,
             ParticipantTypeSeeder::class,
-            PatentStatusSeeder::class,
-            ProjectStatusSeeder::class,
-            ProposalStatusSeeder::class,
-            ProposalTypeSeeder::class,
-            PublicationAccessTypeSeeder::class,
-            PublicationStatusSeeder::class,
-            ReviewDecisionSeeder::class,
-            StudentLevelSeeder::class,
-            TaskStatusSeeder::class,
-            ThematicAreaSeeder::class,
+            OutputStatusSeeder::class,
 
-            // Phase 5: Core configuration
             ExpertiseSeeder::class,
-            ReviewCriterionSeeder::class,
+            ReviewCriteriaSeeder::class,
             SettingSeeder::class,
 
-            // Phase 6: Sample data for testing
             SampleUserSeeder::class,
             UserExpertiseSeeder::class,
-            DemoDataSeeder::class,
         ]);
     }
 }

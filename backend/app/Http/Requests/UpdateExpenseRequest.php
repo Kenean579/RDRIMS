@@ -15,8 +15,10 @@ class UpdateExpenseRequest extends FormRequest
     {
         return [
             'project_id' => 'sometimes|exists:projects,id',
-            'amount' => 'sometimes|numeric',
-            'category' => 'sometimes',
+            'amount' => 'sometimes|numeric|min:0',
+            'budget_category' => 'nullable|in:personnel,equipment,travel,other',
+            'description' => 'sometimes|string',
+            'research_center_id' => 'nullable|exists:research_centers,id',
         ];
     }
 }

@@ -15,9 +15,9 @@ class StoreMoURequest extends FormRequest
     {
         return [
             'partner_id' => 'required|exists:partners,id',
-            'title' => 'required',
             'start_date' => 'required|date',
-            'end_date' => 'required|date',
+            'end_date' => 'required|date|after_or_equal:start_date',
+            'research_center_id' => 'nullable|exists:research_centers,id',
         ];
     }
 }

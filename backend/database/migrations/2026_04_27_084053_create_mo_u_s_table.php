@@ -8,16 +8,13 @@ return new class extends Migration
 {
     public function up(): void
     {
-        Schema::create('mo_u_s', function (Blueprint $table) {
+        Schema::create('mo_us', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('partner_id')->constrained('partners')->cascadeOnDelete();
-            $table->string('title', 255);
-            $table->unsignedTinyInteger('agreement_type_id');
-            $table->foreign('agreement_type_id')->references('id')->on('agreement_types')->restrictOnDelete();
-            $table->unsignedBigInteger('file_id')->nullable();
-            $table->foreign('file_id')->references('id')->on('files')->nullOnDelete();
+            $table->foreignId('partner_id')->constrained('partners')->restrictOnDelete();
             $table->date('start_date');
             $table->date('end_date');
+            $table->unsignedBigInteger('research_center_id')->nullable();
+            $table->foreign('research_center_id')->references('id')->on('research_centers')->nullOnDelete();
             $table->timestamps();
 
             $table->index('partner_id');
@@ -28,6 +25,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        Schema::dropIfExists('mo_u_s');
+        Schema::dropIfExists('mo_us');
     }
 };

@@ -9,8 +9,8 @@ class PatentStatusSeeder extends Seeder
 {
     public function run(): void
     {
-        PatentStatus::create(['name' => 'pending']);
-        PatentStatus::create(['name' => 'granted']);
-        PatentStatus::create(['name' => 'expired']);
+        PatentStatus::firstOrCreate(['name' => 'pending']);
+        PatentStatus::firstOrCreate(['name' => 'granted']);
+        PatentStatus::firstOrCreate(['name' => 'expired']);
     }
 }

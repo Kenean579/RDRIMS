@@ -14,9 +14,10 @@ class StoreCampusRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required',
-            'code' => 'required|unique:campuses',
+            'name' => 'required|string|max:255',
+            'code' => 'required|string|max:50|unique:campuses,code',
             'university_id' => 'required|exists:universities,id',
+            'logo_file_id' => 'nullable|exists:files,id',
         ];
     }
 }

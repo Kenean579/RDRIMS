@@ -121,7 +121,8 @@ const localizedNavLinks = computed(() => [
   { name: t('nav.events'), path: '/events' },
   { name: t('nav.publications'), path: '/publications' },
   { name: t('nav.researchers'), path: '/researchers' },
-  { name: t('nav.community'), path: '/community' }
+  { name: t('nav.community'), path: '/community' },
+  { name: t('nav.about'), path: '/about' },
 ])
 
 const currentLang = ref(localStorage.getItem('language') || 'en')

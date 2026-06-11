@@ -9,8 +9,8 @@ class ProjectStatusSeeder extends Seeder
 {
     public function run(): void
     {
-        ProjectStatus::create(['name' => 'active']);
-        ProjectStatus::create(['name' => 'completed']);
-        ProjectStatus::create(['name' => 'suspended']);
+        ProjectStatus::firstOrCreate(['name' => 'active']);
+        ProjectStatus::firstOrCreate(['name' => 'completed']);
+        ProjectStatus::firstOrCreate(['name' => 'suspended']);
     }
 }

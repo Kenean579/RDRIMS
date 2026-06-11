@@ -35,7 +35,7 @@ class ProposalService
             'submitted_at' => now(),
         ]);
 
-        $this->auditLogService->log('submitted', 'proposals', $proposal->id, request());
+        $this->auditLogService->log('submitted', 'proposals', $proposal->getKey(), request());
     }
 
     public function approve(Proposal $proposal, User $approvedBy): void
@@ -73,20 +73,20 @@ class ProposalService
         DB::transaction(function() use ($proposal, $approvedBy) {
             $proposal->update([
                 'status_id' => ProposalStatus::where('name', 'approved')->first()->id,
-                'approved_by' => $approvedBy->id,
+                'approved_by' => $approvedBy->getKey(),
                 'approved_at' => now(),
             ]);
 
-            // Automatically create a project from approved proposal
-            $project = $proposal->project()->create([
-                'title' => $proposal->title,
-                'start_date' => now(),
-                'end_date' => now()->addMonths(config('app.default_project_duration', 12)),
-                'total_budget' => $proposal->budget,
-                'status_id' => \App\Models\ProjectStatus::where('name', 'active')->first()->id ?? 1,
-                'pi_id' => $proposal->submitted_by,
-                'academic_year_id' => $proposal->academic_year_id,
-            ]);
+// Automatically create a project from approved proposal
+             $project = $proposal->project()->create([
+                 'title' => $proposal->getAttribute('title'),
+                 'start_date' => now(),
+                 'end_date' => now()->addMonths(config('app.default_project_duration', 12)),
+                 'total_budget' => $proposal->budget,
+                 'status_id' => \App\Models\ProjectStatus::where('name', 'active')->first()->id ?? 1,
+                 'pi_id' => $proposal->getAttribute('submitted_by'),
+                 'academic_year_id' => $proposal->getAttribute('academic_year_id'),
+             ]);
 
             // Copy investigators to the project
             foreach ($proposal->investigators as $inv) {
@@ -101,7 +101,7 @@ class ProposalService
             }
         });
 
-        $this->auditLogService->log('approved', 'proposals', $proposal->id, request());
+        $this->auditLogService->log('approved', 'proposals', $proposal->getKey(), request());
     }
 
     public function reject(Proposal $proposal, User $rejectedBy, string $comment): void
@@ -111,7 +111,7 @@ class ProposalService
             'status_change_comment' => $comment,
         ]);
 
-        $this->auditLogService->log('rejected', 'proposals', $proposal->id, request());
+        $this->auditLogService->log('rejected', 'proposals', $proposal->getKey(), request());
     }
 
     public function assignReviewers(Proposal $proposal, array $reviewerIds, User $assignedBy): void
@@ -119,15 +119,15 @@ class ProposalService
         foreach ($reviewerIds as $reviewerId) {
             // Avoid duplicates
             if (!$proposal->reviewers()->where('reviewer_id', $reviewerId)->exists()) {
-                $proposal->reviewers()->attach($reviewerId, [
-                    'assigned_by' => $assignedBy->id,
-                    'assigned_at' => now(),
-                ]);
+$proposal->reviewers()->attach($reviewerId, [
+                     'assigned_by' => $assignedBy->getKey(),
+                     'assigned_at' => now(),
+                 ]);
             }
         }
 
         $proposal->update(['status_id' => ProposalStatus::where('name', 'under_review')->first()->id]);
 
-        $this->auditLogService->log('reviewers_assigned', 'proposals', $proposal->id, request());
+        $this->auditLogService->log('reviewers_assigned', 'proposals', $proposal->getKey(), request());
     }
 }

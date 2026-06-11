@@ -9,9 +9,10 @@ class InvestigatorRoleSeeder extends Seeder
 {
     public function run(): void
     {
-        $roles = ['Lead author', 'Co-author', 'Consultant', 'Mentor', 'Supervisor'];
-        foreach ($roles as $role) {
-            InvestigatorRole::create(['name' => $role]);
-        }
+        InvestigatorRole::firstOrCreate(['name' => 'Lead author']);
+        InvestigatorRole::firstOrCreate(['name' => 'Co-author']);
+        InvestigatorRole::firstOrCreate(['name' => 'Consultant']);
+        InvestigatorRole::firstOrCreate(['name' => 'Mentor']);
+        InvestigatorRole::firstOrCreate(['name' => 'Supervisor']);
     }
 }

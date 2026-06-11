@@ -52,7 +52,7 @@ api.interceptors.request.use(config => {
 }, error => Promise.reject(error))
 
 // Public endpoints that must NOT trigger a logout redirect on 401
-const PUBLIC_ENDPOINTS = ['/settings', '/lookups', '/universities', '/calls', '/publications', '/community-problems', '/events', '/public', '/users']
+const PUBLIC_ENDPOINTS = ['/settings', '/lookups', '/universities', '/campuses', '/faculties', '/departments', '/calls', '/publications', '/community-problems', '/events', '/public', '/users']
 
 api.interceptors.response.use(
   response => {

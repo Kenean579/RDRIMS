@@ -67,7 +67,7 @@ const sizeClasses = computed(() => {
 
 const textClasses = computed(() => {
   switch (props.size) {
-    case 'xs': return 'text-[10px]'
+    case 'xs': return 'text-xs'
     case 'sm': return 'text-xs'
     case 'md': return 'text-sm'
     case 'lg': return 'text-base'

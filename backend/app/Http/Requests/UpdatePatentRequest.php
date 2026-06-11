@@ -18,7 +18,7 @@ class UpdatePatentRequest extends FormRequest
             'title' => 'sometimes|string|max:255',
             'inventors' => 'nullable|string',
             'filing_date' => 'nullable|date',
-            'application_number' => 'sometimes|string|max:100',
+            'patent_number' => 'sometimes|string|max:100',
             'status_id' => 'sometimes|exists:patent_statuses,id',
         ];
     }

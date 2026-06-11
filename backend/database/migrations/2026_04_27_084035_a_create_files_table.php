@@ -14,11 +14,14 @@ return new class extends Migration
             $table->integer('version')->default(1);
             $table->foreignId('uploaded_by')->nullable()->constrained('users')->nullOnDelete();
             $table->boolean('is_public')->default(false);
+            $table->string('mime_type', 100)->nullable();
+            $table->string('file_hash', 64)->nullable()->index();
+            $table->json('metadata')->nullable();
+            $table->string('original_filename', 255)->nullable();
             $table->timestamp('created_at')->useCurrent();
-            
+
             $table->index('uploaded_by');
             $table->index('is_public');
-            $table->index('created_at');
         });
     }
 

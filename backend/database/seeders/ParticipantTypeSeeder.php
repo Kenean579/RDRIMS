@@ -11,7 +11,7 @@ class ParticipantTypeSeeder extends Seeder
     {
         $types = ['student', 'co_student', 'supervisor', 'co_supervisor', 'advisor'];
         foreach ($types as $type) {
-            ParticipantType::create(['name' => $type]);
+            ParticipantType::firstOrCreate(['name' => $type]);
         }
     }
 }

@@ -12,9 +12,7 @@ class LookupController extends Controller
         'finance_check_statuses', 'ethics_approval_statuses', 'patent_statuses',
         'community_problem_statuses', 'project_statuses', 'milestone_statuses',
         'task_statuses', 'investigator_roles', 'invitation_statuses', 'agreement_types',
-        'output_categories', 'student_levels', 'output_subtypes', 'detection_services',
-        'detection_statuses', 'participant_types', 'output_statuses', 'center_roles',
-        'publication_access_types', 'publication_statuses', 'event_statuses',
+        'output_categories', 'output_statuses', 'center_roles',
         'thematic_areas', 'academic_years',
     ];
 

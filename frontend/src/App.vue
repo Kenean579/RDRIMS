@@ -56,6 +56,4 @@ const notifIcon = computed(() => {
 .slide-enter-active, .slide-leave-active { transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
 .slide-enter-from { transform: translateX(120%) scale(0.9); opacity: 0; }
 .slide-leave-to { transform: translateX(120%); opacity: 0; }
-
-.font-inter { font-family: 'Inter', sans-serif; }
 </style>

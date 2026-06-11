@@ -12,6 +12,16 @@ class UserResearchCenter extends Pivot
 
     protected $fillable = ['user_id', 'research_center_id', 'center_role_id'];
 
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    public function researchCenter(): BelongsTo
+    {
+        return $this->belongsTo(ResearchCenter::class);
+    }
+
     public function centerRole(): BelongsTo
     {
         return $this->belongsTo(CenterRole::class, 'center_role_id');

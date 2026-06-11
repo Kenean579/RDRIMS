@@ -26,7 +26,7 @@
         <div class="flex items-start justify-between mb-4">
           <div class="flex-1">
             <h3 class="text-lg font-bold text-slate-800 group-hover:text-violet-700 transition leading-tight">{{ role.name }}</h3>
-            <p class="text-[10px] text-slate-400 font-medium mt-1">Effective Permissions: <span class="text-violet-600">{{ role.permissions?.length || 0 }}</span></p>
+            <p class="text-xs text-slate-400 font-medium mt-1">Effective Permissions: <span class="text-violet-600">{{ role.permissions?.length || 0 }}</span></p>
           </div>
           <div class="w-12 h-12 rounded-2xl bg-slate-100 text-white flex items-center justify-center font-bold shrink-0">
              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" /></svg>
@@ -36,7 +36,7 @@
         <p class="text-sm text-slate-500 line-clamp-2 leading-relaxed mb-6 flex-1">{{ role.description || 'Access level definition for system operations.' }}</p>
 
         <div class="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between">
-           <button @click="openPermissions(role)" class="btn btn-secondary h-9 px-4 text-[11px] font-medium text-violet-700 bg-violet-50 hover:bg-violet-100 border-0">
+           <button @click="openPermissions(role)" class="btn btn-secondary h-9 px-4 text-xs font-medium text-violet-700 bg-violet-50 hover:bg-violet-100 border-0">
              Manage Perms
            </button>
            <div class="flex gap-2">
@@ -51,11 +51,11 @@
     <Modal :show="showCreate || !!editingRole" :title="editingRole ? 'Modify System Role' : 'Establish New Role'" @close="closeModal">
       <form @submit.prevent="saveRole" class="space-y-5 px-1 py-1">
         <div>
-          <label class="block text-[11px] text-slate-500 font-medium  tracking-wider mb-1.5 ml-1">Role Identifier *</label>
+          <label class="block text-xs text-slate-500 font-medium  tracking-wider mb-1.5 ml-1">Role Identifier *</label>
           <input v-model="form.name" type="text" required class="input" placeholder="e.g. Finance Officer, Dean" />
         </div>
         <div>
-          <label class="block text-[11px] text-slate-500 font-medium  tracking-wider mb-1.5 ml-1">Scope & Responsibility</label>
+          <label class="block text-xs text-slate-500 font-medium  tracking-wider mb-1.5 ml-1">Scope & Responsibility</label>
           <textarea v-model="form.description" rows="3" class="input resize-none" placeholder="Describe the access scope for this role..."></textarea>
         </div>
         <div class="flex justify-end gap-3 pt-4">
@@ -77,7 +77,7 @@
             </div>
             <div>
               <p class="text-sm font-bold text-slate-800 group-hover:text-blue-700 transition">{{ perm.name }}</p>
-              <p class="text-[11px] text-slate-400 font-medium leading-relaxed mt-1 group-hover:text-slate-500 transition">{{ perm.description || 'No description available for this capability.' }}</p>
+              <p class="text-xs text-slate-400 font-medium leading-relaxed mt-1 group-hover:text-slate-500 transition">{{ perm.description || 'No description available for this capability.' }}</p>
             </div>
           </label>
         </div>
@@ -110,7 +110,7 @@ const form = reactive({ name: '', description: '' })
 
 async function fetchRoles() {
   loading.value = true
-  try { const { data } = await api.get('/roles'); roles.value = data }
+  try { const { data } = await api.get('/admin/roles'); roles.value = data }
   catch (e) {} finally { loading.value = false }
 }
 
@@ -126,26 +126,26 @@ function openPermissions(role) {
 
 async function saveRole() {
   try {
-    if (editingRole.value) { await api.put(`/roles/${editingRole.value.id}`, form); notif.success('Updated!') }
-    else { await api.post('/roles', form); notif.success('Created!') }
+    if (editingRole.value) { await api.put(`/admin/roles/${editingRole.value.id}`, form); notif.success('Updated!') }
+    else { await api.post('/admin/roles', form); notif.success('Created!') }
     closeModal(); fetchRoles()
   } catch (err) { notif.error(err.response?.data?.message || 'Failed') }
 }
 
 async function syncPermissions() {
   try {
-    await api.post(`/roles/${syncingRole.value.id}/permissions`, { permissions: selectedPermissions.value })
+    await api.post(`/admin/roles/${syncingRole.value.id}/permissions`, { permissions: selectedPermissions.value })
     notif.success('Permissions synced!'); showPermissions.value = false; fetchRoles()
   } catch (err) { notif.error('Failed') }
 }
 
 async function deleteRole() {
-  try { await api.delete(`/roles/${deletingRole.value.id}`); notif.success('Deleted!'); showDelete.value = false; fetchRoles() }
+  try { await api.delete(`/admin/roles/${deletingRole.value.id}`); notif.success('Deleted!'); showDelete.value = false; fetchRoles() }
   catch (err) { notif.error(err.response?.data?.message || 'Failed') }
 }
 
 onMounted(async () => {
   await fetchRoles()
-  try { const { data } = await api.get('/permissions'); allPermissions.value = data } catch (e) {}
+  try { const { data } = await api.get('/admin/permissions'); allPermissions.value = data } catch (e) {}
 })
 </script>

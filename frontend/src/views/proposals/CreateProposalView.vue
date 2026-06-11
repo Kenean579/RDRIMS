@@ -1,247 +1,244 @@
 <template>
-  <div class="max-w-4xl mx-auto pb-12">
+  <div class="max-w-4xl mx-auto">
     <!-- Header -->
-    <div class="mb-5 px-1">
-      <router-link to="/app/proposals" class="inline-flex items-center gap-1.5 text-[10px] font-black text-slate-400 hover:text-brand transition-all mb-4  tracking-widest group">
-        <svg class="w-4 h-4 group-hover:-translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-        Back to Protocols
+    <div class="mb-8">
+      <router-link to="/app/proposals" class="inline-flex items-center gap-1.5 text-sm font-bold text-slate-500 hover:text-brand transition-colors mb-4">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+        Back to Proposals
       </router-link>
-      <h1 class="text-2xl font-black text-slate-900 tracking-tighter leading-none ">Initiate Research Protocol</h1>
-      <p class="text-[10px] font-bold text-slate-400 mt-2  tracking-widest flex items-center gap-2">
-         <span class="w-1.5 h-1.5 rounded-full bg-brand animate-pulse"></span>
-         Formal submission of scientific proposal for institutional review
-      </p>
+      <h1 class="text-2xl font-black text-slate-800 tracking-tight">Create New Proposal</h1>
+      <p class="text-sm text-slate-500 mt-1 font-medium">Fill in the details to submit your research proposal</p>
     </div>
 
     <!-- Step Indicator -->
-    <div class="flex items-center gap-2 mb-8 bg-white rounded-[2rem] border border-slate-100 p-2 shadow-sm">
+    <div class="flex items-center gap-2 mb-8 bg-white rounded-2xl border border-slate-200 p-4 shadow-sm">
       <button
         v-for="(s, i) in steps"
         :key="i"
         @click="currentStep = i"
-        class="flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-2xl text-[10px] font-black  tracking-widest transition-all"
-        :class="[ currentStep === i ? 'bg-brand text-white shadow-lg shadow-brand/20' : currentStep > i ? 'bg-emerald-50 text-emerald-700' : 'text-slate-400 hover:text-slate-600' ]"
+        class="flex-1 flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all"
+        :class="[
+          currentStep === i
+            ? 'bg-brand text-white shadow-md shadow-brand/30'
+            : currentStep > i
+              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+              : 'text-slate-400 hover:text-slate-600'
+        ]"
       >
+        <span class="h-6 w-6 rounded-full flex items-center justify-center text-xs font-black shrink-0"
+          :class="[
+            currentStep === i ? 'bg-white/20' : currentStep > i ? 'bg-emerald-200 text-emerald-700' : 'bg-slate-100'
+          ]"
+        >
+          <svg v-if="currentStep > i" class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+          <span v-else>{{ i + 1 }}</span>
+        </span>
         <span class="hidden sm:inline">{{ s }}</span>
-        <span class="sm:hidden">{{ i + 1 }}</span>
       </button>
     </div>
 
-    <form @submit.prevent="handleSubmit" class="animate-fade">
-      <!-- Step 0: Basic Information -->
-      <div v-show="currentStep === 0" class="card p-8 space-y-8">
-        <div class="section-header">
-           <h2 class="text-[13px] font-black text-slate-900  tracking-widest flex items-center gap-3">
-             <span class="w-1.5 h-4 bg-brand rounded-full"></span>
-             Primary Classification
-           </h2>
-        </div>
-        
+    <form @submit.prevent="handleSubmit">
+      <!-- Step 1: Quick Summary -->
+      <div v-show="currentStep === 0" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
+        <h2 class="text-lg font-black text-slate-800 mb-6">Quick Summary</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="md:col-span-2">
+            <FileUpload v-model="form.proposal_file" label="Proposal Document" :required="true" />
+          </div>
+          <div class="md:col-span-2">
+            <label class="block text-xs font-black text-slate-400 capitalize tracking-widest mb-2 ml-1">Title <span class="text-rose-500">*</span></label>
+            <input v-model="form.title" type="text" required maxlength="255"
+              class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none transition-all"
+              placeholder="Enter the title of your research proposal" />
+          </div>
           <div>
-            <label class="block text-[10px] font-black text-slate-400  tracking-widest mb-3 ml-1">Research Call</label>
-            <select v-model="form.call_id" class="input h-14 font-bold bg-slate-50 border-slate-100">
-              <option value="">Open Call (unsolicited)</option>
+            <label class="block text-xs font-black text-slate-400 capitalize tracking-widest mb-2 ml-1">Call for Proposal</label>
+            <select v-model="form.call_id"
+              class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none bg-white transition-all">
+              <option value="">Open Call (no specific call)</option>
               <option v-for="call in openCalls" :key="call.id" :value="call.id">{{ call.title }}</option>
             </select>
           </div>
           <div>
-            <label class="block text-[10px] font-black text-slate-400  tracking-widest mb-3 ml-1">Protocol Type</label>
-            <LookupSelect v-model="form.type_id" lookup-key="proposal_types" placeholder="Select type" class="h-14" />
-          </div>
-          <div class="md:col-span-2">
-            <label class="block text-[10px] font-black text-slate-400  tracking-widest mb-3 ml-1">Scientific Title <span class="text-rose-500">*</span></label>
-            <input v-model="form.title" type="text" maxlength="255" required class="input h-14 font-black text-slate-800" placeholder="e.g. Longitudinal Analysis of Crop Resilience in Highland Regions" />
+            <label class="block text-xs font-black text-slate-400 capitalize tracking-widest mb-2 ml-1">Proposal Type <span class="text-rose-500">*</span></label>
+            <LookupSelect v-model="form.type_id" lookup-key="proposal_types" placeholder="Select type" />
           </div>
           <div>
-            <label class="block text-[10px] font-black text-slate-400  tracking-widest mb-3 ml-1">Academic Year</label>
-            <select v-model="form.academic_year_id" class="input h-14 font-bold bg-slate-50">
+            <label class="block text-xs font-black text-slate-400 capitalize tracking-widest mb-2 ml-1">Academic Year</label>
+            <select v-model="form.academic_year_id"
+              class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none bg-white transition-all">
               <option value="">Select year</option>
-              <option v-for="y in academicYears" :key="y.id" :value="y.id">{{ y.name }} {{ y.is_current ? '(Active)' : '' }}</option>
+              <option v-for="y in academicYears" :key="y.id" :value="y.id">{{ y.name }} {{ y.is_current ? '(Current)' : '' }}</option>
             </select>
           </div>
           <div>
-            <label class="block text-[10px] font-black text-slate-400  tracking-widest mb-3 ml-1">Initial Budget Request (ETB) <span class="text-rose-500">*</span></label>
-            <input v-model.number="form.budget" type="number" min="0" step="0.01" required class="input h-14 font-black" placeholder="0.00" />
+            <label class="block text-xs font-black text-slate-400 capitalize tracking-widest mb-2 ml-1">Budget (ETB) <span class="text-rose-500">*</span></label>
+            <input v-model.number="form.budget" type="number" required min="0" step="0.01"
+              class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none transition-all"
+              placeholder="500000.00" />
           </div>
-        </div>
-
-        <div class="pt-8 border-t border-slate-50">
-          <label class="block text-[10px] font-black text-slate-400  tracking-widest mb-4 ml-1 flex items-center justify-between">
-            Expertise Mapping
-            <span class="text-[9px] font-bold text-brand bg-brand/5 px-2 py-0.5 rounded-lg border border-brand/10 ">Required</span>
-          </label>
-          <div class="flex flex-wrap gap-2 min-h-[100px] p-6 bg-slate-50 rounded-3xl border border-slate-100">
-            <button
-              v-for="exp in availableExpertises" :key="exp.id"
-              type="button"
-              @click="toggleKeyword(exp.name)"
-              class="px-4 py-2 rounded-xl text-[10px] font-black  tracking-widest transition-all border-2"
-              :class="isKeywordSelected(exp.name) ? 'bg-brand border-brand text-white shadow-lg shadow-brand/20' : 'bg-white border-slate-200 text-slate-400 hover:border-brand/40 hover:text-brand'"
-            >
-              {{ exp.name }}
-            </button>
-          </div>
-        </div>
-
-        <div class="space-y-6 pt-8 border-t border-slate-50">
-           <h3 class="text-[13px] font-black text-slate-900  tracking-widest flex items-center gap-3">
-             Scientific Narrative
-           </h3>
-           <div>
-             <label class="block text-[10px] font-black text-slate-400  tracking-widest mb-3 ml-1">Executive Abstract <span class="text-rose-500">*</span></label>
-             <textarea v-model="form.abstract" rows="6" required class="input pt-4 font-medium leading-relaxed resize-none" placeholder="Provide a concise scientific summary..."></textarea>
-           </div>
-           <div>
-             <label class="block text-[10px] font-black text-slate-400  tracking-widest mb-3 ml-1">Specific Objectives <span class="text-rose-500">*</span></label>
-             <textarea v-model="form.objectives" rows="5" required class="input pt-4 font-medium leading-relaxed resize-none" placeholder="1. Identify...&#10;2. Measure..."></textarea>
-           </div>
         </div>
       </div>
 
-      <!-- Step 1: Co-Investigators -->
-      <div v-show="currentStep === 1" class="card p-8 space-y-8">
-        <div class="flex items-center justify-between">
+      <!-- Step 2: Research Details -->
+      <div v-show="currentStep === 1" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
+        <h2 class="text-lg font-black text-slate-800 mb-6">Research Details</h2>
+        <div class="space-y-6">
           <div>
-            <h2 class="text-[13px] font-black text-slate-900  tracking-widest flex items-center gap-3">
-              <span class="w-1.5 h-4 bg-brand rounded-full"></span>
-              Research Consortium
-            </h2>
-            <p class="text-[10px] font-bold text-slate-400 mt-1  tracking-widest">You are the lead Principal Investigator</p>
+            <label class="block text-xs font-black text-slate-400 capitalize tracking-widest mb-2 ml-1">Keywords <span class="text-rose-500">*</span></label>
+            <input v-model="form.keywords" type="text" required
+              class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none transition-all"
+              placeholder="AI, Machine Learning, Agriculture" />
+            <p class="text-[10px] text-slate-400 mt-1.5 ml-1 font-medium">Separate keywords with commas</p>
           </div>
-          <button type="button" @click="addInvestigator" class="btn btn-secondary h-11 px-6 text-[10px] font-black  tracking-widest border border-slate-100 flex items-center gap-2">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"/></svg>
-            Add Associate
+          <div>
+            <label class="block text-xs font-black text-slate-400 capitalize tracking-widest mb-2 ml-1">Abstract <span class="text-rose-500">*</span></label>
+            <textarea v-model="form.abstract" required rows="5"
+              class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none resize-none transition-all"
+              placeholder="Provide a brief summary of your research proposal..."></textarea>
+          </div>
+          <div>
+            <label class="block text-xs font-black text-slate-400 capitalize tracking-widest mb-2 ml-1">Objectives <span class="text-rose-500">*</span></label>
+            <textarea v-model="form.objectives" required rows="4"
+              class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none resize-none transition-all"
+              placeholder="1. First objective&#10;2. Second objective&#10;3. Third objective"></textarea>
+          </div>
+          <div>
+            <label class="block text-xs font-black text-slate-400 capitalize tracking-widest mb-2 ml-1">Methodology <span class="text-rose-500">*</span></label>
+            <textarea v-model="form.methodology" required rows="5"
+              class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none resize-none transition-all"
+              placeholder="Describe your research methodology in detail..."></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Step 3: Co-Investigators -->
+      <div v-show="currentStep === 2" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="text-lg font-black text-slate-800">Co-Team Members</h2>
+            <p class="text-xs text-slate-400 font-medium mt-1">You are automatically the Principal Investigator</p>
+          </div>
+          <button type="button" @click="addInvestigator"
+            class="inline-flex items-center gap-1.5 px-4 py-2 text-sm font-bold text-brand bg-brand/10 rounded-xl hover:bg-brand/20 transition-colors">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
+            Add Member
           </button>
         </div>
 
-        <div v-if="form.investigators.length === 0" class="p-20 text-center bg-slate-50 rounded-[2.5rem] border-2 border-dashed border-slate-200">
-           <div class="w-20 h-20 rounded-3xl bg-white border border-slate-100 shadow-sm flex items-center justify-center mx-auto mb-6 text-3xl">👥</div>
-           <p class="text-[11px] font-black text-slate-400  tracking-widest">No associate investigators registered</p>
+        <div v-if="form.investigators.length === 0" class="text-center py-12 border-2 border-dashed border-slate-200 rounded-2xl">
+          <div class="h-16 w-16 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4">
+            <svg class="w-8 h-8 text-slate-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+          </div>
+          <p class="text-sm font-bold text-slate-500">No co-investigators added yet</p>
+          <p class="text-xs text-slate-400 mt-1">Click "Add Member" to add co-investigators</p>
         </div>
 
-        <div v-else class="grid grid-cols-1 gap-6">
-          <div v-for="(inv, index) in form.investigators" :key="index" class="p-8 bg-slate-50 rounded-[2rem] border border-slate-200 relative group">
-            <button type="button" @click="removeInvestigator(index)" class="absolute -top-3 -right-3 w-10 h-10 bg-white text-rose-500 rounded-full shadow-xl flex items-center justify-center border-2 border-rose-50 hover:bg-rose-50 transition-all opacity-0 group-hover:opacity-100">
-               <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/></svg>
-            </button>
-            
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div class="md:col-span-2">
-                <label class="block text-[10px] font-black text-slate-400  tracking-widest mb-3 ml-1">Institutional Lookup / External</label>
-                <select v-model="inv.user_id" @change="onUserSelected(index)" class="input h-12 font-black">
-                  <option value="">External Researcher (Manual Entry)</option>
+        <div v-else class="space-y-4">
+          <div v-for="(inv, index) in form.investigators" :key="index"
+            class="p-5 border border-slate-200 rounded-2xl bg-slate-50/50 hover:border-slate-300 transition-colors">
+            <div class="flex items-center justify-between mb-4">
+              <span class="text-xs font-black text-slate-400 capitalize tracking-widest">Member #{{ index + 1 }}</span>
+              <button type="button" @click="removeInvestigator(index)"
+                class="h-7 w-7 rounded-full bg-rose-50 text-rose-500 hover:bg-rose-100 flex items-center justify-center transition-colors">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+              </button>
+            </div>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div class="sm:col-span-2">
+                <label class="block text-xs font-bold text-slate-500 mb-1.5">Select User or External</label>
+                <select v-model="inv.user_id" @change="onUserSelected(index)"
+                  class="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none bg-white transition-all">
+                  <option value="">External person (manual entry)</option>
                   <option v-for="u in availableUsers" :key="u.id" :value="u.id">{{ u.name }} ({{ u.email }})</option>
                 </select>
               </div>
-              <div>
-                <label class="block text-[10px] font-black text-slate-400  tracking-widest mb-3 ml-1">Center Role <span class="text-rose-500">*</span></label>
-                <LookupSelect v-model="inv.role_id" lookup-key="investigator_roles" placeholder="Select role" class="h-12" />
+              <div v-if="!inv.user_id">
+                <label class="block text-xs font-bold text-slate-500 mb-1.5">Full Name <span class="text-rose-500">*</span></label>
+                <input v-model="inv.name" type="text" required
+                  class="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none transition-all"
+                  placeholder="Dr. Jane Smith" />
               </div>
-              <template v-if="!inv.user_id">
-                <div>
-                  <label class="block text-[10px] font-black text-slate-400  tracking-widest mb-3 ml-1">Full Legal Name</label>
-                  <input v-model="inv.name" type="text" class="input h-12 font-bold" />
-                </div>
-                <div>
-                  <label class="block text-[10px] font-black text-slate-400  tracking-widest mb-3 ml-1">Contact Email</label>
-                  <input v-model="inv.email" type="email" class="input h-12 font-bold" />
-                </div>
-                <div>
-                  <label class="block text-[10px] font-black text-slate-400  tracking-widest mb-3 ml-1">Affiliated Institution</label>
-                  <input v-model="inv.institution" type="text" class="input h-12 font-bold" />
-                </div>
-              </template>
+              <div v-if="!inv.user_id">
+                <label class="block text-xs font-bold text-slate-500 mb-1.5">Email <span class="text-rose-500">*</span></label>
+                <input v-model="inv.email" type="email" required
+                  class="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none transition-all"
+                  placeholder="email@university.edu" />
+              </div>
+              <div v-if="!inv.user_id">
+                <label class="block text-xs font-bold text-slate-500 mb-1.5">Institution</label>
+                <input v-model="inv.institution" type="text"
+                  class="w-full border border-slate-300 rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none transition-all"
+                  placeholder="University of..." />
+              </div>
+              <div>
+                <label class="block text-xs font-bold text-slate-500 mb-1.5">Role <span class="text-rose-500">*</span></label>
+                <LookupSelect v-model="inv.role_id" lookup-key="investigator_roles" placeholder="Select role" />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Documents Section -->
+        <div class="mt-8 pt-8 border-t border-slate-200">
+          <h2 class="text-lg font-black text-slate-800 mb-6">Required Documents</h2>
+          <div class="space-y-6">
+            <div>
+              <FileUpload v-model="form.proposal_file" label="Proposal Document" :required="true" />
+              <p class="text-[10px] text-slate-400 mt-1.5 ml-1 font-medium">PDF, DOC, or DOCX format, max 10MB</p>
+            </div>
+            <div>
+              <FileUpload v-model="form.ethics_file" label="Ethics Document (Optional)" />
+              <p class="text-[10px] text-slate-400 mt-1.5 ml-1 font-medium">If your research involves human subjects</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Review & Submit Section -->
+        <div class="mt-8 pt-8 border-t border-slate-200">
+          <h2 class="text-lg font-black text-slate-800 mb-6">Review & Submit</h2>
+          <div class="bg-slate-50 rounded-xl p-6 border border-slate-200 space-y-4">
+            <div class="flex items-center gap-3">
+              <div class="h-5 w-5 rounded bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs">✓</div>
+              <span class="text-sm text-slate-600">All required fields completed</span>
+            </div>
+            <div class="flex items-center gap-3">
+              <div class="h-5 w-5 rounded bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs">✓</div>
+              <span class="text-sm text-slate-600">Proposal document uploaded</span>
+            </div>
+            <div class="mt-4">
+              <label class="flex items-start gap-3 cursor-pointer">
+                <input type="checkbox" v-model="form.confirmation" class="mt-1" />
+                <span class="text-sm text-slate-600">I confirm that this proposal is my original work and complies with all research ethics guidelines.</span>
+              </label>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Step 2: Documents -->
-      <div v-show="currentStep === 2" class="card p-8 space-y-8">
-        <h2 class="text-[13px] font-black text-slate-900  tracking-widest flex items-center gap-3">
-          <span class="w-1.5 h-4 bg-brand rounded-full"></span>
-          Evidence & Supplementary Files
-        </h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div class="group">
-            <FileUpload v-model="form.proposal_file" label="Main Proposal (PDF/DOCX)" :required="true" />
-            <p class="text-[9px] font-black text-slate-300 mt-4 ml-1  tracking-tighter">Required: Final technical proposal, max 20MB</p>
-          </div>
-          <div class="group">
-            <FileUpload v-model="form.ethics_file" label="Ethics Clearance (Self-Cert)" />
-            <p class="text-[9px] font-black text-slate-300 mt-4 ml-1  tracking-tighter">Optional: Supporting ethical documentation</p>
-          </div>
-        </div>
-      </div>
-
-      <!-- Step 3: Review & Submit -->
-      <div v-show="currentStep === 3" class="card p-8 space-y-8">
-        <h2 class="text-[13px] font-black text-slate-900  tracking-widest flex items-center gap-3">
-          <span class="w-1.5 h-4 bg-brand rounded-full"></span>
-          Pre-Submission Verification
-        </h2>
-        
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-           <div class="md:col-span-2 space-y-6">
-              <div class="p-8 bg-slate-50 rounded-[2rem] border border-slate-100 flex flex-col gap-4">
-                 <div class="flex justify-between items-center text-[11px] font-bold">
-                    <span class="text-slate-400  tracking-widest">Protocol Title</span>
-                    <span class="text-slate-900 text-right max-w-xs">{{ form.title }}</span>
-                 </div>
-                 <div class="flex justify-between items-center text-[11px] font-bold">
-                    <span class="text-slate-400  tracking-widest">Requested Allocation</span>
-                    <span class="text-brand font-black">{{ formatCurrency(form.budget) }}</span>
-                 </div>
-                 <div class="flex justify-between items-center text-[11px] font-bold">
-                    <span class="text-slate-400  tracking-widest">Team Size</span>
-                    <span class="text-slate-900 font-black">{{ form.investigators.length + 1 }} Researchers</span>
-                 </div>
-              </div>
-              
-              <div class="p-8 bg-white rounded-[2rem] border-2 border-slate-100">
-                <label class="flex items-start gap-4 cursor-pointer">
-                  <input type="checkbox" v-model="form.confirmation" class="mt-1 w-5 h-5 accent-brand rounded-lg" required />
-                  <span class="text-xs font-bold text-slate-600 leading-relaxed  tracking-tight">
-                    I solemnly declare that this proposal is my original work and strictly adheres to the institutional research integrity framework and ethical standards.
-                  </span>
-                </label>
-              </div>
-           </div>
-           
-           <div class="space-y-4">
-              <div class="p-6 bg-brand/5 rounded-3xl border border-brand/10">
-                 <p class="text-[9px] font-black text-brand  tracking-widest mb-4">Integrity Checklist</p>
-                 <div class="space-y-3">
-                    <div v-for="chk in ['Title Finalized', 'Abstract Verified', 'Team Assigned', 'Files Attached']" :key="chk" class="flex items-center gap-2 text-[10px] font-bold text-slate-600">
-                       <span class="w-4 h-4 rounded-full bg-emerald-500 text-white flex items-center justify-center text-[8px]">✓</span>
-                       {{ chk }}
-                    </div>
-                 </div>
-              </div>
-           </div>
-        </div>
-      </div>
-
       <!-- Navigation Buttons -->
-      <div class="flex items-center justify-between mt-8 px-1">
-        <button v-show="currentStep > 0" type="button" @click="currentStep--" class="btn btn-secondary h-14 px-8 text-[11px] font-black  tracking-widest border border-slate-100 shadow-sm flex items-center gap-3">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15 19l-7-7 7-7"/></svg>
-          Back
+      <div class="flex items-center justify-between mt-8">
+        <button v-if="currentStep > 0" type="button" @click="currentStep--"
+          class="inline-flex items-center gap-2 px-6 py-3 text-sm font-bold text-slate-600 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 shadow-sm transition-all">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+          Previous
         </button>
-        <div v-show="currentStep === 0"></div>
+        <div v-else></div>
 
-        <div class="flex items-center gap-4">
-          <router-link to="/app/proposals" class="text-[10px] font-black text-slate-400 hover:text-slate-600  tracking-widest px-4 transition-colors">Abort</router-link>
-          
-          <button v-if="currentStep < steps.length - 1" type="button" @click="nextStep" class="btn btn-primary h-14 px-10 text-[11px] font-black  tracking-widest shadow-xl shadow-brand/20 flex items-center gap-3">
-            Continue
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7"/></svg>
+        <div class="flex items-center gap-3">
+          <router-link to="/app/proposals"
+            class="px-6 py-3 text-sm font-bold text-slate-500 hover:text-slate-700 transition-colors">
+            Cancel
+          </router-link>
+          <button v-if="currentStep < steps.length - 1" type="button" @click="nextStep"
+            class="inline-flex items-center gap-2 px-6 py-3 text-sm font-bold text-white bg-brand rounded-xl shadow-lg shadow-brand/30 hover:shadow-brand/50 hover:-translate-y-0.5 transition-all">
+            Next
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
           </button>
-          
-          <button v-else type="submit" :disabled="submitting" class="btn bg-slate-900 text-white h-14 px-10 text-[11px] font-black  tracking-widest shadow-xl shadow-slate-900/20 hover:bg-black transition-all flex items-center gap-3">
-            <svg v-if="submitting" class="w-5 h-5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-            {{ submitting ? 'Processing Digital Signature...' : 'Submit Final Protocol' }}
+          <button v-else type="submit" :disabled="submitting"
+            class="inline-flex items-center gap-2 px-8 py-3 text-sm font-bold text-white bg-emerald-600 rounded-xl shadow-lg shadow-emerald-600/30 hover:shadow-emerald-600/50 hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:pointer-events-none">
+            <svg v-if="submitting" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+            {{ submitting ? 'Saving...' : 'Save as Draft' }}
           </button>
         </div>
       </div>
@@ -250,22 +247,22 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, computed } from 'vue'
+import { ref, reactive, onMounted, computed, watch, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationStore } from '@/stores/notification'
 import api from '@/services/api'
 import LookupSelect from '@/components/LookupSelect.vue'
 import FileUpload from '@/components/FileUpload.vue'
-import { formatCurrency } from '@/utils/formatters'
 
 const router = useRouter()
 const route = useRoute()
 const auth = useAuthStore()
 const notif = useNotificationStore()
 
-const steps = ['Classification', 'Team Consortium', 'Documentation', 'Verification']
+const steps = ['Summary', 'Details', 'Team', 'Documents']
 const currentStep = ref(0)
+const draftRestored = ref(false)
 
 const form = reactive({
   call_id: '',
@@ -275,9 +272,8 @@ const form = reactive({
   keywords: '',
   abstract: '',
   objectives: '',
-  methodology: 'Detailed methodology section...',
+  methodology: '',
   budget: null,
-  budget_allocation: { personnel: 0, equipment: 0, travel: 0, materials: 0, other: 0 },
   proposal_file: null,
   ethics_file: null,
   investigators: [],
@@ -288,8 +284,6 @@ const submitting = ref(false)
 const openCalls = ref([])
 const academicYears = ref([])
 const availableUsers = ref([])
-const availableExpertises = ref([])
-const investigatorRoles = ref([])
 
 function addInvestigator() {
   form.investigators.push({ user_id: '', name: '', email: '', role_id: '' })
@@ -299,40 +293,27 @@ function removeInvestigator(i) {
   form.investigators.splice(i, 1)
 }
 
-function isKeywordSelected(name) {
-  if (!form.keywords) return false
-  return form.keywords.split(',').map(k => k.trim()).includes(name)
-}
-
-function toggleKeyword(name) {
-  let keys = form.keywords ? form.keywords.split(',').map(k => k.trim()).filter(k => k) : []
-  if (keys.includes(name)) keys = keys.filter(k => k !== name)
-  else keys.push(name)
-  form.keywords = keys.join(', ')
-}
-
 function onUserSelected(i) {
   const inv = form.investigators[i]
-  if (inv.user_id) { inv.name = ''; inv.email = ''; inv.institution = '' }
+  if (inv.user_id) { inv.name = ''; inv.email = '' }
 }
 
 function nextStep() {
+  // Validate current step before advancing
   if (currentStep.value === 0) {
-    if (!form.title) return notif.error('Protocol title is required')
-    if (!form.type_id) return notif.error('Classification type is required')
-    if (!form.budget) return notif.error('Initial budget request is required')
-    if (!form.keywords) return notif.error('Expertise mapping is required')
-    if (!form.abstract) return notif.error('Executive abstract is required')
+    if (!form.title) { notif.error('Title is required.'); return }
+    if (!form.type_id) { notif.error('Proposal type is required.'); return }
+    if (!form.budget) { notif.error('Budget is required.'); return }
   }
-  if (currentStep.value === 2) {
-    if (!form.proposal_file) return notif.error('Main proposal document is missing')
+  if (currentStep.value === 1) {
+    if (!form.abstract) { notif.error('Abstract is required.'); return }
+    if (!form.objectives) { notif.error('Objectives are required.'); return }
+    if (!form.methodology) { notif.error('Methodology is required.'); return }
   }
   currentStep.value++
 }
 
 async function handleSubmit() {
-  if (!form.confirmation) return notif.error('Integrity declaration must be confirmed')
-  
   submitting.value = true
   try {
     const payload = new FormData()
@@ -345,9 +326,7 @@ async function handleSubmit() {
     payload.append('objectives', form.objectives)
     payload.append('methodology', form.methodology)
     payload.append('budget', form.budget)
-    payload.append('budget_allocation', JSON.stringify(form.budget_allocation))
     if (form.proposal_file) payload.append('proposal_file', form.proposal_file)
-    if (form.ethics_file) payload.append('ethics_file', form.ethics_file)
     payload.append('investigators', JSON.stringify(
       form.investigators.map(inv => ({
         user_id: inv.user_id || null,
@@ -356,40 +335,60 @@ async function handleSubmit() {
         role_id: inv.role_id
       }))
     ))
-    
-    const { data } = await api.post('/proposals', payload, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    })
-    
-    notif.success('Research protocol initiated successfully!')
+    const { data } = await api.post('/proposals', payload)
+    notif.success('Proposal created successfully!')
     router.push(`/app/proposals/${data.id}`)
   } catch (err) {
-    const errorMsg = err.response?.data?.message || 'Submission protocol failure'
-    notif.error(errorMsg)
+    notif.error(err.response?.data?.message || 'Failed to create proposal.')
   } finally {
     submitting.value = false
   }
 }
 
 onMounted(async () => {
+  // Restore draft from localStorage
+  const saved = localStorage.getItem('rdrims_proposal_draft')
+  if (saved) {
+    try {
+      const parsed = JSON.parse(saved)
+      Object.assign(form, parsed)
+      draftRestored.value = true
+      notif.success('Draft restored from your previous session.')
+    } catch (e) {}
+  }
+
   try {
-    const [cr, yr, ur, exp, roles] = await Promise.all([
+    const [cr, yr, ur] = await Promise.all([
       api.get('/calls', { params: { status: 'open' } }),
       api.get('/academic-years'),
-      api.get('/users', { params: { per_page: 500 } }),
-      api.get('/expertise'),
-      api.get('/lookups/investigator_roles')
+      api.get('/users', { params: { per_page: 100 } })
     ])
     openCalls.value = cr.data.data || cr.data
     academicYears.value = yr.data.data || yr.data
     availableUsers.value = ur.data.data || ur.data
-    availableExpertises.value = exp.data
-    investigatorRoles.value = roles.data
-    if (route.query.call_id) form.call_id = route.query.call_id
+    
+    if (route.query.call_id) {
+      form.call_id = route.query.call_id
+    }
   } catch (err) {
-    notif.error('Subsystem data fetch timeout')
+    notif.error('Failed to load form data.')
+  }
+
+  // Auto-save draft every 30 seconds
+  const timer = setInterval(() => {
+    const toSave = { ...form }
+    delete toSave.proposal_file
+    delete toSave.ethics_file
+    localStorage.setItem('rdrims_proposal_draft', JSON.stringify(toSave))
+  }, 30000)
+
+  onUnmounted(() => clearInterval(timer))
+})
+
+// Clear draft after successful submission
+watch(submitting, (val) => {
+  if (!val && form.confirmation) {
+    localStorage.removeItem('rdrims_proposal_draft')
   }
 })
 </script>
-
-

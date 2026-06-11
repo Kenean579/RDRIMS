@@ -29,16 +29,16 @@
           <div>
             <h3 class="font-bold text-slate-800 text-lg leading-tight mb-1">{{ dept.name }}</h3>
             <div class="flex items-center gap-2">
-              <span class="inline-block px-2.5 py-0.5 bg-slate-100 text-slate-500 text-[10px] font-medium rounded-md border border-slate-100">CODE: {{ dept.code }}</span>
-              <span class="inline-block px-2 py-0.5 bg-fuchsia-50 text-fuchsia-600 text-[10px] font-medium rounded-md border border-fuchsia-100"><i class="fas fa-building mr-1"></i>{{ dept.faculty?.name || 'N/A' }}</span>
+              <span class="inline-block px-2.5 py-0.5 bg-slate-100 text-slate-500 text-xs font-medium rounded-md border border-slate-100">CODE: {{ dept.code }}</span>
+              <span class="inline-block px-2 py-0.5 bg-fuchsia-50 text-fuchsia-600 text-xs font-medium rounded-md border border-fuchsia-100"><i class="fas fa-building mr-1"></i>{{ dept.faculty?.name || 'N/A' }}</span>
             </div>
           </div>
         </div>
         <div class="flex gap-2 shrink-0">
-          <button @click="editDept(dept)" class="btn btn-secondary h-9 px-4 text-[11px] font-medium">
+          <button @click="editDept(dept)" class="btn btn-secondary h-9 px-4 text-xs font-medium">
             Edit
           </button>
-          <button @click="confirmDelete(dept)" class="btn btn-danger h-9 px-4 text-[11px] font-medium">
+          <button @click="confirmDelete(dept)" class="btn btn-danger h-9 px-4 text-xs font-medium">
             Delete
           </button>
         </div>

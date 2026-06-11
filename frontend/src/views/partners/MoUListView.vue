@@ -31,7 +31,7 @@
           </div>
           <div>
             <h3 class="text-base font-bold text-slate-800 group-hover:text-blue-600 transition mb-1">MoU Agreement</h3>
-            <p class="text-[11px] font-medium text-slate-400">{{ formatDate(m.start_date) }} – {{ formatDate(m.end_date) }}</p>
+            <p class="text-xs font-medium text-slate-400">{{ formatDate(m.start_date) }} – {{ formatDate(m.end_date) }}</p>
           </div>
         </div>
         <div class="flex gap-2">
@@ -45,11 +45,11 @@
       <form @submit.prevent="saveMoU" class="space-y-5 px-1 py-1">
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="block text-[11px] text-slate-500 font-medium  tracking-wider mb-1.5 ml-1">Start Date *</label>
+            <label class="block text-xs text-slate-500 font-medium  tracking-wider mb-1.5 ml-1">Start Date *</label>
             <input v-model="form.start_date" type="date" required class="input" />
           </div>
           <div>
-             <label class="block text-[11px] text-slate-500 font-medium  tracking-wider mb-1.5 ml-1">End Date *</label>
+             <label class="block text-xs text-slate-500 font-medium  tracking-wider mb-1.5 ml-1">End Date *</label>
              <input v-model="form.end_date" type="date" required class="input" />
           </div>
         </div>

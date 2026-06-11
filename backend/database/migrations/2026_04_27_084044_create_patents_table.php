@@ -14,14 +14,16 @@ return new class extends Migration
             $table->string('title', 255);
             $table->text('inventors');
             $table->date('filing_date');
-            $table->string('application_number', 100);
+            $table->string('patent_number', 100);
+            $table->unsignedBigInteger('research_center_id')->nullable();
+            $table->foreign('research_center_id')->references('id')->on('research_centers')->nullOnDelete();
             $table->unsignedTinyInteger('status_id');
             $table->foreign('status_id')->references('id')->on('patent_statuses')->restrictOnDelete();
             $table->timestamps();
 
             $table->index('project_id');
             $table->index('status_id');
-            $table->index('application_number');
+            $table->index('patent_number');
             $table->index('filing_date');
         });
     }

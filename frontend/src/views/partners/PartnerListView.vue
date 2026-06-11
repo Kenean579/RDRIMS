@@ -10,7 +10,7 @@
         </p>
       </div>
       <div class="flex items-center gap-3">
-        <button v-if="auth.hasRole('super_admin', 'research_admin')" @click="showCreate = true" class="btn btn-primary h-11 px-6 text-[11px] font-bold gap-2">
+        <button v-if="auth.hasRole('super_admin', 'research_admin')" @click="showCreate = true" class="btn btn-primary h-11 px-6 text-xs font-bold gap-2">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4"/></svg>
           Add Partner
         </button>
@@ -30,7 +30,7 @@
       <div class="w-20 h-20 bg-slate-50 rounded-3xl flex items-center justify-center mx-auto mb-6 text-4xl border border-slate-100">🤝</div>
       <h3 class="text-lg font-bold text-slate-800 mb-2">No partners found</h3>
       <p class="text-sm text-slate-500 font-medium mb-8">Connect with external organizations and industry leaders to expand your research scope.</p>
-      <button v-if="auth.hasRole('super_admin', 'research_admin')" @click="showCreate = true" class="btn btn-primary px-8 h-11 text-[11px] font-bold shadow-lg shadow-brand/20">Add First Partner</button>
+      <button v-if="auth.hasRole('super_admin', 'research_admin')" @click="showCreate = true" class="btn btn-primary px-8 h-11 text-xs font-bold shadow-lg shadow-brand/20">Add First Partner</button>
     </div>
 
     <!-- Grid -->
@@ -43,17 +43,17 @@
             {{ getLogo(p) }}
           </div>
           <h3 class="text-sm font-bold text-slate-800 group-hover:text-brand transition-colors line-clamp-2 leading-snug mb-2">{{ p.name }}</h3>
-          <p class="text-[10px] font-semibold text-slate-400  tracking-widest">{{ p.type?.name || 'Partner' }}</p>
+          <p class="text-xs font-semibold text-slate-400  tracking-widest">{{ p.type?.name || 'Partner' }}</p>
           <div class="mt-3 pt-3 border-t border-slate-50 w-full">
-            <a v-if="p.website_url" :href="p.website_url" target="_blank" @click.stop class="text-[10px] font-bold text-brand hover:underline">
+            <a v-if="p.website_url" :href="p.website_url" target="_blank" @click.stop class="text-xs font-bold text-brand hover:underline">
               Visit Website ↗
             </a>
-            <span v-else class="text-[10px] text-slate-300 italic">No website</span>
+            <span v-else class="text-xs text-slate-300 italic">No website</span>
           </div>
         </router-link>
         <!-- Admin actions -->
         <div v-if="auth.hasRole('super_admin', 'research_admin')" class="px-4 pb-4 flex gap-2">
-          <button @click="editPartner(p)" class="flex-1 btn btn-secondary text-[10px] font-bold h-8 px-0 justify-center">Edit</button>
+          <button @click="editPartner(p)" class="flex-1 btn btn-secondary text-xs font-bold h-8 px-0 justify-center">Edit</button>
           <button @click="confirmDelete(p)" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-colors">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
           </button>
@@ -65,43 +65,43 @@
     <Modal :show="showCreate || !!editingPartner" :title="editingPartner ? 'Edit Partner' : 'Add New Partner'" size="md" @close="closeModal">
       <form @submit.prevent="savePartner" class="space-y-5">
         <div>
-          <label class="block text-[11px] text-slate-500 font-bold mb-2 ml-1">Organization Name *</label>
+          <label class="block text-xs text-slate-500 font-bold mb-2 ml-1">Organization Name *</label>
           <input v-model="form.name" type="text" required class="input h-12 font-bold" placeholder="e.g. World Bank Group" />
         </div>
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="block text-[11px] text-slate-500 font-bold mb-2 ml-1">Type</label>
+            <label class="block text-xs text-slate-500 font-bold mb-2 ml-1">Type</label>
             <select v-model="form.type_id" class="input h-12 font-bold">
               <option value="">Select type...</option>
               <option v-for="t in partnerTypes" :key="t.id" :value="t.id">{{ t.name }}</option>
             </select>
           </div>
           <div>
-            <label class="block text-[11px] text-slate-500 font-bold mb-2 ml-1">Sector</label>
+            <label class="block text-xs text-slate-500 font-bold mb-2 ml-1">Sector</label>
             <input v-model="form.sector" type="text" class="input h-12 font-bold" placeholder="e.g. Health, Agriculture" />
           </div>
         </div>
         <div>
-          <label class="block text-[11px] text-slate-500 font-bold mb-2 ml-1">Website URL</label>
+          <label class="block text-xs text-slate-500 font-bold mb-2 ml-1">Website URL</label>
           <input v-model="form.website_url" type="url" class="input h-12 font-bold" placeholder="https://..." />
         </div>
         <div class="grid grid-cols-2 gap-4">
           <div>
-            <label class="block text-[11px] text-slate-500 font-bold mb-2 ml-1">Contact Email</label>
+            <label class="block text-xs text-slate-500 font-bold mb-2 ml-1">Contact Email</label>
             <input v-model="form.contact_email" type="email" class="input h-12 font-bold" placeholder="contact@org.com" />
           </div>
           <div>
-            <label class="block text-[11px] text-slate-500 font-bold mb-2 ml-1">Country</label>
+            <label class="block text-xs text-slate-500 font-bold mb-2 ml-1">Country</label>
             <input v-model="form.country" type="text" class="input h-12 font-bold" placeholder="e.g. Ethiopia" />
           </div>
         </div>
         <div>
-          <label class="block text-[11px] text-slate-500 font-bold mb-2 ml-1">Description</label>
+          <label class="block text-xs text-slate-500 font-bold mb-2 ml-1">Description</label>
           <textarea v-model="form.description" rows="3" class="input resize-none pt-3 font-medium" placeholder="Brief description of this partner organization..."></textarea>
         </div>
         <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
-          <button type="button" @click="closeModal" class="btn btn-secondary px-6 h-11 text-[11px] font-bold">Cancel</button>
-          <button type="submit" class="btn btn-primary px-8 h-11 text-[11px] font-bold shadow-lg shadow-brand/20">
+          <button type="button" @click="closeModal" class="btn btn-secondary px-6 h-11 text-xs font-bold">Cancel</button>
+          <button type="submit" class="btn btn-primary px-8 h-11 text-xs font-bold shadow-lg shadow-brand/20">
             {{ editingPartner ? 'Save Changes' : 'Add Partner' }}
           </button>
         </div>

@@ -75,20 +75,20 @@
             <h3 class="text-xs font-medium text-slate-400 mb-4">Overview</h3>
             <ul class="space-y-4">
               <li>
-                <p class="text-[10px] font-medium text-slate-400 leading-none mb-1.5">Deadline</p>
+                <p class="text-xs font-medium text-slate-400 leading-none mb-1.5">Deadline</p>
                 <div class="flex items-center gap-2 text-slate-800 font-bold">
                   <svg class="w-4 h-4 text-brand" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                   {{ formatDate(call.deadline) }}
                 </div>
               </li>
               <li class="pt-4 border-t border-slate-100">
-                <p class="text-[10px] font-medium text-slate-400 leading-none mb-1.5">Budget Limit</p>
+                <p class="text-xs font-medium text-slate-400 leading-none mb-1.5">Budget Limit</p>
                 <p class="text-lg font-bold text-emerald-600 tracking-tight">
                   {{ formatCurrency(call.budget_limit) }}
                 </p>
               </li>
               <li class="pt-4 border-t border-slate-100">
-                <p class="text-[10px] font-medium text-slate-400 leading-none mb-1.5">Academic Cycle</p>
+                <p class="text-xs font-medium text-slate-400 leading-none mb-1.5">Academic Cycle</p>
                 <p class="text-sm font-bold text-slate-700">
                   {{ call.academic_year?.name || 'General Cycle' }}
                 </p>

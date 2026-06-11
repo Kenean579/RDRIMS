@@ -10,10 +10,13 @@ return new class extends Migration
     {
         Schema::create('departments', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 255)->index();
+            $table->string('name', 255);
             $table->string('code', 50)->unique();
             $table->foreignId('faculty_id')->constrained('faculties')->restrictOnDelete();
+            $table->unsignedBigInteger('logo_file_id')->nullable()->index();
             $table->timestamps();
+
+            $table->index(['faculty_id', 'name', 'logo_file_id']);
         });
     }
 

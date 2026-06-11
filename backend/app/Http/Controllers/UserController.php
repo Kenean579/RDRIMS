@@ -67,4 +67,18 @@ class UserController extends Controller
         $user->delete();
         return response()->json(null, 204);
     }
+
+    public function publicIndex(Request $request): JsonResponse
+    {
+        $query = User::with('department', 'expertise')
+            ->whereHas('roles', fn($q) => $q->where('name', 'researcher'))
+            ->where('is_active', true);
+
+        if ($request->has('search') && $request->search != '') {
+            $query->where('name', 'like', '%' . $request->search . '%')
+                  ->orWhereHas('expertise', fn($e) => $e->where('name', 'like', '%' . $request->search . '%'));
+        }
+
+        return response()->json($query->limit(50)->get());
+    }
 }

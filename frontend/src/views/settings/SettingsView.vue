@@ -6,10 +6,10 @@
         <p class="text-slate-500 font-medium mt-1">Configure global platform variables and institutional branding.</p>
       </div>
       <div class="flex gap-3">
-        <router-link to="/app/settings/lookups" class="btn btn-secondary h-11 px-6 text-[11px] font-medium border border-slate-100">
+        <router-link to="/app/settings/lookups" class="btn btn-secondary h-11 px-6 text-xs font-medium border border-slate-100">
           Advanced Lookups
         </router-link>
-        <button @click="saveAll" class="btn btn-primary h-11 px-5 text-[11px] font-medium">
+        <button @click="saveAll" class="btn btn-primary h-11 px-5 text-xs font-medium">
           Save All Changes
         </button>
       </div>
@@ -27,15 +27,15 @@
           </h2>
           <div class="space-y-6">
             <div>
-              <label class="block text-[11px] text-slate-500 mb-2 ml-1">Platform Name</label>
+              <label class="block text-xs text-slate-500 mb-2 ml-1">Platform Name</label>
               <input v-model="settings.app_name" type="text" class="input h-12 font-bold" />
             </div>
             <div>
-              <label class="block text-[11px] text-slate-500 mb-2 ml-1">Institution Domain</label>
+              <label class="block text-xs text-slate-500 mb-2 ml-1">Institution Domain</label>
               <input v-model="settings.institution_domain" type="text" placeholder="university.edu" class="input h-12 font-bold" />
             </div>
             <div>
-              <label class="block text-[11px] text-slate-500 mb-2 ml-1">Support Email</label>
+              <label class="block text-xs text-slate-500 mb-2 ml-1">Support Email</label>
               <input v-model="settings.support_email" type="email" class="input h-12 font-bold" />
             </div>
           </div>
@@ -51,14 +51,14 @@
           </h2>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div>
-              <label class="block text-[11px] text-slate-500 mb-2 ml-1">Default Proposal Budget Cap</label>
+              <label class="block text-xs text-slate-500 mb-2 ml-1">Default Proposal Budget Cap</label>
               <div class="relative">
                 <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs">ETB</span>
                 <input v-model="settings.default_budget_cap" type="number" class="input h-12 pl-12 font-bold" />
               </div>
             </div>
             <div>
-              <label class="block text-[11px] text-slate-500 mb-2 ml-1">Review Period (Days)</label>
+              <label class="block text-xs text-slate-500 mb-2 ml-1">Review Period (Days)</label>
               <input v-model="settings.review_period_days" type="number" class="input h-12 font-bold" />
             </div>
             <div class="md:col-span-2">
@@ -66,7 +66,7 @@
                  <input v-model="settings.allow_public_registration" type="checkbox" class="w-5 h-5 rounded border-slate-300 text-brand focus:ring-brand" />
                  <div>
                    <p class="text-sm font-bold text-slate-800">Enable Public Researcher Registration</p>
-                   <p class="text-[10px] text-slate-400 font-medium">Allow external researchers to create accounts</p>
+                   <p class="text-xs text-slate-400 font-medium">Allow external researchers to create accounts</p>
                  </div>
                </label>
             </div>
@@ -75,9 +75,31 @@
                  <input v-model="settings.maintenance_mode" type="checkbox" class="w-5 h-5 rounded border-slate-300 text-rose-500 focus:ring-rose-500" />
                  <div>
                    <p class="text-sm font-bold text-slate-800">Maintenance Mode</p>
-                   <p class="text-[10px] text-slate-400 font-medium">Disable system access for non-admin users</p>
+                   <p class="text-xs text-slate-400 font-medium">Disable system access for non-admin users</p>
                  </div>
                </label>
+            </div>
+          </div>
+        </div>
+
+        <!-- PlagiarismCheck.org Settings -->
+        <div class="card p-8">
+          <h2 class="text-xs font-medium text-slate-400 mb-6 flex items-center gap-2">
+            <span class="w-1 h-3 bg-indigo-500 rounded-full"></span>
+            PlagiarismCheck.org Integration
+          </h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div>
+              <label class="block text-xs text-slate-500 mb-2 ml-1">Group Token</label>
+              <input v-model="settings.plagiarismcheck_group_token" type="password" class="input h-12 font-bold" placeholder="Enter your group token" />
+            </div>
+            <div>
+              <label class="block text-xs text-slate-500 mb-2 ml-1">Author Email</label>
+              <input v-model="settings.plagiarismcheck_author_email" type="email" class="input h-12 font-bold" placeholder="author@institution.edu" />
+            </div>
+            <div class="md:col-span-2">
+              <label class="block text-xs text-slate-500 mb-2 ml-1">API Base URL</label>
+              <input v-model="settings.plagiarismcheck_api_base_url" type="text" class="input h-12 font-bold" placeholder="https://plagiarismcheck.org/api/v1" />
             </div>
           </div>
         </div>
@@ -91,7 +113,7 @@
           </h2>
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
              <div v-for="(val, key) in rawSettings" :key="key" class="bg-slate-800 p-3 rounded-2xl border border-slate-700/50">
-               <p class="text-[9px] font-medium text-slate-500 mb-1">{{ key }}</p>
+               <p class="text-xs font-medium text-slate-500 mb-1">{{ key }}</p>
                <p class="text-xs font-bold text-white truncate">{{ val }}</p>
              </div>
           </div>
@@ -115,7 +137,10 @@ const settings = reactive({
   default_budget_cap: 500000,
   review_period_days: 14,
   allow_public_registration: true,
-  maintenance_mode: false
+  maintenance_mode: false,
+  plagiarismcheck_group_token: '',
+  plagiarismcheck_author_email: '',
+  plagiarismcheck_api_base_url: 'https://plagiarismcheck.org/api/v1'
 })
 const rawSettings = ref({})
 

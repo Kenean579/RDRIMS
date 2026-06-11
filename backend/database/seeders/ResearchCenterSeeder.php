@@ -9,39 +9,35 @@ class ResearchCenterSeeder extends Seeder
 {
     public function run(): void
     {
-        ResearchCenter::create([
+        ResearchCenter::firstOrCreate([
             'name' => 'ICT and Digital Innovation Research Center',
             'code' => 'ICT-DIRC',
-            'university_id' => 1,
-            'description' => 'Research in artificial intelligence, cybersecurity, and digital transformation.',
+            'parent_university_id' => 1,
+            'description' => 'Research in AI, cybersecurity, and digital transformation.'
         ]);
-
-        ResearchCenter::create([
+        ResearchCenter::firstOrCreate([
             'name' => 'Climate Change and Environmental Research Center',
             'code' => 'CCERC',
-            'university_id' => 1,
-            'description' => 'Research on climate adaptation, mitigation, and environmental sustainability.',
+            'parent_university_id' => 1,
+            'description' => 'Climate adaptation and environmental sustainability research.'
         ]);
-
-        ResearchCenter::create([
+        ResearchCenter::firstOrCreate([
             'name' => 'Public Health and Epidemiology Research Center',
             'code' => 'PHERC',
-            'university_id' => 1,
-            'description' => 'Community health research, disease surveillance, and health systems strengthening.',
+            'parent_university_id' => 1,
+            'description' => 'Community health and disease surveillance research.'
         ]);
-
-        ResearchCenter::create([
+        ResearchCenter::firstOrCreate([
             'name' => 'Renewable Energy Research Center',
             'code' => 'RERC',
-            'university_id' => 1,
-            'description' => 'Solar, wind, and hydro energy research for sustainable development.',
+            'parent_campus_id' => 1,
+            'description' => 'Solar, wind, and hydro energy research.'
         ]);
-
-        ResearchCenter::create([
+        ResearchCenter::firstOrCreate([
             'name' => 'Ethiopian Studies Center',
             'code' => 'AAU-ESC',
-            'university_id' => 2,
-            'description' => 'Interdisciplinary research on Ethiopian history, culture, and languages.',
+            'parent_university_id' => 2,
+            'description' => 'Interdisciplinary research on Ethiopian history and culture.'
         ]);
     }
 }

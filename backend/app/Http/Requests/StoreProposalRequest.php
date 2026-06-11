@@ -21,6 +21,12 @@ class StoreProposalRequest extends FormRequest
         }
     }
 
+    protected function failedValidation(\Illuminate\Contracts\Validation\Validator $validator)
+    {
+        \Illuminate\Support\Facades\Log::error('Validation failed Proposal: ', $validator->errors()->toArray());
+        parent::failedValidation($validator);
+    }
+
     public function rules(): array
     {
         return [

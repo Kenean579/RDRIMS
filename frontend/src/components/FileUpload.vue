@@ -27,7 +27,7 @@
           </svg>
         </div>
         <p class="text-sm font-bold text-slate-700">Click to upload or drag and drop</p>
-        <p class="text-[10px] text-slate-400 font-medium mt-2">
+        <p class="text-xs text-slate-400 font-medium mt-2">
           {{ allowedExtensions.replace(/\./g, '') }} (MAX. {{ maxSizeMb }}MB)
         </p>
       </div>
@@ -40,7 +40,7 @@
         </div>
         <div class="flex-1 min-w-0">
           <p class="text-sm font-bold text-slate-800 truncate">{{ selectedFile.name }}</p>
-          <p class="text-[10px] font-medium tracking-widest text-slate-400 mt-1">{{ formatBytes(selectedFile.size) }}</p>
+          <p class="text-xs font-medium tracking-widest text-slate-400 mt-1">{{ formatBytes(selectedFile.size) }}</p>
         </div>
         <button type="button" @click.prevent="clearFile" class="shrink-0 h-8 w-8 rounded-full bg-slate-100 hover:bg-rose-100 text-slate-500 hover:text-rose-600 flex items-center justify-center transition-colors">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -49,7 +49,7 @@
         </button>
       </div>
     </div>
-    <p v-if="error || internalError" class="mt-2 text-[10px] font-medium text-rose-500 ml-1">
+    <p v-if="error || internalError" class="mt-2 text-xs font-medium text-rose-500 ml-1">
       {{ error || internalError }}
     </p>
   </div>

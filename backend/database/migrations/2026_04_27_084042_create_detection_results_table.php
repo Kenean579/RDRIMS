@@ -13,10 +13,8 @@ return new class extends Migration
             $table->foreignId('detection_request_id')->constrained('detection_requests')->cascadeOnDelete();
             $table->float('similarity_score')->nullable();
             $table->float('ai_probability')->nullable();
-            
-            // file may be created later
             $table->unsignedBigInteger('report_file_id')->nullable()->index();
-            
+            $table->foreign('report_file_id')->references('id')->on('files')->nullOnDelete();
             $table->json('raw_response')->nullable();
             $table->timestamps();
         });

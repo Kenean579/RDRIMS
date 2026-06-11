@@ -15,9 +15,9 @@ class UpdateMoURequest extends FormRequest
     {
         return [
             'partner_id' => 'sometimes|exists:partners,id',
-            'title' => 'sometimes',
             'start_date' => 'sometimes|date',
-            'end_date' => 'sometimes|date',
+            'end_date' => 'sometimes|date|after_or_equal:start_date',
+            'research_center_id' => 'nullable|exists:research_centers,id',
         ];
     }
 }

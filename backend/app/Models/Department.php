@@ -11,15 +11,25 @@ class Department extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'code', 'faculty_id'];
+    protected $fillable = ['name', 'code', 'faculty_id', 'logo_file_id'];
 
     public function faculty(): BelongsTo
     {
         return $this->belongsTo(Faculty::class);
     }
 
+    public function logoFile(): BelongsTo
+    {
+        return $this->belongsTo(File::class, 'logo_file_id');
+    }
+
     public function users(): HasMany
     {
         return $this->hasMany(User::class);
+    }
+
+    public function researchCenters(): HasMany
+    {
+        return $this->hasMany(ResearchCenter::class, 'parent_department_id');
     }
 }

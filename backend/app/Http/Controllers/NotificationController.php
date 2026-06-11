@@ -18,7 +18,7 @@ class NotificationController extends Controller
 
     public function markAsRead(string $id, Request $request): JsonResponse
     {
-        $notification = $request->user()->notifications()->where('id', $id)->firstOrFail();
+        $notification = $request->user()->notifications()->findOrFail($id);
         $notification->update(['read_at' => now()]);
         return response()->json(['message' => 'Notification marked as read.']);
     }

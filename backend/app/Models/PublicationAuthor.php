@@ -15,7 +15,7 @@ class PublicationAuthor extends Model
         'external_institution', 'author_order'
     ];
 
-    public function publication(): BelongsTo
+public function publication(): BelongsTo
     {
         return $this->belongsTo(Publication::class);
     }

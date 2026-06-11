@@ -32,7 +32,9 @@ class EventService
 
     public function markAttendance(Event $event, int $userId): void
     {
-        $registration = $event->registrations()->where('user_id', $userId)->firstOrFail();
+        $registration = EventRegistration::where('event_id', $event->id)
+            ->where('user_id', $userId)
+            ->firstOrFail();
         $registration->update(['attended' => true]);
     }
 

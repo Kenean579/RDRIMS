@@ -26,8 +26,8 @@
           <div class="flex-1 pr-4">
             <h3 class="text-base font-bold font-mono text-slate-800 group-hover:text-cyan-700 transition leading-tight break-all">{{ perm.name }}</h3>
             <div class="flex flex-wrap gap-1.5 mt-2">
-              <span v-for="role in perm.roles" :key="role.id" class="inline-block px-2 py-0.5 bg-blue-50 text-blue-600 text-[10px] font-medium rounded-md border border-blue-100">{{ role.name }}</span>
-              <span v-if="!perm.roles?.length" class="inline-block px-2 py-0.5 bg-slate-100 text-slate-500 text-[10px] font-medium rounded-md border border-slate-100">Unassigned</span>
+              <span v-for="role in perm.roles" :key="role.id" class="inline-block px-2 py-0.5 bg-blue-50 text-blue-600 text-xs font-medium rounded-md border border-blue-100">{{ role.name }}</span>
+              <span v-if="!perm.roles?.length" class="inline-block px-2 py-0.5 bg-slate-100 text-slate-500 text-xs font-medium rounded-md border border-slate-100">Unassigned</span>
             </div>
           </div>
           <div class="w-12 h-12 rounded-2xl bg-slate-100 text-white flex items-center justify-center font-bold shrink-0">
@@ -50,12 +50,12 @@
     <Modal :show="showCreate || !!editingPerm" :title="editingPerm ? 'Modify Permission' : 'Create New Permission'" @close="closeModal">
       <form @submit.prevent="savePermission" class="space-y-5 px-1 py-1">
         <div>
-          <label class="block text-[11px] text-slate-500 font-medium  tracking-wider mb-1.5 ml-1">Permission Key *</label>
+          <label class="block text-xs text-slate-500 font-medium  tracking-wider mb-1.5 ml-1">Permission Key *</label>
           <input v-model="form.name" type="text" required class="input" placeholder="e.g., submit_proposals" />
-          <p class="text-[10px] text-slate-400 mt-1.5 ml-1">Use lowercase with underscores. Must be unique.</p>
+          <p class="text-xs text-slate-400 mt-1.5 ml-1">Use lowercase with underscores. Must be unique.</p>
         </div>
         <div>
-          <label class="block text-[11px] text-slate-500 font-medium  tracking-wider mb-1.5 ml-1">Description</label>
+          <label class="block text-xs text-slate-500 font-medium  tracking-wider mb-1.5 ml-1">Description</label>
           <textarea v-model="form.description" rows="2" class="input resize-none" placeholder="What does this permission allow?"></textarea>
         </div>
         <div class="flex justify-end gap-3 pt-4">
@@ -86,7 +86,7 @@ const form = reactive({ name: '', description: '' })
 
 async function fetchPermissions() {
   loading.value = true
-  try { const { data } = await api.get('/permissions'); permissions.value = data }
+  try { const { data } = await api.get('/admin/permissions'); permissions.value = data }
   catch (e) { notif.error('Failed to load permissions') }
   finally { loading.value = false }
 }
@@ -97,14 +97,14 @@ function confirmDelete(perm) { deletingPerm.value = perm; showDelete.value = tru
 
 async function savePermission() {
   try {
-    if (editingPerm.value) { await api.put(`/permissions/${editingPerm.value.id}`, form); notif.success('Updated!') }
-    else { await api.post('/permissions', form); notif.success('Created!') }
+    if (editingPerm.value) { await api.put(`/admin/permissions/${editingPerm.value.id}`, form); notif.success('Updated!') }
+    else { await api.post('/admin/permissions', form); notif.success('Created!') }
     closeModal(); fetchPermissions()
   } catch (err) { notif.error(err.response?.data?.message || 'Failed') }
 }
 
 async function deletePermission() {
-  try { await api.delete(`/permissions/${deletingPerm.value.id}`); notif.success('Deleted!'); showDelete.value = false; fetchPermissions() }
+  try { await api.delete(`/admin/permissions/${deletingPerm.value.id}`); notif.success('Deleted!'); showDelete.value = false; fetchPermissions() }
   catch (err) { notif.error(err.response?.data?.message || 'Failed') }
 }
 

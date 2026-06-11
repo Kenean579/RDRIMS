@@ -21,6 +21,8 @@ return new class extends Migration
             $table->foreign('status_id')->references('id')->on('project_statuses')->restrictOnDelete();
             $table->foreignId('pi_id')->nullable()->constrained('users')->nullOnDelete();
             $table->foreignId('academic_year_id')->nullable()->constrained('academic_years')->nullOnDelete();
+            $table->unsignedBigInteger('research_center_id')->nullable();
+            $table->foreign('research_center_id')->references('id')->on('research_centers')->nullOnDelete();
             $table->timestamps();
 
             $table->index('proposal_id');

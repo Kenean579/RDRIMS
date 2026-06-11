@@ -17,6 +17,7 @@ class AcademicYearController extends Controller
     public function store(StoreAcademicYearRequest $request): JsonResponse
     {
         $year = AcademicYear::create($request->validated());
+
         return response()->json($year, 201);
     }
 
@@ -28,12 +29,14 @@ class AcademicYearController extends Controller
     public function update(UpdateAcademicYearRequest $request, AcademicYear $academicYear): JsonResponse
     {
         $academicYear->update($request->validated());
+
         return response()->json($academicYear);
     }
 
     public function destroy(AcademicYear $academicYear): JsonResponse
     {
         $academicYear->delete();
+
         return response()->json(['message' => 'Academic year deleted.']);
     }
 
@@ -41,6 +44,7 @@ class AcademicYearController extends Controller
     {
         AcademicYear::query()->update(['is_current' => false]);
         $academicYear->update(['is_current' => true]);
+
         return response()->json(['message' => 'Current academic year set.']);
     }
 }

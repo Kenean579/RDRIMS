@@ -10,9 +10,13 @@ return new class extends Migration
     {
         Schema::create('universities', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 255)->index();
+            $table->string('name', 255);
             $table->string('code', 50)->unique();
+            $table->string('location', 255)->nullable();
+            $table->unsignedBigInteger('logo_file_id')->nullable()->index();
             $table->timestamps();
+
+            $table->index(['name', 'logo_file_id']);
         });
     }
 

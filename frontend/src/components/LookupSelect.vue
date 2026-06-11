@@ -28,7 +28,7 @@
         </svg>
       </div>
     </div>
-    <p v-if="error" class="mt-1.5 text-[10px] font-medium text-rose-500 ml-1">{{ error }}</p>
+    <p v-if="error" class="mt-1.5 text-xs font-medium text-rose-500 ml-1">{{ error }}</p>
   </div>
 </template>
 

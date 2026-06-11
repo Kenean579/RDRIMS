@@ -20,6 +20,7 @@ class UserRequest extends FormRequest
             'name' => 'required|string|max:255',
             'email' => 'required|email|unique:users,email,' . ($userId ?: 'NULL'),
             'password' => $this->isMethod('POST') ? 'required|min:8' : 'nullable|min:8',
+            'university_id' => 'nullable|exists:universities,id',
             'department_id' => 'nullable|exists:departments,id',
             'orcid_id' => 'nullable|string|max:255',
             'google_scholar_id' => 'nullable|string|max:255',

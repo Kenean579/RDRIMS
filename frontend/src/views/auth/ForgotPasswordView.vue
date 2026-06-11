@@ -24,7 +24,7 @@
           </p>
 
           <div class="space-y-2">
-            <label class="block text-[10px] font-medium text-slate-400 ml-1">E-mail Address</label>
+            <label class="block text-xs font-medium text-slate-400 ml-1">E-mail Address</label>
             <div class="relative group">
               <div class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand transition-colors">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg>
@@ -50,7 +50,7 @@
         </form>
 
         <div class="mt-5 pt-4 border-t border-slate-100 text-center">
-          <router-link to="/login" class="text-[11px] font-medium text-brand hover:underline underline-offset-4 flex items-center justify-center gap-2">
+          <router-link to="/login" class="text-xs font-medium text-brand hover:underline underline-offset-4 flex items-center justify-center gap-2">
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
             Back to Sign In
           </router-link>

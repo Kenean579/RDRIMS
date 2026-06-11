@@ -9,7 +9,7 @@ class MilestoneStatusSeeder extends Seeder
 {
     public function run(): void
     {
-        MilestoneStatus::create(['name' => 'pending']);
-        MilestoneStatus::create(['name' => 'done']);
+        MilestoneStatus::firstOrCreate(['name' => 'pending']);
+        MilestoneStatus::firstOrCreate(['name' => 'done']);
     }
 }

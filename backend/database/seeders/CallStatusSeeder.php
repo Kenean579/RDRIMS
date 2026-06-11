@@ -9,8 +9,8 @@ class CallStatusSeeder extends Seeder
 {
     public function run(): void
     {
-        CallStatus::create(['name' => 'draft']);
-        CallStatus::create(['name' => 'open']);
-        CallStatus::create(['name' => 'closed']);
+        CallStatus::firstOrCreate(['name' => 'draft']);
+        CallStatus::firstOrCreate(['name' => 'open']);
+        CallStatus::firstOrCreate(['name' => 'closed']);
     }
 }

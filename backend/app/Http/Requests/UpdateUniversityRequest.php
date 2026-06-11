@@ -12,8 +12,10 @@ class UpdateUniversityRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|string|max:255',
-            'code' => 'required|string|max:50|unique:universities,code,' . $this->route('university')->id,
+            'name' => 'sometimes|required|string|max:255',
+            'code' => 'sometimes|required|string|max:50|unique:universities,code,' . $this->route('university')->id,
+            'location' => 'nullable|string|max:255',
+            'logo_file_id' => 'nullable|exists:files,id',
         ];
     }
 }

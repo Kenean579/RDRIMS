@@ -12,7 +12,27 @@ class ReviewerProposalController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $proposals = $request->user()->reviewedProposals()->with('status', 'type')->paginate(20);
+        $user = $request->user();
+
+        if ($user->hasRole('super_admin', 'research_admin')) {
+            $assignments = ProposalReviewer::with(['proposal.status', 'proposal.type', 'reviewer'])
+                ->orderBy('created_at', 'desc')
+                ->paginate(20);
+
+            $transformed = $assignments->getCollection()->map(function ($pivot) {
+                // Ensure proposal is returned but disguised as having the pivot explicitly named reviewPivot
+                $proposal = $pivot->proposal;
+                $proposal->reviewPivot = clone $pivot;
+                // Avoid recursive loops
+                unset($proposal->reviewPivot->proposal); 
+                return $proposal;
+            });
+            $assignments->setCollection($transformed);
+
+            return response()->json($assignments);
+        }
+
+        $proposals = $user->reviewedProposals()->with('status', 'type')->paginate(20);
         return response()->json($proposals);
     }
 

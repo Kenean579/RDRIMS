@@ -21,8 +21,22 @@ class DashboardController extends Controller
     {
         $user = $request->user();
 
-        if ($user->hasRole('super_admin', 'research_admin')) {
-            return $this->adminDashboard($user);
+        // ── PLATFORM LAYER ────────────────────────────────────────────────────────
+        // Check for pure super_admin (not holding institutional roles simultaneously)
+        $institutionalRoles = [
+            'research_admin', 'campus_admin', 'faculty_admin', 'department_head', 
+            'director', 'researcher', 'reviewer', 'student', 'finance_officer', 'ethics_officer'
+        ];
+        
+        $hasInstitutionalRole = $user->hasRole(...$institutionalRoles);
+
+        if ($user->hasRole('super_admin') && !$hasInstitutionalRole) {
+            return $this->platformDashboard($user);
+        }
+
+        // ── INSTITUTIONAL LAYER ───────────────────────────────────────────────────
+        if ($user->hasRole('research_admin', 'campus_admin', 'faculty_admin')) {
+            return $this->institutionalAdminDashboard($user);
         } elseif ($user->hasRole('reviewer')) {
             return $this->reviewerDashboard($user);
         } elseif ($user->hasRole('finance_officer')) {
@@ -38,7 +52,26 @@ class DashboardController extends Controller
         return $this->userDashboard($user);
     }
 
-    private function adminDashboard(User $user): JsonResponse
+    private function platformDashboard(User $user): JsonResponse
+    {
+        // Super Admin dashboard shows only platform-level data
+        return response()->json([
+            'universities_count' => University::count(),
+            'campuses_count' => Campus::count(),
+            'faculties_count' => Faculty::count(),
+            'users_count' => User::count(),
+            'university_stats' => University::withCount('campuses')->get()->map(function($u) {
+                return [
+                    'name' => $u->name,
+                    'code' => $u->code,
+                    'campuses_count' => $u->campuses_count
+                ];
+            }),
+            'recent_activity' => \App\Models\AuditLog::latest()->limit(10)->get()
+        ]);
+    }
+
+    private function institutionalAdminDashboard(User $user): JsonResponse
     {
         $request = request();
         
@@ -105,7 +138,7 @@ class DashboardController extends Controller
 
     private function reviewerDashboard(User $user): JsonResponse
     {
-        $reviews = DB::table('proposal_reviewers')->where('reviewer_id', $user->id)->get();
+        $reviews = DB::table('proposal_reviewers')->where('reviewer_id', $user->getKey())->get();
         $pending = $reviews->whereNull('submitted_at')->count();
         $completed = $reviews->whereNotNull('submitted_at')->count();
         $avgScore = $reviews->whereNotNull('submitted_at')->avg('overall_score') ?? 0;
@@ -185,7 +218,7 @@ class DashboardController extends Controller
 
     private function departmentHeadDashboard(User $user): JsonResponse
     {
-        $deptId = $user->department_id;
+        $deptId = $user->getAttribute('department_id');
         
         $deptProposals = Proposal::hierarchical($user, 'submitted_by')->count();
         $deptProjects = Project::hierarchical($user, 'pi_id')->count();
@@ -236,18 +269,18 @@ class DashboardController extends Controller
         ]);
     }
 
-    private function userDashboard(User $user): JsonResponse
-    {
-        $statusBreakdown = DB::table('proposals')
-            ->join('proposal_statuses', 'proposals.status_id', '=', 'proposal_statuses.id')
-            ->where('proposals.submitted_by', $user->id)
-            ->select('proposal_statuses.name', DB::raw('count(*) as count'))
-            ->groupBy('proposal_statuses.id', 'proposal_statuses.name')
-            ->get();
+private function userDashboard(User $user): JsonResponse
+     {
+         $statusBreakdown = DB::table('proposals')
+             ->join('proposal_statuses', 'proposals.status_id', '=', 'proposal_statuses.id')
+             ->where('proposals.submitted_by', $user->getKey())
+             ->select('proposal_statuses.name', DB::raw('count(*) as count'))
+             ->groupBy('proposal_statuses.id', 'proposal_statuses.name')
+             ->get();
 
         return response()->json([
-            'proposals_count' => $user->submittedProposals()->count(),
-            'projects_count' => Project::where('pi_id', $user->id)->count(),
+'proposals_count' => $user->submittedProposals()->count(),
+             'projects_count' => Project::where('pi_id', $user->getKey())->count(),
             'draft_count' => $user->submittedProposals()->whereHas('status', fn($q) => $q->where('name', 'draft'))->count(),
             'publications_count' => $user->publications()->count(),
             'status_breakdown' => $statusBreakdown,

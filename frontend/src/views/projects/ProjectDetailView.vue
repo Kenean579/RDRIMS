@@ -3,12 +3,12 @@
     <!-- Header -->
     <div class="card p-8 flex flex-col md:flex-row md:items-center justify-between gap-6 border-b-4 border-b-brand/10">
       <div>
-        <router-link to="/app/projects" class="flex items-center gap-2 text-brand font-semibold text-[10px] mb-4 hover:translate-x-1 transition-transform">
+        <router-link to="/app/projects" class="flex items-center gap-2 text-brand font-semibold text-xs mb-4 hover:translate-x-1 transition-transform">
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M10 19l-7-7m0 0l7-7m-7 7h18" /></svg>
           Back to Projects
         </router-link>
         <h1 class="text-2xl font-bold text-slate-900 tracking-tight leading-tight max-w-2xl">{{ project.title || 'Project Loading...' }}</h1>
-        <p class="text-slate-500 font-medium mt-2 text-[10px] flex items-center gap-2">
+        <p class="text-slate-500 font-medium mt-2 text-xs flex items-center gap-2">
           Project ID: {{ project.id ? String(project.id).padStart(4, '0') : '...' }}
           <span class="w-1.5 h-1.5 rounded-full bg-slate-200"></span>
           Original Proposal ID: {{ project.proposal_id || '...' }}
@@ -16,9 +16,9 @@
       </div>
       <div v-if="!loading" class="flex items-center gap-3">
         <StatusBadge :status="project.status?.name" size="lg" />
-        <button v-if="(isPI || auth.hasRole('super_admin', 'research_admin')) && project.status?.name !== 'completed' && allMilestonesDone && project.milestones?.length > 0" 
+        <button v-if="(isPI || auth.hasRole('super_admin', 'research_admin', 'campus_admin', 'faculty_admin', 'director', 'department_head')) && project.status?.name !== 'completed' && allMilestonesDone && project.milestones?.length > 0" 
           @click="completeProject" 
-          class="btn bg-brand hover:bg-brand-dark text-white text-[11px] font-medium h-11 px-6">
+          class="btn bg-brand hover:bg-brand-dark text-white text-xs font-medium h-11 px-6">
           Mark Completed
         </button>
       </div>
@@ -36,6 +36,15 @@
     <!-- Main Content -->
     <div v-else class="grid grid-cols-1 lg:grid-cols-3 gap-5 font-bold">
       
+      <!-- Tabs -->
+      <div class="lg:col-span-3 card p-1.5 bg-slate-50/50 border border-slate-100 inline-flex gap-2">
+        <button v-for="t in projectTabs" :key="t.key" @click="projectTab = t.key"
+          class="px-5 py-2 rounded-xl text-xs font-bold transition-all"
+          :class="projectTab === t.key ? 'bg-brand text-white shadow-lg shadow-brand/20' : 'bg-white text-slate-600 border border-slate-200 hover:text-brand'">
+          {{ t.label }}
+        </button>
+      </div>
+
       <!-- Left Column: Primary Details & Tasks -->
       <div class="lg:col-span-2 space-y-8">
         <!-- Overview Grid -->
@@ -46,39 +55,39 @@
           </h2>
           <div class="grid grid-cols-2 sm:grid-cols-4 gap-6 text-sm">
             <div>
-              <p class="text-[10px] font-bold text-slate-400 mb-1.5 ml-1 ">Start Date</p>
+              <p class="text-xs font-bold text-slate-400 mb-1.5 ml-1 ">Start Date</p>
               <div class="font-bold text-slate-700 bg-slate-50 p-3 rounded-2xl border border-slate-100">{{ formatDate(project.start_date) }}</div>
             </div>
             <div>
-              <p class="text-[10px] font-bold text-slate-400 mb-1.5 ml-1 ">Target End</p>
+              <p class="text-xs font-bold text-slate-400 mb-1.5 ml-1 ">Target End</p>
               <div class="font-bold text-slate-700 bg-slate-50 p-3 rounded-2xl border border-slate-100">{{ formatDate(project.end_date) }}</div>
             </div>
             <div>
-              <p class="text-[10px] font-bold text-slate-400 mb-1.5 ml-1 ">Total Budget</p>
+              <p class="text-xs font-bold text-slate-400 mb-1.5 ml-1 ">Total Budget</p>
               <div class="font-bold text-slate-700 bg-slate-50 p-3 rounded-2xl border border-slate-100">{{ formatCurrency(project.total_budget) }}</div>
             </div>
             <div>
-              <p class="text-[10px] font-bold text-slate-400 mb-1.5 ml-1 ">Remaining</p>
+              <p class="text-xs font-bold text-slate-400 mb-1.5 ml-1 ">Remaining</p>
               <div class="font-bold text-emerald-600 bg-emerald-50 p-3 rounded-2xl border border-emerald-100">{{ formatCurrency(project.remaining_budget || (Number(project.total_budget) - Number(project.spent_amount))) }}</div>
             </div>
           </div>
           <div class="mt-6 pt-6 border-t border-slate-100">
-            <p class="text-[10px] font-bold text-slate-400 mb-2 ml-1  tracking-widest">Abstract Reference</p>
+            <p class="text-xs font-bold text-slate-400 mb-2 ml-1  tracking-widest">Abstract Reference</p>
             <p class="text-xs font-medium text-slate-600 leading-relaxed bg-slate-50 p-4 rounded-2xl border border-slate-100 line-clamp-3 hover:line-clamp-none transition-all">
               {{ project.proposal?.abstract || 'No abstract provided in original proposal.' }}
             </p>
           </div>
         </div>
 
-        <!-- Milestones & Tasks -->
-        <div class="card p-8">
+        <!-- Milestones Panel -->
+        <div v-show="projectTab === 'milestones'" class="card p-8">
           <div class="flex items-center justify-between mb-5">
             <h2 class="text-xs font-bold text-slate-400 flex items-center gap-2  tracking-widest">
               <span class="w-1 h-3 bg-brand rounded-full"></span>
               Execution Milestones
             </h2>
-            <button v-if="isPI || auth.hasRole('super_admin', 'research_admin')" @click="showAddMilestone = true" 
-              class="inline-flex items-center gap-1.5 px-4 py-2 text-[10px] font-bold text-brand bg-brand/10 rounded-2xl hover:bg-brand/20 transition-colors">
+            <button v-if="isPI || auth.hasRole('super_admin', 'research_admin', 'campus_admin', 'faculty_admin', 'director', 'department_head')" @click="showAddMilestone = true"
+              class="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-bold text-brand bg-brand/10 rounded-2xl hover:bg-brand/20 transition-colors">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/></svg>
               Add Milestone
             </button>
@@ -103,16 +112,16 @@
                       {{ m.title }}
                     </h3>
                     <div class="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                       <button v-if="isPI || auth.hasRole('super_admin', 'research_admin')" @click="editMilestone(m)" class="w-7 h-7 flex items-center justify-center text-slate-300 hover:text-brand hover:bg-brand/5 rounded-lg transition-colors">
+                       <button v-if="isPI || auth.hasRole('super_admin', 'research_admin', 'campus_admin', 'faculty_admin', 'director', 'department_head')" @click="editMilestone(m)" class="w-7 h-7 flex items-center justify-center text-slate-300 hover:text-brand hover:bg-brand/5 rounded-lg transition-colors">
                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                        </button>
-                       <button v-if="isPI || auth.hasRole('super_admin', 'research_admin')" @click="confirmDeleteMilestone(m)" class="w-7 h-7 flex items-center justify-center text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors">
+                       <button v-if="isPI || auth.hasRole('super_admin', 'research_admin', 'campus_admin', 'faculty_admin', 'director', 'department_head')" @click="confirmDeleteMilestone(m)" class="w-7 h-7 flex items-center justify-center text-slate-300 hover:text-rose-500 hover:bg-rose-50 rounded-lg transition-colors">
                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/></svg>
                        </button>
                     </div>
                   </div>
-                  <p v-if="m.description" class="text-[11px] font-medium text-slate-500 mb-3 line-clamp-2 leading-relaxed italic">{{ m.description }}</p>
-                  <div class="flex items-center gap-3 text-[10px] font-bold text-slate-400">
+                  <p v-if="m.description" class="text-xs font-medium text-slate-500 mb-3 line-clamp-2 leading-relaxed italic">{{ m.description }}</p>
+                  <div class="flex items-center gap-3 text-xs font-bold text-slate-400">
                     <span class="flex items-center gap-1">
                       <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
                       {{ formatDate(m.due_date) }}
@@ -124,7 +133,7 @@
 
                 <div class="flex flex-col items-end gap-2 shrink-0 ml-4">
                   <StatusBadge :status="m.status?.name" />
-                  <button @click="m.showTasks = !m.showTasks" class="text-[9px] font-bold text-brand hover:underline px-3 py-1.5 bg-brand/5 rounded-2xl border border-brand/10">
+                  <button @click="m.showTasks = !m.showTasks" class="text-xs font-bold text-brand hover:underline px-3 py-1.5 bg-brand/5 rounded-2xl border border-brand/10">
                     Show Tasks ({{ m.tasks?.length || 0 }})
                   </button>
                 </div>
@@ -152,23 +161,23 @@
                        </button>
                     </div>
                     
-                    <span class="px-2 py-1 bg-slate-100 rounded-2xl text-[9px] font-bold text-slate-500 shrink-0  tracking-tighter">
+                    <span class="px-2 py-1 bg-slate-100 rounded-2xl text-xs font-bold text-slate-500 shrink-0  tracking-tighter">
                       {{ t.assigned_to?.name ? getInitials(t.assigned_to.name) : 'UN' }}
                     </span>
                   </div>
                   
-                  <p v-if="!m.tasks?.length" class="text-[10px] font-bold text-slate-400 text-center py-4 italic">
+                  <p v-if="!m.tasks?.length" class="text-xs font-bold text-slate-400 text-center py-4 italic">
                     No action items defined for this phase.
                   </p>
                 </div>
 
                 <!-- Add Task Input -->
-                <div v-if="isPI || auth.hasRole('super_admin', 'research_admin')" class="flex items-center gap-3">
+                <div v-if="isPI || auth.hasRole('super_admin', 'research_admin', 'campus_admin', 'faculty_admin', 'director', 'department_head')" class="flex items-center gap-3">
                   <input v-model="newTaskTitles[m.id]" type="text" placeholder="Type a new task and press enter..." 
                     class="flex-1 border border-slate-300 rounded-2xl px-4 py-2.5 text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-brand/30 focus:border-brand transition-all bg-white shadow-inner" 
                     @keyup.enter="addTask(m)" />
                   <button @click="addTask(m)" :disabled="!newTaskTitles[m.id]" 
-                    class="btn bg-brand hover:bg-brand-dark text-white px-5 h-[38px] text-[10px] font-bold disabled:opacity-50 shadow-lg shadow-brand/10">
+                    class="btn bg-brand hover:bg-brand-dark text-white px-5 h-[38px] text-xs font-bold disabled:opacity-50 shadow-lg shadow-brand/10">
                     Add Task
                   </button>
                 </div>
@@ -181,7 +190,36 @@
               <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
             </div>
             <p class="text-sm font-bold text-slate-600 mb-1">Execution Roadmap Missing</p>
-            <p class="text-[10px] font-medium text-slate-400">Break down the project lifecycle into manageable milestones.</p>
+            <p class="text-xs font-medium text-slate-400">Break down the project lifecycle into manageable milestones.</p>
+          </div>
+        </div>
+
+        <!-- Timeline Panel -->
+        <div v-show="projectTab === 'timeline'" class="card p-8">
+          <h2 class="text-xs font-bold text-slate-400 mb-6 flex items-center gap-2  tracking-widest">
+            <span class="w-1 h-3 bg-brand rounded-full"></span>
+            Project Timeline
+          </h2>
+          <div v-if="!project.milestones?.length" class="text-center py-10">
+            <p class="text-sm font-bold text-slate-500">No milestones to display on timeline.</p>
+          </div>
+          <div v-else class="space-y-4">
+            <div v-for="(m, idx) in sortedMilestones" :key="m.id" class="relative flex items-start gap-4">
+              <div class="flex flex-col items-center">
+                <div class="w-4 h-4 rounded-full border-2"
+                  :class="m.status?.name === 'completed' ? 'bg-emerald-500 border-emerald-600' : 'bg-brand border-brand-dark'"></div>
+                <div v-if="idx < sortedMilestones.length - 1" class="w-0.5 h-full bg-slate-200 mt-1"></div>
+              </div>
+              <div class="flex-1 pb-6">
+                <div class="flex items-center justify-between p-4 bg-white border border-slate-100 rounded-2xl">
+                  <div>
+                    <h4 class="text-sm font-bold text-slate-800" :class="{ 'line-through opacity-80': m.status?.name === 'completed' }">{{ m.title }}</h4>
+                    <p class="text-xs text-slate-500 mt-1">{{ formatDate(m.due_date) }}</p>
+                  </div>
+                  <StatusBadge :status="m.status?.name" />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -206,23 +244,23 @@
                 </svg>
                 <div class="text-center absolute z-10 flex flex-col items-center">
                   <span class="text-2xl font-black text-slate-800 leading-none">{{ spendRatio }}<span class="text-lg opacity-40">%</span></span>
-                  <span class="text-[9px] font-bold text-slate-400 mt-1  tracking-tighter">Budget Utilization</span>
+                  <span class="text-xs font-bold text-slate-400 mt-1  tracking-tighter">Budget Utilization</span>
                 </div>
              </div>
           </div>
 
           <div class="space-y-4 text-sm mt-4 font-bold">
             <div class="flex justify-between items-center p-4 rounded-2xl bg-rose-50 border border-rose-100">
-              <span class="text-[9px] text-rose-500  tracking-widest">Spent</span>
+              <span class="text-xs text-rose-500  tracking-widest">Spent</span>
               <span class="text-rose-600 tracking-tight">{{ formatCurrency(project.spent_amount) }}</span>
             </div>
             <div class="flex justify-between items-center p-4 rounded-2xl bg-slate-50 border border-slate-100">
-              <span class="text-[9px] text-slate-500  tracking-widest">Disbursed</span>
+              <span class="text-xs text-slate-500  tracking-widest">Disbursed</span>
               <span class="text-slate-700 tracking-tight">{{ formatCurrency(project.disbursed_amount) }}</span>
             </div>
             
             <div class="pt-4 mt-2 border-t border-slate-100">
-              <router-link :to="`/app/projects/${project.id}/finance`" class="btn bg-white border border-slate-100 hover:border-brand w-full h-11 text-[10px] font-bold text-slate-600 hover:text-brand transition-all shadow-sm">
+              <router-link :to="`/app/projects/${project.id}/finance`" class="btn bg-white border border-slate-100 hover:border-brand w-full h-11 text-xs font-bold text-slate-600 hover:text-brand transition-all shadow-sm">
                 View Financial Audit
               </router-link>
             </div>
@@ -245,19 +283,19 @@
               </div>
               <div class="z-10 min-w-0">
                 <p class="text-sm font-bold text-slate-800 truncate leading-tight">{{ project.pi?.name }}</p>
-                <p class="text-[9px] font-bold text-brand mt-1  tracking-widest">Lead PI</p>
+                <p class="text-xs font-bold text-brand mt-1  tracking-widest">Lead PI</p>
               </div>
             </div>
             
             <!-- Other Investigators -->
             <div v-for="inv in project.investigators" :key="inv.id" class="flex items-center gap-4 p-4 rounded-2xl bg-slate-50/80 border border-slate-100 hover:bg-white transition-all card-hover">
-              <div class="w-11 h-11 bg-white text-slate-500 border border-slate-100 rounded-2xl flex items-center justify-center text-[10px] font-bold  shrink-0 overflow-hidden shadow-sm">
+              <div class="w-11 h-11 bg-white text-slate-500 border border-slate-100 rounded-2xl flex items-center justify-center text-xs font-bold  shrink-0 overflow-hidden shadow-sm">
                 <img v-if="imageUrl(inv.user?.profile_image)" :src="imageUrl(inv.user?.profile_image)" class="w-full h-full object-cover"/>
                 <span v-else>{{ getInitials(inv.user?.name) }}</span>
               </div>
               <div class="min-w-0">
                 <p class="text-xs font-bold text-slate-700 truncate leading-tight">{{ inv.user?.name }}</p>
-                <p class="text-[9px] font-bold text-slate-400 mt-1  tracking-widest">{{ inv.role?.name || 'Co-PI' }}</p>
+                <p class="text-xs font-bold text-slate-400 mt-1  tracking-widest">{{ inv.role?.name || 'Co-PI' }}</p>
               </div>
             </div>
           </div>
@@ -270,34 +308,34 @@
     <Modal :show="showAddMilestone || !!editingMilestone" :title="editingMilestone ? 'Modify Phase Details' : 'Design Action Phase'" size="md" @close="closeMilestoneModal">
       <form @submit.prevent="saveMilestone" class="space-y-6">
          <div>
-            <label class="block text-[11px] font-bold text-slate-500 mb-2 ml-1 ">Objective Title *</label>
+            <label class="block text-xs font-bold text-slate-500 mb-2 ml-1 ">Objective Title *</label>
             <input v-model="milestoneForm.title" type="text" required placeholder="e.g. Scientific Data Analysis"
               class="input h-12 font-bold" />
          </div>
          <div class="grid grid-cols-2 gap-6">
             <div>
-              <label class="block text-[11px] font-bold text-slate-500 mb-2 ml-1 ">Target Deadline *</label>
+              <label class="block text-xs font-bold text-slate-500 mb-2 ml-1 ">Target Deadline *</label>
               <input v-model="milestoneForm.due_date" type="date" required 
                 class="input h-12 font-bold" />
             </div>
             <div>
-              <label class="block text-[11px] font-bold text-slate-500 mb-2 ml-1 ">Roadmap Weight (%) *</label>
+              <label class="block text-xs font-bold text-slate-500 mb-2 ml-1 ">Roadmap Weight (%) *</label>
               <input v-model.number="milestoneForm.percentage" type="number" required min="1" max="100" 
                 class="input h-12 font-bold" />
             </div>
          </div>
          <div>
-            <label class="block text-[11px] font-bold text-slate-500 mb-2 ml-1 ">Execution Sequence</label>
+            <label class="block text-xs font-bold text-slate-500 mb-2 ml-1 ">Execution Sequence</label>
             <input v-model.number="milestoneForm.display_order" type="number" 
               class="input h-12 font-bold" placeholder="Priority order (1, 2, ...)" />
          </div>
          <div>
-            <label class="block text-[11px] font-bold text-slate-500 mb-2 ml-1 ">Scope Outline</label>
+            <label class="block text-xs font-bold text-slate-500 mb-2 ml-1 ">Scope Outline</label>
             <textarea v-model="milestoneForm.description" rows="3" class="input p-4 text-xs font-medium resize-none shadow-inner" placeholder="Brief technical summary..."></textarea>
          </div>
          <div class="flex justify-end gap-3 pt-6 border-t border-slate-100">
-           <button type="button" @click="closeMilestoneModal" class="btn btn-secondary px-6 font-bold text-[11px]">Discard</button>
-           <button type="submit" class="btn btn-primary px-8 font-bold text-[11px] h-12 shadow-xl shadow-brand/20">
+           <button type="button" @click="closeMilestoneModal" class="btn btn-secondary px-6 font-bold text-xs">Discard</button>
+           <button type="submit" class="btn btn-primary px-8 font-bold text-xs h-12 shadow-xl shadow-brand/20">
              {{ editingMilestone ? 'Synchronize Phase' : 'Activate Phase' }}
            </button>
          </div>
@@ -323,6 +361,7 @@ import { formatDate, formatCurrency, getInitials, imageUrl } from '@/utils/forma
 
 const route = useRoute(); const auth = useAuthStore(); const notif = useNotificationStore()
 const project = ref({}); const loading = ref(true)
+const projectTab = ref('milestones')
 const showAddMilestone = ref(false)
 const editingMilestone = ref(null)
 const milestoneForm = reactive({ title: '', due_date: '', percentage: 10, display_order: 1, description: '' })
@@ -330,6 +369,11 @@ const newTaskTitles = reactive({})
 
 const showDeleteMilestone = ref(false); const deletingMilestone = ref(null)
 const showDeleteTask = ref(false); const deletingTask = ref(null)
+
+const projectTabs = [
+  { key: 'milestones', label: 'Milestones' },
+  { key: 'timeline', label: 'Timeline' },
+]
 
 const isPI = computed(() => auth.user?.id === project.value.pi_id)
 
@@ -343,6 +387,14 @@ const spendRatio = computed(() => {
   const spent = Number(project.value.spent_amount) || 0
   if (total <= 0) return 0
   return Math.round((spent / total) * 100)
+})
+
+const sortedMilestones = computed(() => {
+  return [...(project.value.milestones || [])].sort((a, b) => {
+    const ad = a.due_date ? new Date(a.due_date) : new Date(0)
+    const bd = b.due_date ? new Date(b.due_date) : new Date(0)
+    return ad - bd
+  })
 })
 
 async function fetchProject() {

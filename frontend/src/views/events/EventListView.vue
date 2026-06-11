@@ -7,7 +7,7 @@
         <p class="text-slate-500 font-medium mt-1">Stay updated with research seminars, announcements and workshops.</p>
       </div>
       <div class="flex items-center gap-2">
-        <button v-if="auth.hasRole('super_admin', 'research_admin')" @click="showAdd = true" class="btn btn-primary h-11 px-5 text-[11px] font-bold">
+        <button v-if="auth.hasRole('super_admin', 'research_admin', 'campus_admin', 'faculty_admin', 'director', 'department_head')" @click="showAdd = true" class="btn btn-primary h-11 px-5 text-xs font-bold">
           <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4"/></svg>
           Post Announcement
         </button>
@@ -23,7 +23,7 @@
     </div>
     
     <div v-else-if="events.length === 0" class="card">
-      <EmptyState icon="📅" title="Nothing to show" description="We'll post research seminars and news here soon." action-label="Post First News" v-if="auth.hasRole('super_admin', 'research_admin')" @action="showAdd = true" />
+      <EmptyState icon="📅" title="Nothing to show" description="We'll post research seminars and news here soon." action-label="Post First News" v-if="auth.hasRole('super_admin', 'research_admin', 'campus_admin', 'faculty_admin', 'director', 'department_head')" @action="showAdd = true" />
       <EmptyState icon="📅" title="Nothing to show" description="We'll post research seminars and news here soon." v-else />
     </div>
 
@@ -38,12 +38,12 @@
             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 opacity-90"
           />
           <div v-else class="w-full h-full bg-linear-to-br from-slate-800 to-slate-900 flex items-center justify-center p-4">
-            <p class="text-white/30 text-[10px] font-bold text-center line-clamp-2">{{ event.title }}</p>
+            <p class="text-white/30 text-xs font-bold text-center line-clamp-2">{{ event.title }}</p>
           </div>
-          <span class="absolute top-3 left-3 px-3 py-1 bg-brand text-white text-[9px] font-bold rounded-md shadow-lg">{{ event.type?.name || 'Academic' }}</span>
+          <span class="absolute top-3 left-3 px-3 py-1 bg-brand text-white text-xs font-bold rounded-md shadow-lg">{{ event.type?.name || 'Academic' }}</span>
           
           <!-- Admin Quick Actions -->
-          <div v-if="auth.hasRole('super_admin', 'research_admin')" class="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+          <div v-if="auth.hasRole('super_admin', 'research_admin', 'campus_admin', 'faculty_admin', 'director', 'department_head')" class="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
             <button @click.stop="editEvent(event)" class="w-8 h-8 rounded-lg bg-white/20 backdrop-blur-md text-white hover:bg-white hover:text-brand flex items-center justify-center shadow-lg transition-all">
               <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
             </button>
@@ -55,10 +55,10 @@
 
         <div class="p-6 flex-1 flex flex-col">
           <h3 class="text-base font-bold text-slate-900 group-hover:text-brand transition-colors mb-3 line-clamp-2 leading-tight min-h-12" :title="event.title">{{ event.title }}</h3>
-          <p class="text-[11px] text-slate-500 font-medium line-clamp-2 leading-relaxed mb-6 italic">{{ event.description || 'Institutional announcement for the research community.' }}</p>
+          <p class="text-xs text-slate-500 font-medium line-clamp-2 leading-relaxed mb-6 italic">{{ event.description || 'Institutional announcement for the research community.' }}</p>
           
           <div class="space-y-3 mt-auto">
-            <div class="flex items-center gap-3 text-[10px] font-bold text-slate-400">
+            <div class="flex items-center gap-3 text-xs font-bold text-slate-400">
               <div class="w-8 h-8 rounded-2xl bg-slate-50 flex items-center justify-center text-brand border border-slate-100 shrink-0">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke-width="2.5"/><line x1="16" y1="2" x2="16" y2="6" stroke-width="2.5"/><line x1="8" y1="2" x2="8" y2="6" stroke-width="2.5"/></svg>
               </div>
@@ -67,7 +67,7 @@
                 <span class="text-[8px] opacity-70">Event Date</span>
               </div>
             </div>
-            <div class="flex items-center gap-3 text-[10px] font-bold text-slate-400">
+            <div class="flex items-center gap-3 text-xs font-bold text-slate-400">
               <div class="w-8 h-8 rounded-2xl bg-slate-50 flex items-center justify-center text-emerald-500 border border-slate-100 shrink-0">
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
               </div>
@@ -80,9 +80,9 @@
         </div>
         
         <div class="px-6 pb-6 flex gap-3">
-          <button @click="viewEvent(event)" class="btn btn-secondary flex-1 justify-center text-[10px] font-bold h-10 border-slate-200">View Info</button>
-          <button v-if="!event.is_registered" @click="registerForEvent(event)" class="btn btn-primary flex-[1.5] justify-center text-[10px] font-bold h-10 shadow-lg shadow-brand/10">Join Initiative</button>
-          <span v-else class="flex-[1.5] text-center p-2.5 text-[10px] font-bold text-emerald-600 bg-emerald-50 rounded-2xl border border-emerald-100 shadow-sm flex items-center justify-center gap-2">
+          <button @click="viewEvent(event)" class="btn btn-secondary flex-1 justify-center text-xs font-bold h-10 border-slate-200">View Info</button>
+          <button v-if="!event.is_registered" @click="registerForEvent(event)" class="btn btn-primary flex-[1.5] justify-center text-xs font-bold h-10 shadow-lg shadow-brand/10">Join Initiative</button>
+          <span v-else class="flex-[1.5] text-center p-2.5 text-xs font-bold text-emerald-600 bg-emerald-50 rounded-2xl border border-emerald-100 shadow-sm flex items-center justify-center gap-2">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
             Registered
           </span>
@@ -96,18 +96,18 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="space-y-4">
             <div>
-              <label class="block text-[11px] text-slate-500 font-bold mb-2 ml-1">Event Title *</label>
+              <label class="block text-xs text-slate-500 font-bold mb-2 ml-1">Event Title *</label>
               <input v-model="form.title" type="text" required class="input h-12 font-bold" placeholder="e.g. Annual Research Symposium" />
             </div>
             <div>
-              <label class="block text-[11px] text-slate-500 font-bold mb-2 ml-1">Event Type</label>
+              <label class="block text-xs text-slate-500 font-bold mb-2 ml-1">Event Type</label>
               <select v-model="form.type_id" class="input h-12 font-bold">
                 <option value="">General Announcement</option>
                 <option v-for="t in types" :key="t.id" :value="t.id">{{ t.name }}</option>
               </select>
             </div>
             <div>
-              <label class="block text-[11px] text-slate-500 font-bold mb-2 ml-1">Location / Platform</label>
+              <label class="block text-xs text-slate-500 font-bold mb-2 ml-1">Location / Platform</label>
               <input v-model="form.location" type="text" class="input h-12 font-bold" placeholder="e.g. Main Hall or Zoom Link" />
             </div>
           </div>
@@ -115,33 +115,33 @@
           <div class="space-y-4">
              <div class="grid grid-cols-2 gap-4">
                 <div>
-                  <label class="block text-[11px] text-slate-500 font-bold mb-2 ml-1">Start Date *</label>
+                  <label class="block text-xs text-slate-500 font-bold mb-2 ml-1">Start Date *</label>
                   <input v-model="form.start_date" type="date" required class="input h-12 font-bold" />
                 </div>
                 <div>
-                  <label class="block text-[11px] text-slate-500 font-bold mb-2 ml-1">End Date</label>
+                  <label class="block text-xs text-slate-500 font-bold mb-2 ml-1">End Date</label>
                   <input v-model="form.end_date" type="date" class="input h-12 font-bold" />
                 </div>
              </div>
              <div>
-              <label class="block text-[11px] text-slate-500 font-bold mb-2 ml-1">Max Participants</label>
+              <label class="block text-xs text-slate-500 font-bold mb-2 ml-1">Max Participants</label>
               <input v-model.number="form.max_participants" type="number" class="input h-12 font-bold" placeholder="0 for unlimited" />
              </div>
              <div>
-                <label class="block text-[11px] text-slate-500 font-bold mb-2 ml-1">Banner Image URL</label>
+                <label class="block text-xs text-slate-500 font-bold mb-2 ml-1">Banner Image URL</label>
                 <input v-model="form.image_file" type="text" class="input h-12 font-bold" placeholder="https://..." />
              </div>
           </div>
         </div>
 
         <div>
-          <label class="block text-[11px] text-slate-500 font-bold mb-2 ml-1">Message / Content *</label>
+          <label class="block text-xs text-slate-500 font-bold mb-2 ml-1">Message / Content *</label>
           <textarea v-model="form.description" required rows="5" class="input p-4 font-medium resize-none" placeholder="Provide full details about the event..."></textarea>
         </div>
 
         <div class="flex justify-end gap-3 pt-6 border-t border-slate-100">
-          <button type="button" @click="closeUpsert" class="btn btn-secondary px-6 font-bold text-[11px]">Discard</button>
-          <button type="submit" class="btn btn-primary px-8 font-bold text-[11px] h-12 shadow-xl shadow-brand/20">
+          <button type="button" @click="closeUpsert" class="btn btn-secondary px-6 font-bold text-xs">Discard</button>
+          <button type="submit" class="btn btn-primary px-8 font-bold text-xs h-12 shadow-xl shadow-brand/20">
             {{ editingEvent ? 'Update Announcement' : 'Publish to Feed' }}
           </button>
         </div>
@@ -164,19 +164,19 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-slate-900 rounded-3xl border border-white/5 shadow-2xl relative overflow-hidden group">
           <div class="absolute inset-0 bg-brand/5 opacity-0 group-hover:opacity-100 transition-opacity duration-700"></div>
           <div class="relative z-10">
-            <p class="text-[9px] font-bold text-slate-500 mb-2  tracking-widest">Begins</p>
+            <p class="text-xs font-bold text-slate-500 mb-2  tracking-widest">Begins</p>
             <p class="text-sm font-bold text-white tracking-tight">{{ formatDate(selectedEvent.start_date) }}</p>
           </div>
           <div class="relative z-10">
-            <p class="text-[9px] font-bold text-slate-500 mb-2  tracking-widest">Ends</p>
+            <p class="text-xs font-bold text-slate-500 mb-2  tracking-widest">Ends</p>
             <p class="text-sm font-bold text-white tracking-tight">{{ formatDate(selectedEvent.end_date) || '—' }}</p>
           </div>
           <div class="relative z-10">
-            <p class="text-[9px] font-bold text-slate-500 mb-2  tracking-widest">Where</p>
+            <p class="text-xs font-bold text-slate-500 mb-2  tracking-widest">Where</p>
             <p class="text-sm font-bold text-white tracking-tight">{{ selectedEvent.location || 'Online / Remote' }}</p>
           </div>
           <div class="relative z-10">
-            <p class="text-[9px] font-bold text-slate-500 mb-2  tracking-widest">Max Capacity</p>
+            <p class="text-xs font-bold text-slate-500 mb-2  tracking-widest">Max Capacity</p>
             <p class="text-sm font-bold text-white tracking-tight">{{ selectedEvent.max_participants || 'Unlimited' }}</p>
           </div>
         </div>
@@ -185,13 +185,13 @@
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-2xl bg-brand/10 flex items-center justify-center text-brand font-bold text-xs">PI</div>
             <div>
-              <p class="text-[10px] font-medium text-slate-400">Institutional Feed</p>
+              <p class="text-xs font-medium text-slate-400">Institutional Feed</p>
               <p class="text-xs font-bold text-slate-900 tracking-tight">University Research Office</p>
             </div>
           </div>
           <div class="flex gap-2">
-            <button v-if="!selectedEvent.is_registered" @click="registerForEvent(selectedEvent)" class="btn btn-primary px-8 h-12 text-[11px] font-bold shadow-xl shadow-brand/20">Register for Event</button>
-            <button @click="selectedEvent = null" class="btn btn-secondary px-6 h-12 text-[11px] font-bold">Close Dialog</button>
+            <button v-if="!selectedEvent.is_registered" @click="registerForEvent(selectedEvent)" class="btn btn-primary px-8 h-12 text-xs font-bold shadow-xl shadow-brand/20">Register for Event</button>
+            <button @click="selectedEvent = null" class="btn btn-secondary px-6 h-12 text-xs font-bold">Close Dialog</button>
           </div>
         </div>
       </div>

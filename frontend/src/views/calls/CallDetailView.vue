@@ -2,9 +2,19 @@
   <div class="card p-8">
     <div class="mb-6">
       <router-link to="/app/calls" class="text-sm text-blue-600 hover:underline mb-2 inline-block">← Back to Calls</router-link>
-      <div class="flex items-center gap-3">
-        <h1 class="text-xl font-bold text-gray-800">{{ call.title || 'Call Detail' }}</h1>
-        <StatusBadge :status="call.status?.name || 'draft'" />
+      <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+          <h1 class="text-xl font-bold text-gray-800">{{ call.title || 'Call Detail' }}</h1>
+          <StatusBadge :status="call.status?.name || 'draft'" />
+        </div>
+        <div class="flex items-center gap-2" v-if="canEditCall">
+          <button @click="editCall" class="btn btn-secondary px-4 h-10 text-xs font-medium">
+            Edit Call
+          </button>
+          <button @click="deleteCall" class="btn btn-ghost border border-red-200 text-red-600 hover:bg-red-50 px-4 h-10 text-xs font-medium">
+            Delete
+          </button>
+        </div>
       </div>
     </div>
 
@@ -82,17 +92,34 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 import api from '@/services/api'
 import StatusBadge from '@/components/StatusBadge.vue'
 import LoadingSkeleton from '@/components/LoadingSkeleton.vue'
 import { formatDate, formatCurrency } from '@/utils/formatters'
 
 const route = useRoute()
+const auth = useAuthStore()
 const call = ref({})
 const proposals = ref([])
 const loading = ref(true)
+
+// Hierarchical management rights
+const canManageCall = computed(() => {
+  return auth.hasRole('super_admin', 'research_admin', 'campus_admin', 'faculty_admin', 'department_head', 'director')
+})
+
+const canEditCall = computed(() => {
+  if (auth.hasRole('super_admin')) return true
+  if (auth.hasRole('research_admin') && auth.userScope === 'university') return true
+  if (auth.hasRole('campus_admin') && auth.userScope === 'campus') return true
+  if (auth.hasRole('faculty_admin') && auth.userScope === 'faculty') return true
+  if (auth.hasRole('department_head') && auth.userScope === 'department') return true
+  if (auth.hasRole('director') && auth.userScope === 'research_center') return true
+  return false
+})
 
 async function fetchCall() {
   loading.value = true
@@ -102,6 +129,23 @@ async function fetchCall() {
     proposals.value = data.proposals || []
   } catch (e) {} finally {
     loading.value = false
+  }
+}
+
+async function editCall() {
+  // Navigate to call list with edit mode (or implement inline editing)
+  // For now, redirect to call list
+  window.location.href = '/app/calls'
+}
+
+async function deleteCall() {
+  if (!confirm('Are you sure you want to delete this call? This action cannot be undone.')) return
+  
+  try {
+    await api.delete(`/calls/${route.params.id}`)
+    window.location.href = '/app/calls'
+  } catch (e) {
+    alert('Failed to delete call: ' + (e.response?.data?.message || 'Unknown error'))
   }
 }
 

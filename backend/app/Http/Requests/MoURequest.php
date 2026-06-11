@@ -15,11 +15,9 @@ class MoURequest extends FormRequest
     {
         return [
             'partner_id' => 'required|exists:partners,id',
-            'title' => 'required|string|max:255',
-            'signing_date' => 'required|date',
-            'expiry_date' => 'required|date|after:signing_date',
-            'file_id' => 'nullable|exists:files,id',
-            'status' => 'required|in:active,expired,terminated',
+            'start_date' => 'required|date',
+            'end_date' => 'required|date|after:start_date',
+            'research_center_id' => 'nullable|exists:research_centers,id',
         ];
     }
 }

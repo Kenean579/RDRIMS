@@ -43,9 +43,9 @@
         <div class="p-6 flex-1">
           <!-- Status row -->
           <div class="flex items-center gap-3 mb-4">
-            <span class="px-3 py-1 bg-emerald-50 text-emerald-700 text-[10px] font-bold rounded-full border border-emerald-100  tracking-wider">Budget Review</span>
+            <span class="px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-full border border-emerald-100  tracking-wider">Budget Review</span>
             <span
-              class="px-3 py-1 rounded-full text-[10px] font-bold"
+              class="px-3 py-1 rounded-full text-xs font-bold"
               :class="{
                 'bg-amber-100 text-amber-700': check.status?.name === 'pending',
                 'bg-emerald-100 text-emerald-700': check.status?.name === 'approved',
@@ -62,19 +62,19 @@
           <!-- Details grid -->
           <div class="grid grid-cols-2 gap-3">
             <div class="bg-slate-50 rounded-2xl p-3 border border-slate-100">
-              <p class="text-[9px] font-bold text-slate-400  tracking-widest mb-1">Budget</p>
+              <p class="text-xs font-bold text-slate-400  tracking-widest mb-1">Budget</p>
               <p class="text-sm font-bold text-slate-800">{{ formatCurrency(check.proposal?.budget) }}</p>
             </div>
             <div class="bg-slate-50 rounded-2xl p-3 border border-slate-100">
-              <p class="text-[9px] font-bold text-slate-400  tracking-widest mb-1">Reviewer</p>
+              <p class="text-xs font-bold text-slate-400  tracking-widest mb-1">Reviewer</p>
               <p class="text-sm font-bold text-slate-800 truncate">{{ check.checker?.name || 'Unassigned' }}</p>
             </div>
             <div v-if="check.approved_budget" class="bg-emerald-50 rounded-2xl p-3 border border-emerald-100 col-span-2">
-              <p class="text-[9px] font-bold text-emerald-600  tracking-widest mb-1">Approved Amount</p>
+              <p class="text-xs font-bold text-emerald-600  tracking-widest mb-1">Approved Amount</p>
               <p class="text-sm font-bold text-emerald-700">{{ formatCurrency(check.approved_budget) }}</p>
             </div>
             <div v-if="check.comments" class="bg-slate-50 rounded-2xl p-3 border border-slate-100 col-span-2">
-              <p class="text-[9px] font-bold text-slate-400  tracking-widest mb-1">Comments</p>
+              <p class="text-xs font-bold text-slate-400  tracking-widest mb-1">Comments</p>
               <p class="text-xs text-slate-600 font-medium line-clamp-2">{{ check.comments }}</p>
             </div>
           </div>
@@ -84,21 +84,21 @@
         <div v-if="check.status?.name === 'pending'" class="px-6 py-4 bg-slate-50/60 border-t border-slate-100 flex gap-3">
           <button
             @click="openApprove(check)"
-            class="flex-1 h-10 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold transition-colors flex items-center justify-center gap-2"
+            class="flex-1 h-10 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-colors flex items-center justify-center gap-2"
           >
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
             Approve
           </button>
           <button
             @click="openReject(check)"
-            class="flex-1 h-10 rounded-2xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-[11px] font-bold border border-rose-100 transition-colors flex items-center justify-center gap-2"
+            class="flex-1 h-10 rounded-2xl bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-bold border border-rose-100 transition-colors flex items-center justify-center gap-2"
           >
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/></svg>
             Reject
           </button>
         </div>
         <div v-else class="px-6 py-4 bg-slate-50/60 border-t border-slate-100">
-          <span class="text-[10px] font-bold text-slate-400  tracking-wider">Review completed</span>
+          <span class="text-xs font-bold text-slate-400  tracking-wider">Review completed</span>
         </div>
       </div>
     </div>
@@ -107,17 +107,17 @@
     <Modal :show="showApprove" title="Approve Budget" size="sm" @close="showApprove = false">
       <form @submit.prevent="confirmApprove" class="space-y-5">
         <div>
-          <label class="block text-[11px] text-slate-500 font-bold mb-2 ml-1">Approved Budget Amount</label>
+          <label class="block text-xs text-slate-500 font-bold mb-2 ml-1">Approved Budget Amount</label>
           <input v-model.number="approveForm.approved_budget" type="number" step="0.01" class="input h-12 font-bold" :placeholder="approvingCheck?.proposal?.budget" />
-          <p class="text-[10px] text-slate-400 mt-1 ml-1">Leave blank to approve as-is ({{ formatCurrency(approvingCheck?.proposal?.budget) }})</p>
+          <p class="text-xs text-slate-400 mt-1 ml-1">Leave blank to approve as-is ({{ formatCurrency(approvingCheck?.proposal?.budget) }})</p>
         </div>
         <div>
-          <label class="block text-[11px] text-slate-500 font-bold mb-2 ml-1">Comments (optional)</label>
+          <label class="block text-xs text-slate-500 font-bold mb-2 ml-1">Comments (optional)</label>
           <textarea v-model="approveForm.comments" rows="3" class="input resize-none pt-3 font-medium" placeholder="Approval notes..."></textarea>
         </div>
         <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
-          <button type="button" @click="showApprove = false" class="btn btn-secondary px-6 h-11 font-bold text-[11px]">Cancel</button>
-          <button type="submit" class="h-11 px-8 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-bold transition-colors">Confirm Approval</button>
+          <button type="button" @click="showApprove = false" class="btn btn-secondary px-6 h-11 font-bold text-xs">Cancel</button>
+          <button type="submit" class="h-11 px-8 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold transition-colors">Confirm Approval</button>
         </div>
       </form>
     </Modal>
@@ -126,12 +126,12 @@
     <Modal :show="showReject" title="Reject Budget Review" size="sm" @close="showReject = false">
       <form @submit.prevent="confirmReject" class="space-y-5">
         <div>
-          <label class="block text-[11px] text-slate-500 font-bold mb-2 ml-1">Reason for Rejection *</label>
+          <label class="block text-xs text-slate-500 font-bold mb-2 ml-1">Reason for Rejection *</label>
           <textarea v-model="rejectForm.comments" required rows="4" class="input resize-none pt-3 font-medium" placeholder="Provide a clear reason..."></textarea>
         </div>
         <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
-          <button type="button" @click="showReject = false" class="btn btn-secondary px-6 h-11 font-bold text-[11px]">Cancel</button>
-          <button type="submit" class="h-11 px-8 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white text-[11px] font-bold transition-colors">Confirm Rejection</button>
+          <button type="button" @click="showReject = false" class="btn btn-secondary px-6 h-11 font-bold text-xs">Cancel</button>
+          <button type="submit" class="h-11 px-8 rounded-2xl bg-rose-600 hover:bg-rose-700 text-white text-xs font-bold transition-colors">Confirm Rejection</button>
         </div>
       </form>
     </Modal>

@@ -10,11 +10,15 @@ return new class extends Migration
     {
         Schema::create('partners', function (Blueprint $table) {
             $table->id();
-            $table->string('name', 255)->index();
-            $table->string('sector', 100)->index();
-            $table->string('contact_email', 255)->index();
+            $table->string('name', 255);
+            $table->string('sector', 100);
+            $table->string('contact_email', 255);
             $table->string('website', 255)->nullable();
+            $table->unsignedBigInteger('research_center_id')->nullable()->index();
+            $table->foreign('research_center_id')->references('id')->on('research_centers')->nullOnDelete();
             $table->timestamps();
+
+            $table->index(['name', 'sector', 'contact_email', 'research_center_id']);
         });
     }
 

@@ -19,7 +19,7 @@ class LanguagePreferenceController extends Controller
 
         $preference = $request->user()->languagePreference()->updateOrCreate(
             ['user_id' => $request->user()->id],
-            ['locale' => $request->locale]
+            ['locale' => $request->input('locale')]
         );
 
         return response()->json($preference);

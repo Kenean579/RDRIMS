@@ -14,9 +14,10 @@ class StoreDepartmentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required',
-            'code' => 'required|unique:departments',
+            'name' => 'required|string|max:255',
+            'code' => 'required|string|max:50|unique:departments,code',
             'faculty_id' => 'required|exists:faculties,id',
+            'logo_file_id' => 'nullable|exists:files,id',
         ];
     }
 }

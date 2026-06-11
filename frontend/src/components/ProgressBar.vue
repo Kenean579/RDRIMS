@@ -15,14 +15,14 @@
         :class="barColor"
         :style="{ width: clampedPercentage + '%' }"
       >
-        <span v-if="showInnerLabel && height >= 16" class="text-[10px] font-medium text-white tracking-widest  truncate mix-blend-overlay">
+        <span v-if="showInnerLabel && height >= 16" class="text-xs font-medium text-white tracking-widest  truncate mix-blend-overlay">
           {{ Math.round(clampedPercentage) }}%
         </span>
       </div>
     </div>
     
     <div v-if="helpText" class="mt-1 px-0.5 space-x-1">
-      <span class="text-[10px] font-medium text-slate-400">{{ helpText }}</span>
+      <span class="text-xs font-medium text-slate-400">{{ helpText }}</span>
     </div>
   </div>
 </template>

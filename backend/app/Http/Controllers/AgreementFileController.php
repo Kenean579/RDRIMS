@@ -12,6 +12,7 @@ class AgreementFileController extends Controller
     {
         return response()->json(AgreementFile::with('file')->get());
     }
+
     public function attach(Request $request): JsonResponse
     {
         $request->validate([
@@ -21,12 +22,14 @@ class AgreementFileController extends Controller
         ]);
 
         $agreementFile = AgreementFile::create($request->all());
+
         return response()->json($agreementFile, 201);
     }
 
     public function detach(AgreementFile $agreementFile): JsonResponse
     {
         $agreementFile->delete();
+
         return response()->json(['message' => 'File detached from agreement.']);
     }
 }

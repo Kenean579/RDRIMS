@@ -35,6 +35,8 @@ return new class extends Migration
             
             $table->foreignId('academic_year_id')->nullable()->constrained('academic_years')->nullOnDelete();
             $table->decimal('budget', 12, 2)->nullable();
+            $table->unsignedBigInteger('research_center_id')->nullable()->index();
+            $table->foreign('research_center_id')->references('id')->on('research_centers')->nullOnDelete();
             $table->timestamps();
 
             $table->index('category_id');

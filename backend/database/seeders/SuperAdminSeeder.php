@@ -11,53 +11,52 @@ class SuperAdminSeeder extends Seeder
 {
     public function run(): void
     {
-        // Super Admin (system-wide)
-        $superAdmin = User::create([
-            'name' => 'System Administrator',
-            'email' => 'admin@rdrims.local',
-            'password' => Hash::make('Admin@123'),
-            'department_id' => 1,
-            'is_active' => true,
-            'bio' => 'System-wide administrator for the RDRIMS platform. Manages all tenant universities.',
-        ]);
-
+        $superAdmin = User::updateOrCreate(
+            ['email' => 'admin@rdrims.local'],
+            [
+                'name' => 'System Administrator',
+                'password' => Hash::make('Admin@123'),
+                'university_id' => null,
+                'is_active' => true,
+                'bio' => 'Platform-wide system administrator. Manages all tenant universities and system configuration.',
+            ]
+        );
         $superAdminRole = Role::where('name', 'super_admin')->first();
-        $superAdmin->roles()->attach($superAdminRole->id, [
-            'assigned_by' => null,
-            'assigned_at' => now(),
-        ]);
+        if ($superAdminRole && !$superAdmin->roles->contains($superAdminRole->id)) {
+            $superAdmin->roles()->attach($superAdminRole->id, ['assigned_by' => null, 'assigned_at' => now()]);
+        }
 
-        // Research Admin for Primary University
-        $researchAdmin = User::create([
-            'name' => 'Dr. Abebe Kebede',
-            'email' => 'research.admin@rdrims.local',
-            'password' => Hash::make('Admin@123'),
-            'department_id' => 1,
-            'is_active' => true,
-            'orcid_id' => '0000-0002-1234-5678',
-            'google_scholar_id' => 'AbebeKebede2024',
-            'bio' => 'Research Administrator. Coordinates all research activities.',
-        ]);
-
+        
+        $researchAdmin = User::updateOrCreate(
+            ['email' => 'research.admin@wollo.edu.et'],
+            [
+                'name' => 'Dr. Abebe Kebede',
+                'password' => Hash::make('Admin@123'),
+                'department_id' => 1,
+                'university_id' => 1,
+                'is_active' => true,
+                'orcid_id' => '0000-0002-1234-5678',
+                'bio' => 'Research Administrator at Wollo University. Coordinates all research activities.',
+            ]
+        );
         $researchAdminRole = Role::where('name', 'research_admin')->first();
-        $researchAdmin->roles()->attach($researchAdminRole->id, [
-            'assigned_by' => $superAdmin->id,
-            'assigned_at' => now(),
-        ]);
+        if ($researchAdminRole && !$researchAdmin->roles->contains($researchAdminRole->id)) {
+            $researchAdmin->roles()->attach($researchAdminRole->id, ['assigned_by' => $superAdmin->id, 'assigned_at' => now()]);
+        }
 
-        // Research Admin for AAU
-        $aauAdmin = User::create([
-            'name' => 'Dr. Mesfin Tadesse',
-            'email' => 'research.admin@aau.edu.et',
-            'password' => Hash::make('Admin@123'),
-            'department_id' => 20, // will exist if you have AAU departments
-            'is_active' => true,
-            'bio' => 'Research Administrator at Addis Ababa University.',
-        ]);
-
-        $aauAdmin->roles()->attach($researchAdminRole->id, [
-            'assigned_by' => $superAdmin->id,
-            'assigned_at' => now(),
-        ]);
+        $aauAdmin = User::updateOrCreate(
+            ['email' => 'research.admin@aau.edu.et'],
+            [
+                'name' => 'Dr. Mesfin Tadesse',
+                'password' => Hash::make('Admin@123'),
+                'department_id' => 1,
+                'university_id' => 1,
+                'is_active' => true,
+                'bio' => 'Research Administrator at Addis Ababa University.',
+            ]
+        );
+        if ($researchAdminRole && !$aauAdmin->roles->contains($researchAdminRole->id)) {
+            $aauAdmin->roles()->attach($researchAdminRole->id, ['assigned_by' => $superAdmin->id, 'assigned_at' => now()]);
+        }
     }
 }

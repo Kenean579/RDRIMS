@@ -29,16 +29,16 @@
           <div>
             <h3 class="font-bold text-slate-800 text-lg leading-tight mb-1">{{ faculty.name }}</h3>
             <div class="flex items-center gap-2">
-              <span class="inline-block px-2.5 py-0.5 bg-slate-100 text-slate-500 text-[10px] font-medium rounded-md border border-slate-100">CODE: {{ faculty.code }}</span>
-              <span class="inline-block px-2 py-0.5 bg-emerald-50 text-emerald-600 text-[10px] font-medium rounded-md border border-emerald-100"><i class="fas fa-map-marker-alt mr-1"></i>{{ faculty.campus?.name || 'Main Campus' }}</span>
+              <span class="inline-block px-2.5 py-0.5 bg-slate-100 text-slate-500 text-xs font-medium rounded-md border border-slate-100">CODE: {{ faculty.code }}</span>
+              <span class="inline-block px-2 py-0.5 bg-emerald-50 text-emerald-600 text-xs font-medium rounded-md border border-emerald-100"><i class="fas fa-map-marker-alt mr-1"></i>{{ faculty.campus?.name || 'Main Campus' }}</span>
             </div>
           </div>
         </div>
         <div class="flex gap-2 shrink-0">
-          <button @click="editFaculty(faculty)" class="btn btn-secondary h-9 px-4 text-[11px] font-medium">
+          <button @click="editFaculty(faculty)" class="btn btn-secondary h-9 px-4 text-xs font-medium">
             Edit
           </button>
-          <button @click="confirmDelete(faculty)" class="btn btn-danger h-9 px-4 text-[11px] font-medium">
+          <button @click="confirmDelete(faculty)" class="btn btn-danger h-9 px-4 text-xs font-medium">
             Delete
           </button>
         </div>

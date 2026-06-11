@@ -9,9 +9,9 @@ class DetectionServiceSeeder extends Seeder
 {
     public function run(): void
     {
-        DetectionService::create(['name' => 'turnitin']);
-        DetectionService::create(['name' => 'copyleaks']);
-        DetectionService::create(['name' => 'gptzero']);
-        DetectionService::create(['name' => 'local_similarity']);
+        $services = ['turnitin', 'copyleaks', 'gptzero', 'local_similarity', 'plagiarismcheck'];
+        foreach ($services as $service) {
+            DetectionService::firstOrCreate(['name' => $service]);
+        }
     }
 }

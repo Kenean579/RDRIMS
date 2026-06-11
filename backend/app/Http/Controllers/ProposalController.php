@@ -26,13 +26,21 @@ class ProposalController extends Controller
     {
         $this->authorize('viewAny', Proposal::class);
 
+        $user = $request->user();
         $proposals = Proposal::with('status', 'type', 'submittedBy.profileImage', 'call', 'financeChecks.status', 'ethicsRequests.approvalStatus', 'file', 'ethicsFile')
-            ->hierarchical($request->user(), 'submitted_by')
-            ->when($request->status, fn($q) => $q->whereHas('status', fn($s) => $s->where('name', $request->status)))
-            ->when($request->type, fn($q) => $q->whereHas('type', fn($t) => $t->where('name', $request->type)))
-            ->when($request->call_id, fn($q) => $q->where('call_id', $request->call_id))
-            ->when($request->search, fn($q) => $q->where('title', 'LIKE', '%' . $request->search . '%')
-                ->orWhere('keywords', 'LIKE', '%' . $request->search . '%'))
+            ->hierarchical($user, 'submitted_by')
+            ->when(!$user->hasRole('super_admin'), function ($query) use ($user) {
+                $query->manageableBy($user);
+            })
+            ->when($request->filled('status'), fn($q) => $q->whereHas('status', fn($s) => $s->where('name', $request->input('status'))))
+            ->when($request->filled('type'), fn($q) => $q->whereHas('type', fn($t) => $t->where('name', $request->input('type'))))
+            ->when($request->filled('call_id'), fn($q) => $q->where('call_id', $request->input('call_id')))
+            ->when($request->filled('university_id'), fn($q) => $q->where('university_id', $request->input('university_id')))
+            ->when($request->filled('campus_id'), fn($q) => $q->where('campus_id', $request->input('campus_id')))
+            ->when($request->filled('faculty_id'), fn($q) => $q->where('faculty_id', $request->input('faculty_id')))
+            ->when($request->filled('department_id'), fn($q) => $q->where('department_id', $request->input('department_id')))
+            ->when($request->filled('search'), fn($q) => $q->where('title', 'LIKE', '%' . $request->input('search') . '%')
+                ->orWhere('keywords', 'LIKE', '%' . $request->input('search') . '%'))
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
@@ -45,6 +53,7 @@ class ProposalController extends Controller
             $proposal = Proposal::create([
                 ...$request->safe()->except(['investigators', 'proposal_file']),
                 'submitted_by' => $request->user()->id,
+                'submitted_at' => now(),
                 'status_id' => ProposalStatus::where('name', 'draft')->first()->id ?? 1,
             ]);
 
@@ -74,7 +83,16 @@ class ProposalController extends Controller
 
     public function show(Proposal $proposal): JsonResponse
     {
+        $user = request()->user();
+        
+        // Check if user has permission to view this proposal
         $this->authorize('view', $proposal);
+        
+        // Additional hierarchical check for management rights
+        if (!$user->hasRole('super_admin') && !$proposal->isManageableBy($user)) {
+            abort(403, 'You do not have permission to view this proposal.');
+        }
+        
         return response()->json($proposal->load(
             'status', 'type', 'submittedBy.department', 'approvedBy', 'call',
             'reviewers.profileImage',
@@ -85,7 +103,15 @@ class ProposalController extends Controller
 
     public function update(UpdateProposalRequest $request, Proposal $proposal): JsonResponse
     {
+        $user = $request->user();
+        
+        // Check if user has permission to update this proposal
         $this->authorize('update', $proposal);
+        
+        // Additional hierarchical check for management rights
+        if (!$user->hasRole('super_admin') && !$proposal->isManageableBy($user)) {
+            abort(403, 'You do not have permission to update this proposal.');
+        }
 
         return DB::transaction(function () use ($request, $proposal) {
             $validated = $request->validated();
@@ -122,7 +148,16 @@ class ProposalController extends Controller
 
     public function destroy(Proposal $proposal): JsonResponse
     {
+        $user = request()->user();
+        
+        // Check if user has permission to delete this proposal
         $this->authorize('delete', $proposal);
+        
+        // Additional hierarchical check for management rights
+        if (!$user->hasRole('super_admin') && !$proposal->isManageableBy($user)) {
+            abort(403, 'You do not have permission to delete this proposal.');
+        }
+        
         $proposal->delete();
         return response()->json(['message' => 'Proposal deleted.']);
     }
@@ -145,14 +180,14 @@ class ProposalController extends Controller
     {
         $this->authorize('update', $proposal);
         $request->validate(['comment' => 'required|string']);
-        $this->proposalService->reject($proposal, $request->user(), $request->comment);
+        $this->proposalService->reject($proposal, $request->user(), $request->input('comment'));
         return response()->json(['message' => 'Proposal rejected.']);
     }
 
     public function assignReviewers(AssignReviewersRequest $request, Proposal $proposal): JsonResponse
     {
         $this->authorize('assignReviewers', Proposal::class);
-        $this->proposalService->assignReviewers($proposal, $request->reviewer_ids, $request->user());
+        $this->proposalService->assignReviewers($proposal, $request->input('reviewer_ids'), $request->user());
         return response()->json(['message' => 'Reviewers assigned.']);
     }
 

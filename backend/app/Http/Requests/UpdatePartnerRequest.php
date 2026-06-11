@@ -14,9 +14,11 @@ class UpdatePartnerRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'sometimes',
-            'sector' => 'sometimes',
-            'contact_email' => 'sometimes|email',
+            'name' => 'sometimes|required|string|max:255',
+            'sector' => 'sometimes|required|string|max:100',
+            'contact_email' => 'sometimes|required|email|max:255',
+            'website' => 'nullable|string|max:255',
+            'research_center_id' => 'nullable|exists:research_centers,id',
         ];
     }
 }

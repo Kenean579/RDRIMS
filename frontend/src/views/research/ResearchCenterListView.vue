@@ -28,19 +28,19 @@
           <div class="flex-1 pr-4 min-w-0">
             <h3 class="text-base font-bold text-slate-900 leading-tight group-hover:text-brand transition-colors line-clamp-2 min-h-10">{{ center.name }}</h3>
             <div class="flex items-center gap-2 mt-2">
-              <span class="px-2 py-0.5 bg-slate-100 text-slate-500 text-[10px] font-medium rounded-md border border-slate-100">
+              <span class="px-2 py-0.5 bg-slate-100 text-slate-500 text-xs font-medium rounded-md border border-slate-100">
                 CODE: {{ center.code }}
               </span>
             </div>
           </div>
-          <div class="w-12 h-12 rounded-2xl bg-slate-100 text-white flex items-center justify-center font-bold shrink-0  tracking-tighter text-xs">
+          <div class="w-12 h-12 bg-slate-100 text-white flex items-center justify-center font-bold shrink-0  tracking-tighter text-xs" style="border-radius: 1rem">
              {{ center.code?.substring(0,3) || 'RC' }}
           </div>
         </div>
         
         <p class="text-sm text-slate-500 font-medium flex-1 line-clamp-2 leading-relaxed mb-6">{{ center.description || 'Institutional research hub for advanced academic pursuit.' }}</p>
         
-        <div class="flex flex-col gap-2 text-[9px] font-medium text-slate-400 mb-6 pt-5 border-t border-slate-100">
+        <div class="flex flex-col gap-2 text-xs font-medium text-slate-400 mb-6 pt-5 border-t border-slate-100">
           <div class="flex items-center gap-1.5" v-if="center.university">
             <i class="fas fa-university text-brand/60"></i>
             <span class="text-slate-800">{{ center.university.name }}</span>
@@ -51,9 +51,9 @@
           </div>
         </div>
 
-        <div v-if="auth.hasRole('super_admin', 'research_admin')" class="flex items-center justify-between bg-slate-50/50 rounded-2xl p-1 gap-1">
-          <button @click="editCenter(center)" class="btn btn-ghost bg-white hover:bg-indigo-50 hover:text-indigo-600 flex-1 justify-center text-[11px] font-medium  tracking-wider py-2">Edit</button>
-          <button @click="confirmDelete(center)" class="btn btn-ghost text-rose-500 hover:bg-rose-50 flex-1 justify-center text-[11px] font-medium  tracking-wider py-2">Delete</button>
+        <div v-if="auth.hasRole('super_admin', 'research_admin')" class="flex items-center justify-between bg-slate-50/50 p-1 gap-1" style="border-radius: 1rem">
+          <button @click="editCenter(center)" class="btn btn-ghost hover:bg-indigo-50 hover:text-indigo-600 flex-1 justify-center text-xs font-medium  tracking-wider py-2" style="background: #fff">Edit</button>
+          <button @click="confirmDelete(center)" class="btn btn-ghost text-rose-500 hover:bg-rose-50 flex-1 justify-center text-xs font-medium  tracking-wider py-2">Delete</button>
         </div>
       </div>
     </div>
@@ -62,34 +62,34 @@
     <Modal :show="showCreate || !!editingCenter" :title="editingCenter ? 'Edit Center' : 'Add New Center'" size="lg" @close="closeModal">
       <form @submit.prevent="saveCenter" class="space-y-6">
         <div>
-          <label class="block text-[11px] text-slate-500 font-medium mb-2 ml-1">Name *</label>
+          <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Name *</label>
           <input v-model="form.name" type="text" required class="input h-12 font-bold" placeholder="e.g. Center for AI" />
         </div>
         
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
           <div>
-            <label class="block text-[11px] text-slate-500 font-medium mb-2 ml-1">Code *</label>
+            <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Code *</label>
             <input v-model="form.code" type="text" required class="input h-12 font-bold" placeholder="e.g. CAIR-01" />
           </div>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
           <div>
-            <label class="block text-[11px] text-slate-500 font-medium mb-2 ml-1">University</label>
+            <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">University</label>
             <select v-model="form.parent_university_id" class="input h-12 font-bold">
               <option value="">Select University</option>
               <option v-for="u in universities" :key="u.id" :value="u.id">{{ u.name }}</option>
             </select>
           </div>
           <div>
-            <label class="block text-[11px] text-slate-500 font-medium mb-2 ml-1">Campus</label>
-            <select v-model="form.campus_id" class="input h-12 font-bold">
+            <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Campus</label>
+            <select v-model="form.parent_campus_id" class="input h-12 font-bold">
               <option value="">Select Campus</option>
               <option v-for="c in campuses" :key="c.id" :value="c.id">{{ c.name }}</option>
             </select>
           </div>
           <div>
-            <label class="block text-[11px] text-slate-500 font-medium mb-2 ml-1">Faculty</label>
-            <select v-model="form.faculty_id" class="input h-12 font-bold">
+            <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Faculty</label>
+            <select v-model="form.parent_faculty_id" class="input h-12 font-bold">
               <option value="">Select Faculty</option>
               <option v-for="f in faculties" :key="f.id" :value="f.id">{{ f.name }}</option>
             </select>
@@ -97,7 +97,7 @@
         </div>
         
         <div>
-          <label class="block text-[11px] text-slate-500 font-medium mb-2 ml-1">Description</label>
+          <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Description</label>
           <textarea v-model="form.description" rows="3" class="input resize-none pt-3" placeholder="Tell us more about this center..."></textarea>
         </div>
 
@@ -133,7 +133,7 @@ const allCampuses = ref([])
 const allFaculties = ref([])
 
 // Form state
-const form = reactive({ name: '', code: '', description: '', parent_university_id: '', campus_id: '', faculty_id: '' })
+const form = reactive({ name: '', code: '', description: '', parent_university_id: '', parent_campus_id: '', parent_faculty_id: '' })
 
 // Filtered lists based on parent selection
 const campuses = computed(() => {
@@ -142,18 +142,18 @@ const campuses = computed(() => {
 })
 
 const faculties = computed(() => {
-  if (!form.campus_id) return []
-  return allFaculties.value.filter(f => f.campus_id === form.campus_id)
+  if (!form.parent_campus_id) return []
+  return allFaculties.value.filter(f => f.campus_id === form.parent_campus_id)
 })
 
 // Reset children when parents change
 watch(() => form.parent_university_id, () => {
-  form.campus_id = ''
-  form.faculty_id = ''
+  form.parent_campus_id = ''
+  form.parent_faculty_id = ''
 })
 
-watch(() => form.campus_id, () => {
-  form.faculty_id = ''
+watch(() => form.parent_campus_id, () => {
+  form.parent_faculty_id = ''
 })
 
 async function fetchCenters() {
@@ -183,14 +183,14 @@ function editCenter(c) {
     code: c.code, 
     description: c.description || '', 
     parent_university_id: c.parent_university_id || c.university_id || '', 
-    campus_id: c.campus_id || '',
-    faculty_id: c.faculty_id || ''
+    parent_campus_id: c.parent_campus_id || c.campus_id || '',
+    parent_faculty_id: c.parent_faculty_id || c.faculty_id || ''
   }) 
 }
 function closeModal() { 
   showCreate.value = false; 
   editingCenter.value = null; 
-  Object.assign(form, { name: '', code: '', description: '', parent_university_id: '', campus_id: '', faculty_id: '' }) 
+  Object.assign(form, { name: '', code: '', description: '', parent_university_id: '', parent_campus_id: '', parent_faculty_id: '' }) 
 }
 function confirmDelete(c) { deletingCenter.value = c; showDelete.value = true }
 
@@ -198,10 +198,9 @@ async function saveCenter() {
   try {
     const payload = { 
       ...form, 
-      university_id: form.parent_university_id || null, // Backend might use university_id
       parent_university_id: form.parent_university_id || null,
-      campus_id: form.campus_id || null,
-      faculty_id: form.faculty_id || null
+      parent_campus_id: form.parent_campus_id || null,
+      parent_faculty_id: form.parent_faculty_id || null
     }
     if (editingCenter.value) { await api.put(`/research-centers/${editingCenter.value.id}`, payload); notif.success('Updated!') }
     else { await api.post('/research-centers', payload); notif.success('Created!') }
@@ -218,6 +217,6 @@ onMounted(() => fetchCenters())
 </script>
 
 <style scoped>
-.card { @apply bg-white border border-slate-200 rounded-2xl shadow-sm transition-all; }
-.btn { @apply inline-flex items-center justify-center rounded-2xl transition-all active:scale-95 disabled:opacity-50; }
+.card { @apply transition-all; background: #fff; border: 1px solid #e8ecf1; box-shadow: 0 1px 3px rgba(0,0,0,0.04); border-radius: 1rem; }
+.btn { @apply inline-flex items-center justify-center transition-all active:scale-95 disabled:opacity-50; border-radius: 1rem; }
 </style>

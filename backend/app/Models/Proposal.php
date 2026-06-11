@@ -14,26 +14,50 @@ class Proposal extends Model
 {
     use HasFactory, \App\Traits\HasDynamicStatus, \App\Traits\HierarchicalScope;
 
+    /**
+     * @property int $id
+     * @property int $call_id
+     * @property int|null $type_id
+     * @property string $title
+     * @property string|null $abstract
+     * @property string|null $objectives
+     * @property string|null $methodology
+     * @property string|null $keywords
+     * @property string|null $budget
+     * @property array|null $budget_allocation
+     * @property string|null $status_change_comment
+     * @property int $status_id
+     * @property int|null $submitted_by
+     * @property \Illuminate\Support\Carbon|null $submitted_at
+     * @property int|null $approved_by
+     * @property \Illuminate\Support\Carbon|null $approved_at
+     * @property int|null $academic_year_id
+     * @property int|null $file_id
+     * @property int|null $ethics_file_id
+     * @property int|null $ethics_approval_status_id
+     * @property int|null $research_center_id
+     */
     protected $fillable = [
         'call_id',
          'type_id',
          'title',
-        'abstract',
-        'objectives',
-        'methodology',
-        'keywords',
-        'budget',
-         'budget_allocation',
-        'status_change_comment',
-        'status_id',
-         'submitted_by',
-        'submitted_at',
-         'approved_by',
-         'approved_at',
-         'academic_year_id',
-        'file_id',
-         'ethics_file_id',
-         'ethics_approval_status_id'
+         'abstract',
+         'objectives',
+         'methodology',
+         'keywords',
+         'budget',
+          'budget_allocation',
+         'status_change_comment',
+         'status_id',
+          'submitted_by',
+         'submitted_at',
+          'approved_by',
+          'approved_at',
+          'academic_year_id',
+         'file_id',
+          'ethics_file_id',
+          'ethics_approval_status_id',
+          'research_center_id'
     ];
 
     protected $casts = [
@@ -86,6 +110,11 @@ class Proposal extends Model
     public function ethicsApprovalStatus(): BelongsTo
     {
         return $this->belongsTo(EthicsApprovalStatus::class, 'ethics_approval_status_id');
+    }
+
+    public function researchCenter(): BelongsTo
+    {
+        return $this->belongsTo(ResearchCenter::class, 'research_center_id');
     }
 
     public function investigators(): HasMany

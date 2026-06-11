@@ -27,7 +27,7 @@
 
           <!-- Email Field -->
           <div class="space-y-2">
-            <label class="block text-[10px] font-medium text-slate-400 ml-1">E-mail Address</label>
+            <label class="block text-xs font-medium text-slate-400 ml-1">E-mail Address</label>
             <div class="relative group">
               <div class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand transition-colors">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.206" /></svg>
@@ -45,8 +45,8 @@
           <!-- Password Field -->
           <div class="space-y-2">
             <div class="flex justify-between items-center px-1">
-              <label class="text-[10px] font-medium text-slate-400">Password</label>
-              <router-link to="/forgot-password" class="text-[10px] font-medium text-brand hover:underline">Forgot?</router-link>
+              <label class="text-xs font-medium text-slate-400">Password</label>
+              <router-link to="/forgot-password" class="text-xs font-medium text-brand hover:underline">Forgot?</router-link>
             </div>
             <div class="relative group">
               <div class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand transition-colors">
@@ -83,7 +83,7 @@
         </form>
 
         <div class="mt-5 pt-4 border-t border-slate-100 text-center">
-          <p class="text-[11px] font-medium text-slate-400">
+          <p class="text-xs font-medium text-slate-400">
             New investigator? 
             <router-link to="/register" class="text-brand font-bold hover:underline underline-offset-4">Request Access</router-link>
           </p>
@@ -92,11 +92,11 @@
 
       <!-- Footer Links -->
       <div class="flex justify-center gap-5 mt-5">
-        <router-link to="/" class="text-[10px] font-medium text-slate-400 hover:text-brand transition-colors">Home</router-link>
+        <router-link to="/" class="text-xs font-medium text-slate-400 hover:text-brand transition-colors">Home</router-link>
         <span class="text-slate-200">•</span>
-        <a href="#" class="text-[10px] font-medium text-slate-400 hover:text-brand transition-colors">Terms of Service</a>
+        <a href="#" class="text-xs font-medium text-slate-400 hover:text-brand transition-colors">Terms of Service</a>
         <span class="text-slate-200">•</span>
-        <a href="#" class="text-[10px] font-medium text-slate-400 hover:text-brand transition-colors">Privacy Policy</a>
+        <a href="#" class="text-xs font-medium text-slate-400 hover:text-brand transition-colors">Privacy Policy</a>
       </div>
     </div>
   </div>

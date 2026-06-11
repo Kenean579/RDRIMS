@@ -55,7 +55,7 @@ class AuthController extends Controller
         $user = $request->user();
         $validated = $request->validate([
             'name'               => 'sometimes|string|max:255',
-            'email'              => 'sometimes|email|unique:users,email,' . $user->id,
+            'email'              => 'sometimes|email|unique:users,email,' . $user->getKey(),
             'bio'                => 'nullable|string',
             'linkedin_url'       => 'nullable|url',
             'orcid_id'           => 'nullable|string',
@@ -69,15 +69,15 @@ class AuthController extends Controller
         $user->update($validated);
 
         if ($request->has('expertise')) {
-            $user->expertise()->sync($request->expertise);
-        }
-        
-        if ($request->has('password') && $request->filled('password')) {
-            $request->validate(['password' => 'string|min:8|confirmed']);
-            $user->update(['password' => \Hash::make($request->password)]);
+            $user->expertise()->sync($request->input('expertise', []));
         }
 
-        return response()->json($user->load('roles.permissions', 'profile_image', 'expertise'));
+        if ($request->has('password') && $request->filled('password')) {
+            $request->validate(['password' => 'string|min:8|confirmed']);
+            $user->update(['password' => Hash::make($request->input('password'))]);
+        }
+
+        return response()->json($user->load('roles.permissions', 'profileImage', 'expertise'));
     }
 
     public function forgotPassword(Request $request): JsonResponse
@@ -100,9 +100,9 @@ class AuthController extends Controller
         ]);
 
         // Simple reset for this demo/local environment
-        $user = \App\Models\User::where('email', $request->email)->first();
+        $user = \App\Models\User::where('email', $request->input('email'))->first();
         if ($user) {
-            $user->update(['password' => Hash::make($request->password)]);
+            $user->update(['password' => Hash::make($request->input('password'))]);
             return response()->json(['message' => 'Password has been reset successfully.']);
         }
 

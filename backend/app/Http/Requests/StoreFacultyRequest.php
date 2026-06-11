@@ -14,9 +14,10 @@ class StoreFacultyRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required',
-            'code' => 'required|unique:faculties',
+            'name' => 'required|string|max:255',
+            'code' => 'required|string|max:50|unique:faculties,code',
             'campus_id' => 'required|exists:campuses,id',
+            'logo_file_id' => 'nullable|exists:files,id',
         ];
     }
 }

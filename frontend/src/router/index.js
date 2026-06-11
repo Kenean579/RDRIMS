@@ -10,9 +10,13 @@ const routes = [
       { path: 'calls', name: 'PublicCalls', component: () => import('@/views/public/PublicCallsView.vue'), meta: { title: 'Call for Proposals' } },
       { path: 'calls/:id', name: 'PublicCallDetail', component: () => import('@/views/public/PublicCallDetailView.vue'), meta: { title: 'Call Details' } },
       { path: 'publications', name: 'PublicPublications', component: () => import('@/views/public/PublicPublicationsView.vue'), meta: { title: 'Repository' } },
+      { path: 'publications/:id', name: 'PublicPublicationDetail', component: () => import('@/views/publications/PublicationDetailView.vue'), meta: { title: 'Publication Detail' } },
       { path: 'researchers', name: 'PublicResearchers', component: () => import('@/views/public/PublicResearchersView.vue'), meta: { title: 'Researcher Directory' } },
+      { path: 'researchers/:id', name: 'PublicResearcherDetail', component: () => import('@/views/public/PublicResearcherDetailView.vue'), meta: { title: 'Researcher Profile' } },
       { path: 'events', name: 'PublicEvents', component: () => import('@/views/public/PublicEventsView.vue'), meta: { title: 'Upcoming Events' } },
-      { path: 'community', name: 'PublicCommunity', component: () => import('@/views/public/PublicCommunityView.vue'), meta: { title: 'Community Impact' } }
+      { path: 'events/:id', name: 'PublicEventDetail', component: () => import('@/views/events/EventDetailView.vue'), meta: { title: 'Event Details' } },
+      { path: 'community', name: 'PublicCommunity', component: () => import('@/views/public/PublicCommunityView.vue'), meta: { title: 'Community' } },
+      { path: 'about', name: 'About', component: () => import('@/views/public/AboutView.vue'), meta: { title: 'About' } }
     ]
   },
   { path: '/login', name: 'Login', component: () => import('@/views/auth/LoginView.vue'), meta: { guest: true, title: 'Login' } },
@@ -73,9 +77,11 @@ const routes = [
       { path: 'review-criteria', name: 'ReviewCriteria', component: () => import('@/views/research/ReviewCriteriaListView.vue'), meta: { title: 'Review Criteria', roles: ['super_admin', 'research_admin'] } },
       
       // Administration
-      { path: 'users', name: 'Users', component: () => import('@/views/users/UserListView.vue'), meta: { title: 'Users', roles: ['super_admin', 'research_admin'] } },
-      { path: 'users/:id', name: 'UserDetail', component: () => import('@/views/users/UserDetailView.vue'), meta: { title: 'User Detail', roles: ['super_admin','research_admin'] } },
+      { path: 'users', name: 'Users', component: () => import('@/views/users/UserListView.vue'), meta: { title: 'Users', roles: ['super_admin', 'research_admin', 'campus_admin', 'faculty_admin', 'department_head', 'director'] } },
+      { path: 'users/:id', name: 'UserDetail', component: () => import('@/views/users/UserDetailView.vue'), meta: { title: 'User Detail', roles: ['super_admin', 'research_admin', 'campus_admin', 'faculty_admin', 'department_head', 'director'] } },
       { path: 'roles', name: 'Roles', component: () => import('@/views/roles/RoleListView.vue'), meta: { title: 'Roles', roles: ['super_admin','research_admin'] } },
+      { path: 'institution/roles', name: 'InstitutionRoles', component: () => import('@/views/roles/InstitutionRoleListView.vue'), meta: { title: 'University Roles', roles: ['research_admin','campus_admin','faculty_admin'] } },
+      { path: 'institution/permissions', name: 'InstitutionPermissions', component: () => import('@/views/roles/InstitutionPermissionListView.vue'), meta: { title: 'Institution Permissions', roles: ['research_admin','campus_admin','faculty_admin'] } },
       { path: 'permissions', name: 'Permissions', component: () => import('@/views/permissions/PermissionListView.vue'), meta: { title: 'Permissions', roles: ['super_admin','research_admin'] } },
       { path: 'audit-logs', name: 'AuditLogs', component: () => import('@/views/audit/AuditLogListView.vue'), meta: { title: 'Audit Logs', roles: ['super_admin','research_admin'] } },
       
@@ -86,13 +92,13 @@ const routes = [
       { path: 'ethics-requests/:id', name: 'EthicsRequestDetail', component: () => import('@/views/ethics/EthicsRequestDetailView.vue'), meta: { title: 'Ethics Request Detail', roles: ['ethics_officer','super_admin','research_admin'] } },
       { path: 'detection-requests', name: 'DetectionRequests', component: () => import('@/views/detection/DetectionRequestListView.vue'), meta: { title: 'Detection', roles: ['super_admin','research_admin'] } },
       
-      // Reviewer portal
-      { path: 'reviewer/proposals', name: 'ReviewerProposals', component: () => import('@/views/reviewer/ReviewerProposalListView.vue'), meta: { title: 'My Reviews', roles: ['reviewer'] } },
-      { path: 'reviewer/proposals/:id', name: 'ReviewerProposalDetail', component: () => import('@/views/reviewer/ReviewerProposalDetailView.vue'), meta: { title: 'Review Proposal', roles: ['reviewer'] } },
+      // Reviewer portal — accessible to any authenticated user (backend enforces per-assignment access)
+      { path: 'reviewer/proposals', name: 'ReviewerProposals', component: () => import('@/views/reviewer/ReviewerProposalListView.vue'), meta: { title: 'My Reviews' } },
+      { path: 'reviewer/proposals/:id', name: 'ReviewerProposalDetail', component: () => import('@/views/reviewer/ReviewerProposalDetailView.vue'), meta: { title: 'Review Proposal' } },
       
       // System
       { path: 'community-problems', name: 'Community', component: () => import('@/views/community/CommunityProblemListView.vue'), meta: { title: 'Community' } },
-      { path: 'reports', name: 'Reports', component: () => import('@/views/reports/ReportView.vue'), meta: { title: 'Reports', roles: ['super_admin', 'research_admin', 'director', 'department_head', 'finance_officer'] } },
+      { path: 'reports', name: 'Reports', component: () => import('@/views/reports/ReportView.vue'), meta: { title: 'Reports', roles: ['super_admin', 'research_admin', 'campus_admin', 'faculty_admin', 'director', 'department_head', 'finance_officer'] } },
       { path: 'settings', name: 'Settings', component: () => import('@/views/settings/SettingsView.vue'), meta: { title: 'Settings', roles: ['super_admin'] } },
       { path: 'settings/lookups', name: 'LookupManager', component: () => import('@/views/settings/LookupManagerView.vue'), meta: { title: 'Lookups', roles: ['super_admin'] } },
       { path: 'files', name: 'Files', component: () => import('@/views/files/FileListView.vue'), meta: { title: 'Files' } },
@@ -109,7 +115,6 @@ const router = createRouter({
   history: createWebHistory(), 
   routes, 
   scrollBehavior() { return { top: 0 } },
-  // Optimize router performance
   linkActiveClass: 'active',
   linkExactActiveClass: 'exact-active',
 })

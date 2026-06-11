@@ -14,10 +14,10 @@ class PublicationController extends Controller
     {
         $publications = Publication::with('project', 'authors.user')
             ->when($request->search, fn($q) => $q->where('title', 'LIKE', '%' . $request->search . '%')
-                ->orWhere('journal_name', 'LIKE', '%' . $request->search . '%'))
+                ->orWhere('journal', 'LIKE', '%' . $request->search . '%'))
             ->when($request->year, fn($q) => $q->whereYear('publication_date', $request->year))
-            ->orderBy('publication_date', 'desc')
-            ->paginate(20);
+            ->orderBy($request->sort ?: 'publication_date', $request->order ?: 'desc')
+            ->paginate($request->per_page ?: 20);
 
         return response()->json($publications);
     }

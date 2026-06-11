@@ -17,7 +17,7 @@ class UserRoleController extends Controller
         return response()->json($user->roles);
     }
 
-    public function store(Request $request, User $user): JsonResponse
+    public function assign(Request $request, User $user): JsonResponse
     {
         $this->authorize('update', $user);
         $request->validate(['role_id' => 'required|exists:roles,id']);
@@ -30,7 +30,7 @@ class UserRoleController extends Controller
         return response()->json($user->load('roles'));
     }
 
-    public function destroy(User $user, int $roleId): JsonResponse
+    public function revoke(User $user, int $roleId): JsonResponse
     {
         $this->authorize('update', $user);
         $user->roles()->detach($roleId);

@@ -14,7 +14,8 @@ class Project extends Model
 
     protected $fillable = [
         'proposal_id', 'title', 'start_date', 'end_date', 'total_budget',
-        'budget_allocation', 'cover_image_id', 'status_id', 'pi_id', 'academic_year_id'
+        'budget_allocation', 'cover_image_id', 'status_id', 'pi_id', 'academic_year_id',
+        'research_center_id'
     ];
 
     protected $casts = [
@@ -42,6 +43,11 @@ class Project extends Model
     public function academicYear(): BelongsTo
     {
         return $this->belongsTo(AcademicYear::class);
+    }
+
+    public function researchCenter(): BelongsTo
+    {
+        return $this->belongsTo(ResearchCenter::class, 'research_center_id');
     }
 
     public function coverImage(): BelongsTo

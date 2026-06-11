@@ -9,8 +9,8 @@ class CommunityProblemStatusSeeder extends Seeder
 {
     public function run(): void
     {
-        CommunityProblemStatus::create(['name' => 'open']);
-        CommunityProblemStatus::create(['name' => 'claimed']);
-        CommunityProblemStatus::create(['name' => 'completed']);
+        CommunityProblemStatus::firstOrCreate(['name' => 'open']);
+        CommunityProblemStatus::firstOrCreate(['name' => 'claimed']);
+        CommunityProblemStatus::firstOrCreate(['name' => 'completed']);
     }
 }

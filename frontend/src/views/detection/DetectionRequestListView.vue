@@ -27,10 +27,10 @@
           <div class="flex-1 pr-4">
             <h3 class="text-base font-bold text-slate-800 leading-tight mb-2">{{ req.service?.name || 'Standard Check' }}</h3>
             <div class="flex items-center gap-2">
-              <span class="inline-block px-2 py-0.5 text-slate-500 text-[9px] font-medium rounded-md border border-slate-100">
+              <span class="inline-block px-2 py-0.5 text-slate-500 text-xs font-medium rounded-md border border-slate-100">
                 {{ req.detectable_type.split('\\').pop() }} #{{ req.detectable_id }}
               </span>
-              <span v-if="req.requested_by" class="inline-block px-2 py-0.5 text-blue-600 text-[9px] font-medium rounded-md border border-blue-200 truncate max-w-[120px]">
+              <span v-if="req.requested_by" class="inline-block px-2 py-0.5 text-blue-600 text-xs font-medium rounded-md border border-blue-200 truncate max-w-[120px]">
                 <i class="fas fa-user mr-1"></i>{{ req.requested_by?.name || 'User' }}
               </span>
             </div>
@@ -45,9 +45,17 @@
              <StatusBadge :status="req.status?.name || 'pending'" />
              <div v-if="req.results?.length" class="flex items-center gap-1.5 px-2 py-0.5 rounded-md border border-slate-100">
                 <div class="w-1.5 h-1.5 rounded-full" :class="req.results[0].similarity_score > 20 ? 'bg-rose-500' : 'bg-emerald-500'"></div>
-                <span class="text-[10px] font-medium" :class="req.results[0].similarity_score > 20 ? 'text-rose-600' : 'text-emerald-600'">
+                <span class="text-xs font-medium" :class="req.results[0].similarity_score > 20 ? 'text-rose-600' : 'text-emerald-600'">
                   {{ req.results[0].similarity_score }}% Match
                 </span>
+                <!-- PlagiarismCheck.org external report link -->
+                <a v-if="req.service?.name === 'plagiarismcheck' && req.results[0].raw_response" 
+                   :href="getPlagiarismCheckReportUrl(req.results[0].raw_response)"
+                   target="_blank"
+                   class="text-xs font-medium text-blue-600 hover:text-blue-800 ml-2 flex items-center gap-1">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V6a2 2 0 00-2-2H4a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2V6a2 2 0 00-2-2h-2m4 0h6m-6 0h6"></path></svg>
+                  View Full Report
+                </a>
              </div>
            </div>
            
@@ -73,6 +81,16 @@ async function fetchRequests() {
   loading.value = true
   try { const { data } = await api.get('/detection/requests'); requests.value = data.data || data }
   catch (e) {} finally { loading.value = false }
+}
+
+function getPlagiarismCheckReportUrl(rawResponse) {
+  try {
+    const data = JSON.parse(rawResponse)
+    if (data.check_id) {
+      return `https://plagiarismcheck.org/lms/public-report/${data.check_id}/`
+    }
+  } catch (e) {}
+  return '#'
 }
 
 onMounted(fetchRequests)

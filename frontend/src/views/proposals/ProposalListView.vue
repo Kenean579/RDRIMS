@@ -6,7 +6,7 @@
         <h1 class="text-xl font-bold text-slate-900 tracking-tight">Submissions</h1>
         <p class="text-slate-500 font-medium mt-1">See where your work is in the system.</p>
       </div>
-      <router-link v-if="auth.hasPermission('submit_proposals') || auth.hasRole('super_admin','research_admin')" to="/app/proposals/create" class="btn btn-primary h-11 px-5">
+      <router-link v-if="auth.hasPermission('submit_proposals') || auth.hasRole('super_admin','research_admin','campus_admin','faculty_admin','director','department_head')" to="/app/proposals/create" class="btn btn-primary h-11 px-5">
         <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" /></svg>
         Start Submission
       </router-link>
@@ -16,7 +16,7 @@
     <div class="card p-8 bg-slate-50/50">
       <div class="flex flex-wrap gap-5 items-end">
         <div class="flex-1 min-w-[300px]">
-          <label class="block text-[11px] text-slate-500 font-medium mb-2 ml-1">Search Keywords</label>
+          <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Search Keywords</label>
           <div class="relative group">
             <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand transition-colors">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -25,20 +25,20 @@
           </div>
         </div>
         <div class="w-56">
-          <label class="block text-[11px] text-slate-500 font-medium mb-2 ml-1">Status</label>
-          <select v-model="filters.status" @change="fetchProposals(1)" class="input font-bold">
-            <option value="">All Statuses</option>
-            <option v-for="s in proposalStatuses" :key="s.id" :value="s.name">{{ formatStatusName(s.name) }}</option>
+          <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Status</label>
+          <select v-model="filters.status" multiple @change="fetchProposals(1)" class="input font-bold h-auto py-2">
+            <option v-for="s in proposalStatuses" :key="s.id" :value="s.name" class="py-1">{{ formatStatusName(s.name) }}</option>
           </select>
+          <p class="text-[10px] text-slate-400 mt-1">Hold Ctrl/Cmd to select multiple</p>
         </div>
         <div class="w-56">
-          <label class="block text-[11px] text-slate-500 font-medium mb-2 ml-1">Type</label>
+          <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Type</label>
           <select v-model="filters.type" @change="fetchProposals(1)" class="input font-bold">
             <option value="">All Types</option>
             <option v-for="t in proposalTypes" :key="t.id" :value="t.name">{{ t.name }}</option>
           </select>
         </div>
-        <button v-if="hasActiveFilters" @click="clearFilters" class="btn btn-secondary h-11 px-6 font-bold text-[11px]">
+        <button v-if="hasActiveFilters" @click="clearFilters" class="btn btn-secondary h-11 px-6 font-bold text-xs">
           Reset
         </button>
       </div>
@@ -47,7 +47,7 @@
     <!-- Content -->
     <div v-if="loading" class="card p-8 flex flex-col justify-center items-center gap-4">
       <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-brand"></div>
-      <p class="text-[10px] font-medium text-slate-400">Loading Submissions...</p>
+      <p class="text-xs font-medium text-slate-400">Loading Submissions...</p>
     </div>
     
     <div v-else-if="error" class="card p-8 text-center">
@@ -56,7 +56,7 @@
     </div>
 
     <div v-else-if="proposals.length === 0" class="card">
-      <EmptyState icon="📝" title="No submissions found" description="Try changing your search or add a new one." :action-label="(auth.hasPermission('submit_proposals') || auth.hasRole('super_admin')) ? 'Add First' : ''" action-icon="add" @action="$router.push('/app/proposals/create')" />
+      <EmptyState icon="📝" title="No submissions found" description="Try changing your search or add a new one." :action-label="(auth.hasPermission('submit_proposals') || auth.hasRole('super_admin','research_admin','campus_admin','faculty_admin','director','department_head')) ? 'Add First' : ''" action-icon="add" @action="$router.push('/app/proposals/create')" />
     </div>
 
     <div v-else class="space-y-6">
@@ -67,16 +67,12 @@
         >
           <div class="flex items-start justify-between mb-4">
             <div class="flex-1 pr-4">
-              <p class="text-[10px] font-medium text-slate-400 mb-1.5 flex items-center gap-1.5">
-                <span class="w-1.5 h-1.5 rounded-full bg-slate-300"></span>
-                ID: {{ String(p.id).padStart(4, '0') }}
-              </p>
               <h3 class="text-base font-bold text-slate-800 leading-tight group-hover:text-brand transition-colors line-clamp-2 min-h-10">{{ p.title }}</h3>
             </div>
           </div>
           
           <div class="flex flex-wrap gap-2 mb-6">
-            <span class="px-2.5 py-1 bg-indigo-50 text-indigo-600 border border-indigo-100 text-[9px] font-medium rounded-2xl">
+            <span class="px-2.5 py-1 bg-indigo-50 text-indigo-600 border border-indigo-100 text-xs font-medium rounded-2xl">
               {{ p.type?.name || 'General' }}
             </span>
             <StatusBadge :status="p.status?.name || 'draft'" />
@@ -84,20 +80,20 @@
 
           <div class="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between">
              <div class="flex flex-col">
-               <span class="text-[10px] font-medium text-slate-400 mb-0.5">Estimated Budget</span>
+               <span class="text-xs font-medium text-slate-400 mb-0.5">Estimated Budget</span>
                <span class="text-sm font-bold text-slate-900 tracking-tight">{{ formatCurrency(p.budget) }}</span>
              </div>
              <div class="flex gap-2">
-               <router-link v-if="auth.hasRole('super_admin','research_admin') || p.submitted_by?.id === auth.user?.id" 
+               <router-link v-if="auth.hasRole('super_admin','research_admin','campus_admin','faculty_admin','director','department_head') || p.submitted_by?.id === auth.user?.id" 
                  :to="`/app/proposals/${p.id}/edit`" 
-                 class="btn btn-ghost text-[10px] font-medium py-1.5 px-3 text-amber-600 hover:bg-amber-50"
+                 class="btn btn-ghost text-xs font-medium py-1.5 px-3 text-amber-600 hover:bg-amber-50"
                  @click.stop
                >
                  Edit
                </router-link>
-               <button v-if="auth.hasRole('super_admin')" 
+               <button v-if="auth.hasRole('super_admin','research_admin','campus_admin') || p.submitted_by?.id === auth.user?.id" 
                  @click.stop="deleteProposal(p.id)" 
-                 class="btn btn-ghost text-[10px] font-medium py-1.5 px-3 text-rose-500 hover:bg-rose-50"
+                 class="btn btn-ghost text-xs font-medium py-1.5 px-3 text-rose-500 hover:bg-rose-50"
                >
                  Delete
                </button>
@@ -130,18 +126,26 @@ const auth = useAuthStore()
 const notif = useNotificationStore()
 const loading = ref(true); const error = ref(null); const proposals = ref([])
 const pagination = reactive({ current_page: 1, last_page: 1, total: 0 })
-const filters = reactive({ search: '', status: '', type: '' })
+const filters = reactive({ search: '', status: [], type: '' })
 const proposalStatuses = ref([]); const proposalTypes = ref([])
 let searchTimer = null
-const hasActiveFilters = computed(() => filters.search || filters.status || filters.type)
+const hasActiveFilters = computed(() => filters.search || filters.status.length > 0 || filters.type)
 
 async function fetchProposals(page = 1) {
   loading.value = true; error.value = null
-  try { const params = { page }; if (filters.search) params.search = filters.search; if (filters.status) params.status = filters.status; if (filters.type) params.type = filters.type; const { data } = await api.get('/proposals', { params }); proposals.value = data.data; Object.assign(pagination, { current_page: data.current_page, last_page: data.last_page, total: data.total }) }
+  try {
+    const params = { page }
+    if (filters.search) params.search = filters.search
+    if (filters.status.length) params.status = filters.status
+    if (filters.type) params.type = filters.type
+    const { data } = await api.get('/proposals', { params })
+    proposals.value = data.data
+    Object.assign(pagination, { current_page: data.current_page, last_page: data.last_page, total: data.total })
+  }
   catch (err) { error.value = err.response?.data?.message || 'Failed' } finally { loading.value = false }
 }
 function debounceSearch() { clearTimeout(searchTimer); searchTimer = setTimeout(() => fetchProposals(1), 400) }
-function clearFilters() { filters.search = ''; filters.status = ''; filters.type = ''; fetchProposals(1) }
+function clearFilters() { filters.search = ''; filters.status = []; filters.type = ''; fetchProposals(1) }
 
 async function deleteProposal(id) {
   if (!confirm('Are you sure you want to delete this proposal? This action cannot be undone.')) return

@@ -18,7 +18,7 @@
     <div class="card p-8 bg-slate-50/50">
       <div class="flex flex-col sm:flex-row gap-5 items-start">
         <div class="flex-1 w-full relative">
-          <label class="block text-[11px] text-slate-500 font-medium mb-2 ml-1">Search</label>
+          <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Search</label>
           <div class="relative group">
             <span class="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-brand transition-colors">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
@@ -27,12 +27,10 @@
           </div>
         </div>
         <div class="w-full sm:w-56">
-          <label class="block text-[11px] text-slate-500 font-medium mb-2 ml-1">Status</label>
+          <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Status</label>
           <select v-model="status" @change="fetchProjects(1)" class="input font-semibold">
             <option value="">All Statuses</option>
-            <option value="active">Active</option>
-            <option value="completed">Completed</option>
-            <option value="suspended">Suspended</option>
+            <option v-for="s in projectStatuses" :key="s.id" :value="s.name">{{ formatStatusName(s.name) }}</option>
           </select>
         </div>
       </div>
@@ -46,34 +44,31 @@
     
     <div v-else-if="projects.length === 0" class="card">
        <EmptyState icon="📁" title="No projects found" description="There are no research projects matching your search." />
-    </div>    <div v-else class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+    </div>
+    <div v-else class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
       <div v-for="p in projects" :key="p.id" 
         class="bg-white rounded-2xl border border-slate-100 p-4 flex flex-col group hover:shadow-md transition-all cursor-pointer"
         @click="$router.push(`/app/projects/${p.id}`)"
       >
         <div class="flex items-start justify-between mb-4">
           <div class="flex-1 pr-4 min-w-0">
-            <p class="text-[10px] font-medium text-slate-400 mb-1.5 flex items-center gap-1.5">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-300"></span>
-              ID: {{ String(p.id).padStart(4, '0') }}
-            </p>
             <h3 class="text-base font-semibold text-slate-800 leading-tight group-hover:text-emerald-700 transition-colors line-clamp-2 min-h-10">{{ p.title }}</h3>
           </div>
         </div>
         
         <div class="flex items-center gap-3 mb-6">
-           <div class="w-8 h-8 rounded-2xl overflow-hidden bg-slate-50 flex items-center justify-center text-[10px] font-medium text-slate-500 border border-slate-100 group-hover:bg-emerald-50 group-hover:text-emerald-700 transition-all shrink-0">
+           <div class="w-8 h-8 rounded-2xl overflow-hidden bg-slate-50 flex items-center justify-center text-xs font-medium text-slate-500 border border-slate-100 group-hover:bg-emerald-50 group-hover:text-emerald-700 transition-all shrink-0">
               <img v-if="imageUrl(p.pi?.profile_image)" :src="imageUrl(p.pi?.profile_image)" class="w-full h-full object-cover"/>
               <span v-else>{{ getInitials(p.pi?.name) }}</span>
            </div>
            <div class="min-w-0">
-             <p class="text-[9px] font-medium text-slate-400 leading-none mb-1">Lead PI</p>
+             <p class="text-xs font-medium text-slate-400 leading-none mb-1">Lead PI</p>
              <p class="text-xs font-semibold text-slate-700 truncate">{{ p.pi?.name || 'Researcher' }}</p>
            </div>
         </div>
 
         <div class="space-y-3 mb-6">
-           <div class="flex items-center justify-between text-[10px] font-medium text-slate-400">
+           <div class="flex items-center justify-between text-xs font-medium text-slate-400">
               <span>Execution Progress</span>
               <span class="text-emerald-600">{{ calculateProgress(p) }}%</span>
            </div>
@@ -84,7 +79,7 @@
 
         <div class="mt-auto pt-4 border-t border-slate-100 flex items-center justify-between">
            <div class="flex flex-col">
-             <span class="text-[9px] font-medium text-slate-400">Target End Date</span>
+             <span class="text-xs font-medium text-slate-400">Target End Date</span>
              <span class="text-xs font-semibold text-slate-700">{{ formatDate(p.end_date) }}</span>
            </div>
            <StatusBadge :status="p.status?.name || 'active'" />
@@ -103,11 +98,16 @@ import StatusBadge from '@/components/StatusBadge.vue'
 import Pagination from '@/components/Pagination.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import { formatDate, getInitials, imageUrl } from '@/utils/formatters'
+import { formatStatusName } from '@/utils/colors'
 const loading = ref(true); const projects = ref([]); const search = ref(''); const status = ref('')
 const pagination = reactive({ current_page: 1, last_page: 1, total: 0 })
+const projectStatuses = ref([])
 let timer = null
-async function fetchProjects(page = 1) { loading.value = true; try { const { data } = await api.get('/projects', { params: { page, search: search.value, status: status.value } }); projects.value = data.data; Object.assign(pagination, { current_page: data.current_page, last_page: data.last_page, total: data.total }) } catch (e) {} finally { loading.value = false } }
+async function fetchProjects(page = 1) { loading.value = true; try { const params = { page, search: search.value }; if (status.value) params.status = status.value; const { data } = await api.get('/projects', { params }); projects.value = data.data; Object.assign(pagination, { current_page: data.current_page, last_page: data.last_page, total: data.total }) } catch (e) {} finally { loading.value = false } }
 function calculateProgress(p) { if (!p.milestones || p.milestones.length === 0) return 0; const comp = p.milestones.filter(m => m.status === 'completed').length; return Math.round((comp / p.milestones.length) * 100) }
 function debounceFetch() { clearTimeout(timer); timer = setTimeout(() => fetchProjects(1), 400) }
-onMounted(() => fetchProjects())
+onMounted(async () => {
+  try { const { data } = await api.get('/lookups/project_statuses'); projectStatuses.value = data } catch (e) {}
+  fetchProjects()
+})
 </script>

@@ -24,16 +24,99 @@ export const useAuthStore = defineStore('auth', () => {
     return perms
   })
 
+  // Hierarchical level calculation based on highest role
+  const hierarchicalLevel = computed(() => {
+    const roleHierarchy = {
+      'super_admin': 6,
+      'research_admin': 5,
+      'campus_admin': 4,
+      'faculty_admin': 3,
+      'department_head': 2,
+      'director': 2, // Same as department head for center management
+      'researcher': 1,
+      'reviewer': 1,
+      'student': 1,
+      'guest': 0,
+      'finance_officer': 5, // Functional but university-level
+      'ethics_officer': 5  // Functional but university-level
+    }
+    
+    if (!userRoles.value.length) return 0
+    return Math.max(...userRoles.value.map(role => roleHierarchy[role] || 0))
+  })
+
+  // Check if user can manage a specific hierarchical level
+  function canManageLevel(targetLevel) {
+    return hierarchicalLevel.value >= targetLevel
+  }
+
+  // Check if user has any of the specified roles (union of all roles for multi-role users)
   function hasRole(...names) {
     if (userRoles.value.includes('super_admin')) return true
     return names.length === 0 || names.some(r => userRoles.value.includes(r))
   }
 
+  // Check if user has a specific permission (union of all role permissions)
   function hasPermission(name) {
     if (userRoles.value.includes('super_admin')) return true
     return !name || userPermissions.value.includes(name)
   }
-  const primaryRole = computed(() => userRoles.value.length ? userRoles.value[0].replace(/_/g, ' ') : 'Guest')
+
+  // Get the highest-level role for display purposes
+  const primaryRole = computed(() => {
+    if (!userRoles.value.length) return 'Guest'
+    
+    const roleDisplayOrder = [
+      'super_admin',
+      'research_admin', 
+      'campus_admin',
+      'faculty_admin',
+      'department_head',
+      'director',
+      'finance_officer',
+      'ethics_officer',
+      'researcher',
+      'reviewer',
+      'student'
+    ]
+    
+    // Return the highest-level role for display
+    for (const role of roleDisplayOrder) {
+      if (userRoles.value.includes(role)) {
+        return role.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+      }
+    }
+    
+    return userRoles.value[0].replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+  })
+
+  // Get all role names for multi-role support
+  const allRoles = computed(() => {
+    return userRoles.value.map(role => role.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase()))
+  })
+
+  // Check if user is an admin (any admin level)
+  const isAdmin = computed(() => {
+    return userRoles.value.some(role => 
+      ['super_admin', 'research_admin', 'campus_admin', 'faculty_admin', 'department_head', 'director'].includes(role)
+    )
+  })
+
+  // Check if user is a functional admin (finance or ethics)
+  const isFunctionalAdmin = computed(() => {
+    return userRoles.value.some(role => ['finance_officer', 'ethics_officer'].includes(role))
+  })
+
+  // Get user's scope level for UI context
+  const userScope = computed(() => {
+    if (userRoles.value.includes('super_admin')) return 'system'
+    if (userRoles.value.includes('research_admin') || userRoles.value.includes('finance_officer') || userRoles.value.includes('ethics_officer')) return 'university'
+    if (userRoles.value.includes('campus_admin')) return 'campus'
+    if (userRoles.value.includes('faculty_admin')) return 'faculty'
+    if (userRoles.value.includes('department_head')) return 'department'
+    if (userRoles.value.includes('director')) return 'research_center'
+    return 'individual'
+  })
 
   async function login(email, password) {
     loading.value = true; error.value = null
@@ -106,5 +189,15 @@ export const useAuthStore = defineStore('auth', () => {
     finally { loading.value = false }
   }
 
-  return { user, token, loading, error, isAuthenticated, userRoles, userPermissions, hasRole, hasPermission, primaryRole, login, register, fetchUser, updateProfile, clearError, logout }
+  return { 
+    user, token, loading, error, 
+    isAuthenticated, 
+    userRoles, userPermissions, 
+    hierarchicalLevel, canManageLevel,
+    hasRole, hasPermission, 
+    primaryRole, allRoles,
+    isAdmin, isFunctionalAdmin,
+    userScope,
+    login, register, fetchUser, updateProfile, clearError, logout 
+  }
 })

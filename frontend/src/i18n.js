@@ -13,7 +13,8 @@ const messages = {
       signOut: 'Sign Out',
       signIn: 'Sign In',
       signUp: 'Sign Up',
-      goToDashboard: 'Go to Dashboard'
+      goToDashboard: 'Go to Dashboard',
+      about: 'About'
     },
     home: {
       heroBadge: 'Transforming Higher Education',
@@ -49,7 +50,8 @@ const messages = {
       signOut: 'ውጣ',
       signIn: 'ግባ',
       signUp: 'ተመዝገብ',
-      goToDashboard: 'ወደ ዳሽቦርድ ሂድ'
+      goToDashboard: 'ወደ ዳሽቦርድ ሂድ',
+      about: 'ስለ'
     },
     home: {
       heroBadge: 'ከፍተኛ ትምህርትን መለወጥ',

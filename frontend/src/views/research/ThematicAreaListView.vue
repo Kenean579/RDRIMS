@@ -27,18 +27,18 @@
         <div class="flex items-start justify-between mb-4">
           <div class="flex-1 pr-4 min-w-0">
             <h3 class="text-base font-bold text-slate-800 leading-tight group-hover:text-brand transition-colors line-clamp-2 min-h-10">{{ t.name }}</h3>
-            <p class="text-[10px] font-medium text-slate-400 mt-1">Research Area</p>
+            <p class="text-xs font-medium text-slate-400 mt-1">Research Area</p>
           </div>
-          <div class="w-12 h-12 rounded-2xl bg-slate-100 text-white flex items-center justify-center font-bold shrink-0  text-xs">
+          <div class="w-12 h-12 bg-slate-100 text-white flex items-center justify-center font-bold shrink-0  text-xs" style="border-radius: 1rem">
              {{ t.name.substring(0,2) }}
           </div>
         </div>
         
         <p class="text-sm text-slate-500 font-medium flex-1 line-clamp-2 leading-relaxed mb-6">{{ t.description || 'Global research focus area for institutional alignment.' }}</p>
         
-        <div class="flex items-center justify-between bg-slate-50/50 rounded-2xl p-1 gap-1">
-          <button @click="editTheme(t)" class="btn btn-ghost bg-white hover:bg-brand-light hover:text-brand flex-1 justify-center text-[10px] font-medium py-2">Edit</button>
-          <button @click="confirmDelete(t)" class="btn btn-ghost text-rose-500 hover:bg-rose-50 flex-1 justify-center text-[10px] font-medium py-2">Delete</button>
+        <div class="flex items-center justify-between bg-slate-50/50 p-1 gap-1" style="border-radius: 1rem">
+          <button @click="editTheme(t)" class="btn btn-ghost bg-white hover:bg-brand-light hover:text-brand flex-1 justify-center text-xs font-medium py-2">Edit</button>
+          <button @click="confirmDelete(t)" class="btn btn-ghost text-rose-500 hover:bg-rose-50 flex-1 justify-center text-xs font-medium py-2">Delete</button>
         </div>
       </div>
     </div>
@@ -47,11 +47,11 @@
     <Modal :show="showCreate || !!editingTheme" :title="editingTheme ? 'Edit Area' : 'Add Area'" size="lg" @close="closeModal">
       <form @submit.prevent="saveTheme" class="space-y-6">
         <div>
-          <label class="block text-[11px] text-slate-500 font-medium mb-2 ml-1">Area Name *</label>
+          <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Area Name *</label>
           <input v-model="form.name" type="text" required class="input h-12 font-bold" placeholder="e.g., Artificial Intelligence, Climate" />
         </div>
         <div>
-          <label class="block text-[11px] text-slate-500 font-medium mb-2 ml-1">Description</label>
+          <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Description</label>
           <textarea v-model="form.description" rows="4" class="input resize-none pt-3" placeholder="Tell us more about this research area..."></textarea>
         </div>
         <div class="flex justify-end gap-3 pt-6 mt-6 border-t border-slate-100">

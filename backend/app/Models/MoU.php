@@ -10,9 +10,10 @@ class MoU extends Model
 {
     use HasFactory;
 
+    protected $table = 'mo_us';
+
     protected $fillable = [
-        'partner_id', 'title', 'agreement_type_id', 'file_id', 
-        'start_date', 'end_date'
+        'partner_id', 'start_date', 'end_date', 'research_center_id'
     ];
 
     protected $casts = [
@@ -25,13 +26,8 @@ class MoU extends Model
         return $this->belongsTo(Partner::class);
     }
 
-    public function agreementType(): BelongsTo
+    public function researchCenter(): BelongsTo
     {
-        return $this->belongsTo(AgreementType::class);
-    }
-
-    public function file(): BelongsTo
-    {
-        return $this->belongsTo(File::class);
+        return $this->belongsTo(ResearchCenter::class, 'research_center_id');
     }
 }
