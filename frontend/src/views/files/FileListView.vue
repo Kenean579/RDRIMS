@@ -79,6 +79,7 @@
                 <button @click="downloadFile(file)" class="btn btn-ghost text-brand text-xs font-medium py-1.5 px-4 h-auto border border-brand hover:bg-brand hover:text-white transition-all shadow-sm">
                   Download
                 </button>
+                <router-link :to="`/app/files/${file.id}`" class="btn btn-ghost text-slate-700 text-xs font-medium py-1.5 px-3 h-auto hover:bg-slate-50 ml-1">Versions</router-link>
                 <button @click="confirmDelete(file)" class="btn btn-ghost text-rose-500 text-xs font-medium py-1.5 px-3 h-auto hover:bg-rose-50 ml-1">Delete</button>
               </td>
             </tr>

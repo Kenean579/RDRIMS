@@ -6,7 +6,7 @@
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
         Back to Proposals
       </router-link>
-      <h1 class="text-2xl font-black text-slate-800 tracking-tight">Create New Proposal</h1>
+      <h1 class="text-2xl font-bold text-slate-800 tracking-tight">Create New Proposal</h1>
       <p class="text-sm text-slate-500 mt-1 font-medium">Fill in the details to submit your research proposal</p>
     </div>
 
@@ -25,7 +25,7 @@
               : 'text-slate-400 hover:text-slate-600'
         ]"
       >
-        <span class="h-6 w-6 rounded-full flex items-center justify-center text-xs font-black shrink-0"
+        <span class="h-6 w-6 rounded-full flex items-center justify-center text-xs font-bold shrink-0"
           :class="[
             currentStep === i ? 'bg-white/20' : currentStep > i ? 'bg-emerald-200 text-emerald-700' : 'bg-slate-100'
           ]"
@@ -40,19 +40,19 @@
     <form @submit.prevent="handleSubmit">
       <!-- Step 1: Quick Summary -->
       <div v-show="currentStep === 0" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
-        <h2 class="text-lg font-black text-slate-800 mb-6">Quick Summary</h2>
+        <h2 class="text-lg font-bold text-slate-800 mb-6">Quick Summary</h2>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div class="md:col-span-2">
             <FileUpload v-model="form.proposal_file" label="Proposal Document" :required="true" />
           </div>
           <div class="md:col-span-2">
-            <label class="block text-xs font-black text-slate-400 capitalize tracking-widest mb-2 ml-1">Title <span class="text-rose-500">*</span></label>
+            <label class="block text-xs font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">Title <span class="text-rose-500">*</span></label>
             <input v-model="form.title" type="text" required maxlength="255"
               class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none transition-all"
               placeholder="Enter the title of your research proposal" />
           </div>
           <div>
-            <label class="block text-xs font-black text-slate-400 capitalize tracking-widest mb-2 ml-1">Call for Proposal</label>
+            <label class="block text-xs font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">Call for Proposal</label>
             <select v-model="form.call_id"
               class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none bg-white transition-all">
               <option value="">Open Call (no specific call)</option>
@@ -60,11 +60,11 @@
             </select>
           </div>
           <div>
-            <label class="block text-xs font-black text-slate-400 capitalize tracking-widest mb-2 ml-1">Proposal Type <span class="text-rose-500">*</span></label>
+            <label class="block text-xs font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">Proposal Type <span class="text-rose-500">*</span></label>
             <LookupSelect v-model="form.type_id" lookup-key="proposal_types" placeholder="Select type" />
           </div>
           <div>
-            <label class="block text-xs font-black text-slate-400 capitalize tracking-widest mb-2 ml-1">Academic Year</label>
+            <label class="block text-xs font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">Academic Year</label>
             <select v-model="form.academic_year_id"
               class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none bg-white transition-all">
               <option value="">Select year</option>
@@ -72,7 +72,7 @@
             </select>
           </div>
           <div>
-            <label class="block text-xs font-black text-slate-400 capitalize tracking-widest mb-2 ml-1">Budget (ETB) <span class="text-rose-500">*</span></label>
+            <label class="block text-xs font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">Budget (ETB) <span class="text-rose-500">*</span></label>
             <input v-model.number="form.budget" type="number" required min="0" step="0.01"
               class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none transition-all"
               placeholder="500000.00" />
@@ -82,29 +82,29 @@
 
       <!-- Step 2: Research Details -->
       <div v-show="currentStep === 1" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
-        <h2 class="text-lg font-black text-slate-800 mb-6">Research Details</h2>
+        <h2 class="text-lg font-bold text-slate-800 mb-6">Research Details</h2>
         <div class="space-y-6">
           <div>
-            <label class="block text-xs font-black text-slate-400 capitalize tracking-widest mb-2 ml-1">Keywords <span class="text-rose-500">*</span></label>
+            <label class="block text-xs font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">Keywords <span class="text-rose-500">*</span></label>
             <input v-model="form.keywords" type="text" required
               class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none transition-all"
               placeholder="AI, Machine Learning, Agriculture" />
             <p class="text-[10px] text-slate-400 mt-1.5 ml-1 font-medium">Separate keywords with commas</p>
           </div>
           <div>
-            <label class="block text-xs font-black text-slate-400 capitalize tracking-widest mb-2 ml-1">Abstract <span class="text-rose-500">*</span></label>
+            <label class="block text-xs font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">Abstract <span class="text-rose-500">*</span></label>
             <textarea v-model="form.abstract" required rows="5"
               class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none resize-none transition-all"
               placeholder="Provide a brief summary of your research proposal..."></textarea>
           </div>
           <div>
-            <label class="block text-xs font-black text-slate-400 capitalize tracking-widest mb-2 ml-1">Objectives <span class="text-rose-500">*</span></label>
+            <label class="block text-xs font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">Objectives <span class="text-rose-500">*</span></label>
             <textarea v-model="form.objectives" required rows="4"
               class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none resize-none transition-all"
               placeholder="1. First objective&#10;2. Second objective&#10;3. Third objective"></textarea>
           </div>
           <div>
-            <label class="block text-xs font-black text-slate-400 capitalize tracking-widest mb-2 ml-1">Methodology <span class="text-rose-500">*</span></label>
+            <label class="block text-xs font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">Methodology <span class="text-rose-500">*</span></label>
             <textarea v-model="form.methodology" required rows="5"
               class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none resize-none transition-all"
               placeholder="Describe your research methodology in detail..."></textarea>
@@ -116,7 +116,7 @@
       <div v-show="currentStep === 2" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
         <div class="flex items-center justify-between mb-6">
           <div>
-            <h2 class="text-lg font-black text-slate-800">Co-Team Members</h2>
+            <h2 class="text-lg font-bold text-slate-800">Co-Team Members</h2>
             <p class="text-xs text-slate-400 font-medium mt-1">You are automatically the Principal Investigator</p>
           </div>
           <button type="button" @click="addInvestigator"
@@ -138,7 +138,7 @@
           <div v-for="(inv, index) in form.investigators" :key="index"
             class="p-5 border border-slate-200 rounded-2xl bg-slate-50/50 hover:border-slate-300 transition-colors">
             <div class="flex items-center justify-between mb-4">
-              <span class="text-xs font-black text-slate-400 capitalize tracking-widest">Member #{{ index + 1 }}</span>
+              <span class="text-xs font-bold text-slate-400 capitalize tracking-widest">Member #{{ index + 1 }}</span>
               <button type="button" @click="removeInvestigator(index)"
                 class="h-7 w-7 rounded-full bg-rose-50 text-rose-500 hover:bg-rose-100 flex items-center justify-center transition-colors">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
@@ -181,7 +181,7 @@
 
         <!-- Documents Section -->
         <div class="mt-8 pt-8 border-t border-slate-200">
-          <h2 class="text-lg font-black text-slate-800 mb-6">Required Documents</h2>
+          <h2 class="text-lg font-bold text-slate-800 mb-6">Required Documents</h2>
           <div class="space-y-6">
             <div>
               <FileUpload v-model="form.proposal_file" label="Proposal Document" :required="true" />
@@ -196,7 +196,7 @@
 
         <!-- Review & Submit Section -->
         <div class="mt-8 pt-8 border-t border-slate-200">
-          <h2 class="text-lg font-black text-slate-800 mb-6">Review & Submit</h2>
+          <h2 class="text-lg font-bold text-slate-800 mb-6">Review & Submit</h2>
           <div class="bg-slate-50 rounded-xl p-6 border border-slate-200 space-y-4">
             <div class="flex items-center gap-3">
               <div class="h-5 w-5 rounded bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs">✓</div>

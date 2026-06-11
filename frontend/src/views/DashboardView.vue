@@ -350,7 +350,7 @@ async function fetchDashboard() {
         title: call.title || 'Untitled Call',
         university: call.university || { name: 'Central' },
         deadline: call.deadline,
-        status: typeof call.status === 'object' ? (call.status.name ? call.status.name.charAt(0).toUpperCase() + call.status.name.slice(1) : 'Open') : (call.status ? call.status.charAt(0).toUpperCase() + call.status.slice(1) : 'Open'),
+        status: typeof call.status === 'object' ? (call.status.name ? call.status.name.charAt(0).to() + call.status.name.slice(1) : 'Open') : (call.status ? call.status.charAt(0).to() + call.status.slice(1) : 'Open'),
         proposals_count: call.proposals_count || 0
       }))
     } else {
@@ -378,7 +378,7 @@ async function fetchDashboard() {
     
     if (Array.isArray(statusData) && statusData.length > 0) {
       statusData.forEach(s => {
-        const label = (s.name || s.status || 'Unknown').replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+        const label = (s.name || s.status || 'Unknown').replace(/_/g, ' ').replace(/\b\w/g, c => c.to())
         donutLabels.push(label)
         donutValues.push(s.count || 0)
       })

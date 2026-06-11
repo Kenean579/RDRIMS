@@ -92,6 +92,12 @@
                  <button @click="changeStatus(4)" class="btn bg-indigo-600 hover:bg-indigo-700 text-white h-11 px-5 text-xs">Final Dept Approval</button>
                  <button @click="changeStatus(5)" class="btn bg-rose-500 hover:bg-rose-600 text-white h-11 px-5 text-xs">Reject Output</button>
                </template>
+
+               <!-- Originality Check -->
+               <button v-if="auth.hasRole('super_admin', 'research_admin', 'campus_admin', 'faculty_admin', 'director', 'department_head')" @click="openDetectionModal" class="btn bg-violet-600 hover:bg-violet-700 text-white h-11 px-5 text-xs flex items-center gap-2">
+                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                 Check Originality
+               </button>
             </div>
           </div>
         </div>
@@ -149,12 +155,41 @@
         </div>
       </form>
     </Modal>
+
+    <!-- Detection Services Modal -->
+    <Modal :show="showDetectionModal" title="Select Detection Service" size="md" @close="showDetectionModal = false">
+      <div class="space-y-5 px-1 py-1">
+        <div v-if="detectionLoading" class="text-center py-8">
+          <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-brand mx-auto"></div>
+        </div>
+        <div v-else class="space-y-3">
+          <label v-for="service in detectionServices" :key="service.id" 
+            class="flex items-center p-4 rounded-xl border-2 cursor-pointer transition-all group"
+            :class="selectedDetectionService === service.id ? 'border-brand bg-brand/5' : 'border-slate-100 hover:border-brand/30'">
+            <div class="flex items-center gap-3">
+              <input type="radio" :value="service.id" v-model="selectedDetectionService" class="w-4 h-4 text-brand focus:ring-brand border-slate-300" />
+              <div class="min-w-0">
+                <p class="text-sm font-bold text-slate-800 group-hover:text-brand capitalize">{{ service.name }}</p>
+                <p class="text-xs font-medium text-slate-400 mt-0.5">
+                  {{ getServiceDescription(service.name) }}
+                </p>
+              </div>
+            </div>
+          </label>
+        </div>
+        <div class="flex justify-end gap-3 pt-6 border-t border-slate-100">
+          <button @click="showDetectionModal = false" class="btn btn-secondary px-6 font-bold tracking-widest text-xs">Cancel</button>
+          <button @click="submitDetectionRequest" class="btn btn-primary px-5 font-bold tracking-widest text-xs" :disabled="!selectedDetectionService">Start Check</button>
+        </div>
+      </div>
+    </Modal>
   </div>
 </template>
 
 <script setup>
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
 import { useNotificationStore } from '@/stores/notification'
 import api from '@/services/api'
 import StatusBadge from '@/components/StatusBadge.vue'
@@ -165,6 +200,7 @@ import { formatStatusName } from '@/utils/colors'
 
 const route = useRoute()
 const notif = useNotificationStore()
+const auth = useAuthStore()
 const output = ref({})
 const loading = ref(true)
 const outputStatuses = ref([])
@@ -172,6 +208,10 @@ const showAddParticipant = ref(false)
 const participantForm = ref({ user_id: '', participant_type_id: '' })
 const users = ref([])
 const participantTypes = ref([])
+const showDetectionModal = ref(false)
+const detectionServices = ref([])
+const selectedDetectionService = ref(null)
+const detectionLoading = ref(false)
 
 async function fetchOutput() {
   loading.value = true
@@ -213,6 +253,54 @@ async function removeParticipant(p) {
     fetchOutput() 
   } catch (err) { 
     notif.error('Failed to remove contributor')
+  }
+}
+
+async function fetchDetectionServices() {
+  detectionLoading.value = true
+  try {
+    const { data } = await api.get('/detection/services')
+    detectionServices.value = data || []
+  } catch (err) {
+    notif.error('Failed to load detection services')
+  } finally {
+    detectionLoading.value = false
+  }
+}
+
+function getServiceDescription(serviceName) {
+  const descriptions = {
+    'plagiarismcheck': 'Comprehensive plagiarism and similarity detection',
+    'originality': 'AI content detection and originality verification',
+    'grammar': 'Grammar, spelling, and style checking'
+  }
+  return descriptions[serviceName] || 'Detection service'
+}
+
+async function submitDetectionRequest() {
+  if (!selectedDetectionService.value) {
+    notif.error('Please select a detection service')
+    return
+  }
+
+  try {
+    await api.post('/detection/requests', {
+      detectable_type: 'App\\Models\\Output',
+      detectable_id: output.value.id,
+      service_id: selectedDetectionService.value
+    })
+    notif.success('Detection request submitted successfully')
+    showDetectionModal.value = false
+    selectedDetectionService.value = null
+  } catch (err) {
+    notif.error('Failed to submit detection request')
+  }
+}
+
+async function openDetectionModal() {
+  showDetectionModal.value = true
+  if (detectionServices.value.length === 0) {
+    await fetchDetectionServices()
   }
 }
 

@@ -39,7 +39,10 @@
         </router-link>
 
         <!-- Plagiarism Check: Admins Only -->
-        <button v-if="canManageProposal" @click="checkOriginality" class="btn bg-indigo-600 hover:bg-indigo-700 text-white h-11 px-5 text-xs">Check Originality</button>
+        <button v-if="canManageProposal" @click="showDetectionModal = true" class="btn bg-indigo-600 hover:bg-indigo-700 text-white h-11 px-5 text-xs">
+          <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          Check Originality
+        </button>
         
         <!-- Registration as Project: Approved Only + Admin -->
         <router-link v-if="canConvertToProject" :to="`/app/projects/create-from-proposal/${proposal.id}`" class="btn bg-teal-500 hover:bg-teal-600 text-white h-11 px-5 text-xs flex items-center justify-center">Convert To Project</router-link>

@@ -53,6 +53,6 @@ const dotColor = computed(() => config.value.color)
 
 const formattedStatus = computed(() => {
   const s = statusStr.value.replace(/_/g, ' ')
-  return s.charAt(0).toUpperCase() + s.slice(1)
+  return s.charAt(0).to() + s.slice(1)
 })
 </script>

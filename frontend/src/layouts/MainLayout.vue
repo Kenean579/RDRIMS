@@ -261,7 +261,7 @@ function goSearch() {
 function formatRole(role) {
   if (!role) return 'User'
   const s = role.replace(/_/g, ' ')
-  return s.charAt(0).toUpperCase() + s.slice(1)
+  return s.charAt(0).to() + s.slice(1)
 }
 
 function logout() {
@@ -649,7 +649,7 @@ const navigation = computed(() => {
   padding: 3px 8px;
   border-radius: 6px;
   white-space: nowrap;
-  text-transform: uppercase;
+  text-transform: none;
   letter-spacing: 0.05em;
 }
 .context-breadcrumb {
@@ -744,7 +744,7 @@ const navigation = computed(() => {
   font-size: 14px; font-weight: 800; color: var(--text-primary);
 }
 .profile-role {
-  font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: uppercase;
+  font-size: 11px; color: var(--text-muted); font-weight: 600; text-transform: none;
 }
 
 /* ── App Body ────────────────────────────────── */
@@ -799,7 +799,7 @@ const navigation = computed(() => {
   font-size: 10px;
   font-weight: 700;
   color: var(--text-muted);
-  text-transform: uppercase;
+  text-transform: none;
   letter-spacing: 0.1em;
 }
 

@@ -31,9 +31,6 @@ class AuditLog extends Model
         return $this->belongsTo(User::class);
     }
 
-    /**
-     * Record an audit log entry with automatic hierarchical scoping.
-     */
     public static function record($action, $table, $id, $old = null, $new = null)
     {
         $user = auth()->user();

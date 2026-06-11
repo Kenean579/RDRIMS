@@ -1,7 +1,7 @@
 <template>
   <div class="max-w-3xl mx-auto animate-fade pb-8">
     <div class="card p-8 md:p-12">
-      <h1 class="text-3xl font-black text-slate-900 mb-2">Community Problems</h1>
+      <h1 class="text-3xl font-bold text-slate-900 mb-2">Community Problems</h1>
       <p class="text-slate-500 font-medium mb-8">
         Report a real-world problem in your community for university researchers to study and help solve.
       </p>

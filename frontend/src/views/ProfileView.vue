@@ -3,7 +3,7 @@
     <!-- Header -->
     <div class="section-header pb-4 border-b border-slate-100">
       <div>
-        <h1 class="text-xl font-black text-slate-900 tracking-tight leading-none ">Institutional Profile</h1>
+        <h1 class="text-xl font-bold text-slate-900 tracking-tight leading-none ">Institutional Profile</h1>
         <p class="text-xs font-bold text-slate-400 mt-2  tracking-widest flex items-center gap-2">
            <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span>
            Manage your personal information and research credentials
@@ -19,7 +19,7 @@
           
           <!-- Profile Image / Upload -->
           <div class="relative group mb-6 z-10">
-            <div class="w-28 h-28 rounded-3xl overflow-hidden bg-brand shadow-xl shadow-brand/20 flex items-center justify-center text-3xl font-black text-white transition-transform group-hover:scale-105">
+            <div class="w-28 h-28 rounded-3xl overflow-hidden bg-brand shadow-xl shadow-brand/20 flex items-center justify-center text-3xl font-bold text-white transition-transform group-hover:scale-105">
               <img
                 v-if="imageUrl(auth.user?.profile_image)"
                 :src="imageUrl(auth.user?.profile_image)"
@@ -39,13 +39,13 @@
             <input id="profile-photo-input" type="file" accept="image/*" class="hidden" @change="uploadProfilePhoto" />
           </div>
           
-          <h2 class="text-xl font-black text-slate-900 tracking-tight z-10">{{ auth.user?.name }}</h2>
+          <h2 class="text-xl font-bold text-slate-900 tracking-tight z-10">{{ auth.user?.name }}</h2>
           <p class="text-xs font-bold text-slate-400 mt-1  tracking-widest z-10">{{ auth.user?.email }}</p>
           
           <div class="mt-8 pt-8 border-t border-slate-50 w-full z-10">
-            <p class="text-xs font-black text-slate-300 mb-4  tracking-tighter">Assigned Roles</p>
+            <p class="text-xs font-bold text-slate-300 mb-4  tracking-tighter">Assigned Roles</p>
             <div class="flex flex-wrap justify-center gap-2">
-              <span v-for="r in auth.user?.roles" :key="r.id" class="px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-100 text-slate-600 text-xs font-black  tracking-widest">
+              <span v-for="r in auth.user?.roles" :key="r.id" class="px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-100 text-slate-600 text-xs font-bold  tracking-widest">
                 {{ r.name.replace('_', ' ') }}
               </span>
             </div>
@@ -54,22 +54,22 @@
 
         <!-- Research Identifiers -->
         <div class="card p-8">
-           <h3 class="text-xs font-black text-slate-800  tracking-widest mb-6 flex items-center gap-2">
+           <h3 class="text-xs font-bold text-slate-800  tracking-widest mb-6 flex items-center gap-2">
              <span class="w-1.5 h-1.5 rounded-full bg-brand"></span>
              Research Visibility
            </h3>
            <div class="space-y-4">
               <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between">
                  <div>
-                    <p class="text-xs font-black text-slate-400  tracking-tighter mb-1">ORCID ID</p>
-                    <p class="text-xs font-mono font-black text-brand">{{ auth.user?.orcid_id || 'NOT LINKED' }}</p>
+                    <p class="text-xs font-bold text-slate-400  tracking-tighter mb-1">ORCID ID</p>
+                    <p class="text-xs font-mono font-bold text-brand">{{ auth.user?.orcid_id || 'NOT LINKED' }}</p>
                  </div>
                  <div class="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-brand border border-slate-100 shadow-sm">ID</div>
               </div>
               <div v-if="auth.user?.google_scholar_id" class="p-4 bg-slate-50 rounded-2xl border border-slate-100 flex items-center justify-between">
                  <div>
-                    <p class="text-xs font-black text-slate-400  tracking-tighter mb-1">Scholar ID</p>
-                    <p class="text-xs font-mono font-black text-slate-700 truncate w-32">{{ auth.user?.google_scholar_id }}</p>
+                    <p class="text-xs font-bold text-slate-400  tracking-tighter mb-1">Scholar ID</p>
+                    <p class="text-xs font-mono font-bold text-slate-700 truncate w-32">{{ auth.user?.google_scholar_id }}</p>
                  </div>
                  <div class="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-emerald-600 border border-slate-100 shadow-sm">GS</div>
               </div>
@@ -83,52 +83,52 @@
           <form @submit.prevent="updateProfile" class="flex flex-col gap-8">
             
             <div class="space-y-6">
-              <h2 class="text-[13px] font-black text-slate-900  tracking-widest flex items-center gap-3">
+              <h2 class="text-[13px] font-bold text-slate-900  tracking-widest flex items-center gap-3">
                  Security & Identity
               </h2>
               
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label class="block text-xs font-black text-slate-400  tracking-widest mb-3 ml-1">Full Legal Name</label>
+                  <label class="block text-xs font-bold text-slate-400  tracking-widest mb-3 ml-1">Full Legal Name</label>
                   <input v-model="form.name" type="text" class="input h-12 font-bold" placeholder="Your full name" />
                 </div>
                 <div>
-                  <label class="block text-xs font-black text-slate-400  tracking-widest mb-3 ml-1">Institutional Email</label>
+                  <label class="block text-xs font-bold text-slate-400  tracking-widest mb-3 ml-1">Institutional Email</label>
                   <input v-model="form.email" type="email" class="input h-12 font-bold" placeholder="email@institution.edu" />
                 </div>
               </div>
               
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label class="block text-xs font-black text-slate-400  tracking-widest mb-3 ml-1">ORCID Identifier</label>
+                  <label class="block text-xs font-bold text-slate-400  tracking-widest mb-3 ml-1">ORCID Identifier</label>
                   <input v-model="form.orcid_id" type="text" class="input h-12 font-bold" placeholder="0000-0000-0000-0000" />
                 </div>
                 <div>
-                  <label class="block text-xs font-black text-slate-400  tracking-widest mb-3 ml-1">LinkedIn Profile</label>
+                  <label class="block text-xs font-bold text-slate-400  tracking-widest mb-3 ml-1">LinkedIn Profile</label>
                   <input v-model="form.linkedin_url" type="url" class="input h-12 font-bold" placeholder="https://linkedin.com/..." />
                 </div>
               </div>
 
               <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label class="block text-xs font-black text-slate-400  tracking-widest mb-3 ml-1">Google Scholar ID</label>
+                  <label class="block text-xs font-bold text-slate-400  tracking-widest mb-3 ml-1">Google Scholar ID</label>
                   <input v-model="form.google_scholar_id" type="text" class="input h-12 font-bold" placeholder="Enter ID" />
                 </div>
                 <div>
-                  <label class="block text-xs font-black text-slate-400  tracking-widest mb-3 ml-1">Scopus Identifier</label>
+                  <label class="block text-xs font-bold text-slate-400  tracking-widest mb-3 ml-1">Scopus Identifier</label>
                   <input v-model="form.scopus_id" type="text" class="input h-12 font-bold" placeholder="Enter ID" />
                 </div>
               </div>
 
               <div>
-                <label class="block text-xs font-black text-slate-400  tracking-widest mb-3 ml-1">Professional Bio & Research Focus</label>
+                <label class="block text-xs font-bold text-slate-400  tracking-widest mb-3 ml-1">Professional Bio & Research Focus</label>
                 <textarea v-model="form.bio" rows="4" class="input resize-none p-4 font-medium leading-relaxed" placeholder="Tell us about your research expertise..."></textarea>
               </div>
             </div>
 
             <!-- Expertise Selection -->
             <div class="space-y-6 pt-4 border-t border-slate-50">
-               <h2 class="text-[13px] font-black text-slate-900  tracking-widest">
+               <h2 class="text-[13px] font-bold text-slate-900  tracking-widest">
                   Domain Expertise
                </h2>
                <p class="text-xs font-medium text-slate-400 mb-2  tracking-wider">
@@ -140,7 +140,7 @@
                     v-for="e in allExpertise" :key="e.id"
                     type="button"
                     @click="toggleExpertise(e.id)"
-                    class="px-4 py-2 rounded-xl text-xs font-black  tracking-widest transition-all border-2"
+                    class="px-4 py-2 rounded-xl text-xs font-bold  tracking-widest transition-all border-2"
                     :class="form.expertise.includes(e.id) 
                       ? 'bg-brand border-brand text-white shadow-lg shadow-brand/20' 
                       : 'bg-white border-slate-200 text-slate-400 hover:border-brand/30'"
@@ -148,14 +148,14 @@
                     {{ e.name }}
                   </button>
                   <div v-if="loadingExpertise" class="flex items-center gap-2 text-xs font-bold text-slate-400 italic">
-                     <span class="animate-spin w-3 h-3 border-2 border-brand border-b-transparent rounded-full font-black"></span>
+                     <span class="animate-spin w-3 h-3 border-2 border-brand border-b-transparent rounded-full font-bold"></span>
                      Fetching taxonomy...
                   </div>
                </div>
             </div>
 
             <div class="pt-6 flex justify-end">
-              <button type="submit" :disabled="saving" class="btn btn-primary h-14 px-10 text-xs font-black  tracking-widest shadow-xl shadow-brand/20">
+              <button type="submit" :disabled="saving" class="btn btn-primary h-14 px-10 text-xs font-bold  tracking-widest shadow-xl shadow-brand/20">
                 {{ saving ? 'Propagating Updates...' : 'Synchronize Profile' }}
               </button>
             </div>

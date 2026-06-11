@@ -11,7 +11,7 @@ class CampusController extends Controller
 {
     public function index(): JsonResponse
     {
-        return response()->json(Campus::with('university')->get());
+        return response()->json(Campus::with('university', 'logoFile')->get());
     }
 
     public function store(StoreCampusRequest $request): JsonResponse

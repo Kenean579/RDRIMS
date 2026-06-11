@@ -68,7 +68,7 @@
             <StatusBadge :status="p.status?.name || 'under_review'" />
             <div v-if="p.reviewPivot?.overall_score" class="flex flex-col items-end">
               <span class="text-[8px] font-bold text-slate-400 ">Your Score</span>
-              <span class="text-lg font-black text-emerald-600 leading-none">{{ p.reviewPivot.overall_score }}<span class="text-xs text-slate-300">/100</span></span>
+              <span class="text-lg font-bold text-emerald-600 leading-none">{{ p.reviewPivot.overall_score }}<span class="text-xs text-slate-300">/100</span></span>
             </div>
             <div v-else class="flex flex-col items-end">
               <span class="text-xs font-bold text-amber-500 animate-pulse  tracking-widest">Awaiting Score</span>
@@ -85,7 +85,7 @@
              <div class="w-px h-6 bg-slate-100"></div>
              <div class="flex flex-col" v-if="p.reviewPivot?.reviewer">
                <span class="text-slate-400  text-[8px] tracking-widest mb-0.5">Assigned To</span>
-               <span class="text-brand font-black">{{ p.reviewPivot.reviewer.name }}</span>
+               <span class="text-brand font-bold">{{ p.reviewPivot.reviewer.name }}</span>
              </div>
              <div class="w-px h-6 bg-slate-100" v-if="p.reviewPivot?.reviewer"></div>
              <div class="flex flex-col">

@@ -12,7 +12,7 @@
           <div v-else class="w-full h-full flex items-center justify-center text-brand font-bold text-2xl">{{ researcher.name.charAt(0) }}</div>
         </div>
         <div>
-          <h1 class="text-2xl font-black text-slate-900 mb-2">{{ researcher.name }}</h1>
+          <h1 class="text-2xl font-bold text-slate-900 mb-2">{{ researcher.name }}</h1>
           <p class="text-sm text-slate-500 font-medium mb-3">{{ researcher.department?.name }} · {{ researcher.department?.faculty?.name }} · {{ researcher.department?.faculty?.campus?.name }}</p>
           <p class="text-xs text-slate-400 italic mb-4">{{ researcher.bio || 'No bio provided.' }}</p>
           <div class="flex flex-wrap gap-2">

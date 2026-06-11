@@ -35,7 +35,7 @@
           </div>
           <div class="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center overflow-hidden shrink-0 border border-slate-100 shadow-sm">
              <img v-if="imageUrl(center.logo_file)" :src="imageUrl(center.logo_file)" class="w-full h-full object-contain" />
-             <span v-else class="text-brand font-black text-xs uppercase">{{ center.code?.substring(0,3) || 'RC' }}</span>
+             <span v-else class="text-brand font-bold text-sm">{{ center.code?.substring(0,3) || 'RC' }}</span>
           </div>
         </div>
         
@@ -79,28 +79,28 @@
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
-            <label class="block text-[10px] uppercase font-black text-slate-400 mb-2 ml-1">University (Optional)</label>
+            <label class="block text-xs font-semibold text-slate-400 mb-2 ml-1">University (Optional)</label>
             <select v-model="form.parent_university_id" class="input h-11 font-bold text-xs">
               <option value="">Independent</option>
               <option v-for="u in universities" :key="u.id" :value="u.id">{{ u.name }}</option>
             </select>
           </div>
           <div>
-            <label class="block text-[10px] uppercase font-black text-slate-400 mb-2 ml-1">Campus</label>
+            <label class="block text-xs font-semibold text-slate-400 mb-2 ml-1">Campus</label>
             <select v-model="form.parent_campus_id" class="input h-11 font-bold text-xs" :disabled="!form.parent_university_id">
               <option value="">University Wide</option>
               <option v-for="c in campuses" :key="c.id" :value="c.id">{{ c.name }}</option>
             </select>
           </div>
           <div>
-            <label class="block text-[10px] uppercase font-black text-slate-400 mb-2 ml-1">Faculty</label>
+            <label class="block text-xs font-semibold text-slate-400 mb-2 ml-1">Faculty</label>
             <select v-model="form.parent_faculty_id" class="input h-11 font-bold text-xs" :disabled="!form.parent_campus_id">
               <option value="">Campus Wide</option>
               <option v-for="f in faculties" :key="f.id" :value="f.id">{{ f.name }}</option>
             </select>
           </div>
           <div>
-            <label class="block text-[10px] uppercase font-black text-slate-400 mb-2 ml-1">Department</label>
+            <label class="block text-xs font-semibold text-slate-400 mb-2 ml-1">Department</label>
             <select v-model="form.parent_department_id" class="input h-11 font-bold text-xs" :disabled="!form.parent_faculty_id">
               <option value="">Faculty Wide</option>
               <option v-for="d in departments" :key="d.id" :value="d.id">{{ d.name }}</option>
@@ -114,18 +114,18 @@
         </div>
 
         <div>
-          <label class="block text-xs font-black text-slate-900  tracking-widest mb-3 ml-1">Branding</label>
+          <label class="block text-xs font-bold text-slate-900  tracking-widest mb-3 ml-1">Branding</label>
           <div class="flex items-center gap-6 p-6 bg-slate-50/50 rounded-3xl border border-dashed border-slate-200">
             <div class="w-20 h-20 rounded-2xl bg-white border border-slate-100 flex items-center justify-center overflow-hidden shrink-0 shadow-sm transition-transform hover:scale-105">
                <img v-if="imageUrl(form.logo_file)" :src="imageUrl(form.logo_file)" class="w-full h-full object-contain" />
                <div v-else class="flex flex-col items-center gap-1 opacity-20">
                   <i class="fas fa-microscope text-xl"></i>
-                  <span class="text-[9px] font-black tracking-tighter">NO LOGO</span>
+                  <span class="text-xs font-bold tracking-tighter">NO LOGO</span>
                </div>
             </div>
             <div class="flex-1">
               <input type="file" accept="image/*" class="hidden" id="center-logo-input" @change="uploadLogo" />
-              <label for="center-logo-input" class="bg-white hover:bg-slate-50 text-slate-700 px-5 py-2.5 rounded-xl border border-slate-200 shadow-sm text-xs font-black  tracking-widest cursor-pointer transition-all active:scale-95 inline-block">
+              <label for="center-logo-input" class="bg-white hover:bg-slate-50 text-slate-700 px-5 py-2.5 rounded-xl border border-slate-200 shadow-sm text-xs font-bold  tracking-widest cursor-pointer transition-all active:scale-95 inline-block">
                  {{ uploadingLogo ? 'Syncing...' : 'Upload Center Logo' }}
               </label>
               <p class="text-[10px] text-slate-400 mt-3 font-medium">SVG, PNG or JPG (min. 400x400px recommended)</p>
@@ -287,6 +287,8 @@ onMounted(() => fetchCenters())
 </script>
 
 <style scoped>
-.card { @apply transition-all; background: #fff; border: 1px solid #e8ecf1; box-shadow: 0 1px 3px rgba(0,0,0,0.04); border-radius: 1rem; }
-.btn { @apply inline-flex items-center justify-center transition-all active:scale-95 disabled:opacity-50; border-radius: 1rem; }
+.card { transition: all 150ms ease; background: #fff; border: 1px solid #e8ecf1; box-shadow: 0 1px 3px rgba(0,0,0,0.04); border-radius: 1rem; }
+.btn { display: inline-flex; align-items: center; justify-content: center; transition: all 150ms ease; border-radius: 1rem; }
+.btn:active { transform: scale(0.95); }
+.btn:disabled { opacity: 0.5; }
 </style>

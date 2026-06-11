@@ -39,8 +39,8 @@ class ProcessPlagiarismCheckJob implements ShouldQueue
             $submitResponse = Http::asForm()->post(
                 config('services.plagiarismcheck.base_url') . 'check/',
                 [
-                    'group_token' => setting('plagiarismcheck_group_token'),
-                    'author'      => setting('plagiarismcheck_author_email'),
+                    'group_token' => \App\Models\Setting::where('key', 'plagiarismcheck_group_token')->value('value'),
+                    'author'      => \App\Models\Setting::where('key', 'plagiarismcheck_author_email')->value('value'),
                     'text'        => $text,
                 ]
             );
@@ -63,7 +63,7 @@ class ProcessPlagiarismCheckJob implements ShouldQueue
 
                 $statusResponse = Http::asForm()->post(
                     config('services.plagiarismcheck.base_url') . "status/{$checkId}/",
-                    ['group_token' => setting('plagiarismcheck_group_token')]
+                    ['group_token' => \App\Models\Setting::where('key', 'plagiarismcheck_group_token')->value('value')]
                 );
 
                 if (!$statusResponse->successful()) continue;
@@ -90,7 +90,7 @@ class ProcessPlagiarismCheckJob implements ShouldQueue
             // 5. Get detailed report
             $reportResponse = Http::asForm()->post(
                 config('services.plagiarismcheck.base_url') . "report/{$checkId}/",
-                ['group_token' => setting('plagiarismcheck_group_token')]
+                ['group_token' => \App\Models\Setting::where('key', 'plagiarismcheck_group_token')->value('value')]
             );
 
             $detailedReport = $reportResponse['data'] ?? null;
@@ -145,11 +145,18 @@ class ProcessPlagiarismCheckJob implements ShouldQueue
 
     private function extractPdfText(string $pdfContent): string
     {
-        // Placeholder for PDF text extraction
-        // In production, implement proper PDF text extraction using:
-        // - TCPDF, FPDI, PDFParser, or similar library
-        // For now, return empty string to avoid errors
-        return '';
+        try {
+            $parser = new \Smalot\PdfParser\Parser();
+            
+            // To parse from byte content instead of reading from file:
+            // Write to a temporary file because some versions of Smalot might prefer
+            // parsing file paths. However, parseContent is available.
+            $pdf = $parser->parseContent($pdfContent);
+            return $pdf->getText();
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('PDF extraction failed: ' . $e->getMessage());
+            return '';
+        }
     }
 
     private function markFailed(string $reason): void

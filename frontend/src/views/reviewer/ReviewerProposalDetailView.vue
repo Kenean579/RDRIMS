@@ -8,7 +8,7 @@
           <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M14 5l-7 7m0 0l7 7m-7-7h18" /></svg>
           Back to My Reviews
         </router-link>
-        <h1 class="text-xl font-black text-slate-900 tracking-tight leading-none ">
+        <h1 class="text-xl font-bold text-slate-900 tracking-tight leading-none ">
           Review Proposal
         </h1>
         <p class="text-xs font-bold text-rose-500 mt-2  tracking-widest flex items-center gap-2">
@@ -17,7 +17,7 @@
         </p>
       </div>
       <div v-if="!loading && proposal.id" class="flex items-center gap-3">
-         <span class="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-xs font-black  tracking-widest">
+         <span class="px-4 py-2 bg-slate-100 text-slate-600 rounded-xl text-xs font-bold  tracking-widest">
            Ref: RDRIMS-{{ proposal.id }}-BLIND
          </span>
          <StatusBadge :status="proposal.status?.name" size="lg" />
@@ -34,9 +34,9 @@
 
     <div v-else-if="error" class="card border-rose-100 bg-rose-50/30 p-12 text-center">
        <div class="w-20 h-20 bg-rose-100 text-rose-600 rounded-3xl flex items-center justify-center mx-auto mb-6 text-3xl">⚠️</div>
-       <h3 class="text-lg font-black text-slate-800 mb-2">Access Resticted</h3>
+       <h3 class="text-lg font-bold text-slate-800 mb-2">Access Resticted</h3>
        <p class="text-slate-500 text-sm mb-8 font-medium">{{ error }}</p>
-       <button @click="fetchProposal" class="btn bg-rose-600 text-white px-8 h-12 text-xs  font-black tracking-widest shadow-xl shadow-rose-200">Retry Authentication</button>
+       <button @click="fetchProposal" class="btn bg-rose-600 text-white px-8 h-12 text-xs  font-bold tracking-widest shadow-xl shadow-rose-200">Retry Authentication</button>
     </div>
 
     <template v-else>
@@ -47,7 +47,7 @@
           
           <!-- Core Data -->
           <div class="card p-8">
-            <h2 class="text-xs font-black text-slate-800  tracking-widest mb-8 flex items-center gap-3">
+            <h2 class="text-xs font-bold text-slate-800  tracking-widest mb-8 flex items-center gap-3">
               <span class="w-1.5 h-4 bg-brand rounded-full"></span>
               Proposal Details
             </h2>
@@ -69,7 +69,7 @@
                  </div>
                  <div>
                     <p class="text-xs font-bold text-slate-400  tracking-widest mb-3 ml-1">Requested Budget</p>
-                    <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-100 text-sm font-black text-emerald-600">
+                    <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-100 text-sm font-bold text-emerald-600">
                       {{ formatCurrency(proposal.budget) }}
                     </div>
                  </div>
@@ -78,7 +78,7 @@
               <div>
                 <p class="text-xs font-bold text-slate-400  tracking-widest mb-3 ml-1">Expertise Tags</p>
                 <div class="flex flex-wrap gap-2">
-                   <span v-for="kw in keywordsList" :key="kw" class="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-black text-slate-500  tracking-widest">
+                   <span v-for="kw in keywordsList" :key="kw" class="px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-bold text-slate-500  tracking-widest">
                      {{ kw }}
                    </span>
                 </div>
@@ -95,7 +95,7 @@
 
           <!-- Extended Details -->
           <div class="card p-8">
-            <h2 class="text-xs font-black text-slate-800  tracking-widest mb-8 flex items-center gap-3">
+            <h2 class="text-xs font-bold text-slate-800  tracking-widest mb-8 flex items-center gap-3">
               <span class="w-1.5 h-4 bg-brand rounded-full"></span>
               Objectives & Methodology
             </h2>
@@ -121,12 +121,12 @@
           
           <!-- Documentation -->
           <div class="card p-6">
-             <h3 class="text-xs font-black text-slate-800  tracking-widest mb-5">Primary File</h3>
+             <h3 class="text-xs font-bold text-slate-800  tracking-widest mb-5">Primary File</h3>
              <div v-if="proposal.file" class="p-4 bg-brand/5 border border-brand/10 rounded-2xl flex items-center justify-between group">
                <div class="flex items-center gap-3 min-w-0">
                   <div class="w-10 h-10 bg-brand text-white rounded-xl flex items-center justify-center text-xl shadow-lg transition-transform group-hover:rotate-6">📄</div>
                   <div class="min-w-0">
-                    <p class="text-xs font-black text-slate-800 truncate">ANONYMIZED_MS.pdf</p>
+                    <p class="text-xs font-bold text-slate-800 truncate">ANONYMIZED_MS.pdf</p>
                     <p class="text-xs font-bold text-brand  tracking-tighter">Verified Protocol</p>
                   </div>
                </div>
@@ -143,14 +143,14 @@
            <div class="card overflow-hidden">
               <div class="px-6 py-4 bg-slate-900 border-b border-slate-800 flex items-center justify-between gap-3">
                  <div class="flex items-center gap-3">
-                   <h3 class="text-xs font-black text-white  tracking-widest">Submit Review</h3>
-                   <span class="px-2 py-0.5 bg-brand text-white text-[8px] font-black rounded ">Secure</span>
+                   <h3 class="text-xs font-bold text-white  tracking-widest">Submit Review</h3>
+                   <span class="px-2 py-0.5 bg-brand text-white text-[8px] font-bold rounded ">Secure</span>
                  </div>
                  <div class="flex items-center gap-2">
-                   <button type="button" @click="exportScores" class="px-3 py-1.5 bg-white/10 text-white text-[10px] font-black rounded hover:bg-white/20 transition-colors">
+                   <button type="button" @click="exportScores" class="px-3 py-1.5 bg-white/10 text-white text-[10px] font-bold rounded hover:bg-white/20 transition-colors">
                      Export Excel
                    </button>
-                   <label class="px-3 py-1.5 bg-white/10 text-white text-[10px] font-black rounded hover:bg-white/20 transition-colors cursor-pointer">
+                   <label class="px-3 py-1.5 bg-white/10 text-white text-[10px] font-bold rounded hover:bg-white/20 transition-colors cursor-pointer">
                      Import Excel
                      <input type="file" accept=".xlsx,.xls,.csv" class="hidden" @change="importScores" />
                    </label>
@@ -161,7 +161,7 @@
                 <div class="w-16 h-16 bg-emerald-500 text-white rounded-full flex items-center justify-center mx-auto mb-4 shadow-xl">
                   <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M5 13l4 4L19 7" stroke-width="3"/></svg>
                 </div>
-                <h4 class="text-sm font-black text-slate-800 mb-1">Decision Locked</h4>
+                <h4 class="text-sm font-bold text-slate-800 mb-1">Decision Locked</h4>
                 <p class="text-xs font-bold text-slate-400 mb-6 ">Assigned Score: {{ existingScore }}/5.0</p>
                 <div class="p-3 bg-white border border-slate-100 rounded-2xl text-xs font-bold text-slate-500 italic">
                    "{{ proposal.reviewPivot?.overall_comments || 'No comment provided' }}"
@@ -176,14 +176,14 @@
                 <form @submit.prevent="submitReview" class="space-y-5">
                    <div v-for="c in reviewCriteria" :key="c.id" class="space-y-2">
                       <div class="flex justify-between items-end">
-                        <label class="text-xs font-black text-slate-500  tracking-widest">{{ c.name }}</label>
-                        <span class="text-xs font-black text-brand">{{ scores[c.id] || 0 }}<span class="text-slate-300">/{{ c.max_score }}</span></span>
+                        <label class="text-xs font-bold text-slate-500  tracking-widest">{{ c.name }}</label>
+                        <span class="text-xs font-bold text-brand">{{ scores[c.id] || 0 }}<span class="text-slate-300">/{{ c.max_score }}</span></span>
                       </div>
                       <input type="range" v-model.number="scores[c.id]" :max="c.max_score" min="0" step="0.5" class="w-full h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer accent-brand"/>
                    </div>
 
                    <div class="space-y-2 pt-2">
-                      <label class="text-xs font-black text-slate-800  tracking-widest">Decision</label>
+                      <label class="text-xs font-bold text-slate-800  tracking-widest">Decision</label>
                       <select v-model="decisionId" required class="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-xs font-bold text-slate-700 outline-none focus:ring-2 focus:ring-brand/20">
                          <option value="">Select a decision</option>
                          <option v-for="d in reviewDecisions" :key="d.id" :value="d.id">{{ formatStatusName(d.name) }}</option>
@@ -191,11 +191,11 @@
                    </div>
 
                    <div class="space-y-2 pt-2">
-                       <label class="text-xs font-black text-slate-800  tracking-widest">Comments</label>
+                       <label class="text-xs font-bold text-slate-800  tracking-widest">Comments</label>
                        <textarea v-model="overallComments" required rows="4" class="w-full bg-slate-50 border border-slate-100 rounded-xl px-4 py-3 text-xs font-medium text-slate-600 outline-none focus:ring-2 focus:ring-brand/20 resize-none" placeholder="Provide your feedback and evaluation comments..."></textarea>
                    </div>
 
-                   <button type="submit" :disabled="submitting" class="w-full py-4 bg-brand text-white rounded-2xl text-xs font-black  tracking-widest shadow-xl shadow-brand/20 hover:scale-[1.02] active:scale-95 transition-all">
+                   <button type="submit" :disabled="submitting" class="w-full py-4 bg-brand text-white rounded-2xl text-xs font-bold  tracking-widest shadow-xl shadow-brand/20 hover:scale-[1.02] active:scale-95 transition-all">
                        {{ submitting ? 'Submitting...' : 'Submit Review' }}
                    </button>
                 </form>

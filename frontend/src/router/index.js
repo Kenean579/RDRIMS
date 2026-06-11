@@ -102,6 +102,7 @@ const routes = [
       { path: 'settings', name: 'Settings', component: () => import('@/views/settings/SettingsView.vue'), meta: { title: 'Settings', roles: ['super_admin'] } },
       { path: 'settings/lookups', name: 'LookupManager', component: () => import('@/views/settings/LookupManagerView.vue'), meta: { title: 'Lookups', roles: ['super_admin'] } },
       { path: 'files', name: 'Files', component: () => import('@/views/files/FileListView.vue'), meta: { title: 'Files' } },
+      { path: 'files/:id', name: 'FileDetail', component: () => import('@/views/files/FileDetailView.vue'), meta: { title: 'File Detail' } },
       { path: 'profile', name: 'Profile', component: () => import('@/views/ProfileView.vue'), meta: { title: 'My Profile' } },
       { path: 'notifications', name: 'Notifications', component: () => import('@/views/notifications/NotificationView.vue'), meta: { title: 'Notifications' } },
       { path: 'search', name: 'Search', component: () => import('@/views/search/GlobalSearchView.vue'), meta: { title: 'Search' } },

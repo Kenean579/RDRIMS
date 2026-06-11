@@ -85,7 +85,7 @@
     <Modal :show="showSetUpAdmin" title="Assign Research Admin" @close="showSetUpAdmin = false">
       <form @submit.prevent="saveAdmin" class="space-y-6 p-1">
         <div class="p-4 bg-brand/5 border border-brand/10 rounded-2xl mb-4">
-           <p class="text-xs text-brand font-bold uppercase tracking-widest mb-1">Target University</p>
+           <p class="text-xs text-brand font-bold tracking-wide mb-1">Target University</p>
            <h4 class="text-lg font-bold text-slate-800">{{ targetUni?.name }}</h4>
         </div>
 

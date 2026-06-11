@@ -18,10 +18,24 @@ class OutputController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $outputs = Output::with('category', 'status', 'subtype')
+        $user = $request->user();
+        
+        $outputs = Output::with('category', 'status', 'subtype', 'participants.user')
             ->when($request->status, fn($q) => $q->whereHas('status', fn($s) => $s->where('name', $request->status)))
             ->when($request->category, fn($q) => $q->whereHas('category', fn($c) => $c->where('name', $request->category)))
             ->when($request->search, fn($q) => $q->where('title', 'LIKE', '%' . $request->search . '%'))
+            // Apply hierarchical filtering based on research_center_id or project ownership
+            ->when(!$user->hasRole('super_admin'), function ($query) use ($user) {
+                if ($user->research_center_id) {
+                    $query->where('research_center_id', $user->research_center_id);
+                }
+                // If user has a project with this output, or is a participant, they can see it
+                $query->orWhereHas('project', function ($q) use ($user) {
+                    $q->where('pi_id', $user->id);
+                })->orWhereHas('participants', function ($q) use ($user) {
+                    $q->where('user_id', $user->id);
+                });
+            })
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 

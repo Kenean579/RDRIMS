@@ -1,7 +1,7 @@
 <template>
   <div class="max-w-4xl mx-auto animate-fade pb-8">
     <div class="card p-8 md:p-12">
-      <h1 class="text-3xl font-black text-slate-900 mb-6">About RDRIMS</h1>
+      <h1 class="text-3xl font-bold text-slate-900 mb-6">About RDRIMS</h1>
       <div class="prose prose-slate max-w-none">
         <p class="text-lg text-slate-600 font-medium leading-relaxed mb-6">
           The Research and Technology Transfer Database and Research Information Management System (RDRIMS) is a comprehensive platform designed to orchestrate the complete lifecycle of academic research paradigms.

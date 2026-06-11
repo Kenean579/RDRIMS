@@ -141,13 +141,29 @@
 
               <!-- Tasks List -->
               <div v-show="m.showTasks" class="border-t border-slate-100 bg-slate-50/50 p-5 rounded-b-2xl">
+                <!-- Progress Bar -->
+                <div v-if="m.tasks?.length" class="mb-4">
+                  <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-bold text-slate-500">Task Progress</span>
+                    <span class="text-xs font-bold text-brand">{{ getMilestoneProgress(m) }}%</span>
+                  </div>
+                  <div class="h-2 bg-slate-200 rounded-full overflow-hidden">
+                    <div class="h-full bg-gradient-to-r from-brand to-brand-dark transition-all duration-500" 
+                      :style="{ width: getMilestoneProgress(m) + '%' }"></div>
+                  </div>
+                </div>
+
                 <div class="space-y-2.5 mb-4 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
                   <div v-for="t in (m.tasks || [])" :key="t.id" 
                     class="flex items-center gap-3 bg-white p-3 rounded-2xl border transition-colors shadow-sm group/task"
-                    :class="t.status?.name === 'done' ? 'border-emerald-100 bg-emerald-50/30' : 'border-slate-100 hover:border-brand/30'">
+                    :class="getTaskBorderClass(t.status?.name)">
                     
-                    <input type="checkbox" :checked="t.status?.name === 'done'" @change="toggleTask(t)" 
-                      class="w-5 h-5 rounded border-slate-300 text-brand focus:ring-brand cursor-pointer focus:ring-offset-0" />
+                    <button @click="cycleTaskStatus(t)" 
+                      class="w-5 h-5 rounded border flex items-center justify-center cursor-pointer transition-all"
+                      :class="getTaskStatusClass(t.status?.name)">
+                      <svg v-if="t.status?.name === 'done'" class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
+                      <svg v-else-if="t.status?.name === 'in_progress'" class="w-2 h-2 animate-pulse" fill="currentColor" viewBox="0 0 8 8"><circle cx="4" cy="4" r="3"/></svg>
+                    </button>
                     
                     <div class="flex-1 min-w-0">
                       <p class="text-sm font-bold text-slate-700 leading-tight" :class="{'line-through text-slate-400': t.status?.name === 'done'}">
@@ -155,7 +171,15 @@
                       </p>
                     </div>
 
+                    <!-- Status Badge -->
+                    <span class="px-2 py-1 rounded-lg text-xs font-bold shrink-0" :class="getTaskStatusBadgeClass(t.status?.name)">
+                      {{ t.status?.name || 'Not Started' }}
+                    </span>
+
                     <div class="flex items-center gap-2 opacity-0 group-hover/task:opacity-100 transition-opacity">
+                       <button @click="editTask(t)" class="w-6 h-6 flex items-center justify-center text-slate-300 hover:text-brand rounded-lg">
+                          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                       </button>
                        <button @click="confirmDeleteTask(t)" class="w-6 h-6 flex items-center justify-center text-slate-300 hover:text-rose-500 rounded-lg">
                           <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/></svg>
                        </button>
@@ -243,7 +267,7 @@
                     :stroke-dasharray="276" :stroke-dashoffset="276 - (276 * spendRatio / 100)" stroke-linecap="round" />
                 </svg>
                 <div class="text-center absolute z-10 flex flex-col items-center">
-                  <span class="text-2xl font-black text-slate-800 leading-none">{{ spendRatio }}<span class="text-lg opacity-40">%</span></span>
+                  <span class="text-2xl font-bold text-slate-800 leading-none">{{ spendRatio }}<span class="text-lg opacity-40">%</span></span>
                   <span class="text-xs font-bold text-slate-400 mt-1  tracking-tighter">Budget Utilization</span>
                 </div>
              </div>
@@ -456,13 +480,60 @@ async function deleteMilestone() {
 }
 
 // Task Logic
-async function toggleTask(task) {
+async function cycleTaskStatus(task) {
   try {
-    // 6 = not_started, 7 = done (assuming from earlier inspection)
-    const newStatusId = task.status?.name === 'done' ? 6 : 7;
+    // Cycle through: not_started → in_progress → done → not_started
+    const statusMap = { 'not_started': 7, 'in_progress': 8, 'done': 6 };
+    const currentStatus = task.status?.name || 'not_started';
+    const newStatusId = statusMap[currentStatus] || 7;
     await api.put(`/tasks/${task.id}`, { status_id: newStatusId });
     fetchProject();
   } catch(e) { notif.error('Synchronization failed'); }
+}
+
+function getMilestoneProgress(milestone) {
+  if (!milestone.tasks || milestone.tasks.length === 0) return 0;
+  const completed = milestone.tasks.filter(t => t.status?.name === 'done').length;
+  return Math.round((completed / milestone.tasks.length) * 100);
+}
+
+function getTaskBorderClass(status) {
+  const classes = {
+    'done': 'border-emerald-100 bg-emerald-50/30',
+    'in_progress': 'border-brand bg-brand/10',
+    'not_started': 'border-slate-100 hover:border-brand/30',
+    'default': 'border-slate-100 hover:border-brand/30'
+  };
+  return classes[status] || classes['default'];
+}
+
+function getTaskStatusClass(status) {
+  const classes = {
+    'done': 'bg-emerald-500 text-white border-emerald-500',
+    'in_progress': 'bg-brand text-white border-brand',
+    'not_started': 'bg-white text-slate-300 border-slate-300',
+    'default': 'bg-white text-slate-300 border-slate-300'
+  };
+  return classes[status] || classes['default'];
+}
+
+function getTaskStatusBadgeClass(status) {
+  const classes = {
+    'done': 'bg-emerald-100 text-emerald-700',
+    'in_progress': 'bg-brand/10 text-brand',
+    'not_started': 'bg-slate-100 text-slate-500',
+    'default': 'bg-slate-100 text-slate-500'
+  };
+  return classes[status] || classes['default'];
+}
+
+function editTask(task) {
+  const newTitle = prompt('Edit task:', task.title);
+  if (newTitle && newTitle !== task.title) {
+    api.put(`/tasks/${task.id}`, { title: newTitle })
+      .then(() => { notif.success('Task updated'); fetchProject(); })
+      .catch(() => notif.error('Failed to update task'));
+  }
 }
 
 async function addTask(m) {
