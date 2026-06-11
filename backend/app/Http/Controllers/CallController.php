@@ -32,19 +32,15 @@ class CallController extends Controller
             ->when($request->filled('department_id'), fn($q) => $q->where('department_id', $request->input('department_id')))
             ->when($request->filled('research_center_id'), fn($q) => $q->where('research_center_id', $request->input('research_center_id')))
             // Scoping by user role (if no explicit filter is already applied)
-            ->when(!$request->filled(['university_id','campus_id','faculty_id','department_id','research_center_id']),
+            ->when(!$request->hasAny(['university_id','campus_id','faculty_id','department_id','research_center_id']),
                 function ($query) use ($user) {
-                    if ($user->hasRole('super_admin')) {
-                        // Super Admin sees all calls (platform-wide)
+                    if (!$user || $user->hasRole('super_admin')) {
                         return;
                     }
-                    // For institutional admins, restrict to their scope
                     $query->where(function ($q) use ($user) {
                         if ($user->hasRole('research_admin')) {
-                            // Calls created by users in their university
-                            $q->whereHas('createdBy', fn($u) =>
-                                $u->where('university_id', $user->university_id)
-                            );
+                            $q->where('university_id', $user->university_id)
+                              ->orWhereHas('createdBy', fn($u) => $u->where('university_id', $user->university_id));
                         }
                         if ($user->hasRole('campus_admin')) {
                             $q->orWhere('campus_id', $user->campus_id);

@@ -63,7 +63,7 @@ async function fetchNotifications() {
 async function markRead(n) { if (!n.read_at) { try { await api.put(`/notifications/${n.id}/read`); n.read_at = new Date().toISOString() } catch (e) {} } }
 
 async function markAllRead() {
-  try { for (const n of notifications.value) { if (!n.read_at) await api.put(`/notifications/${n.id}/read`) }; fetchNotifications(); notif.success('All marked read') }
+  try { await api.put('/notifications/read-all'); fetchNotifications(); notif.success('All marked read') }
   catch (err) { notif.error('Failed') }
 }
 

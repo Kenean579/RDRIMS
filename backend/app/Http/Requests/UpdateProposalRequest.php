@@ -11,6 +11,16 @@ class UpdateProposalRequest extends FormRequest
         return true;
     }
 
+    protected function prepareForValidation(): void
+    {
+        // The frontend sends investigators as a JSON string
+        if (is_string($this->investigators)) {
+            $this->merge([
+                'investigators' => json_decode($this->investigators, true) ?? [],
+            ]);
+        }
+    }
+
     public function rules(): array
     {
         return [

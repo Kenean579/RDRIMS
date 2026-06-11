@@ -19,10 +19,27 @@ class SearchController extends Controller
             return response()->json(['results' => []]);
         }
 
-        $users = User::where('name', 'LIKE', "%{$q}%")->orWhere('email', 'LIKE', "%{$q}%")->limit(5)->get();
-        $proposals = Proposal::where('title', 'LIKE', "%{$q}%")->limit(5)->get();
-        $projects = Project::where('title', 'LIKE', "%{$q}%")->limit(5)->get();
-        $publications = Publication::where('title', 'LIKE', "%{$q}%")->limit(5)->get();
+        $user = $request->user();
+        
+        $users = User::where(function($query) use ($q) {
+                $query->where('name', 'LIKE', "%{$q}%")->orWhere('email', 'LIKE', "%{$q}%");
+            })
+            ->hierarchical($user, 'id')
+            ->limit(5)->get();
+
+        $proposals = Proposal::where('title', 'LIKE', "%{$q}%")
+            ->hierarchical($user, 'submitted_by')
+            ->limit(5)->get();
+
+        $projects = Project::where('title', 'LIKE', "%{$q}%")
+            ->hierarchical($user, 'pi_id')
+            ->limit(5)->get();
+
+        $publications = Publication::where('title', 'LIKE', "%{$q}%")
+            ->whereHas('project', function($query) use ($user) {
+                $query->hierarchical($user, 'pi_id');
+            })
+            ->limit(5)->get();
 
         return response()->json([
             'users' => $users,

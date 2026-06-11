@@ -342,38 +342,51 @@ const contactEmail = computed(() => lookupStore.getSetting('contact_email', 'adm
 // as a separate group above "Community & Public"
 // ═══════════════════════════════════════════════════════════════
 const navigation = computed(() => {
-  // ── PLATFORM LAYER: Pure Super Admin ─────────────────────────────────
-  if (isSuperAdminOnly.value) {
-    return [
-      { items: [
+  const nav = []
+
+  // ── PLATFORM LAYER (Visible to any Super Admin) ─────────────────────
+  if (auth.hasRole('super_admin')) {
+    nav.push({
+      items: [
         { name: 'Dashboard',    path: '/app/dashboard',    icon: icons.home },
         { name: 'Notifications', path: '/app/notifications', icon: icons.events },
-      ]},
-      { title: 'Platform Management', items: [
+      ]
+    })
+    nav.push({
+      title: 'Platform Management',
+      items: [
         { name: 'Universities',  path: '/app/universities', icon: icons.academic },
         { name: 'System Settings', path: '/app/settings',   icon: icons.perms },
-      ]},
-      { title: 'Access Control', items: [
+      ]
+    })
+    nav.push({
+      title: 'Access Control',
+      items: [
         { name: 'Roles',       path: '/app/roles',       icon: icons.roles },
         { name: 'Permissions', path: '/app/permissions', icon: icons.perms },
-      ]},
-      { title: 'Administration', items: [
+      ]
+    })
+    nav.push({
+      title: 'Administration',
+      items: [
         { name: 'System Logs', path: '/app/audit-logs',  icon: icons.audit },
-      ]},
-    ]
+      ]
+    })
+
+    // If they ONLY have super_admin, we stop here. 
+    // If they have OTHER roles, we might want to show them institutional tools too.
+    if (isSuperAdminOnly.value) return nav
   }
 
-  // ── GUEST LAYER ──────────────────────────────────────────────────────
+  // ── GUEST LAYER (Pure guest) ─────────────────────────────────────────
   if (isGuestOnly.value) {
     return [
-      // First group: Dashboard & Notifications (no title = no collapsible header)
       {
         items: [
           { name: 'Dashboard', path: '/app/dashboard', icon: icons.home },
           { name: 'Notifications', path: '/app/notifications', icon: icons.events },
         ]
       },
-      // Second group: Community & Public (with collapsible title)
       {
         title: 'Community & Public',
         items: [
@@ -387,12 +400,10 @@ const navigation = computed(() => {
   }
 
   // ── INSTITUTIONAL LAYER ───────────────────────────────────────────
-  // (researcher, reviewer, student, department_head, director,
-  //  faculty_admin, campus_admin, research_admin, finance_officer, ethics_officer)
-  const institutionalAdmins = ['research_admin','campus_admin','faculty_admin','department_head','director']
-  const isInstitutionalAdmin = auth.userRoles?.some(r => institutionalAdmins.includes(r))
-
-  const nav = [
+  // If we reach here and it's a super_admin with extra roles, we APPEND institutional tools
+  // If it's just an institutional user, we start the nav here.
+  const isSuper = auth.hasRole('super_admin')
+  const instNav = [
     {
       items: [
         { name: 'Dashboard', path: '/app/dashboard', icon: icons.home },
@@ -420,9 +431,17 @@ const navigation = computed(() => {
     }
   ]
 
-  // Reviews: any user can be a reviewer, so show for all institutional users
+  // If already added super admin group, don't duplicate Dashboard/Notifications if they are at the top
+  if (isSuper) {
+    instNav.shift() // Remove the second Dashboard/Notifications group
+  }
+
+  // Combined navigation
+  const finalNav = isSuper ? [...nav, ...instNav] : instNav
+
+  // Reviews: any user can be a reviewer
   {
-    const researchGroup = nav.find(g => g.title === 'Research')
+    const researchGroup = finalNav.find(g => g.title === 'Research')
     if (researchGroup) {
       const proposalsIdx = researchGroup.items.findIndex(i => i.name === 'Proposals')
       if (proposalsIdx !== -1) {
@@ -433,7 +452,7 @@ const navigation = computed(() => {
   
   // Rules group for ethics and detection (institutional only — no super_admin)
   if (auth.userRoles?.some(r => ['research_admin', 'campus_admin', 'faculty_admin', 'ethics_officer'].includes(r))) {
-    nav.push({
+    finalNav.push({
       title: 'Rules',
       items: [
         { name: 'Ethics Review',  path: '/app/ethics-requests',    icon: icons.ethics },
@@ -444,7 +463,7 @@ const navigation = computed(() => {
 
   // Finance group (institutional only — no super_admin)
   if (auth.userRoles?.some(r => ['research_admin', 'campus_admin', 'faculty_admin', 'finance_officer'].includes(r))) {
-    nav.push({
+    finalNav.push({
       title: 'Finance',
       items: [
         { name: 'Funding Check', path: '/app/finance-checks', icon: icons.finance },
@@ -454,7 +473,7 @@ const navigation = computed(() => {
 
   // Reports for institutional admins only (no super_admin)
   if (auth.userRoles?.some(r => ['research_admin', 'campus_admin', 'faculty_admin', 'director', 'department_head', 'finance_officer'].includes(r))) {
-    nav.push({
+    finalNav.push({
       title: 'Reports',
       items: [
         { name: 'Reports', path: '/app/reports', icon: icons.files },
@@ -464,18 +483,19 @@ const navigation = computed(() => {
 
   // Administration group (institutional only — no super_admin)
   if (auth.userRoles?.some(r => ['research_admin', 'campus_admin', 'faculty_admin', 'department_head', 'director'].includes(r))) {
-    nav.push({
+    finalNav.push({
       title: 'Administration',
       items: [
         { name: 'Roles',  path: '/app/institution/roles', icon: icons.roles },
         { name: 'Users',  path: '/app/users',             icon: icons.users },
+        { name: 'System Logs', path: '/app/audit-logs',   icon: icons.audit },
       ]
     })
   }
     
   // Settings: institutional hierarchy management (research_admin only, not super_admin)
   if (auth.userRoles?.some(r => ['research_admin'].includes(r))) {
-    nav.push({
+    finalNav.push({
       title: 'Settings',
       items: [
         { name: 'Academic Years',   path: '/app/academic-years',   icon: icons.academic },
@@ -486,12 +506,11 @@ const navigation = computed(() => {
         { name: 'Faculties',        path: '/app/faculties',        icon: icons.dept },
         { name: 'Campuses',         path: '/app/campuses',         icon: icons.centers },
         { name: 'Files',            path: '/app/files',            icon: icons.files },
-        { name: 'System Logs',      path: '/app/audit-logs',       icon: icons.audit },
       ]
     })
   }
 
-  return nav
+  return finalNav
 })
 </script>
 

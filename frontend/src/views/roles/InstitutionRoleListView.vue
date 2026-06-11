@@ -3,11 +3,11 @@
     <div class="section-header">
       <div>
         <h1 class="section-title">Institutional Roles & Permissions</h1>
-        <p class="section-subtitle">Manage custom roles and permission overrides for your university</p>
+        <p class="section-subtitle">Manage custom roles and permission overrides for your {{ auth.userScope }}</p>
       </div>
-      <button @click="openCreateRole" class="btn btn-primary">
+      <button @click="openCreateRole" class="btn btn-primary" v-if="auth.isAdmin">
         <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" /></svg>
-        Create Custom Role
+        Create {{ auth.userScope.replace('_', ' ') }} Role
       </button>
     </div>
 
@@ -42,14 +42,18 @@
                  </div>
                  <div>
                     <h3 class="font-bold text-slate-800 tracking-tight">{{ role.name.replace(/_/g, ' ').toUpperCase() }}</h3>
-                    <span v-if="!role.university_id" class="text-[10px] uppercase font-black tracking-widest text-brand bg-brand/5 px-2 py-0.5 rounded-md border border-brand/10">Global Role</span>
-                    <span v-else class="text-[10px] uppercase font-black tracking-widest text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100">Institutional</span>
+                    <div class="flex gap-1.5 mt-1">
+                      <span v-if="!role.university_id && !role.campus_id && !role.faculty_id && !role.department_id && !role.research_center_id" class="text-[9px] uppercase font-black tracking-widest text-brand bg-brand/5 px-2 py-0.5 rounded border border-brand/10">Global System Role</span>
+                      <span v-else class="text-[9px] uppercase font-black tracking-widest text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">
+                        {{ getRoleLevelDisplay(role) }} scoped
+                      </span>
+                    </div>
                  </div>
               </div>
               <button class="text-brand opacity-0 group-hover:opacity-100 transition-all text-xs font-bold py-1 px-3 bg-brand/5 rounded-lg border border-brand/10">Manage →</button>
             </div>
             <p class="text-xs font-medium text-slate-500 leading-relaxed mb-4 line-clamp-2">
-              {{ role.description || 'Baseline role defined by system platform.' }}
+              {{ role.description || 'Baseline role with hierarchical permission resolution.' }}
             </p>
           </div>
         </div>
@@ -77,16 +81,16 @@
     </div>
 
     <!-- Create Role Modal -->
-    <Modal :show="showCreate" title="Create Custom Institutional Role" @close="showCreate = false">
+    <Modal :show="showCreate" :title="'Create Custom ' + auth.userScope.replace('_', ' ') + ' Role'" @close="showCreate = false">
       <form @submit.prevent="createRole" class="space-y-6">
-        <p class="text-xs font-medium text-slate-500 bg-slate-50 p-4 rounded-2xl border border-slate-100 italic">
-          Institutional roles are only visible within your university. They inherit no permissions by default.
+        <p class="text-[11px] font-medium text-slate-500 bg-blue-50 p-4 rounded-2xl border border-blue-100 leading-relaxed">
+          This role will be created at the <strong>{{ auth.userScope.toUpperCase() }}</strong> level and will be visible to all users within this branch of the hierarchy.
         </p>
         <div class="space-y-4">
           <div class="space-y-1.5">
             <label class="block text-xs font-bold text-slate-500 ml-1">Role Internal Name *</label>
-            <input v-model="roleForm.name" type="text" required placeholder="e.g. dept_finance_auditor" class="input h-12" />
-            <p class="text-[10px] text-slate-400 ml-1 italic leading-tight">Use lowercase and underscores for internal name.</p>
+            <input v-model="roleForm.name" type="text" required placeholder="e.g. branch_research_viewer" class="input h-12" />
+            <p class="text-[10px] text-slate-400 ml-1 italic leading-tight">Use lowercase and underscores, e.g. 'custom_dept_reviewer'.</p>
           </div>
           <div class="space-y-1.5">
             <label class="block text-xs font-bold text-slate-500 ml-1">Description</label>
@@ -96,25 +100,31 @@
         <div class="flex justify-end gap-3 pt-6 border-t border-slate-100">
           <button type="button" @click="showCreate = false" class="btn btn-secondary font-bold text-xs px-6">Discard</button>
           <button type="submit" class="btn btn-primary font-bold text-xs px-6" :disabled="submitting">
-            Create Role
+            Create {{ auth.userScope.replace('_', ' ') }} Role
           </button>
         </div>
       </form>
     </Modal>
 
-    <!-- Manage Permissions Panel (Slide-over / Modal) -->
+    <!-- Manage Permissions Panel -->
     <Modal :show="!!activeRole" :title="'Manage Permissions: ' + activeRole?.name.replace(/_/g, ' ').toUpperCase()" @close="activeRole = null" size="xl">
        <div class="space-y-8 max-h-[80vh] overflow-y-auto px-1 scroll-smooth">
+          <div class="bg-amber-50 p-4 rounded-2xl border border-amber-100 flex items-start gap-3">
+             <svg class="w-5 h-5 text-amber-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+             <p class="text-[11px] font-bold text-amber-800 leading-relaxed">
+               Overrides applied here are specific to your <strong>{{ auth.userScope.toUpperCase() }}</strong>. 
+               Checked perms that were already "Global" will become "Hard Overrides" for this scope.
+             </p>
+          </div>
+
           <div class="flex items-center justify-between">
-             <div>
-                <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
-                   <span class="w-2 h-2 rounded-full bg-brand"></span>
-                   Effective Permission Set
-                </h4>
-             </div>
+             <h4 class="text-xs font-black text-slate-400 uppercase tracking-widest flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-brand"></span>
+                Effective Hierarchical Settings
+             </h4>
              <div class="flex gap-2">
-                <span class="px-2 py-1 bg-brand/5 text-brand text-[9px] font-black border border-brand/10 rounded uppercase">Baseline</span>
-                <span class="px-2 py-1 bg-amber-50 text-amber-600 text-[9px] font-black border border-amber-100 rounded uppercase">Override</span>
+                <span class="px-2 py-1 bg-brand/5 text-brand text-[9px] font-black border border-brand/10 rounded uppercase">Global Baseline</span>
+                <span class="px-2 py-1 bg-amber-100 text-amber-700 text-[9px] font-black border border-amber-200 rounded uppercase">Custom Override</span>
              </div>
           </div>
 
@@ -122,9 +132,9 @@
              <div v-for="i in 5" :key="i" class="h-10 bg-slate-50 animate-pulse rounded-xl"></div>
           </div>
 
-          <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-4">
+          <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-x-8 gap-y-6">
              <div v-for="group in groupedPermissions" :key="group.name" class="space-y-3">
-                <div class="text-[10px] font-black text-slate-800 uppercase tracking-widest border-b border-slate-100 pb-2 flex items-center justify-between">
+                <div class="text-[10px] font-black text-slate-800 uppercase tracking-widest border-b border-slate-100 pb-2 flex items-center justify-between sticky top-0 bg-white z-10 pt-1">
                    {{ group.name }}
                    <span class="text-slate-300">{{ group.perms.length }} perms</span>
                 </div>
@@ -138,20 +148,20 @@
                        />
                        <div v-if="hasOverride(p.id)" class="absolute -top-1 -right-1 w-2.5 h-2.5 bg-amber-400 border-2 border-white rounded-full"></div>
                     </div>
-                    <div>
+                    <div class="flex-1">
                        <div class="text-xs font-bold text-slate-700 leading-none mb-1 group-hover/p:text-brand transition-colors cursor-pointer" @click="toggleOverride(p.id, !isPermGranted(p.id))">
                           {{ formatPermName(p.name) }}
                        </div>
-                       <p class="text-[10px] text-slate-400 font-medium leading-tight line-clamp-1">{{ p.description || 'Allows ' + p.name + ' in the system.' }}</p>
+                       <p class="text-[10px] text-slate-400 font-medium leading-tight overflow-hidden text-ellipsis">{{ p.description || 'Allows ' + p.name.replace(/_/g, ' ') + ' access.' }}</p>
                     </div>
                 </div>
              </div>
           </div>
 
           <div class="sticky bottom-0 bg-white pt-6 pb-2 border-t border-slate-100 mt-8 flex justify-end gap-3 z-10">
-             <button @click="activeRole = null" class="btn btn-secondary font-bold text-xs px-8">Discard</button>
+             <button @click="activeRole = null" class="btn btn-secondary font-bold text-xs px-8">Discard Changes</button>
              <button @click="saveOverrides" class="btn btn-primary font-bold text-xs px-8 shadow-lg shadow-brand/20" :disabled="submitting">
-                Save & Apply Overrides
+                Save Hierarchy Overrides
              </button>
           </div>
        </div>
@@ -162,9 +172,11 @@
 <script setup>
 import { ref, reactive, computed, onMounted } from 'vue'
 import api from '@/services/api'
+import { useAuthStore } from '@/stores/auth'
 import { useNotificationStore } from '@/stores/notification'
 import Modal from '@/components/Modal.vue'
 
+const auth = useAuthStore()
 const notif = useNotificationStore()
 const activeTab = ref('Roles')
 const roles = ref([])
@@ -174,7 +186,7 @@ const loadingPerms = ref(false)
 const submitting = ref(false)
 
 const showCreate = ref(false)
-const roleForm = reactive({ name: '', description: '' })
+const roleForm = reactive({ name: '', description: '', level: '' })
 
 const activeRole = ref(null)
 const rolePermsData = reactive({ global_permissions: [], overrides: [] })
@@ -194,17 +206,27 @@ async function fetchData() {
   }
 }
 
+function getRoleLevelDisplay(role) {
+  if (role.research_center_id) return 'Research Center'
+  if (role.department_id) return 'Department'
+  if (role.faculty_id) return 'Faculty'
+  if (role.campus_id) return 'Campus'
+  if (role.university_id) return 'University'
+  return 'Global'
+}
+
 function openCreateRole() {
   showCreate.value = true
   roleForm.name = ''
   roleForm.description = ''
+  roleForm.level = auth.userScope
 }
 
 async function createRole() {
   submitting.value = true
   try {
     await api.post('/institution/roles', roleForm)
-    notif.success('Custom role created')
+    notif.success(`${auth.userScope.toUpperCase().replace('_', ' ')} role created`)
     showCreate.value = false
     fetchData()
   } catch (err) {
@@ -220,6 +242,8 @@ async function managePermissions(role) {
   try {
     const { data } = await api.get(`/institution/roles/${role.id}/permissions`)
     rolePermsData.global_permissions = data.global_permissions
+    // Filter local overrides specifically for this user's current scope level if needed, 
+    // but the backend already returns those relevant to the user.
     rolePermsData.overrides = data.overrides
     localOverrides.value = JSON.parse(JSON.stringify(data.overrides))
   } catch (err) {
@@ -254,14 +278,12 @@ function toggleOverride(permId, granted) {
   const idx = localOverrides.value.findIndex(o => o.permission_id === permId)
   
   if (idx > -1) {
-    // If we're toggling back to its global state, remove the override
     if (granted === isGlobal) {
       localOverrides.value.splice(idx, 1)
     } else {
       localOverrides.value[idx].granted = granted
     }
   } else {
-    // If toggling AWAY from its global state, add an override
     if (granted !== isGlobal) {
       localOverrides.value.push({ permission_id: permId, granted })
     }
@@ -272,9 +294,10 @@ async function saveOverrides() {
   submitting.value = true
   try {
     await api.post(`/institution/roles/${activeRole.value.id}/permissions`, {
+      level: auth.userScope,
       overrides: localOverrides.value
     })
-    notif.success('Permissions updated successfully')
+    notif.success('Hierarchy overrides saved and applied')
     activeRole.value = null
   } catch (err) {
     notif.error('Failed to save overrides')
@@ -289,3 +312,4 @@ function formatPermName(name) {
 
 onMounted(fetchData)
 </script>
+

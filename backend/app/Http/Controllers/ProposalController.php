@@ -48,9 +48,14 @@ class ProposalController extends Controller
             ->hierarchical($user, 'submitted_by')
 
             // Filters
-            ->when($request->filled('status'), fn($q) =>
-                $q->whereHas('status', fn($s) => $s->where('name', $request->input('status')))
-            )
+            ->when($request->filled('status'), function($q) use ($request) {
+                $status = $request->input('status');
+                if (is_array($status)) {
+                    $q->whereHas('status', fn($s) => $s->whereIn('name', $status));
+                } else {
+                    $q->whereHas('status', fn($s) => $s->where('name', $status));
+                }
+            })
             ->when($request->filled('type'), fn($q) =>
                 $q->whereHas('type', fn($t) => $t->where('name', $request->input('type')))
             )
@@ -111,16 +116,31 @@ class ProposalController extends Controller
     /**
      * Show a single proposal (policy + hierarchical check already applied).
      */
-    public function show(Proposal $proposal): JsonResponse
+    public function show(Proposal $proposal, Request $request): JsonResponse
     {
         $this->authorize('view', $proposal);
 
-        return response()->json($proposal->load(
+        $user = $request->user();
+        $proposal->load([
             'status', 'type', 'submittedBy.department', 'approvedBy', 'call',
             'reviewers.profileImage',
             'financeChecks', 'ethicsRequests', 'file', 'ethicsFile',
             'investigators.user.profileImage', 'investigators.role', 'academicYear'
-        ));
+        ]);
+
+        // ENFORCE BLIND REVIEW
+        // If the user is a reviewer for this proposal, and NOT an admin or the owner
+        $isReviewer = $proposal->reviewers()->where('reviewer_id', $user->id)->exists();
+        $isAdmin = $user->isAdmin();
+        $isOwner = $proposal->submitted_by === $user->id;
+
+        if ($isReviewer && !$isAdmin && !$isOwner) {
+            $proposal->setRelation('submittedBy', null);
+            $proposal->setRelation('investigators', collect([]));
+            $proposal->submitted_by = null;
+        }
+
+        return response()->json($proposal);
     }
 
     /**

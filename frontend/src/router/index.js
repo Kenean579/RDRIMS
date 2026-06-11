@@ -83,7 +83,7 @@ const routes = [
       { path: 'institution/roles', name: 'InstitutionRoles', component: () => import('@/views/roles/InstitutionRoleListView.vue'), meta: { title: 'University Roles', roles: ['research_admin','campus_admin','faculty_admin'] } },
       { path: 'institution/permissions', name: 'InstitutionPermissions', component: () => import('@/views/roles/InstitutionPermissionListView.vue'), meta: { title: 'Institution Permissions', roles: ['research_admin','campus_admin','faculty_admin'] } },
       { path: 'permissions', name: 'Permissions', component: () => import('@/views/permissions/PermissionListView.vue'), meta: { title: 'Permissions', roles: ['super_admin','research_admin'] } },
-      { path: 'audit-logs', name: 'AuditLogs', component: () => import('@/views/audit/AuditLogListView.vue'), meta: { title: 'Audit Logs', roles: ['super_admin','research_admin'] } },
+      { path: 'audit-logs', name: 'AuditLogs', component: () => import('@/views/audit/AuditLogListView.vue'), meta: { title: 'Audit Logs', roles: ['super_admin', 'research_admin', 'campus_admin', 'faculty_admin', 'department_head', 'director'] } },
       
       // Finance & Ethics
       { path: 'expenses', name: 'Expenses', component: () => import('@/views/finance/ExpenseListView.vue'), meta: { title: 'Expenses', roles: ['finance_officer','super_admin'] } },

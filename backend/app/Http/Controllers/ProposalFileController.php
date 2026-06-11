@@ -11,7 +11,13 @@ class ProposalFileController extends Controller
     public function attach(Request $request, Proposal $proposal): JsonResponse
     {
         $request->validate(['file_id' => 'required|exists:files,id']);
-        $proposal->files()->attach($request->file_id);
+        $proposal->files()->syncWithoutDetaching([$request->file_id]);
+        
+        // If main file_id is empty, set this as primary
+        if (!$proposal->file_id) {
+            $proposal->update(['file_id' => $request->file_id]);
+        }
+        
         return response()->json(['message' => 'File attached to proposal.']);
     }
 

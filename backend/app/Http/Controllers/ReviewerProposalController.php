@@ -47,6 +47,7 @@ class ReviewerProposalController extends Controller
         // Load only necessary relations and hide submitter for blind review
         $proposal->load('status', 'type', 'file');
         $proposal->setRelation('submittedBy', null);
+        $proposal->setRelation('investigators', collect([]));
         $proposal->submitted_by = null;
 
         return response()->json($proposal);

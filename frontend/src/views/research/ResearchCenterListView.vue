@@ -33,8 +33,9 @@
               </span>
             </div>
           </div>
-          <div class="w-12 h-12 bg-slate-100 text-white flex items-center justify-center font-bold shrink-0  tracking-tighter text-xs" style="border-radius: 1rem">
-             {{ center.code?.substring(0,3) || 'RC' }}
+          <div class="w-12 h-12 bg-slate-50 rounded-2xl flex items-center justify-center overflow-hidden shrink-0 border border-slate-100 shadow-sm">
+             <img v-if="imageUrl(center.logo_file)" :src="imageUrl(center.logo_file)" class="w-full h-full object-contain" />
+             <span v-else class="text-brand font-black text-xs uppercase">{{ center.code?.substring(0,3) || 'RC' }}</span>
           </div>
         </div>
         
@@ -45,9 +46,13 @@
             <i class="fas fa-university text-brand/60"></i>
             <span class="text-slate-800">{{ center.university.name }}</span>
           </div>
-          <div class="flex items-center gap-1.5" v-if="center.campus || center.faculty">
+          <div class="flex items-center gap-1.5" v-if="center.campus || center.faculty || center.department">
             <i class="fas fa-map-marker-alt text-slate-300"></i>
-            <span class="truncate">{{ center.campus?.name || 'Main Campus' }} <template v-if="center.faculty">/ {{ center.faculty?.name }}</template></span>
+            <span class="truncate">
+              {{ center.campus?.name || 'Main' }} 
+              <template v-if="center.faculty">/ {{ center.faculty?.name }}</template>
+              <template v-if="center.department">/ {{ center.department?.name }}</template>
+            </span>
           </div>
         </div>
 
@@ -72,33 +77,60 @@
             <input v-model="form.code" type="text" required class="input h-12 font-bold" placeholder="e.g. CAIR-01" />
           </div>
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div>
-            <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">University</label>
-            <select v-model="form.parent_university_id" class="input h-12 font-bold">
-              <option value="">Select University</option>
+            <label class="block text-[10px] uppercase font-black text-slate-400 mb-2 ml-1">University (Optional)</label>
+            <select v-model="form.parent_university_id" class="input h-11 font-bold text-xs">
+              <option value="">Independent</option>
               <option v-for="u in universities" :key="u.id" :value="u.id">{{ u.name }}</option>
             </select>
           </div>
           <div>
-            <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Campus</label>
-            <select v-model="form.parent_campus_id" class="input h-12 font-bold">
-              <option value="">Select Campus</option>
+            <label class="block text-[10px] uppercase font-black text-slate-400 mb-2 ml-1">Campus</label>
+            <select v-model="form.parent_campus_id" class="input h-11 font-bold text-xs" :disabled="!form.parent_university_id">
+              <option value="">University Wide</option>
               <option v-for="c in campuses" :key="c.id" :value="c.id">{{ c.name }}</option>
             </select>
           </div>
           <div>
-            <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Faculty</label>
-            <select v-model="form.parent_faculty_id" class="input h-12 font-bold">
-              <option value="">Select Faculty</option>
+            <label class="block text-[10px] uppercase font-black text-slate-400 mb-2 ml-1">Faculty</label>
+            <select v-model="form.parent_faculty_id" class="input h-11 font-bold text-xs" :disabled="!form.parent_campus_id">
+              <option value="">Campus Wide</option>
               <option v-for="f in faculties" :key="f.id" :value="f.id">{{ f.name }}</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-[10px] uppercase font-black text-slate-400 mb-2 ml-1">Department</label>
+            <select v-model="form.parent_department_id" class="input h-11 font-bold text-xs" :disabled="!form.parent_faculty_id">
+              <option value="">Faculty Wide</option>
+              <option v-for="d in departments" :key="d.id" :value="d.id">{{ d.name }}</option>
             </select>
           </div>
         </div>
         
         <div>
-          <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Description</label>
+          <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Center Description</label>
           <textarea v-model="form.description" rows="3" class="input resize-none pt-3" placeholder="Tell us more about this center..."></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-black text-slate-900  tracking-widest mb-3 ml-1">Branding</label>
+          <div class="flex items-center gap-6 p-6 bg-slate-50/50 rounded-3xl border border-dashed border-slate-200">
+            <div class="w-20 h-20 rounded-2xl bg-white border border-slate-100 flex items-center justify-center overflow-hidden shrink-0 shadow-sm transition-transform hover:scale-105">
+               <img v-if="imageUrl(form.logo_file)" :src="imageUrl(form.logo_file)" class="w-full h-full object-contain" />
+               <div v-else class="flex flex-col items-center gap-1 opacity-20">
+                  <i class="fas fa-microscope text-xl"></i>
+                  <span class="text-[9px] font-black tracking-tighter">NO LOGO</span>
+               </div>
+            </div>
+            <div class="flex-1">
+              <input type="file" accept="image/*" class="hidden" id="center-logo-input" @change="uploadLogo" />
+              <label for="center-logo-input" class="bg-white hover:bg-slate-50 text-slate-700 px-5 py-2.5 rounded-xl border border-slate-200 shadow-sm text-xs font-black  tracking-widest cursor-pointer transition-all active:scale-95 inline-block">
+                 {{ uploadingLogo ? 'Syncing...' : 'Upload Center Logo' }}
+              </label>
+              <p class="text-[10px] text-slate-400 mt-3 font-medium">SVG, PNG or JPG (min. 400x400px recommended)</p>
+            </div>
+          </div>
         </div>
 
         <div class="flex justify-end gap-3 pt-6 mt-6 border-t border-slate-100">
@@ -116,6 +148,7 @@
 import { ref, reactive, computed, watch, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationStore } from '@/stores/notification'
+import { imageUrl } from '@/utils/formatters'
 import api from '@/services/api'
 import Modal from '@/components/Modal.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
@@ -131,9 +164,15 @@ const showCreate = ref(false); const editingCenter = ref(null); const showDelete
 const universities = ref([])
 const allCampuses = ref([])
 const allFaculties = ref([])
+const allDepartments = ref([])
 
 // Form state
-const form = reactive({ name: '', code: '', description: '', parent_university_id: '', parent_campus_id: '', parent_faculty_id: '' })
+const form = reactive({ 
+  name: '', code: '', description: '', 
+  parent_university_id: '', parent_campus_id: '', parent_faculty_id: '', parent_department_id: '',
+  logo_file_id: null, logo_file: null 
+})
+const uploadingLogo = ref(false)
 
 // Filtered lists based on parent selection
 const campuses = computed(() => {
@@ -146,31 +185,57 @@ const faculties = computed(() => {
   return allFaculties.value.filter(f => f.campus_id === form.parent_campus_id)
 })
 
-// Reset children when parents change
-watch(() => form.parent_university_id, () => {
-  form.parent_campus_id = ''
-  form.parent_faculty_id = ''
+const departments = computed(() => {
+  if (!form.parent_faculty_id) return []
+  return allDepartments.value.filter(d => d.faculty_id === form.parent_faculty_id)
 })
 
-watch(() => form.parent_campus_id, () => {
-  form.parent_faculty_id = ''
-})
+// Reset children when parents change
+watch(() => form.parent_university_id, (v) => { if(!v) { form.parent_campus_id = ''; form.parent_faculty_id = ''; form.parent_department_id = '' } })
+watch(() => form.parent_campus_id, (v) => { if(!v) { form.parent_faculty_id = ''; form.parent_department_id = '' } })
+watch(() => form.parent_faculty_id, (v) => { if(!v) { form.parent_department_id = '' } })
 
 async function fetchCenters() {
   loading.value = true
   try {
-    const centersRes = await api.get('/research-centers')
-    const uniRes = await api.get('/universities')
-    const campRes = await api.get('/campuses')
-    const facRes = await api.get('/faculties')
-    centers.value = centersRes.data.data || centersRes.data
-    universities.value = uniRes.data.data || uniRes.data
-    allCampuses.value = campRes.data.data || campRes.data
-    allFaculties.value = facRes.data.data || facRes.data
+    const [centersRes, uniRes, campRes, facRes, deptRes] = await Promise.all([
+      api.get('/research-centers'),
+      api.get('/lookups/universities'),
+      api.get('/lookups/campuses'),
+      api.get('/lookups/faculties'),
+      api.get('/lookups/departments')
+    ])
+    
+    centers.value = (centersRes.data.data || centersRes.data).map(c => ({
+      ...c,
+      logo_file: c.logo_file || c.logoFile
+    }))
+    universities.value = uniRes.data
+    allCampuses.value = campRes.data
+    allFaculties.value = facRes.data
+    allDepartments.value = deptRes.data
   } catch (err) {
     notif.error('Failed to sync hierarchy data')
   } finally {
     loading.value = false
+  }
+}
+
+async function uploadLogo(event) {
+  const file = event.target.files?.[0]
+  if (!file) return
+  uploadingLogo.value = true
+  try {
+    const fd = new FormData()
+    fd.append('file', file)
+    fd.append('is_public', '1')
+    const { data } = await api.post('/files', fd)
+    form.logo_file_id = data.id; form.logo_file = data
+    notif.success('Logo uploaded')
+  } catch (e) {
+    notif.error('Logo upload failed')
+  } finally {
+    uploadingLogo.value = false
   }
 }
 
@@ -180,26 +245,33 @@ function editCenter(c) {
     name: c.name, 
     code: c.code, 
     description: c.description || '', 
-    parent_university_id: c.parent_university_id || c.university_id || '', 
-    parent_campus_id: c.parent_campus_id || c.campus_id || '',
-    parent_faculty_id: c.parent_faculty_id || c.faculty_id || ''
+    parent_university_id: c.parent_university_id || '', 
+    parent_campus_id: c.parent_campus_id || '',
+    parent_faculty_id: c.parent_faculty_id || '',
+    parent_department_id: c.parent_department_id || '',
+    logo_file_id: c.logo_file_id || null,
+    logo_file: c.logo_file || null
   }) 
 }
+
 function closeModal() { 
   showCreate.value = false; 
   editingCenter.value = null; 
-  Object.assign(form, { name: '', code: '', description: '', parent_university_id: '', parent_campus_id: '', parent_faculty_id: '' }) 
+  Object.assign(form, { 
+    name: '', code: '', description: '', 
+    parent_university_id: '', parent_campus_id: '', parent_faculty_id: '', parent_department_id: '',
+    logo_file_id: null, logo_file: null
+  }) 
 }
+
 function confirmDelete(c) { deletingCenter.value = c; showDelete.value = true }
 
 async function saveCenter() {
   try {
-    const payload = { 
-      ...form, 
-      parent_university_id: form.parent_university_id || null,
-      parent_campus_id: form.parent_campus_id || null,
-      parent_faculty_id: form.parent_faculty_id || null
-    }
+    const payload = { ...form }
+    // Convert empty strings to null for backend
+    for(let key in payload) if(payload[key] === '') payload[key] = null
+    
     if (editingCenter.value) { await api.put(`/research-centers/${editingCenter.value.id}`, payload); notif.success('Updated!') }
     else { await api.post('/research-centers', payload); notif.success('Created!') }
     closeModal(); fetchCenters()

@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 use App\Http\Controllers\AcademicYearController;
 use App\Http\Controllers\AgreementFileController;
@@ -121,11 +121,12 @@ Route::middleware('auth:sanctum')->group(function () {
 
     // â”€â”€ Notifications â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     Route::get('notifications', [NotificationController::class, 'index']);
+    Route::put('notifications/read-all', [NotificationController::class, 'markAllAsRead']);
     Route::put('notifications/{id}/read', [NotificationController::class, 'markAsRead']);
 
     // â”€â”€ Audit logs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     Route::get('audit-logs', [AuditLogController::class, 'index'])
-        ->middleware('role:super_admin,research_admin');
+        ->middleware('role:super_admin,research_admin,campus_admin,faculty_admin,department_head,director');
 
     // â”€â”€ Academic hierarchy (write) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     Route::apiResource('universities', UniversityController::class)

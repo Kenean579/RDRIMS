@@ -9,11 +9,9 @@ trait HierarchicalScope
 {
     public function scopeHierarchical(Builder $query, User $user, string $userColumn = 'user_id'): Builder
     {
-        if ($user->hasRole('super_admin') && !$user->hasRole('research_admin') && !$user->hasRole('campus_admin')
-            && !$user->hasRole('faculty_admin') && !$user->hasRole('department_head') && !$user->hasRole('director')
-            && !$user->hasRole('researcher') && !$user->hasRole('reviewer') && !$user->hasRole('student')
-            && !$user->hasRole('finance_officer') && !$user->hasRole('ethics_officer')) {
-            return $query->whereRaw('1 = 0');
+        // Super Admin sees everything platform-wide
+        if ($user->hasRole('super_admin')) {
+            return $query;
         }
 
         $query->where(function (Builder $q) use ($user, $userColumn) {

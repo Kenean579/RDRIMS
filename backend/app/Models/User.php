@@ -147,43 +147,77 @@ class User extends Authenticatable
      */
     public function getEffectivePermissionIds(): array
     {
-        $cacheKey = "user_{$this->id}_effective_permissions_v2";
+        $cacheKey = "user_{$this->id}_effective_permissions_v3";
         
         return \Illuminate\Support\Facades\Cache::remember($cacheKey, now()->addMinutes(30), function () {
             $universityId = $this->university_id ?: $this->department?->faculty?->campus?->university_id;
+            $campusId = $this->department?->faculty?->campus_id;
+            $facultyId = $this->department?->faculty_id;
+            $departmentId = $this->department_id;
+            $researchCenterId = $this->research_center_id;
 
-            // 1. Global roles (university_id IS NULL)
-            $globalRoleIds = $this->roles()->whereNull('university_id')->pluck('roles.id');
+            // 1. Global roles (all hierarchy IDs are NULL)
+            $globalRoleIds = $this->roles()
+                ->whereNull('university_id')
+                ->whereNull('campus_id')
+                ->whereNull('faculty_id')
+                ->whereNull('department_id')
+                ->whereNull('research_center_id')
+                ->pluck('roles.id');
+                
             $globalPermIds = \App\Models\Permission::whereHas('roles', function ($q) use ($globalRoleIds) {
                 $q->whereIn('role_id', $globalRoleIds);
             })->pluck('id');
 
-            // 2. Institution-specific roles (university_id = user's university)
-            $instRoleIds = $universityId 
-                ? $this->roles()->where('university_id', $universityId)->pluck('roles.id')
-                : collect([]);
+            // 2. Hierarchical specific roles (assigned to this user at ANY level)
+            $hierarchicalRoleIds = $this->roles()->where(function($q) use ($universityId, $campusId, $facultyId, $departmentId, $researchCenterId) {
+                $q->where('university_id', $universityId)
+                  ->orWhere('campus_id', $campusId)
+                  ->orWhere('faculty_id', $facultyId)
+                  ->orWhere('department_id', $departmentId)
+                  ->orWhere('research_center_id', $researchCenterId);
+            })->pluck('roles.id');
                 
-            $instPermIds = $instRoleIds->isNotEmpty() 
-                ? \App\Models\Permission::whereHas('roles', function ($q) use ($instRoleIds) {
-                    $q->whereIn('role_id', $instRoleIds);
+            $hierarchicalPermIds = $hierarchicalRoleIds->isNotEmpty() 
+                ? \App\Models\Permission::whereHas('roles', function ($q) use ($hierarchicalRoleIds) {
+                    $q->whereIn('role_id', $hierarchicalRoleIds);
                 })->pluck('id')
                 : collect([]);
 
-            // 3. Overrides for this institution
+            // 3. Overrides at ALL levels of user's hierarchy
             $userRoleIds = $this->roles->pluck('id');
-            $overrides = $universityId 
-                ? \App\Models\InstitutionRolePermission::where('university_id', $universityId)
-                    ->whereIn('role_id', $userRoleIds)
-                    ->get()
-                : collect([]);
+            $overrides = \App\Models\InstitutionRolePermission::whereIn('role_id', $userRoleIds)
+                ->where(function($q) use ($universityId, $campusId, $facultyId, $departmentId, $researchCenterId) {
+                    $q->where('university_id', $universityId)
+                      ->orWhere('campus_id', $campusId)
+                      ->orWhere('faculty_id', $facultyId)
+                      ->orWhere('department_id', $departmentId)
+                      ->orWhere('research_center_id', $researchCenterId);
+                })->get();
 
             $added = $overrides->where('granted', true)->pluck('permission_id');
             $removed = $overrides->where('granted', false)->pluck('permission_id');
 
-            // Merge: (Global + Institutional + Added) - Removed
-            $all = $globalPermIds->merge($instPermIds)->merge($added)->diff($removed)->unique();
+            // Merge: (Global + HierarchicalRoles + Added) - Removed
+            $all = $globalPermIds->merge($hierarchicalPermIds)->merge($added)->diff($removed)->unique();
             
             return $all->values()->toArray();
         });
+    }
+    /**
+     * Check if user has a specific permission by name, considering hierarchy.
+     */
+    public function hasPermission(string $permissionName): bool
+    {
+        if ($this->hasRole('super_admin')) return true;
+
+        $effectiveIds = $this->getEffectivePermissionIds();
+        
+        // Cache lookup for permission name to ID
+        $permId = \Illuminate\Support\Facades\Cache::remember("perm_id_{$permissionName}", now()->addMonth(), function() use ($permissionName) {
+            return \App\Models\Permission::where('name', $permissionName)->value('id');
+        });
+
+        return $permId && in_array($permId, $effectiveIds);
     }
 }

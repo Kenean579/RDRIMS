@@ -16,8 +16,8 @@ class UploadFileRequest extends FormRequest
     {
         return [
             'file'        => 'required|file|max:20480', // 20MB
-            'parent_type' => 'required|string|in:proposal,project,output,patent,agreement',
-            'parent_id'   => 'required|integer',
+            'parent_type' => 'nullable|string|in:proposal,project,output,patent,agreement',
+            'parent_id'   => 'nullable|integer',
             'is_public'   => 'boolean',
         ];
     }

@@ -24,8 +24,9 @@
     <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-5">
       <div v-for="uni in universities" :key="uni.id" class="card p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 card-hover transition-all">
         <div class="flex items-center gap-4">
-          <div class="w-12 h-12 rounded-2xl bg-slate-100 text-white flex items-center justify-center font-bold text-xl">
-            {{ uni.name.charAt(0) }}
+          <div class="w-12 h-12 rounded-2xl bg-slate-100 flex items-center justify-center overflow-hidden shrink-0 border border-slate-200">
+            <img v-if="imageUrl(uni.logo_file)" :src="imageUrl(uni.logo_file)" class="w-full h-full object-contain" />
+            <span v-else class="text-slate-400 font-bold text-xl">{{ uni.name.charAt(0) }}</span>
           </div>
           <div>
             <h3 class="font-bold text-slate-800 text-lg leading-tight mb-1">{{ uni.name }}</h3>
@@ -57,9 +58,25 @@
           <label class="block text-sm font-semibold text-slate-700">Code/Safe-name *</label>
           <input v-model="form.code" type="text" required placeholder="WU" class="input" />
         </div>
+        <div class="space-y-1.5">
+          <label class="block text-sm font-semibold text-slate-700">Institution Logo</label>
+          <div class="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+            <div class="w-16 h-16 rounded-xl bg-white border border-slate-200 flex items-center justify-center overflow-hidden shrink-0">
+               <img v-if="imageUrl(form.logo_file)" :src="imageUrl(form.logo_file)" class="w-full h-full object-contain" />
+               <span v-else class="text-xs text-slate-300 font-bold">LOGO</span>
+            </div>
+            <div class="flex-1">
+              <input type="file" accept="image/*" class="hidden" id="uni-logo-input" @change="uploadLogo" />
+              <label for="uni-logo-input" class="btn btn-secondary h-9 px-4 text-xs font-bold cursor-pointer">
+                 {{ uploadingLogo ? 'Uploading...' : 'Choose Image' }}
+              </label>
+              <p class="text-[10px] text-slate-400 mt-2">Recommended: PNG/JPG, Square, max 1MB</p>
+            </div>
+          </div>
+        </div>
         <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
           <button type="button" @click="closeModal" class="btn btn-secondary">Discard</button>
-          <button type="submit" class="btn btn-primary">{{ editingUni ? 'Update' : 'Register' }}</button>
+          <button type="submit" class="btn btn-primary" :disabled="uploadingLogo">{{ editingUni ? 'Update' : 'Register' }}</button>
         </div>
       </form>
     </Modal>
@@ -115,19 +132,46 @@ import Modal from '@/components/Modal.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import LoadingSkeleton from '@/components/LoadingSkeleton.vue'
 import EmptyState from '@/components/EmptyState.vue'
+import { imageUrl } from '@/utils/formatters'
 
 const notif = useNotificationStore()
 const universities = ref([]); const loading = ref(true)
 const showCreate = ref(false); const editingUni = ref(null); const showDelete = ref(false); const deletingUni = ref(null)
-const form = reactive({ name: '', code: '' })
+const form = reactive({ name: '', code: '', logo_file_id: null, logo_file: null })
+const uploadingLogo = ref(false)
 
 const showSetUpAdmin = ref(false); const targetUni = ref(null); const submittingAdmin = ref(false)
 const adminForm = reactive({ name: '', email: '', password: '' })
 
 async function fetchUniversities() {
   loading.value = true
-  try { const { data } = await api.get('/universities'); universities.value = Array.isArray(data) ? data : data.data }
+  try { 
+    const { data } = await api.get('/universities')
+    universities.value = (data.data || data).map(u => ({
+      ...u,
+      logo_file: u.logo_file || u.logoFile // Handle relationship name variations
+    }))
+  }
   catch (e) {} finally { loading.value = false }
+}
+
+async function uploadLogo(event) {
+  const file = event.target.files?.[0]
+  if (!file) return
+  uploadingLogo.value = true
+  try {
+    const fd = new FormData()
+    fd.append('file', file)
+    fd.append('is_public', '1')
+    const { data } = await api.post('/files', fd)
+    form.logo_file_id = data.id
+    form.logo_file = data
+    notif.success('Logo uploaded')
+  } catch (e) {
+    notif.error('Logo upload failed')
+  } finally {
+    uploadingLogo.value = false
+  }
 }
 
 function openSetUpAdmin(uni) {
@@ -166,8 +210,20 @@ async function saveAdmin() {
   }
 }
 
-function editUni(u) { editingUni.value = u; Object.assign(form, { name: u.name, code: u.code }) }
-function closeModal() { showCreate.value = false; editingUni.value = null; Object.assign(form, { name: '', code: '' }) }
+function editUni(u) { 
+  editingUni.value = u; 
+  Object.assign(form, { 
+    name: u.name, 
+    code: u.code, 
+    logo_file_id: u.logo_file_id || null, 
+    logo_file: u.logo_file || null 
+  }) 
+}
+function closeModal() { 
+  showCreate.value = false; 
+  editingUni.value = null; 
+  Object.assign(form, { name: '', code: '', logo_file_id: null, logo_file: null }) 
+}
 function confirmDelete(u) { deletingUni.value = u; showDelete.value = true }
 
 async function saveUni() {

@@ -111,6 +111,6 @@ class AuthController extends Controller
 
     public function user(Request $request): JsonResponse
     {
-        return response()->json($request->user()->load('roles.permissions', 'department.faculty', 'profile_image', 'expertise'));
+        return response()->json($request->user()->load('roles.permissions', 'department.faculty', 'profileImage', 'expertise'));
     }
 }
