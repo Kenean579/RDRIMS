@@ -26,7 +26,8 @@ class ReviewerSuggestionService
 
         // Get all eligible reviewers (excluding submitter and investigators)
         $investigatorUserIds = $proposal->investigators()->whereNotNull('user_id')->pluck('user_id')->toArray();
-        $eligibleReviewers = User::whereHas('roles', fn($q) => $q->where('name', 'reviewer'))
+        $eligibleReviewers = User::withCount('reviewedProposals')
+            ->whereHas('roles', fn($q) => $q->where('name', 'reviewer'))
             ->where('id', '!=', $proposal->submitted_by)
             ->whereNotIn('id', $investigatorUserIds)
             ->with(['expertise', 'department'])
@@ -83,7 +84,7 @@ class ReviewerSuggestionService
                 'matched_keywords' => $matchedKeywords,
                 'expertise' => $reviewerExpertise,
                 // Add review count if needed (assuming history exists)
-                'review_count' => $reviewer->reviewedProposals()->count(),
+                'review_count' => $reviewer->reviewed_proposals_count,
             ];
         });
 

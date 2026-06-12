@@ -21,7 +21,7 @@ class OutputController extends Controller
     {
         $user = auth()->user();
         
-        $query = Output::with('category', 'status', 'subtype', 'participants.user')
+        $query = Output::with(['category', 'status', 'subtype', 'participantEntries.user', 'participantEntries.participantType'])
             ->when($request->status, fn($q) => $q->whereHas('status', fn($s) => $s->where('name', $request->status)))
             ->when($request->category, fn($q) => $q->whereHas('category', fn($c) => $c->where('name', $request->category)))
             ->when($request->student_level, fn($q) => $q->whereHas('studentLevel', fn($sl) => $sl->where('name', $request->student_level)))
@@ -56,7 +56,7 @@ class OutputController extends Controller
      */
     public function publicIndex(Request $request): JsonResponse
     {
-        $outputs = Output::with('category', 'studentLevel', 'subtype', 'participants.user')
+        $outputs = Output::with(['category', 'studentLevel', 'subtype', 'participantEntries.user', 'participantEntries.participantType'])
             ->whereHas('status', fn($s) => $s->where('name', 'approved'))
             ->when($request->category, fn($q) => $q->whereHas('category', fn($c) => $c->where('name', $request->category)))
             ->when($request->student_level, fn($q) => $q->whereHas('studentLevel', fn($sl) => $sl->where('name', $request->student_level)))
@@ -106,7 +106,7 @@ class OutputController extends Controller
 
     public function show(Output $output): JsonResponse
     {
-        return response()->json($output->load('category', 'status', 'participants.user', 'files', 'project'));
+        return response()->json($output->load('category', 'status', 'participantEntries.user', 'participantEntries.participantType', 'files', 'project'));
     }
 
     public function update(UpdateOutputRequest $request, Output $output): JsonResponse

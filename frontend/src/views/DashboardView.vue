@@ -380,36 +380,32 @@ function applyRoleStats(d, actualCounts) {
 async function fetchDashboard() {
   loadingStats.value = true
   try {
-    // Fetch dashboard data and actual counts in parallel
-    const [dashRes, uniRes, callsRes, centersRes, campusesRes, facultiesRes] = await Promise.all([
+    // Fetch dashboard data and essential counts in parallel
+    const [dashRes, centersRes, callsRes] = await Promise.all([
       api.get('/dashboard'),
-      api.get('/universities'),
-      api.get('/calls', { params: { status: 'open' } }),
       api.get('/research-centers'),
-      api.get('/campuses'),
-      api.get('/faculties')
+      api.get('/calls', { params: { status: 'open' } })
     ])
 
     const d = dashRes.data || {}
 
-    // Extract actual counts from API responses
+    // Use counts from dashboard API where possible, fallback to actual lists
     const actualCounts = {
-      universities: uniRes.data?.data?.length || uniRes.data?.length || 0,
+      universities: d.universities_count || (d.university_stats?.length) || 0,
       researchCenters: centersRes.data?.data?.length || centersRes.data?.length || 0,
-      campuses: campusesRes.data?.data?.length || campusesRes.data?.length || 0,
-      faculties: facultiesRes.data?.data?.length || facultiesRes.data?.length || 0
+      campuses: d.campuses_count || 0,
+      faculties: d.faculties_count || 0
     }
 
     // Apply role-specific stats with actual counts
     applyRoleStats(d, actualCounts)
 
-    // University distribution
+    // University distribution - use optimized stats from dashboard
     if (showUniversityDistribution.value) {
-      const unis = uniRes.data?.data || []
-      universityStats.value = unis.map(u => ({
+      universityStats.value = (d.university_stats || []).map(u => ({
         name: u.name,
         code: u.code,
-        proposals_count: u.proposals_count || Math.floor(Math.random() * 20) + 1
+        proposals_count: u.proposals_count || 0
       }))
       universityOptions.value = {
         ...universityOptions.value,

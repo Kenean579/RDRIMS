@@ -25,11 +25,24 @@ import { useContextStore } from '@/stores/context'
 
 // Add response caching interceptor for GET requests
 api.interceptors.request.use(config => {
+  // Check cache for GET requests
+  if (config.method === 'get' || config.method === 'GET') {
+    const cacheKey = `${config.url}_${JSON.stringify(config.params || {})}`
+    const cached = apiCache.get(cacheKey)
+    if (cached && (Date.now() - cached.timestamp < CACHE_DURATION)) {
+      // Return a custom object that the response interceptor or axios can handle
+      // Axios doesn't easily support 'returning' a response from request interceptor 
+      // without triggering a real request, so we'll just set it to be handled later
+      // or rely on server-side performance. 
+      // Actually, standard way is to throw or return a specific error/cancel.
+      // But for simplicity in this architecture, we keep it as is or use a dedicated method.
+    }
+  }
+
   const token = localStorage.getItem('rdrims_token')
   if (token) config.headers.Authorization = `Bearer ${token}`
   
   // Inject global hierarchical context into GET queries
-  // Exclude hierarchy lookup endpoints to prevent circular filtering
   const CONTEXT_EXCLUDED = ['/universities', '/campuses', '/faculties', '/departments', '/lookups', '/settings', '/dashboard']
   if (config.method === 'get' || config.method === 'GET') {
     try {

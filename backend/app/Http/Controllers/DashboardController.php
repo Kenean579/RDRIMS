@@ -102,15 +102,21 @@ class DashboardController extends Controller
 
         $countsByStatus = $statusBreakdown->pluck('count', 'name');
 
-        $universityStats = University::query()
-            ->leftJoin('campuses', 'universities.id', '=', 'campuses.university_id')
-            ->leftJoin('faculties', 'campuses.id', '=', 'faculties.campus_id')
-            ->leftJoin('departments', 'faculties.id', '=', 'departments.faculty_id')
-            ->leftJoin('users', 'departments.id', '=', 'users.department_id')
-            ->leftJoin('proposals', 'users.id', '=', 'proposals.submitted_by')
-            ->select('universities.name', 'universities.code', DB::raw('count(proposals.id) as proposals_count'))
-            ->groupBy('universities.id', 'universities.name', 'universities.code')
-            ->get();
+        $universityStats = University::all()->map(function($u) use ($user) {
+            $count = Proposal::whereIn('submitted_by', function($q) use ($u) {
+                $q->select('users.id')->from('users')
+                    ->join('departments', 'users.department_id', '=', 'departments.id')
+                    ->join('faculties', 'departments.faculty_id', '=', 'faculties.id')
+                    ->join('campuses', 'faculties.campus_id', '=', 'campuses.id')
+                    ->where('campuses.university_id', $u->id);
+            })->hierarchical($user, 'submitted_by')->count();
+            
+            return [
+                'name' => $u->name,
+                'code' => $u->code,
+                'proposals_count' => $count
+            ];
+        });
 
         return response()->json([
             'proposals_count' => $proposalsQuery->count(),
