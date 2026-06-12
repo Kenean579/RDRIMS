@@ -265,7 +265,7 @@ async function deactivateUser() {
 onMounted(async () => {
   await fetchUsers()
   try { 
-    const rolesPath = auth.hasRole('super_admin') ? '/admin/roles' : '/institution/roles'
+    const rolesPath = auth.hasRole('super_admin') ? '/roles' : '/institution/roles'
     const rr = await api.get(rolesPath)
     const dr = await api.get('/departments')
     const ur = await api.get('/universities')

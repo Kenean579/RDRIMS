@@ -67,13 +67,10 @@ class ProjectController extends Controller
             'status' => 'required|string|in:active,completed,suspended',
         ]);
 
-        $statusMap = [
-            'active' => 1,
-            'completed' => 2,
-            'suspended' => 3,
-        ];
-
-        $project->update(['status_id' => $statusMap[$request->status]]);
+        $status = \App\Models\ProjectStatus::where('name', $request->status)->first();
+        if ($status) {
+            $project->update(['status_id' => $status->id]);
+        }
 
         return response()->json($project->load('status'));
     }

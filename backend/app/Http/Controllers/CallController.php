@@ -54,9 +54,22 @@ class CallController extends Controller
                         if ($user->hasRole('director')) {
                             $q->orWhereIn('research_center_id', $user->researchCenters->pluck('id'));
                         }
-                        // Researchers, reviewers, students – they see calls open to their scope,
-                        // but that's handled by the existing public scoping; authenticated users without admin
-                        // roles generally see all open calls anyway.
+                        
+                        // Default scoping for researchers, reviewers, and students
+                        if ($user->hasRole('researcher', 'reviewer', 'student', 'guest')) {
+                            $q->orWhereNull('university_id')
+                              ->orWhere('university_id', $user->university_id);
+                              
+                            if ($user->department?->faculty?->campus_id) {
+                                $q->orWhere('campus_id', $user->department->faculty->campus_id);
+                            }
+                            if ($user->department?->faculty_id) {
+                                $q->orWhere('faculty_id', $user->department->faculty_id);
+                            }
+                            if ($user->department_id) {
+                                $q->orWhere('department_id', $user->department_id);
+                            }
+                        }
                     });
                 }
             )

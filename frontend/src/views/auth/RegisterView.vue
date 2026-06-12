@@ -182,6 +182,7 @@ async function handleRegister() {
     email: form.email,
     password: form.password,
     password_confirmation: form.password_confirmation,
+    university_id: form.university_id || null,
     department_id: form.department_id || null 
   })
   
