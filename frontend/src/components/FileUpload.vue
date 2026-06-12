@@ -105,9 +105,11 @@ function processFile(file) {
     return
   }
 
-  // Validate extension (simple check)
-  const ext = '.' + file.name.split('.').pop().toLowerCase()
-  if (!allowedExtensions.value.toLowerCase().includes(ext)) {
+  // Validate extension (dot-agnostic check)
+  const ext = file.name.split('.').pop().toLowerCase()
+  const allowed = allowedExtensions.value.toLowerCase().replace(/\./g, '').split(',')
+  
+  if (!allowed.includes(ext)) {
     internalError.value = `Invalid file type. Allowed types: ${allowedExtensions.value}`
     return
   }

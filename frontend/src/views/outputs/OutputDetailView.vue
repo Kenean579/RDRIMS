@@ -138,8 +138,8 @@
               <button @click="showAddParticipant = true" class="text-xs font-medium text-brand hover:underline">+ Assign</button>
             </div>
             
-            <div v-if="output.participants?.length" class="space-y-4">
-              <div v-for="p in output.participants" :key="p.id" class="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-100 group hover:border-brand/30 transition-all">
+            <div v-if="output.participant_entries?.length" class="space-y-4">
+              <div v-for="p in output.participant_entries" :key="p.id" class="flex items-center justify-between p-4 rounded-2xl bg-slate-50 border border-slate-100 group hover:border-brand/30 transition-all">
                 <div class="flex items-center gap-3">
                   <div class="w-8 h-8 bg-brand-light text-brand rounded-2xl flex items-center justify-center text-xs font-medium ">{{ p.user?.name?.substring(0,1) }}</div>
                   <div class="min-w-0">

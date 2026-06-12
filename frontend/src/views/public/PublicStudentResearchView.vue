@@ -80,7 +80,7 @@
 
         <div class="flex items-center justify-between mt-auto pt-4 border-t border-slate-100">
             <span class="text-[10px] font-medium text-slate-400 italic">
-               {{ out.participants?.length > 1 ? '+' + (out.participants.length - 1) + ' contributors' : 'Individual Work' }}
+               {{ out.participant_entries?.length > 1 ? '+' + (out.participant_entries.length - 1) + ' contributors' : 'Individual Work' }}
             </span>
             <router-link :to="`/app/outputs/${out.id}`" class="text-xs font-bold text-brand hover:underline">
               View Details →
@@ -117,7 +117,7 @@ function debounceSearch() {
 }
 
 function getStudentName(output) {
-  const student = output.participants?.find(p => p.participant_type?.name === 'student' || !p.participant_type)
+  const student = output.participant_entries?.find(p => p.participant_type?.name === 'student' || !p.participant_type)
   return student?.user?.name || student?.name || 'Anonymous Student'
 }
 

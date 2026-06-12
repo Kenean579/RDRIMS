@@ -20,6 +20,7 @@ class ResearchCenterController extends Controller
 
     public function store(StoreResearchCenterRequest $request): JsonResponse
     {
+        $this->authorize('create', ResearchCenter::class);
         $center = ResearchCenter::create($request->validated());
         return response()->json($center, 201);
     }
@@ -31,12 +32,14 @@ class ResearchCenterController extends Controller
 
     public function update(UpdateResearchCenterRequest $request, ResearchCenter $researchCenter): JsonResponse
     {
+        $this->authorize('update', $researchCenter);
         $researchCenter->update($request->validated());
         return response()->json($researchCenter);
     }
 
     public function destroy(ResearchCenter $researchCenter): JsonResponse
     {
+        $this->authorize('delete', $researchCenter);
         $researchCenter->delete();
         return response()->json(['message' => 'Research center deleted.']);
     }

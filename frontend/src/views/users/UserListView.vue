@@ -248,13 +248,20 @@ async function saveUser() {
       name: form.name, 
       email: form.email, 
       university_id: form.university_id || null,
-      department_id: form.department_id || null 
+      department_id: form.department_id || null,
+      roles: form.role_ids // Backend expects 'roles' for sync
     }
     if (!editingUser.value) payload.password = form.password
-    if (editingUser.value) { await api.put(`/users/${editingUser.value.id}`, payload); notif.success('Updated!') }
-    else { const { data } = await api.post('/users', payload); if (form.role_ids.length) for (const rid of form.role_ids) await api.post(`/users/${data.id}/roles`, { role_id: rid }); notif.success('Created!') }
+    
+    if (editingUser.value) { 
+      await api.put(`/users/${editingUser.value.id}`, payload); 
+      notif.success('User updated successfully!') 
+    } else { 
+      await api.post('/users', payload); 
+      notif.success('User created successfully!') 
+    }
     closeModal(); fetchUsers()
-  } catch (err) { notif.error(err.response?.data?.message || 'Failed') }
+  } catch (err) { notif.error(err.response?.data?.message || 'Failed to save user') }
 }
 
 async function deactivateUser() {

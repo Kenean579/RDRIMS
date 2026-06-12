@@ -50,7 +50,7 @@
             <div class="flex flex-wrap gap-2">
               <span class="px-2.5 py-1 bg-blue-50 text-blue-600 text-xs font-medium rounded-2xl border border-blue-100">{{ o.category?.name || 'Output' }}</span>
               <span v-if="o.subtype?.name" class="px-2.5 py-1 bg-indigo-50 text-indigo-600 text-xs font-medium rounded-2xl border border-indigo-100">{{ o.subtype.name }}</span>
-              <span v-if="o.participants?.length" class="px-2.5 py-1 bg-emerald-50 text-emerald-600 text-xs font-medium rounded-2xl border border-emerald-100">{{ o.participants.length }} Contributors</span>
+              <span v-if="o.participant_entries?.length" class="px-2.5 py-1 bg-emerald-50 text-emerald-600 text-xs font-medium rounded-2xl border border-emerald-100">{{ o.participant_entries.length }} Contributors</span>
             </div>
           </div>
           <div class="flex md:flex-col gap-2 shrink-0">
@@ -225,7 +225,7 @@ function editOutput(o) {
     subtype_id: o.subtype_id,
     participant_type: o.participant_type || 'student',
     student_level_id: o.student_level_id || '',
-    participants: (o.participants || []).map(p => ({ user_id: p.user_id || '', name: p.name || '', email: p.email || '' }))
+    participants: (o.participant_entries || []).map(p => ({ user_id: p.user_id || '', name: p.user?.name || '', email: p.user?.email || '' }))
   })
 }
 

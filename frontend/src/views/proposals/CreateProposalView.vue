@@ -427,15 +427,18 @@ onMounted(async () => {
     notif.error('Failed to load form data.')
   }
 
-  // Auto-save draft every 30 seconds
-  const timer = setInterval(() => {
-    const toSave = { ...form }
-    delete toSave.proposal_file
-    delete toSave.ethics_file
-    localStorage.setItem('rdrims_proposal_draft', JSON.stringify(toSave))
-  }, 30000)
+})
 
-  onUnmounted(() => clearInterval(timer))
+// Auto-save draft every 30 seconds
+const timer = setInterval(() => {
+  const toSave = { ...form }
+  delete toSave.proposal_file
+  delete toSave.ethics_file
+  localStorage.setItem('rdrims_proposal_draft', JSON.stringify(toSave))
+}, 30000)
+
+onUnmounted(() => {
+  if (timer) clearInterval(timer)
 })
 
 // Clear draft after successful submission
