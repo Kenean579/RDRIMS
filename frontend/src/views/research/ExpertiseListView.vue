@@ -53,7 +53,7 @@
         <div v-for="exp in filteredExpertise" :key="exp.id" 
           class="inline-flex items-center gap-4 px-6 py-3.5 rounded-[1.25rem] border border-slate-200 shadow-sm hover:shadow-xl hover:shadow-brand/5 hover:border-brand/40 hover:-translate-y-1 transition-all duration-500 group cursor-default" style="background: #fff">
           <div class="w-8 h-8 flex items-center justify-center text-xs text-slate-400 group-hover:bg-brand/10 group-hover:text-brand transition-colors font-bold" style="background: #f8fafc; border-radius: 0.75rem">
-            {{ exp.name.charAt(0).to() }}
+            {{ exp.name.charAt(0).toUpperCase() }}
           </div>
           <span class="text-xs font-bold text-slate-900  tracking-widest group-hover:text-brand transition-colors">{{ exp.name }}</span>
           

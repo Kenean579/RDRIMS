@@ -15,6 +15,11 @@ class RoleMiddleware
         }
 
         $userRoles = $request->user()->roles()->pluck('name')->toArray();
+        
+        // Super admins always pass role checks
+        if (in_array('super_admin', $userRoles)) {
+            return $next($request);
+        }
 
         if (empty(array_intersect($roles, $userRoles))) {
             return response()->json(['message' => 'Forbidden. Insufficient role.'], 403);

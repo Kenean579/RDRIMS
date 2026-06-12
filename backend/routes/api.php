@@ -154,7 +154,9 @@ Route::middleware('auth:sanctum')->group(function () {
         ->except(['index', 'show'])
         ->middleware('role:super_admin,research_admin,campus_admin,faculty_admin');
 
+    Route::get('academic-years', [AcademicYearController::class, 'index']);
     Route::apiResource('academic-years', AcademicYearController::class)
+        ->except(['index'])
         ->middleware('role:super_admin,research_admin');
     Route::post('academic-years/{academic_year}/set-current', [AcademicYearController::class, 'setCurrent'])
         ->middleware('role:super_admin,research_admin');

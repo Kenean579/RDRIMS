@@ -41,7 +41,7 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
                  </div>
                  <div>
-                    <h3 class="font-bold text-slate-800 tracking-tight">{{ role.name.replace(/_/g, ' ').to() }}</h3>
+                    <h3 class="font-bold text-slate-800 tracking-tight">{{ role.name.replace(/_/g, ' ') }}</h3>
                     <div class="flex gap-1.5 mt-1">
                       <span v-if="!role.university_id && !role.campus_id && !role.faculty_id && !role.department_id && !role.research_center_id" class="font-semibold text-xs text-brand bg-brand/5 px-2 py-0.5 rounded border border-brand/10">Global System Role</span>
                       <span v-else class="font-semibold text-xs text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-100">
@@ -84,7 +84,7 @@
     <Modal :show="showCreate" :title="'Create Custom ' + auth.userScope.replace('_', ' ') + ' Role'" @close="showCreate = false">
       <form @submit.prevent="createRole" class="space-y-6">
         <p class="text-[11px] font-medium text-slate-500 bg-blue-50 p-4 rounded-2xl border border-blue-100 leading-relaxed">
-          This role will be created at the <strong>{{ auth.userScope.to() }}</strong> level and will be visible to all users within this branch of the hierarchy.
+          This role will be created at the <strong>{{ auth.userScope.toUpperCase() }}</strong> level and will be visible to all users within this branch of the hierarchy.
         </p>
         <div class="space-y-4">
           <div class="space-y-1.5">
@@ -107,12 +107,12 @@
     </Modal>
 
     <!-- Manage Permissions Panel -->
-    <Modal :show="!!activeRole" :title="'Manage Permissions: ' + activeRole?.name.replace(/_/g, ' ').to()" @close="activeRole = null" size="xl">
+    <Modal :show="!!activeRole" :title="'Manage Permissions: ' + activeRole?.name.replace(/_/g, ' ')" @close="activeRole = null" size="xl">
        <div class="space-y-8 max-h-[80vh] overflow-y-auto px-1 scroll-smooth">
           <div class="bg-amber-50 p-4 rounded-2xl border border-amber-100 flex items-start gap-3">
              <svg class="w-5 h-5 text-amber-600 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
              <p class="text-[11px] font-bold text-amber-800 leading-relaxed">
-               Overrides applied here are specific to your <strong>{{ auth.userScope.to() }}</strong>. 
+               Overrides applied here are specific to your <strong>{{ auth.userScope.toUpperCase() }}</strong>. 
                Checked perms that were already "Global" will become "Hard Overrides" for this scope.
              </p>
           </div>
@@ -226,7 +226,7 @@ async function createRole() {
   submitting.value = true
   try {
     await api.post('/institution/roles', roleForm)
-    notif.success(`${auth.userScope.to().replace('_', ' ')} role created`)
+    notif.success(`${auth.userScope.toUpperCase().replace('_', ' ')} role created`)
     showCreate.value = false
     fetchData()
   } catch (err) {
@@ -256,7 +256,7 @@ async function managePermissions(role) {
 const groupedPermissions = computed(() => {
   const groups = {}
   allPermissions.value.forEach(p => {
-    const category = p.name.split('_')[0].to()
+    const category = p.name.split('_')[0].toUpperCase()
     if (!groups[category]) groups[category] = []
     groups[category].push(p)
   })
@@ -307,7 +307,7 @@ async function saveOverrides() {
 }
 
 function formatPermName(name) {
-  return name.replace(/_/g, ' ').replace(/\b\w/g, l => l.to())
+  return name.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
 }
 
 onMounted(fetchData)
