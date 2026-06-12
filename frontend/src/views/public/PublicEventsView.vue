@@ -4,14 +4,14 @@
     <div class="card p-8 bg-slate-50 border-slate-100 relative overflow-hidden">
       <div class="relative z-10">
         <h1 class="text-xl font-bold text-slate-900 tracking-tight">Upcoming Events</h1>
-        <p class="text-slate-500 font-medium mt-1">Conferences, workshops, and academic seminars.</p>
+        <p class="text-slate-500 font-medium mt-1">Open conferences,  workshops, and academic seminars accross all research-centers.</p>
       </div>
       <div class="absolute right-0 top-0 w-32 h-32 bg-brand/5 rounded-full translate-x-8 -translate-y-8"></div>
     </div>
 
     <!-- Filters -->
     <div class="card p-8 flex flex-col gap-5">
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <div>
           <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">University</label>
           <select v-model="filters.university_id" class="input font-bold" @change="onUniversityChange">
@@ -38,6 +38,14 @@
           <select v-model="filters.department_id" class="input font-bold" :disabled="!filters.faculty_id" @change="fetchEvents">
             <option value="">All Departments</option>
             <option v-for="d in filteredDepartments" :key="d.id" :value="d.id">{{ d.name }}</option>
+          </select>
+        </div>
+        <!-- NEW: Research Centre (independent) -->
+        <div>
+          <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Research Centre</label>
+          <select v-model="filters.research_center_id" class="input font-bold" @change="fetchEvents">
+            <option value="">All Centres</option>
+            <option v-for="rc in researchCentres" :key="rc.id" :value="rc.id">{{ rc.name }}</option>
           </select>
         </div>
       </div>
@@ -96,11 +104,12 @@ import { imageUrl } from '@/utils/formatters'
 
 const events = ref([])
 const loading = ref(true)
-const filters = ref({ university_id: '', campus_id: '', faculty_id: '', department_id: '' })
+const filters = ref({ university_id: '', campus_id: '', faculty_id: '', department_id: '', research_center_id: '' })
 const universities = ref([])
 const campuses = ref([])
 const faculties = ref([])
 const departments = ref([])
+const researchCentres = ref([])   // NEW
 
 const filteredCampuses = computed(() => campuses.value.filter(c => String(c.university_id) === String(filters.value.university_id)))
 const filteredFaculties = computed(() => faculties.value.filter(f => String(f.campus_id) === String(filters.value.campus_id)))
@@ -122,6 +131,7 @@ async function fetchEvents() {
     if (filters.value.campus_id) params.campus_id = filters.value.campus_id
     if (filters.value.faculty_id) params.faculty_id = filters.value.faculty_id
     if (filters.value.department_id) params.department_id = filters.value.department_id
+    if (filters.value.research_center_id) params.research_center_id = filters.value.research_center_id   // NEW
     const { data } = await api.get('/events', { params })
     events.value = data.data || data
   } catch (e) {} finally { loading.value = false }
@@ -133,10 +143,12 @@ onMounted(async () => {
     const c = await api.get('/campuses')
     const f = await api.get('/faculties')
     const d = await api.get('/departments')
+    const rc = await api.get('/research-centers')   // NEW
     universities.value = (u.data.data || u.data)
     campuses.value = (c.data.data || c.data)
     faculties.value = (f.data.data || f.data)
     departments.value = (d.data.data || d.data)
+    researchCentres.value = (rc.data.data || rc.data)   // NEW
   } catch (e) {}
   fetchEvents()
 })

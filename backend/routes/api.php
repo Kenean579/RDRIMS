@@ -88,6 +88,7 @@ Route::get('events/{event}', [EventController::class, 'show']);
 // Publications (public read)
 Route::get('publications', [PublicationController::class, 'index']);
 Route::get('publications/{publication}', [PublicationController::class, 'show']);
+Route::get('student-outputs', [OutputController::class, 'publicIndex']);
 
 // Community problems (public read + submit)
 Route::get('community-problems', [CommunityProblemController::class, 'index']);
@@ -96,6 +97,7 @@ Route::post('community-problems', [CommunityProblemController::class, 'store']);
 
 // Public researchers directory
 Route::get('public/researchers', [UserController::class, 'publicIndex']);
+Route::get('public/researchers/{user}', [UserController::class, 'publicShow']);
 
 // â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // AUTHENTICATED ROUTES
@@ -119,16 +121,19 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('language-preference', [LanguagePreferenceController::class, 'show']);
     Route::put('language-preference', [LanguagePreferenceController::class, 'update']);
 
-    // â”€â”€ Notifications â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Notifications ─────────────────────────────────────────────────────
     Route::get('notifications', [NotificationController::class, 'index']);
     Route::put('notifications/read-all', [NotificationController::class, 'markAllAsRead']);
     Route::put('notifications/{id}/read', [NotificationController::class, 'markAsRead']);
 
-    // â”€â”€ Audit logs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Audit logs ────────────────────────────────────────────────────────────
     Route::get('audit-logs', [AuditLogController::class, 'index'])
         ->middleware('role:super_admin,research_admin,campus_admin,faculty_admin,department_head,director');
 
-    // â”€â”€ Academic hierarchy (write) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Roles (read-only listing for all auth users, e.g. role-assignment dropdowns)
+    Route::get('roles', [RoleController::class, 'index']);
+
+    // ── Academic hierarchy (write) ────────────────────────────────────────
     Route::apiResource('universities', UniversityController::class)
         ->except(['index', 'show'])
         ->middleware('role:super_admin');
@@ -210,6 +215,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // â”€â”€ Proposals â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     Route::apiResource('proposals', ProposalController::class);
     Route::post('proposals/{proposal}/submit', [ProposalController::class, 'submit']);
+    Route::post('proposals/{proposal}/check', [ProposalController::class, 'runChecks']);
     Route::post('proposals/{proposal}/approve', [ProposalController::class, 'approve']);
     Route::post('proposals/{proposal}/reject', [ProposalController::class, 'reject']);
     Route::post('proposals/{proposal}/assign-reviewers', [ProposalController::class, 'assignReviewers']);
@@ -220,16 +226,18 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::apiResource('proposals.investigators', ProposalInvestigatorController::class)->only(['index', 'store', 'destroy']);
     Route::apiResource('proposals.reviewers', ProposalReviewerController::class)->only(['index', 'store', 'destroy']);
 
-    // â”€â”€ Reviewer endpoints â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    
     Route::get('reviewer/proposals', [ReviewerProposalController::class, 'index']);
     Route::get('reviewer/proposals/{proposal}', [ReviewerProposalController::class, 'show']);
+    Route::get('reviewer/proposals/{proposal}/template', [ReviewerProposalController::class, 'downloadTemplate']);
+    Route::post('reviewer/proposals/{proposal}/import', [ReviewerProposalController::class, 'importReview']);
     Route::post('reviewer/proposals/{proposal}/review', [ReviewerProposalController::class, 'storeReview']);
 
-    // â”€â”€ Finance checks â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+  
     Route::post('proposals/{proposal}/finance-checks', [FinanceCheckController::class, 'store']);
     Route::apiResource('finance-checks', FinanceCheckController::class)->only(['index', 'show', 'update']);
 
-    // â”€â”€ Ethics requests â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    
     Route::post('proposals/{proposal}/ethics-requests', [EthicsRequestController::class, 'store']);
     Route::apiResource('ethics-requests', EthicsRequestController::class)->only(['index', 'show', 'update']);
     Route::post('ethics-requests/{ethics_request}/mark-submitted', [EthicsRequestController::class, 'markSubmitted']);
@@ -256,6 +264,7 @@ Route::middleware('auth:sanctum')->group(function () {
     // â”€â”€ Outputs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     Route::apiResource('outputs', OutputController::class);
     Route::post('outputs/{output}/status', [OutputController::class, 'changeStatus']);
+    Route::get('outputs/subtypes-by-level', [OutputController::class, 'getSubtypesByLevel']);
     Route::apiResource('outputs.participants', OutputParticipantController::class)->only(['index', 'store', 'destroy']);
     Route::post('outputs/{output}/files', [OutputFileController::class, 'attach']);
     Route::delete('outputs/{output}/files/{file}', [OutputFileController::class, 'detach']);

@@ -139,19 +139,17 @@
                 </button>
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label class="block text-xs font-medium text-slate-400  mb-1">User (Optional)</label>
-                    <select v-model="p.user_id" class="input h-9 text-xs font-bold bg-slate-50/50">
-                      <option value="">External Person</option>
-                      <option v-for="u in users" :key="u.id" :value="u.id">{{ u.name }}</option>
+                    <label class="block text-xs font-medium text-slate-400  mb-1">Contributor Role</label>
+                    <select v-model="p.participant_type_id" required class="input h-9 text-xs font-bold">
+                      <option v-for="t in participantTypes" :key="t.id" :value="t.id">{{ t.name }}</option>
                     </select>
                   </div>
-                  <div v-if="!p.user_id">
-                    <label class="block text-xs font-medium text-slate-400  mb-1">Name</label>
-                    <input v-model="p.name" type="text" class="input h-9 text-xs font-bold" />
-                  </div>
-                  <div v-if="!p.user_id">
-                    <label class="block text-xs font-medium text-slate-400  mb-1">Email</label>
-                    <input v-model="p.email" type="email" class="input h-9 text-xs font-bold" />
+                  <div>
+                    <label class="block text-xs font-medium text-slate-400  mb-1">User</label>
+                    <select v-model="p.user_id" required class="input h-9 text-xs font-bold bg-slate-50/50">
+                      <option value="">Select university member</option>
+                      <option v-for="u in users" :key="u.id" :value="u.id">{{ u.name }}</option>
+                    </select>
                   </div>
                 </div>
              </div>
@@ -186,7 +184,7 @@ const notif = useNotificationStore()
 const outputs = ref([]); const loading = ref(true); const error = ref(null)
 const pagination = reactive({ current_page: 1, last_page: 1, total: 0 })
 const search = ref(''); const statusFilter = ref(''); const categoryFilter = ref('')
-const outputStatuses = ref([]); const outputCategories = ref([]); const outputSubtypes = ref([]); const studentLevels = ref([]); const users = ref([])
+const outputStatuses = ref([]); const outputCategories = ref([]); const outputSubtypes = ref([]); const studentLevels = ref([]); const users = ref([]); const participantTypes = ref([])
 const showCreate = ref(false); const editingOutput = ref(null); const showDelete = ref(false); const deletingOutput = ref(null)
 const form = reactive({ title: '', abstract: '', category_id: '', subtype_id: '', participant_type: 'student', level_id: '', participants: [] })
 let searchTimer = null
@@ -212,7 +210,10 @@ function closeModal() {
   Object.assign(form, { title: '', abstract: '', category_id: '', subtype_id: '', participant_type: 'student', level_id: '', participants: [] })
 }
 
-function addParticipant() { form.participants.push({ user_id: '', name: '', email: '' }) }
+function addParticipant() { 
+  const pType = participantTypes.value.find(t => t.name === 'supervisor')
+  form.participants.push({ user_id: '', participant_type_id: pType?.id || '' }) 
+}
 function removeParticipant(i) { form.participants.splice(i, 1) }
 
 function editOutput(o) {
@@ -256,9 +257,11 @@ onMounted(async () => {
     const cs = await api.get('/lookups/output_categories')
     const subs = await api.get('/lookups/output_subtypes')
     const lvls = await api.get('/lookups/student_levels')
+    const pts = await api.get('/lookups/participant_types')
     const ur = await api.get('/users', { params: { per_page: 200 } })
     outputStatuses.value = ss.data; outputCategories.value = cs.data; outputSubtypes.value = subs.data
     studentLevels.value = lvls.data
+    participantTypes.value = pts.data
     users.value = ur.data.data || ur.data
   } catch (e) {}
 })

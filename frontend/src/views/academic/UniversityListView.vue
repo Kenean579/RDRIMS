@@ -149,7 +149,7 @@ async function fetchUniversities() {
     const { data } = await api.get('/universities')
     universities.value = (data.data || data).map(u => ({
       ...u,
-      logo_file: u.logo_file || u.logoFile // Handle relationship name variations
+      logo_file: u.logo_file || u.logoFile
     }))
   }
   catch (e) {} finally { loading.value = false }
@@ -183,28 +183,47 @@ function openSetUpAdmin(uni) {
 async function saveAdmin() {
   submittingAdmin.value = true
   try {
-    // 1. Create User
-    const res = await api.post('/users', {
-      ...adminForm,
-      university_id: targetUni.value.id,
-      department_id: null
-    })
-    
-    // 2. Fetch the research_admin role ID
-    const { data: roles } = await api.get('/roles')
-    const researchAdminRole = roles.find(r => r.name === 'research_admin')
-    
-    if (researchAdminRole) {
-      // 3. Assign Role
-      await api.post(`/users/${res.data.id}/roles`, {
-        role_id: researchAdminRole.id
+    let userId = null
+
+    // Try to create the user; if email exists, find them instead
+    try {
+      const res = await api.post('/users', {
+        ...adminForm,
+        university_id: targetUni.value.id,
+        department_id: null,
+        password_confirmation: adminForm.password
       })
+      userId = res.data.id
+    } catch (createErr) {
+      const errors = createErr.response?.data?.errors
+      if (errors?.email) {
+        // Email already exists — find the existing user and reassign their university + role
+        const { data: usersData } = await api.get('/users', { params: { search: adminForm.email } })
+        const existing = (usersData.data || usersData).find(u => u.email === adminForm.email)
+        if (!existing) throw new Error('Could not find existing user with that email.')
+        userId = existing.id
+        // Update university link if needed
+        await api.put(`/users/${userId}`, { university_id: targetUni.value.id })
+        notif.info(`User already exists – reassigning role to ${existing.name}`)
+      } else {
+        throw createErr
+      }
     }
-    
-    notif.success(`Research Admin created for ${targetUni.value.name}`)
+
+    // Fetch roles from admin endpoint (available to super_admin)
+    const { data: rolesData } = await api.get('/admin/roles')
+    // Handle both wrapped and unwrapped responses
+    const roles = Array.isArray(rolesData) ? rolesData : (rolesData.data || [])
+    const researchAdminRole = roles.find(r => r.name === 'research_admin')
+
+    if (researchAdminRole && userId) {
+      await api.post(`/users/${userId}/roles`, { role_id: researchAdminRole.id })
+    }
+
+    notif.success(`Research Admin assigned for ${targetUni.value.name}`)
     showSetUpAdmin.value = false
   } catch (err) {
-    notif.error(err.response?.data?.message || 'Failed to setup admin')
+    notif.error(err.response?.data?.message || err.message || 'Failed to setup admin')
   } finally {
     submittingAdmin.value = false
   }

@@ -6,9 +6,16 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class StoreCommunityProblemRequest extends FormRequest
 {
+    use \App\Traits\CastBooleanFields;
+
     public function authorize(): bool
     {
         return true;
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->castBooleans(['is_anonymous']);
     }
 
     public function rules(): array
@@ -21,7 +28,7 @@ class StoreCommunityProblemRequest extends FormRequest
             'status_id' => 'nullable|exists:community_problem_statuses,id',
             'is_anonymous' => 'sometimes|boolean',
             'linked_project_id' => 'nullable|exists:projects,id',
-            'research_center_id' => 'nullable|exists:research_centers,id',
+            'research_center_id' => 'required|exists:research_centers,id',
         ];
     }
 }

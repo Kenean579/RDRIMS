@@ -64,6 +64,31 @@
             </div>
           </div>
 
+          <!-- Status Timeline -->
+          <div class="card p-8 bg-white border border-slate-100 shadow-sm relative overflow-hidden">
+            <div class="absolute top-0 right-0 w-32 h-32 bg-brand/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
+            <h2 class="text-xs font-medium text-slate-400 mb-6 flex items-center gap-2 relative z-10">
+              <span class="w-1 h-3 bg-brand rounded-full"></span>
+              Status Timeline
+            </h2>
+            
+            <div class="space-y-4 relative z-10">
+              <div v-for="(step, index) in statusTimeline" :key="index" class="flex items-center gap-4">
+                <div class="flex flex-col items-center">
+                  <div class="w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold"
+                    :class="step.completed ? 'bg-brand text-white' : step.current ? 'bg-emerald-500 text-white' : 'bg-slate-100 text-slate-400'">
+                    {{ step.completed ? '✓' : index + 1 }}
+                  </div>
+                  <div v-if="index < statusTimeline.length - 1" class="w-0.5 h-8 bg-slate-200 mt-2"></div>
+                </div>
+                <div class="flex-1">
+                  <p class="text-sm font-bold" :class="step.current ? 'text-brand' : step.completed ? 'text-slate-800' : 'text-slate-400'">{{ step.label }}</p>
+                  <p v-if="step.description" class="text-xs font-medium text-slate-500">{{ step.description }}</p>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Institutional Approval Workflow -->
           <div class="card p-8 bg-white border border-slate-100 shadow-sm relative overflow-hidden">
             <div class="absolute top-0 right-0 w-32 h-32 bg-brand/5 rounded-full -translate-y-1/2 translate-x-1/2"></div>
@@ -187,7 +212,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationStore } from '@/stores/notification'
@@ -212,6 +237,18 @@ const showDetectionModal = ref(false)
 const detectionServices = ref([])
 const selectedDetectionService = ref(null)
 const detectionLoading = ref(false)
+
+const statusTimeline = computed(() => {
+  const status = output.value.status?.name || 'draft'
+  const steps = [
+    { label: 'Draft', completed: status !== 'draft', current: status === 'draft', description: 'Initial submission' },
+    { label: 'Submitted', completed: ['approved_by_supervisor', 'approved', 'rejected'].includes(status), current: status === 'submitted', description: 'Submitted for review' },
+    { label: 'Supervisor Approval', completed: ['approved', 'rejected'].includes(status), current: status === 'approved_by_supervisor', description: 'Supervisor reviewed' },
+    { label: 'Final Approval', completed: status === 'approved', current: status === 'approved', description: 'Department head approved' },
+    { label: 'Rejected', completed: status === 'rejected', current: status === 'rejected', description: 'Output rejected' }
+  ]
+  return steps
+})
 
 async function fetchOutput() {
   loading.value = true

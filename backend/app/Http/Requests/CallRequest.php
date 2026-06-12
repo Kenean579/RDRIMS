@@ -6,9 +6,16 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class CallRequest extends FormRequest
 {
+    use \App\Traits\CastBooleanFields;
+
     public function authorize(): bool
     {
         return true;
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->castBooleans(['is_active']);
     }
 
     public function rules(): array

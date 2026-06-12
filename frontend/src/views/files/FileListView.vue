@@ -60,7 +60,7 @@
                     <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
                   </div>
                   <div class="min-w-0">
-                    <p class="text-sm font-bold text-slate-800 truncate">{{ file.original_name }}</p>
+                    <p class="text-sm font-bold text-slate-800 truncate">{{ file.original_filename }}</p>
                     <p class="text-xs font-medium text-slate-400">{{ file.uploader?.name || 'System' }}</p>
                   </div>
                 </div>
@@ -94,7 +94,7 @@
     <ConfirmDialog
       :show="showDelete"
       title="Delete File"
-      :message="`Are you sure you want to permanently delete '${deletingFile?.original_name}'?`"
+      :message="`Are you sure you want to permanently delete '${deletingFile?.original_filename}'?`"
       confirmText="Delete"
       variant="danger"
       @confirm="deleteFile"
@@ -126,7 +126,7 @@ const fileFilters = [
 const filteredFiles = computed(() => {
   const s = searchQuery.value.toLowerCase()
   return files.value.filter(f => {
-    const matchSearch = !s || f.original_name?.toLowerCase().includes(s)
+    const matchSearch = !s || f.original_filename?.toLowerCase().includes(s)
     const matchFilter = fileFilter.value === 'all' ||
       (fileFilter.value === 'public' && f.is_public) ||
       (fileFilter.value === 'private' && !f.is_public) ||
@@ -161,7 +161,7 @@ async function handleUpload(e) {
   const fd = new FormData()
   fd.append('file', file)
   try {
-    await api.post('/files', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+    await api.post('/files', fd)
     notif.success('File uploaded')
     fetchFiles()
   } catch (e) { notif.error('Upload failed') }
@@ -174,7 +174,7 @@ function handleDrop(e) {
   if (!file) return
   const fd = new FormData()
   fd.append('file', file)
-  api.post('/files', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+  api.post('/files', fd)
     .then(() => { notif.success('File uploaded'); fetchFiles() })
     .catch(() => notif.error('Upload failed'))
 }
@@ -206,7 +206,7 @@ async function downloadFile(file) {
     const { data } = await api.get(`/files/${file.id}/download`, { responseType: 'blob' })
     const url = URL.createObjectURL(new Blob([data]))
     const a = document.createElement('a')
-    a.href = url; a.download = file.original_name; a.click()
+    a.href = url; a.download = file.original_filename; a.click()
     URL.revokeObjectURL(url)
   } catch (err) {
     notif.error('Download failed')

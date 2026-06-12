@@ -12,8 +12,9 @@ class LookupController extends Controller
         'finance_check_statuses', 'ethics_approval_statuses', 'patent_statuses',
         'community_problem_statuses', 'project_statuses', 'milestone_statuses',
         'task_statuses', 'investigator_roles', 'invitation_statuses', 'agreement_types',
-        'output_categories', 'output_statuses', 'center_roles',
+        'output_categories', 'output_statuses', 'output_subtypes', 'center_roles',
         'thematic_areas', 'academic_years',
+        'student_levels', 'participant_types',
     ];
 
     public function index(string $table): JsonResponse

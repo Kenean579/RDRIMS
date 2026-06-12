@@ -98,7 +98,7 @@ export const useAuthStore = defineStore('auth', () => {
   // Check if user is an admin (any admin level)
   const isAdmin = computed(() => {
     return userRoles.value.some(role => 
-      ['super_admin', 'research_admin', 'campus_admin', 'faculty_admin', 'department_head', 'director'].includes(role)
+      ['super_admin', 'research_admin', 'campus_admin', 'faculty_admin', 'department_head', 'director', 'finance_officer', 'ethics_officer'].includes(role)
     )
   })
 
@@ -115,6 +115,10 @@ export const useAuthStore = defineStore('auth', () => {
     if (userRoles.value.includes('faculty_admin')) return 'faculty'
     if (userRoles.value.includes('department_head')) return 'department'
     if (userRoles.value.includes('director')) return 'research_center'
+    // Fallback: check direct institutional assignment from payload
+    if (user.value?.research_center) return 'research_center'
+    if (user.value?.department_id) return 'department'
+    if (user.value?.university_id || user.value?.university) return 'university'
     return 'individual'
   })
 

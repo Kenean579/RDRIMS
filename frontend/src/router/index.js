@@ -11,6 +11,7 @@ const routes = [
       { path: 'calls/:id', name: 'PublicCallDetail', component: () => import('@/views/public/PublicCallDetailView.vue'), meta: { title: 'Call Details' } },
       { path: 'publications', name: 'PublicPublications', component: () => import('@/views/public/PublicPublicationsView.vue'), meta: { title: 'Repository' } },
       { path: 'publications/:id', name: 'PublicPublicationDetail', component: () => import('@/views/publications/PublicationDetailView.vue'), meta: { title: 'Publication Detail' } },
+      { path: 'student-research', name: 'PublicStudentResearch', component: () => import('@/views/public/PublicStudentResearchView.vue'), meta: { title: 'Student Research' } },
       { path: 'researchers', name: 'PublicResearchers', component: () => import('@/views/public/PublicResearchersView.vue'), meta: { title: 'Researcher Directory' } },
       { path: 'researchers/:id', name: 'PublicResearcherDetail', component: () => import('@/views/public/PublicResearcherDetailView.vue'), meta: { title: 'Researcher Profile' } },
       { path: 'events', name: 'PublicEvents', component: () => import('@/views/public/PublicEventsView.vue'), meta: { title: 'Upcoming Events' } },

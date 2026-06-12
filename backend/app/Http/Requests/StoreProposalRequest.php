@@ -19,6 +19,13 @@ class StoreProposalRequest extends FormRequest
                 'investigators' => json_decode($this->investigators, true) ?? [],
             ]);
         }
+        
+        // Also decode budget allocation if it's sent as a JSON string
+        if (is_string($this->budget_allocation)) {
+            $this->merge([
+                'budget_allocation' => json_decode($this->budget_allocation, true) ?? [],
+            ]);
+        }
     }
 
     protected function failedValidation(\Illuminate\Contracts\Validation\Validator $validator)
@@ -40,6 +47,8 @@ class StoreProposalRequest extends FormRequest
             'objectives'   => 'nullable|string',
             'methodology'  => 'nullable|string',
             'proposal_file' => 'nullable|file|mimes:pdf,doc,docx|max:20480',
+            'ethics_file'  => 'nullable|file|mimes:pdf,doc,docx|max:20480',
+            'budget_allocation' => 'nullable|array',
             'investigators'          => 'nullable|array',
             'investigators.*.user_id'  => 'nullable|exists:users,id',
             'investigators.*.name'     => 'nullable|string',

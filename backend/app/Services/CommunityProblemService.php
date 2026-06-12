@@ -7,6 +7,8 @@ use App\Models\CommunityProblemStatus;
 
 class CommunityProblemService
 {
+    public function __construct(private \App\Services\AuditLogService $auditLogService) {}
+
     public function claim(CommunityProblem $problem, int $userId): void
     {
         if ($problem->status->name !== 'open') {
@@ -21,6 +23,7 @@ class CommunityProblemService
             'claimed_at' => now(),
             'status_id'  => CommunityProblemStatus::where('name', 'claimed')->first()->id,
         ]);
+        $this->auditLogService->log('claimed', 'community_problems', $problem->id, request());
     }
 
     public function complete(CommunityProblem $problem, int $userId): void
@@ -33,6 +36,7 @@ class CommunityProblemService
             'completed_at' => now(),
             'status_id'    => CommunityProblemStatus::where('name', 'completed')->first()->id,
         ]);
+        $this->auditLogService->log('completed', 'community_problems', $problem->id, request());
     }
 
     public function addFeedback(CommunityProblem $problem, string $feedback, int $rating): void

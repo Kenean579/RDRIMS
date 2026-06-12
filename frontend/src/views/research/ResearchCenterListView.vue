@@ -57,6 +57,9 @@
         </div>
 
         <div v-if="auth.hasRole('super_admin', 'research_admin')" class="flex items-center justify-between bg-slate-50/50 p-1 gap-1" style="border-radius: 1rem">
+          <button @click="openSetUpAdmin(center)" class="btn btn-ghost border border-brand/20 text-brand hover:bg-brand hover:text-white flex-1 justify-center text-xs font-bold py-2">
+            Set Up Admin
+          </button>
           <button @click="editCenter(center)" class="btn btn-ghost hover:bg-indigo-50 hover:text-indigo-600 flex-1 justify-center text-xs font-medium  tracking-wider py-2" style="background: #fff">Edit</button>
           <button @click="confirmDelete(center)" class="btn btn-ghost text-rose-500 hover:bg-rose-50 flex-1 justify-center text-xs font-medium  tracking-wider py-2">Delete</button>
         </div>
@@ -140,7 +143,45 @@
       </form>
     </Modal>
 
-    <ConfirmDialog :show="showDelete" title="Delete Center" message="Are you sure you want to delete this research center? This cannot be undone." confirmText="Delete Now" variant="danger" @confirm="deleteCenter" @cancel="showDelete = false" />
+    <ConfirmDialog :show="showDelete" title="Delete Center" :message="'Are you sure you want to delete \'' + (deletingCenter?.name) + '\'?'" confirmText="Delete" variant="danger" @confirm="deleteCenter" @cancel="showDelete = false" />
+
+    <!-- Set Up Admin Modal -->
+    <Modal :show="showSetUpAdmin" title="Assign Center Director" @close="showSetUpAdmin = false">
+      <form @submit.prevent="saveAdmin" class="space-y-6 p-1">
+        <div class="p-4 bg-brand/5 border border-brand/10 rounded-2xl mb-4">
+           <p class="text-xs text-brand font-bold tracking-wide mb-1">Target Research Center</p>
+           <h4 class="text-lg font-bold text-slate-800">{{ targetCenter?.name }}</h4>
+        </div>
+
+        <div class="space-y-4">
+          <div class="space-y-1.5">
+            <label class="block text-xs font-bold text-slate-500 ml-1">Director Full Name *</label>
+            <input v-model="adminForm.name" type="text" required placeholder="e.g. Dr. Jane Smith" class="input h-12 font-medium" />
+          </div>
+          <div class="space-y-1.5">
+            <label class="block text-xs font-bold text-slate-500 ml-1">Admin Email *</label>
+            <input v-model="adminForm.email" type="email" required placeholder="admin@center.edu" class="input h-12 font-medium" />
+          </div>
+          <div class="space-y-1.5">
+            <label class="block text-xs font-bold text-slate-500 ml-1">Default Password *</label>
+            <input v-model="adminForm.password" type="password" required class="input h-12 font-medium" />
+          </div>
+        </div>
+
+        <div class="p-4 bg-slate-50 rounded-2xl">
+          <p class="text-xs text-slate-500 leading-relaxed">
+            This user will be granted the <strong>director</strong> role. They will have full control over center-specific data, including proposals, projects, and thematic areas.
+          </p>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-6 border-t border-slate-100">
+          <button type="button" @click="showSetUpAdmin = false" class="btn btn-secondary h-11 px-6">Discard</button>
+          <button type="submit" class="btn btn-primary h-11 px-6" :disabled="submittingAdmin">
+            {{ submittingAdmin ? 'Creating...' : 'Create & Assign Role' }}
+          </button>
+        </div>
+      </form>
+    </Modal>
   </div>
 </template>
 
@@ -159,6 +200,10 @@ const auth = useAuthStore()
 const notif = useNotificationStore()
 const centers = ref([]); const loading = ref(true)
 const showCreate = ref(false); const editingCenter = ref(null); const showDelete = ref(false); const deletingCenter = ref(null)
+
+// Admin setup state
+const showSetUpAdmin = ref(false); const targetCenter = ref(null); const submittingAdmin = ref(false)
+const adminForm = reactive({ name: '', email: '', password: '' })
 
 // Hierarchy data
 const universities = ref([])
@@ -281,6 +326,58 @@ async function saveCenter() {
 async function deleteCenter() {
   try { await api.delete(`/research-centers/${deletingCenter.value.id}`); notif.success('Deleted!'); showDelete.value = false; fetchCenters() }
   catch (err) { notif.error('Failed') }
+}
+
+function openSetUpAdmin(center) {
+  targetCenter.value = center
+  showSetUpAdmin.value = true
+  Object.assign(adminForm, { name: '', email: '', password: '' })
+}
+
+async function saveAdmin() {
+  submittingAdmin.value = true
+  try {
+    let userId = null
+    // 1. Create User
+    try {
+      const res = await api.post('/users', {
+        ...adminForm,
+        password_confirmation: adminForm.password,
+        university_id: targetCenter.value.parent_university_id,
+        is_active: true
+      })
+      userId = res.data.id
+    } catch (createErr) {
+      const errors = createErr.response?.data?.errors
+      if (errors?.email) {
+        const { data: usersData } = await api.get('/users', { params: { search: adminForm.email } })
+        const existing = (usersData.data || usersData).find(u => u.email === adminForm.email)
+        if (!existing) throw new Error('Existing user email conflict, but user not found.')
+        userId = existing.id
+        notif.info(`Using existing account for ${existing.name}`)
+      } else throw createErr
+    }
+
+    // 2. Assign to Research Center (Update user model)
+    await api.put(`/users/${userId}`, { 
+      research_center_id: targetCenter.value.id,
+      university_id: targetCenter.value.parent_university_id
+    })
+
+    // 3. Assign Role (director)
+    const { data: roles } = await api.get('/admin/roles')
+    const directorRole = roles.find(r => r.name === 'director')
+    if (directorRole) {
+      await api.post(`/users/${userId}/roles`, { role_id: directorRole.id })
+    }
+
+    notif.success(`Director assigned to ${targetCenter.value.name}`)
+    showSetUpAdmin.value = false
+  } catch (err) {
+    notif.error(err.response?.data?.message || err.message || 'Failed to setup admin')
+  } finally {
+    submittingAdmin.value = false
+  }
 }
 
 onMounted(() => fetchCenters())

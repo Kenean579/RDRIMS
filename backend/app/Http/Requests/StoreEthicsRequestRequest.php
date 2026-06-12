@@ -6,9 +6,16 @@ use Illuminate\Foundation\Http\FormRequest;
 
 class StoreEthicsRequestRequest extends FormRequest
 {
+    use \App\Traits\CastBooleanFields;
+
     public function authorize(): bool
     {
         return true;
+    }
+
+    protected function prepareForValidation(): void
+    {
+        $this->castBooleans(['submitted_to_irb']);
     }
 
     public function rules(): array

@@ -36,6 +36,8 @@ class Proposal extends Model
      * @property int|null $ethics_file_id
      * @property int|null $ethics_approval_status_id
      * @property int|null $research_center_id
+     * @property float|null $originality_score
+     * @property string|null $plagiarism_report_url
      */
     protected $fillable = [
         'call_id',
@@ -57,7 +59,9 @@ class Proposal extends Model
          'file_id',
           'ethics_file_id',
           'ethics_approval_status_id',
-          'research_center_id'
+          'research_center_id',
+          'originality_score',
+          'plagiarism_report_url'
     ];
 
     protected $casts = [
@@ -65,6 +69,7 @@ class Proposal extends Model
         'approved_at'       => 'datetime',
         'budget'            => 'decimal:2',
         'budget_allocation' => 'array',
+        'originality_score' => 'decimal:2',
     ];
 
     public function call(): BelongsTo

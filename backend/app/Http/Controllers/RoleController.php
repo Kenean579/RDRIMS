@@ -13,7 +13,6 @@ class RoleController extends Controller
 
     public function index(): JsonResponse
     {
-        $this->authorize('viewAny', Role::class);
         return response()->json(Role::with('permissions')->get());
     }
 

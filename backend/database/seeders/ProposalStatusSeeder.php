@@ -11,6 +11,7 @@ class ProposalStatusSeeder extends Seeder
     {
         ProposalStatus::firstOrCreate(['name' => 'draft']);
         ProposalStatus::firstOrCreate(['name' => 'submitted']);
+        ProposalStatus::firstOrCreate(['name' => 'checking']);
         ProposalStatus::firstOrCreate(['name' => 'under_review']);
         ProposalStatus::firstOrCreate(['name' => 'finance_check']);
         ProposalStatus::firstOrCreate(['name' => 'approved']);

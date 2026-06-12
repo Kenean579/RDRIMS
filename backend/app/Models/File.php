@@ -68,4 +68,12 @@ class File extends Model
                     ->withTimestamps()
                     ->using(PatentFile::class);
     }
+
+    public function versions()
+    {
+        // For file versioning, we need to find all files with the same original filename
+        // This is a simplified version - in production you might want a separate file_versions table
+        return self::where('original_filename', $this->original_filename)
+                   ->orderBy('version', 'desc');
+    }
 }

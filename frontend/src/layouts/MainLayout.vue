@@ -37,51 +37,6 @@
         <kbd class="search-kbd">⌵</kbd>
       </div>
 
-      <!-- Hierarchical Context Switcher -->
-      <div class="topbar-context-shell" v-if="showContextSwitcher">
-        <label class="context-label">Context</label>
-        <div class="context-breadcrumb">
-          <!-- University -->
-          <div class="context-item">
-            <select :value="context.university_id" @change="e => context.setUniversity(e.target.value)" class="context-select">
-              <option value="">All Universities</option>
-              <option v-for="u in universities" :key="u.id" :value="u.id">{{ u.name }}</option>
-            </select>
-          </div>
-          
-          <!-- Campus -->
-          <div class="context-item" v-if="context.university_id">
-            <span class="context-sep">/</span>
-            <select :value="context.campus_id" @change="e => context.setCampus(e.target.value)" class="context-select">
-              <option value="">All Campuses</option>
-              <option v-for="c in filteredCampuses" :key="c.id" :value="c.id">{{ c.name }}</option>
-            </select>
-          </div>
-
-          <!-- Faculty -->
-          <div class="context-item" v-if="context.campus_id">
-            <span class="context-sep">/</span>
-            <select :value="context.faculty_id" @change="e => context.setFaculty(e.target.value)" class="context-select">
-              <option value="">All Faculties</option>
-              <option v-for="f in filteredFaculties" :key="f.id" :value="f.id">{{ f.name }}</option>
-            </select>
-          </div>
-
-          <!-- Department -->
-          <div class="context-item" v-if="context.faculty_id">
-            <span class="context-sep">/</span>
-            <select :value="context.department_id" @change="e => context.setDepartment(e.target.value)" class="context-select">
-              <option value="">All Departments</option>
-              <option v-for="d in filteredDepartments" :key="d.id" :value="d.id">{{ d.name }}</option>
-            </select>
-          </div>
-        </div>
-        
-        <button v-if="context.university_id" @click="context.resetContext" class="context-reset" title="Reset Context">
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-        </button>
-      </div>
-
       <div class="topbar-right">
         <!-- Notifications -->
         <router-link to="/app/notifications" class="icon-btn notif-btn" title="Notifications">
@@ -97,10 +52,13 @@
 
         <!-- Profile -->
         <router-link to="/app/profile" class="profile-btn" title="My Profile">
-          <div class="avatar">{{ getInitials(auth.user?.name) }}</div>
+          <div class="avatar overflow-hidden">
+            <img v-if="formatImageUrl(auth.user?.profile_image)" :src="formatImageUrl(auth.user?.profile_image)" class="w-full h-full object-cover" />
+            <span v-else>{{ getAvatarInitials(auth.user?.name) }}</span>
+          </div>
           <div class="profile-info">
             <span class="profile-name">{{ auth.user?.name || 'Administrator' }}</span>
-            <span class="profile-role">{{ formatRole(auth.primaryRole) }}</span>
+            <span class="profile-role">{{ displayRole }}</span>
           </div>
         </router-link>
 
@@ -180,7 +138,7 @@
           </div>
         </div>
 
-        <router-view :key="viewKey" v-slot="{ Component }">
+        <router-view v-slot="{ Component }">
           <transition name="fade" mode="out-in">
             <component :is="Component" />
           </transition>
@@ -192,17 +150,18 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, onMounted, onUnmounted, watch } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useLookupStore } from '@/stores/lookup'
-import { useContextStore } from '@/stores/context'
-import { getInitials } from '@/utils/formatters'
+import { getInitials, imageUrl } from '@/utils/formatters'
 import api from '@/services/api'
 
 const router  = useRouter()
 const route   = useRoute()
 const auth    = useAuthStore()
+const formatImageUrl = imageUrl
+const getAvatarInitials = getInitials
 const lookupStore = useLookupStore()
 const appName = computed(() => lookupStore.getSetting('app_name', 'Research Portal'))
 
@@ -211,35 +170,37 @@ const unreadCount  = ref(0)
 const searchQuery  = ref('')
 const isMobile     = ref(false)
 const openGroups   = reactive({})
-const context = useContextStore()
 
-const universities = ref([])
-const campuses     = ref([])
-const faculties    = ref([])
-const departments  = ref([])
-const viewKey      = ref(0)
-
-const filteredCampuses = computed(() => campuses.value.filter(c => String(c.university_id) === String(context.university_id)))
-const filteredFaculties = computed(() => faculties.value.filter(f => String(f.campus_id) === String(context.campus_id)))
-const filteredDepartments = computed(() => departments.value.filter(d => String(d.faculty_id) === String(context.faculty_id)))
-
-// Watch context to refresh views
-watch(() => [context.university_id, context.campus_id, context.faculty_id, context.department_id], () => {
-  viewKey.value++
-})
-
-async function fetchContextOptions() {
-  try {
-    const uRes = await api.get('/universities')
-    const cRes = await api.get('/campuses')
-    const fRes = await api.get('/faculties')
-    const dRes = await api.get('/departments')
-    universities.value = uRes.data
-    campuses.value     = cRes.data
-    faculties.value    = fRes.data
-    departments.value  = dRes.data
-  } catch (e) {}
+// ── Role Display Name Mapping ──────────────────────────────
+const roleDisplayMap = {
+  'super_admin': 'System Admin',
+  'research_admin': 'University Admin',
+  'campus_admin': 'Campus Admin',
+  'faculty_admin': 'Faculty Admin',
+  'department_head': 'Department Head',
+  'director': 'Director',
+  'researcher': 'Researcher',
+  'reviewer': 'Reviewer',
+  'student': 'Student',
+  'guest': 'Guest',
+  'finance_officer': 'Finance Officer',
+  'ethics_officer': 'Ethics Officer',
 }
+
+// Computed property that returns the user-friendly role name
+const displayRole = computed(() => {
+  // Get the primary role from the auth store
+  const role = auth.primaryRole
+  if (!role) return 'User'
+  
+  // Check if we have a display name for this role
+  if (roleDisplayMap[role]) {
+    return roleDisplayMap[role]
+  }
+  
+  // Fallback: format the raw role name
+  return role.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase())
+})
 
 function toggleGroup(title) {
   openGroups[title] = !openGroups[title]
@@ -258,12 +219,6 @@ function goSearch() {
   }
 }
 
-function formatRole(role) {
-  if (!role) return 'User'
-  const s = role.replace(/_/g, ' ')
-  return s.charAt(0).toUpperCase() + s.slice(1)
-}
-
 function logout() {
   auth.logout?.()
   router.push('/login')
@@ -280,7 +235,6 @@ onMounted(() => {
   checkMobile()
   window.addEventListener('resize', checkMobile)
   fetchUnreadCount()
-  fetchContextOptions()
   
   // Initialize all groups to open by default
   navigation.value.forEach(g => {
@@ -318,33 +272,24 @@ const icons = {
 
 const isSuperAdminOnly = computed(() => {
   if (!auth.userRoles) return false
-  // Only pure super_admin — not if they also hold an institutional role
   return auth.userRoles.includes('super_admin') &&
     !['research_admin','campus_admin','faculty_admin','department_head','director',
       'researcher','reviewer','student','finance_officer','ethics_officer'].some(r => auth.userRoles.includes(r))
 })
 
 const isGuestOnly = computed(() => {
-  if (!auth.userRoles) return true
+  if (!auth.userRoles || auth.userRoles.length === 0) return true
   return auth.userRoles.length === 1 && auth.userRoles[0] === 'guest'
-})
-
-const showContextSwitcher = computed(() => {
-  if (isGuestOnly.value) return false
-  if (auth.userRoles?.includes('super_admin')) return false
-  return true
 })
 
 const contactEmail = computed(() => lookupStore.getSetting('contact_email', 'admin@rdrims.local'))
 
 // ═══════════════════════════════════════════════════════════════
-// FIXED: Guest navigation now has Dashboard & Notifications
-// as a separate group above "Community & Public"
+// Navigation (unchanged)
 // ═══════════════════════════════════════════════════════════════
 const navigation = computed(() => {
   const nav = []
 
-  // ── PLATFORM LAYER (Visible to any Super Admin) ─────────────────────
   if (auth.hasRole('super_admin')) {
     nav.push({
       items: [
@@ -373,12 +318,9 @@ const navigation = computed(() => {
       ]
     })
 
-    // If they ONLY have super_admin, we stop here. 
-    // If they have OTHER roles, we might want to show them institutional tools too.
     if (isSuperAdminOnly.value) return nav
   }
 
-  // ── GUEST LAYER (Pure guest) ─────────────────────────────────────────
   if (isGuestOnly.value) {
     return [
       {
@@ -399,9 +341,6 @@ const navigation = computed(() => {
     ]
   }
 
-  // ── INSTITUTIONAL LAYER ───────────────────────────────────────────
-  // If we reach here and it's a super_admin with extra roles, we APPEND institutional tools
-  // If it's just an institutional user, we start the nav here.
   const isSuper = auth.hasRole('super_admin')
   const instNav = [
     {
@@ -431,15 +370,12 @@ const navigation = computed(() => {
     }
   ]
 
-  // If already added super admin group, don't duplicate Dashboard/Notifications if they are at the top
   if (isSuper) {
-    instNav.shift() // Remove the second Dashboard/Notifications group
+    instNav.shift()
   }
 
-  // Combined navigation
   const finalNav = isSuper ? [...nav, ...instNav] : instNav
 
-  // Reviews: any user can be a reviewer
   {
     const researchGroup = finalNav.find(g => g.title === 'Research')
     if (researchGroup) {
@@ -450,7 +386,6 @@ const navigation = computed(() => {
     }
   }
   
-  // Rules group for ethics and detection (institutional only — no super_admin)
   if (auth.userRoles?.some(r => ['research_admin', 'campus_admin', 'faculty_admin', 'ethics_officer'].includes(r))) {
     finalNav.push({
       title: 'Rules',
@@ -461,7 +396,6 @@ const navigation = computed(() => {
     })
   }
 
-  // Finance group (institutional only — no super_admin)
   if (auth.userRoles?.some(r => ['research_admin', 'campus_admin', 'faculty_admin', 'finance_officer'].includes(r))) {
     finalNav.push({
       title: 'Finance',
@@ -471,7 +405,6 @@ const navigation = computed(() => {
     })
   }
 
-  // Reports for institutional admins only (no super_admin)
   if (auth.userRoles?.some(r => ['research_admin', 'campus_admin', 'faculty_admin', 'director', 'department_head', 'finance_officer'].includes(r))) {
     finalNav.push({
       title: 'Reports',
@@ -481,7 +414,6 @@ const navigation = computed(() => {
     })
   }
 
-  // Administration group (institutional only — no super_admin)
   if (auth.userRoles?.some(r => ['research_admin', 'campus_admin', 'faculty_admin', 'department_head', 'director'].includes(r))) {
     finalNav.push({
       title: 'Administration',
@@ -493,7 +425,6 @@ const navigation = computed(() => {
     })
   }
     
-  // Settings: institutional hierarchy management (research_admin only, not super_admin)
   if (auth.userRoles?.some(r => ['research_admin'].includes(r))) {
     finalNav.push({
       title: 'Settings',
@@ -623,86 +554,6 @@ const navigation = computed(() => {
   border-radius: 6px; padding: 3px 7px;
   display: flex; align-items: center; justify-content: center;
   font-weight: 700;
-}
-
-/* Context Switcher */
-.topbar-context-shell {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  background: white;
-  border: 1px solid var(--color-border);
-  border-radius: 14px;
-  padding: 4px 14px;
-  margin-left: 20px;
-  margin-right: 0;
-  height: 44px;
-  box-shadow: var(--shadow-sm);
-  max-width: 600px;
-  overflow: hidden;
-}
-.context-label {
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--color-brand);
-  background: var(--color-brand-light);
-  padding: 3px 8px;
-  border-radius: 6px;
-  white-space: nowrap;
-  text-transform: none;
-  letter-spacing: 0.05em;
-}
-.context-breadcrumb {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.context-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.context-sep {
-  color: var(--text-muted);
-  font-size: 16px;
-  opacity: 0.4;
-  font-weight: 300;
-}
-.context-select {
-  border: none;
-  background: transparent;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--text-primary);
-  outline: none;
-  cursor: pointer;
-  max-width: 140px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  padding-right: 4px;
-}
-.context-select:hover {
-  color: var(--color-brand);
-}
-.context-reset {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  border: none;
-  background: #fef2f2;
-  color: #ef4444;
-  cursor: pointer;
-  transition: all 0.2s;
-  flex-shrink: 0;
-}
-.context-reset:hover {
-  background: #fee2e2;
-  color: #dc2626;
-  transform: scale(1.1);
 }
 
 .topbar-right {
@@ -889,6 +740,5 @@ const navigation = computed(() => {
   .sidebar-closed { transform: translateX(-100%); }
   .main-content { margin-left: 0 !important; padding: 24px; }
   .brand-text { display: none; }
-  .topbar-context-shell { display: none; }
 }
 </style>

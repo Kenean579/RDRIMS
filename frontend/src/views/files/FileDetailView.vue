@@ -21,11 +21,11 @@
       <!-- File Info -->
       <div class="card p-8">
         <div class="flex items-start gap-6">
-          <div class="w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100 flex-shrink-0">
+          <div class="w-16 h-16 rounded-2xl bg-slate-50 flex items-center justify-center text-slate-400 border border-slate-100 shrink-0">
             <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
           </div>
           <div class="flex-1 min-w-0">
-            <h2 class="text-lg font-bold text-slate-900 mb-2 truncate">{{ file.original_name }}</h2>
+            <h2 class="text-lg font-bold text-slate-900 mb-2 truncate">{{ file.original_filename }}</h2>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
               <div>
                 <p class="text-xs font-medium text-slate-400 mb-1">File Size</p>
@@ -83,7 +83,7 @@
                 V{{ version.version }}
               </div>
               <div>
-                <p class="text-sm font-bold text-slate-800">{{ version.original_name }}</p>
+                <p class="text-sm font-bold text-slate-800">{{ version.original_filename }}</p>
                 <p class="text-xs font-medium text-slate-400">
                   {{ formatSize(version.size) }} • Uploaded {{ formatDate(version.created_at) }}
                   <span v-if="version.id === file.id" class="text-brand font-bold ml-2">(Current)</span>
@@ -163,7 +163,7 @@ async function downloadFile() {
     const url = window.URL.createObjectURL(new Blob([response.data]))
     const link = document.createElement('a')
     link.href = url
-    link.setAttribute('download', file.value.original_name)
+    link.setAttribute('download', file.value.original_filename)
     document.body.appendChild(link)
     link.click()
     link.remove()
@@ -179,7 +179,7 @@ async function downloadVersion(version) {
     const url = window.URL.createObjectURL(new Blob([response.data]))
     const link = document.createElement('a')
     link.href = url
-    link.setAttribute('download', version.original_name)
+    link.setAttribute('download', version.original_filename)
     document.body.appendChild(link)
     link.click()
     link.remove()
@@ -203,9 +203,7 @@ async function uploadNewVersion() {
   formData.append('file', uploadedFile)
 
   try {
-    await api.post(`/files/${route.params.id}/versions`, formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    })
+    await api.post(`/files/${route.params.id}/versions`, formData)
     notif.success('New version uploaded successfully')
     showUploadVersion.value = false
     await fetchFile()

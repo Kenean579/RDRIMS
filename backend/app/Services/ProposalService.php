@@ -6,6 +6,7 @@ use App\Models\Proposal;
 use App\Models\User;
 use App\Models\ProposalStatus;
 use App\Models\Project;
+use App\Jobs\RunProposalChecksJob;
 use Illuminate\Validation\ValidationException;
 use Illuminate\Support\Facades\DB;
 
@@ -13,6 +14,7 @@ class ProposalService
 {
     public function __construct(
         private AuditLogService $auditLogService,
+        private NotificationService $notificationService
     ) {}
 
     public function submit(Proposal $proposal, User $user): void
@@ -36,6 +38,24 @@ class ProposalService
         ]);
 
         $this->auditLogService->log('submitted', 'proposals', $proposal->getKey(), request());
+    }
+
+    public function runChecks(Proposal $proposal, User $requestedBy): void
+    {
+        if ($proposal->status->name !== 'submitted') {
+            throw ValidationException::withMessages([
+                'status' => 'Only submitted proposals can be sent for checks.',
+            ]);
+        }
+
+        $proposal->update([
+            'status_id' => ProposalStatus::where('name', 'checking')->first()->id,
+        ]);
+
+        $this->auditLogService->log('checks_initiated', 'proposals', $proposal->getKey(), request());
+        
+        // Dispatch the background Job
+        RunProposalChecksJob::dispatch($proposal);
     }
 
     public function approve(Proposal $proposal, User $approvedBy): void
@@ -70,6 +90,18 @@ class ProposalService
             ]);
         }
 
+        // Checklist 4: Originality
+        if ($proposal->originality_score === null) {
+            throw ValidationException::withMessages([
+                'originality' => "Plagiarism check must be completed before approval.",
+            ]);
+        }
+        if ($proposal->originality_score < 70) {
+            throw ValidationException::withMessages([
+                'originality' => "Originality score too low ({$proposal->originality_score}%). Must be at least 70%.",
+            ]);
+        }
+
         DB::transaction(function() use ($proposal, $approvedBy) {
             $proposal->update([
                 'status_id' => ProposalStatus::where('name', 'approved')->first()->id,
@@ -77,7 +109,6 @@ class ProposalService
                 'approved_at' => now(),
             ]);
 
-// Automatically create a project from approved proposal
              $project = $proposal->project()->create([
                  'title' => $proposal->getAttribute('title'),
                  'start_date' => now(),
@@ -86,6 +117,7 @@ class ProposalService
                  'status_id' => \App\Models\ProjectStatus::where('name', 'active')->first()->id ?? 1,
                  'pi_id' => $proposal->getAttribute('submitted_by'),
                  'academic_year_id' => $proposal->getAttribute('academic_year_id'),
+                 'research_center_id' => $proposal->getAttribute('research_center_id'),
              ]);
 
             // Copy investigators to the project
@@ -99,7 +131,26 @@ class ProposalService
                     'status_id' => 1, // active
                 ]);
             }
+
+            // Sync Community Problem if linked via the Call
+            if ($proposal->call && $proposal->call->community_problem_id) {
+                $problem = $proposal->call->communityProblem;
+                if ($problem) {
+                    $problem->update([
+                        'linked_project_id' => $project->id,
+                        'status_id' => \App\Models\CommunityProblemStatus::where('name', 'claimed')->first()->id ?? 2
+                    ]);
+                }
+            }
         });
+
+        // Notify PI
+        $this->notificationService->send(
+            $proposal->submittedBy,
+            'proposal_approved',
+            "Congratulations! Your proposal '{$proposal->title}' has been approved and moved to projects.",
+            "/app/proposals/{$proposal->id}"
+        );
 
         $this->auditLogService->log('approved', 'proposals', $proposal->getKey(), request());
     }
@@ -110,6 +161,13 @@ class ProposalService
             'status_id' => ProposalStatus::where('name', 'rejected')->first()->id,
             'status_change_comment' => $comment,
         ]);
+
+        $this->notificationService->send(
+            $proposal->submittedBy,
+            'proposal_rejected',
+            "Your proposal '{$proposal->title}' has been rejected. Reason: {$comment}",
+            "/app/proposals/{$proposal->id}"
+        );
 
         $this->auditLogService->log('rejected', 'proposals', $proposal->getKey(), request());
     }

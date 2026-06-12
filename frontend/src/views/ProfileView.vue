@@ -244,7 +244,7 @@ async function uploadProfilePhoto(event) {
     const fd = new FormData()
     fd.append('file', file)
     fd.append('is_public', '1')
-    const { data: fileRecord } = await api.post('/files', fd, { headers: { 'Content-Type': 'multipart/form-data' } })
+    const { data: fileRecord } = await api.post('/files', fd)
     await api.put('/profile', { profile_image_id: fileRecord.id })
     await auth.fetchUser()
     notif.success('Biometric photo verified and updated')

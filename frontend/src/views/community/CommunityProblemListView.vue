@@ -102,6 +102,12 @@
     class="flex-1 btn btn-primary justify-center text-xs font-bold h-10 min-w-[100px]"
   >Mark Finished</button>
 
+  <router-link
+    v-if="p.status?.name === 'claimed' && p.claimed_by?.id === auth.user?.id && !p.linked_project_id"
+    :to="`/app/calls?community_problem_id=${p.id}`"
+    class="flex-1 btn btn-secondary justify-center text-xs font-bold h-10 min-w-[100px]"
+  >Initiate Call</router-link>
+
   <!-- Link to project if available -->
   <router-link
     v-if="p.linked_project_id"
@@ -150,13 +156,20 @@
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
+            <label class="block text-xs text-slate-500 font-bold mb-2 ml-1">Research Centre *</label>
+            <select v-model="form.research_center_id" required class="input h-12 font-bold appearance-none bg-white">
+              <option value="" disabled>Select handling centre...</option>
+              <option v-for="rc in researchCentres" :key="rc.id" :value="rc.id">{{ rc.name }}</option>
+            </select>
+          </div>
+          <div>
             <label class="block text-xs text-slate-500 font-bold mb-2 ml-1">Location *</label>
             <input v-model="form.location" type="text" required class="input h-12 font-bold" placeholder="e.g. Zone 4, Addis Ababa" />
           </div>
-          <div>
-            <label class="block text-xs text-slate-500 font-bold mb-2 ml-1">Contact Info</label>
-            <input v-model="form.contact_info" type="text" class="input h-12 font-bold" placeholder="Phone or email" />
-          </div>
+        </div>
+        <div>
+          <label class="block text-xs text-slate-500 font-bold mb-2 ml-1">Contact Info</label>
+          <input v-model="form.contact_info" type="text" class="input h-12 font-bold" placeholder="Phone or email" />
         </div>
         <div class="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
           <input id="anonymous" v-model="form.is_anonymous" type="checkbox" class="w-4 h-4 accent-brand rounded" />
@@ -238,7 +251,10 @@ const form = reactive({
   location: '',
   contact_info: '',
   is_anonymous: false,
+  research_center_id: '',
 })
+
+const researchCentres = ref([])
 
 const feedbackForm = reactive({
   rating: 3,
@@ -268,7 +284,7 @@ async function fetchProblems() {
 
 function closeCreate() {
   showCreate.value = false
-  Object.assign(form, { title: '', description: '', location: '', contact_info: '', is_anonymous: false })
+  Object.assign(form, { title: '', description: '', location: '', contact_info: '', is_anonymous: false, research_center_id: '' })
 }
 
 async function submitProblem() {
@@ -345,5 +361,15 @@ async function deleteProblem() {
   }
 }
 
-onMounted(fetchProblems)
+async function fetchResearchCentres() {
+  try {
+    const { data } = await api.get('/research-centers')
+    researchCentres.value = data.data || data
+  } catch (err) {}
+}
+
+onMounted(() => {
+  fetchProblems()
+  fetchResearchCentres()
+})
 </script>

@@ -81,4 +81,12 @@ class UserController extends Controller
 
         return response()->json($query->limit(50)->get());
     }
+
+    public function publicShow(User $user): JsonResponse
+    {
+        if (!$user->is_active) {
+            abort(404);
+        }
+        return response()->json($user->load('department.faculty.campus.university', 'expertise', 'profileImage', 'publications'));
+    }
 }

@@ -13,6 +13,7 @@ const messages = {
       signOut: 'Sign Out',
       signIn: 'Sign In',
       signUp: 'Sign Up',
+      studentResearch: 'Student Research',
       goToDashboard: 'Go to Dashboard',
       about: 'About'
     },
@@ -50,6 +51,7 @@ const messages = {
       signOut: 'ውጣ',
       signIn: 'ግባ',
       signUp: 'ተመዝገብ',
+      studentResearch: 'የተማሪዎች ምርምር',
       goToDashboard: 'ወደ ዳሽቦርድ ሂድ',
       about: 'ስለ'
     },

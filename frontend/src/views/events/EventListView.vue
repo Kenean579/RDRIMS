@@ -128,8 +128,19 @@
               <input v-model.number="form.max_participants" type="number" class="input h-12 font-bold" placeholder="0 for unlimited" />
              </div>
              <div>
-                <label class="block text-xs text-slate-500 font-bold mb-2 ml-1">Banner Image URL</label>
-                <input v-model="form.image_file" type="text" class="input h-12 font-bold" placeholder="https://..." />
+                <label class="block text-xs text-slate-500 font-bold mb-2 ml-1">Banner Image</label>
+                <div class="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
+                  <div class="w-16 h-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center overflow-hidden shrink-0">
+                    <img v-if="imageUrl(form.image_file)" :src="imageUrl(form.image_file)" class="w-full h-full object-cover" />
+                    <span v-else class="text-[10px] text-slate-300 font-bold">BANNER</span>
+                  </div>
+                  <div class="flex-1">
+                    <input type="file" accept="image/*" class="hidden" id="event-banner-input" @change="uploadBanner" />
+                    <label for="event-banner-input" class="btn btn-secondary h-9 px-4 text-xs font-bold cursor-pointer">
+                       {{ uploadingImage ? 'Processing...' : 'Upload Image' }}
+                    </label>
+                  </div>
+                </div>
              </div>
           </div>
         </div>
@@ -231,8 +242,11 @@ const form = reactive({
   start_date: '',
   end_date: '',
   max_participants: 0,
-  image_file: ''
+  image_file: null,
+  image_file_id: null
 })
+
+const uploadingImage = ref(false)
 
 async function fetchEvents() { 
   loading.value = true
@@ -265,29 +279,50 @@ function editEvent(event) {
     start_date: event.start_date?.split('T')[0] || '',
     end_date: event.end_date?.split('T')[0] || '',
     max_participants: event.max_participants || 0,
-    image_file: event.image_file || ''
+    image_file: event.image_file || event.banner_file || null,
+    image_file_id: event.image_file_id || event.banner_file_id || null
   })
 }
 
 function closeUpsert() {
   showAdd.value = false
   editingEvent.value = null
-  Object.assign(form, { title: '', description: '', type_id: '', location: '', start_date: '', end_date: '', max_participants: 0, image_file: '' })
+  Object.assign(form, { title: '', description: '', type_id: '', location: '', start_date: '', end_date: '', max_participants: 0, image_file: null, image_file_id: null })
 }
 
 async function saveEvent() {
   try {
+    const payload = { ...form }
     if (editingEvent.value) {
-      await api.put(`/events/${editingEvent.value.id}`, form)
+      await api.put(`/events/${editingEvent.value.id}`, payload)
       notif.success('Event updated')
     } else {
-      await api.post('/events', form)
+      await api.post('/events', payload)
       notif.success('Event published')
     }
     closeUpsert()
     fetchEvents()
   } catch (e) {
-    notif.error('Failed to save announcement')
+    notif.error(e.response?.data?.message || 'Failed to save announcement')
+  }
+}
+
+async function uploadBanner(event) {
+  const file = event.target.files?.[0]
+  if (!file) return
+  uploadingImage.value = true
+  try {
+    const fd = new FormData()
+    fd.append('file', file)
+    fd.append('is_public', '1')
+    const { data } = await api.post('/files', fd)
+    form.image_file_id = data.id
+    form.image_file = data
+    notif.success('Banner uploaded successfully')
+  } catch (e) {
+    notif.error('Failed to upload image')
+  } finally {
+    uploadingImage.value = false
   }
 }
 

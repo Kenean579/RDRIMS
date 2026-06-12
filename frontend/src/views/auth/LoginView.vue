@@ -11,7 +11,7 @@
           R
         </div>
         <h1 class="text-xl font-bold text-slate-800 tracking-tight">{{ appName }}</h1>
-        <p class="text-slate-500 font-medium text-sm mt-2">Portal Authentication</p>
+        <p class="text-slate-500 font-medium text-sm mt-2">Login to your account</p>
       </div>
 
       <!-- Login Card -->
@@ -84,7 +84,7 @@
 
         <div class="mt-5 pt-4 border-t border-slate-100 text-center">
           <p class="text-xs font-medium text-slate-400">
-            New investigator? 
+            New user? 
             <router-link to="/register" class="text-brand font-bold hover:underline underline-offset-4">Request Access</router-link>
           </p>
         </div>

@@ -136,12 +136,20 @@
             </select>
           </div>
           <div>
-            <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Thematic Area</label>
-            <select v-model="callForm.thematic_areas" class="input h-12 font-bold">
-              <option value="">Select Area</option>
-              <option v-for="t in thematicAreas" :key="t.id" :value="t.name">{{ t.name }}</option>
-            </select>
+            <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Thematic Area(s)</label>
+            <input v-model="callForm.thematic_areas" type="text" class="input h-12 font-bold" placeholder="e.g. Health, Ecosystems, AI" />
           </div>
+        </div>
+
+        <div>
+          <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Link to Community Problem (Optional)</label>
+          <select v-model="callForm.community_problem_id" class="input h-12 font-bold bg-brand/5 border-brand/10">
+            <option value="">No specific community problem</option>
+            <option v-for="cp in communityProblems" :key="cp.id" :value="cp.id">
+              {{ cp.title }} ({{ cp.location }})
+            </option>
+          </select>
+          <p class="text-[10px] text-slate-400 mt-1.5 ml-1 font-medium italic">If this call originates from a community-reported issue, select it here.</p>
         </div>
 
         <!-- Hierarchical Scope Fields -->
@@ -203,7 +211,7 @@
             <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Guideline (File Reference)</label>
             <select v-model="callForm.guideline_file_id" class="input h-12 font-bold">
               <option value="">No Guideline Attached</option>
-              <option v-for="f in files" :key="f.id" :value="f.id">{{ f.original_name }}</option>
+              <option v-for="f in files" :key="f.id" :value="f.id">{{ f.original_filename }}</option>
             </select>
           </div>
         </div>
@@ -220,6 +228,7 @@
 
 <script setup>
 import { ref, reactive, onMounted, watch } from 'vue'
+import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationStore } from '@/stores/notification'
 import api from '@/services/api'
@@ -228,6 +237,7 @@ import Modal from '@/components/Modal.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import { formatDate, formatCurrency } from '@/utils/formatters'
 
+const route = useRoute()
 const auth = useAuthStore()
 const notif = useNotificationStore()
 const calls = ref([])
@@ -245,11 +255,13 @@ const campuses = ref([])
 const faculties = ref([])
 const departments = ref([])
 const researchCenters = ref([])
+const communityProblems = ref([])
 
 const callForm = reactive({
   title: '', description: '', deadline: '', budget_limit: null,
   academic_year_id: '', status_id: '', thematic_areas: '', guideline_file_id: '',
-  university_id: '', campus_id: '', faculty_id: '', department_id: '', research_center_id: ''
+  university_id: '', campus_id: '', faculty_id: '', department_id: '', research_center_id: '',
+  community_problem_id: ''
 })
 
 async function fetchCalls() {
@@ -282,7 +294,8 @@ function editCall(call) {
     campus_id: call.campus_id || '',
     faculty_id: call.faculty_id || '',
     department_id: call.department_id || '',
-    research_center_id: call.research_center_id || ''
+    research_center_id: call.research_center_id || '',
+    community_problem_id: call.community_problem_id || ''
   })
   // Auto-set scope based on role
   autoSetScopeByRole()
@@ -294,7 +307,8 @@ function closeCallModal() {
   Object.assign(callForm, { 
     title: '', description: '', deadline: '', budget_limit: null, 
     academic_year_id: '', status_id: '', thematic_areas: '', guideline_file_id: '',
-    university_id: '', campus_id: '', faculty_id: '', department_id: '', research_center_id: ''
+    university_id: '', campus_id: '', faculty_id: '', department_id: '', research_center_id: '',
+    community_problem_id: ''
   })
 }
 
@@ -365,7 +379,8 @@ async function saveCall() {
       campus_id: callForm.campus_id || null,
       faculty_id: callForm.faculty_id || null,
       department_id: callForm.department_id || null,
-      research_center_id: callForm.research_center_id || null
+      research_center_id: callForm.research_center_id || null,
+      community_problem_id: callForm.community_problem_id || null
     }
     if (editingCall.value) {
       await api.put(`/calls/${editingCall.value.id}`, payload)
@@ -402,6 +417,22 @@ onMounted(async () => {
     faculties.value = facRes.data.data || facRes.data
     departments.value = deptRes.data.data || deptRes.data
     researchCenters.value = rcRes.data.data || rcRes.data
+    
+    // Fetch community problems to link
+    const cpRes = await api.get('/community-problems', { params: { status: 'open' } })
+    communityProblems.value = cpRes.data.data || cpRes.data
+
+    if (route.query.community_problem_id) {
+       callForm.community_problem_id = route.query.community_problem_id
+       showCreate.value = true
+       
+       // Pre-fill from problem if found
+       const problem = communityProblems.value.find(p => p.id == route.query.community_problem_id)
+       if (problem) {
+         callForm.title = `Research Call: ${problem.title}`
+         callForm.description = `Targeting community issue: ${problem.description}\n\nLocation: ${problem.location}`
+       }
+    }
   } catch (e) {}
 })
 

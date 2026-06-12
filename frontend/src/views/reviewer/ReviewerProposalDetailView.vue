@@ -217,7 +217,6 @@ import api from '@/services/api'
 import StatusBadge from '@/components/StatusBadge.vue'
 import { formatCurrency } from '@/utils/formatters'
 import { formatStatusName } from '@/utils/colors'
-import * as XLSX from 'xlsx'
 
 const route = useRoute()
 const auth = useAuthStore()
@@ -250,6 +249,37 @@ async function fetchProposal() {
   } catch (err) {
     error.value = err.response?.data?.message || 'You are not assigned as a reviewer for this proposal'
   } finally { loading.value = false }
+}
+
+async function exportScores() {
+  try {
+    const response = await api.get(`/reviewer/proposals/${route.params.id}/template`, { responseType: 'blob' })
+    const url = window.URL.createObjectURL(new Blob([response.data]))
+    const link = document.createElement('a')
+    link.href = url
+    link.setAttribute('download', `Review_Template_Proposal_${route.params.id}.xlsx`)
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+  } catch (err) {
+    notif.error('Failed to download template')
+  }
+}
+
+async function importScores(event) {
+  const file = event.target.files[0]
+  if (!file) return
+  
+  const formData = new FormData()
+  formData.append('file', file)
+  
+  try {
+    const { data } = await api.post(`/reviewer/proposals/${route.params.id}/import`, formData)
+    notif.success(data.message)
+    await fetchProposal()
+  } catch (err) {
+    notif.error(err.response?.data?.message || 'Import failed')
+  }
 }
 
 

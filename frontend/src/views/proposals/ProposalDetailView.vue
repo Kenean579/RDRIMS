@@ -39,9 +39,10 @@
         </router-link>
 
         <!-- Plagiarism Check: Admins Only -->
-        <button v-if="canManageProposal" @click="showDetectionModal = true" class="btn bg-indigo-600 hover:bg-indigo-700 text-white h-11 px-5 text-xs">
-          <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-          Check Originality
+        <button v-if="canManageProposal && proposal.status?.name === 'submitted'" @click="runChecks" :disabled="isChecking" class="btn bg-indigo-600 hover:bg-indigo-700 text-white h-11 px-5 text-xs">
+          <svg v-if="isChecking" class="w-4 h-4 mr-1.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+          <svg v-else class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          {{ isChecking ? 'Running Checks...' : 'Run Automated Checks' }}
         </button>
         
         <!-- Registration as Project: Approved Only + Admin -->
@@ -62,14 +63,14 @@
 
         <!-- Finance Officer Check -->
         <template v-if="auth.hasRole('finance_officer') && proposal.status?.name === 'finance_check'">
-          <button @click="approveProposal" class="btn bg-emerald-500 hover:bg-emerald-600 text-white h-11 px-5 text-xs">Verify Budget</button>
-          <button @click="showReject = true" class="btn bg-rose-600 hover:bg-rose-700 text-white h-11 px-5 text-xs">Budget Revision</button>
+          <button @click="verifyBudget" class="btn bg-emerald-500 hover:bg-emerald-600 text-white h-11 px-5 text-xs">Verify Budget</button>
+          <button @click="showReject = true; rejectSource = 'finance'" class="btn bg-rose-600 hover:bg-rose-700 text-white h-11 px-5 text-xs">Budget Revision</button>
         </template>
 
         <!-- Ethics Officer Check -->
         <template v-if="auth.hasRole('ethics_officer') && proposal.status?.name === 'ethics_pending'">
-          <button @click="approveProposal" class="btn bg-emerald-500 hover:bg-emerald-600 text-white h-11 px-5 text-xs">Ethical Clearance</button>
-          <button @click="showReject = true" class="btn bg-rose-600 hover:bg-rose-700 text-white h-11 px-5 text-xs">Ethics Rejection</button>
+          <button @click="verifyEthics" class="btn bg-emerald-500 hover:bg-emerald-600 text-white h-11 px-5 text-xs">Ethical Clearance</button>
+          <button @click="showReject = true; rejectSource = 'ethics'" class="btn bg-rose-600 hover:bg-rose-700 text-white h-11 px-5 text-xs">Ethics Rejection</button>
         </template>
       </div>
 
@@ -193,7 +194,7 @@
               <div class="flex items-center gap-3 min-w-0">
                 <div class="w-10 h-10 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center text-xl shrink-0 group-hover:scale-110 transition-transform">📄</div>
                 <div class="min-w-0">
-                   <p class="text-sm font-bold text-slate-800 truncate">{{ proposal.file.original_name }}</p>
+                   <p class="text-sm font-bold text-slate-800 truncate">{{ proposal.file.original_filename }}</p>
                    <p class="text-xs font-medium text-emerald-600 mt-0.5">Formal Proposal Attached</p>
                 </div>
               </div>
@@ -240,6 +241,21 @@
               <!-- External Checks -->
               <div class="space-y-4">
                  <p class="text-xs font-medium text-slate-400">Procedural Status</p>
+                 <div v-if="proposal.status?.name === 'checking'" class="flex items-center justify-between p-3 rounded-2xl bg-indigo-50 border border-indigo-100">
+                    <span class="text-xs font-medium text-indigo-700 flex items-center gap-2">
+                       <svg class="animate-spin w-3 h-3" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
+                       Automated Checks Running...
+                    </span>
+                 </div>
+                 <div v-if="proposal.originality_score" class="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-100">
+                    <span class="text-xs font-medium text-slate-600">Originality Score</span>
+                    <a v-if="proposal.plagiarism_report_url" :href="proposal.plagiarism_report_url" target="_blank" class="text-xs font-bold px-3 py-1 rounded-lg hover:underline transition-colors cursor-pointer" :class="proposal.originality_score > 90 ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'">
+                      {{ proposal.originality_score }}% (View)
+                    </a>
+                    <span v-else class="text-xs font-bold px-3 py-1 rounded-lg" :class="proposal.originality_score > 90 ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'">
+                      {{ proposal.originality_score }}%
+                    </span>
+                 </div>
                  <div class="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-100">
                     <span class="text-xs font-medium  text-slate-600">Ethics Clearance</span>
                     <StatusBadge :status="proposal.ethics_status || 'not_requested'" size="sm" />
@@ -289,32 +305,7 @@
        </div>
     </Modal>
 
-    <!-- Detection Service Selection Modal -->
-    <Modal :show="showDetectionServiceModal" title="Select Plagiarism Detection Service" @close="showDetectionServiceModal = false">
-       <div class="space-y-6">
-          <div class="p-4 bg-slate-50 rounded-2xl border border-slate-100">
-             <p class="text-xs font-medium text-slate-400 mb-4">Available Detection Services</p>
-             <div class="space-y-2">
-                <label v-for="service in detectionServices" :key="service.id" 
-                       class="flex items-center justify-between p-4 bg-white rounded-2xl border border-slate-100 hover:border-brand cursor-pointer group transition-all">
-                  <div class="flex items-center gap-3">
-                    <input type="radio" :value="service.id" v-model="selectedService" class="w-4 h-4 text-brand focus:ring-brand border-slate-300" />
-                    <div class="min-w-0">
-                      <p class="text-sm font-bold text-slate-800 group-hover:text-brand capitalize">{{ service.name }}</p>
-                      <p class="text-xs font-medium text-slate-400 mt-0.5">
-                        {{ getServiceDescription(service.name) }}
-                      </p>
-                    </div>
-                  </div>
-                </label>
-             </div>
-          </div>
-          <div class="flex justify-end gap-3 pt-6 border-t border-slate-100">
-             <button @click="showDetectionServiceModal = false" class="btn btn-secondary px-6">Cancel</button>
-             <button @click="submitDetectionRequest" class="btn btn-primary px-5" :disabled="!selectedService">Start Check</button>
-          </div>
-       </div>
-    </Modal>
+
   </div>
 </template>
 
@@ -335,6 +326,7 @@ const showReject = ref(false); const rejectComment = ref('')
 const showAssignReviewers = ref(false); const selectedReviewers = ref([]); const availableReviewers = ref([])
 const selectedFile = ref(null); const uploading = ref(false)
 const showDetectionServiceModal = ref(false); const detectionServices = ref([]); const selectedService = ref(null)
+const rejectSource = ref('admin') // 'admin', 'finance', or 'ethics'
 
 const isOwner = computed(() => auth.user?.id === proposal.value.submitted_by?.id)
 const canApprove = computed(() => ['submitted','under_review','finance_check'].includes(proposal.value.status?.name))
@@ -403,22 +395,18 @@ function getServiceDescription(serviceName) {
   return descriptions[serviceName] || 'Similarity detection service.'
 }
 
-async function submitDetectionRequest() {
-  if (!selectedService.value) {
-    notif.error('Please select a detection service')
-    return
-  }
+const isChecking = ref(false)
+
+async function runChecks() {
+  isChecking.value = true
   try {
-    await api.post('/detection/requests', { 
-      detectable_type: 'App\\Models\\Proposal', 
-      detectable_id: proposal.value.id,
-      file_id: proposal.value.file_id,
-      service_id: selectedService.value
-    })
-    showDetectionServiceModal.value = false
-    notif.success('Strategic detection request submitted')
+    const { data } = await api.post(`/proposals/${proposal.value.id}/check`)
+    notif.success(data.message || 'Background checks initiated')
+    fetchProposal()
   } catch(e) {
-    notif.error(e.response?.data?.message || 'Failed to initialize check')
+    notif.error(e.response?.data?.message || 'Failed to initiate checks')
+  } finally {
+    isChecking.value = false
   }
 }
 
@@ -451,12 +439,42 @@ async function approveProposal() {
 async function rejectProposal() {
   if (!rejectComment.value) { notif.error('Reason required'); return }
   try {
-    await api.post(`/proposals/${proposal.value.id}/reject`, { comment: rejectComment.value })
-    notif.success('Handled as rejected')
+     if (rejectSource.value === 'finance') {
+        const check = proposal.value.finance_checks?.find(c => c.status?.name === 'pending')
+        if (!check) return
+        await api.put(`/finance-checks/${check.id}`, { status: 'rejected', comments: rejectComment.value })
+     } else if (rejectSource.value === 'ethics') {
+        const req = proposal.value.ethics_requests?.find(r => r.status?.name === 'pending')
+        if (!req) return
+        await api.post(`/ethics-requests/${req.id}/decision`, { decision: 'rejected', comments: rejectComment.value })
+     } else {
+        await api.post(`/proposals/${proposal.value.id}/reject`, { comment: rejectComment.value })
+     }
+    notif.success('Decision recorded successfully')
     showReject.value = false; fetchProposal()
   } catch (err) {
-    notif.error(err.response?.data?.message || 'Rejection failed')
+    notif.error(err.response?.data?.message || 'Action failed')
   }
+}
+
+async function verifyBudget() {
+  try {
+    const check = proposal.value.finance_checks?.find(c => c.status?.name === 'pending')
+    if (!check) return
+    await api.put(`/finance-checks/${check.id}`, { status: 'approved' })
+    notif.success('Budget verified')
+    fetchProposal()
+  } catch(e) { notif.error('Verification failed') }
+}
+
+async function verifyEthics() {
+  try {
+    const req = proposal.value.ethics_requests?.find(r => r.status?.name === 'pending')
+    if (!req) return
+    await api.post(`/ethics-requests/${req.id}/decision`, { decision: 'approved' })
+    notif.success('Ethical clearance granted')
+    fetchProposal()
+  } catch(e) { notif.error('Clearance failed') }
 }
 
 async function assignReviewers() {
@@ -503,9 +521,7 @@ async function uploadDocument() {
   
   try {
     // Step 1: Upload the file and get its ID
-    const { data: uploadedFile } = await api.post('/files', formData, {
-      headers: { 'Content-Type': 'multipart/form-data' }
-    })
+    const { data: uploadedFile } = await api.post('/files', formData)
     // Step 2: Attach the file to the proposal
     await api.post(`/proposals/${proposal.value.id}/files`, { file_id: uploadedFile.id })
     notif.success('Research document attached successfully')

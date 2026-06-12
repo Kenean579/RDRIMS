@@ -38,82 +38,113 @@
     </div>
 
     <form @submit.prevent="handleSubmit">
-      <!-- Step 1: Quick Summary -->
-      <div v-show="currentStep === 0" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
-        <h2 class="text-lg font-bold text-slate-800 mb-6">Quick Summary</h2>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div class="md:col-span-2">
-            <FileUpload v-model="form.proposal_file" label="Proposal Document" :required="true" />
+      <!-- Step 1: Basic Information -->
+      <div v-show="currentStep === 0" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 space-y-8">
+        <div>
+          <h2 class="text-lg font-bold text-slate-800 mb-6 border-b border-slate-100 pb-4">Basic Information</h2>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="md:col-span-2">
+              <label class="block text-xs font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">Title <span class="text-rose-500">*</span></label>
+              <input v-model="form.title" type="text" required maxlength="255"
+                class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none transition-all"
+                placeholder="Enter the title of your research proposal" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">Call for Proposal</label>
+              <select v-model="form.call_id"
+                class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none bg-white transition-all">
+                <option value="">Open Call (no specific call)</option>
+                <option v-for="call in openCalls" :key="call.id" :value="call.id">{{ call.title }}</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">Proposal Type <span class="text-rose-500">*</span></label>
+              <LookupSelect v-model="form.type_id" lookup-key="proposal_types" placeholder="Select type" />
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">Academic Year</label>
+              <select v-model="form.academic_year_id"
+                class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none bg-white transition-all">
+                <option value="">Select year</option>
+                <option v-for="y in academicYears" :key="y.id" :value="y.id">{{ y.name }} {{ y.is_current ? '(Current)' : '' }}</option>
+              </select>
+            </div>
           </div>
-          <div class="md:col-span-2">
-            <label class="block text-xs font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">Title <span class="text-rose-500">*</span></label>
-            <input v-model="form.title" type="text" required maxlength="255"
-              class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none transition-all"
-              placeholder="Enter the title of your research proposal" />
+        </div>
+
+        <div>
+          <h2 class="text-lg font-bold text-slate-800 mb-6 border-b border-slate-100 pb-4">Research Scope</h2>
+          <div class="space-y-6">
+            <div>
+              <label class="block text-xs font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">Keywords <span class="text-rose-500">*</span></label>
+              <input v-model="form.keywords" type="text" required
+                class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none transition-all"
+                placeholder="AI, Machine Learning, Agriculture" />
+              <p class="text-[10px] text-slate-400 mt-1.5 ml-1 font-medium">Separate keywords with commas (minimum 3)</p>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">Abstract <span class="text-rose-500">*</span></label>
+              <textarea v-model="form.abstract" required rows="4"
+                class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none resize-none transition-all"
+                placeholder="Provide a brief summary of your research proposal..."></textarea>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">Objectives <span class="text-rose-500">*</span></label>
+              <textarea v-model="form.objectives" required rows="3"
+                class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none resize-none transition-all"
+                placeholder="1. First objective&#10;2. Second objective..."></textarea>
+            </div>
+            <div>
+              <label class="block text-xs font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">Methodology <span class="text-rose-500">*</span></label>
+              <textarea v-model="form.methodology" required rows="4"
+                class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none resize-none transition-all"
+                placeholder="Describe your research methodology in detail..."></textarea>
+            </div>
           </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">Call for Proposal</label>
-            <select v-model="form.call_id"
-              class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none bg-white transition-all">
-              <option value="">Open Call (no specific call)</option>
-              <option v-for="call in openCalls" :key="call.id" :value="call.id">{{ call.title }}</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">Proposal Type <span class="text-rose-500">*</span></label>
-            <LookupSelect v-model="form.type_id" lookup-key="proposal_types" placeholder="Select type" />
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">Academic Year</label>
-            <select v-model="form.academic_year_id"
-              class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none bg-white transition-all">
-              <option value="">Select year</option>
-              <option v-for="y in academicYears" :key="y.id" :value="y.id">{{ y.name }} {{ y.is_current ? '(Current)' : '' }}</option>
-            </select>
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">Budget (ETB) <span class="text-rose-500">*</span></label>
-            <input v-model.number="form.budget" type="number" required min="0" step="0.01"
-              class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none transition-all"
-              placeholder="500000.00" />
-          </div>
+        </div>
+
+        <div>
+           <h2 class="text-lg font-bold text-slate-800 mb-6 border-b border-slate-100 pb-4">Budget</h2>
+           <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div>
+                <label class="block text-xs font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">Total Budget (ETB) <span class="text-rose-500">*</span></label>
+                <input v-model.number="form.budget" type="number" required min="0" step="0.01"
+                  class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none flex-1 font-bold text-brand transition-all"
+                  placeholder="Total requested amount" />
+              </div>
+           </div>
+           
+           <!-- Budget Allocation -->
+           <div class="mt-6 bg-slate-50/50 border border-slate-200 rounded-2xl p-6">
+              <label class="block text-xs font-bold text-slate-600 uppercase tracking-widest mb-4">Budget Allocation Breakdown</label>
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-[11px] font-bold text-slate-400 mb-1">Personnel</label>
+                  <input v-model.number="form.budget_allocation.personnel" type="number" min="0" placeholder="0" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:border-brand outline-none" />
+                </div>
+                <div>
+                  <label class="block text-[11px] font-bold text-slate-400 mb-1">Equipment</label>
+                  <input v-model.number="form.budget_allocation.equipment" type="number" min="0" placeholder="0" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:border-brand outline-none" />
+                </div>
+                <div>
+                  <label class="block text-[11px] font-bold text-slate-400 mb-1">Travel</label>
+                  <input v-model.number="form.budget_allocation.travel" type="number" min="0" placeholder="0" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:border-brand outline-none" />
+                </div>
+                <div>
+                  <label class="block text-[11px] font-bold text-slate-400 mb-1">Materials</label>
+                  <input v-model.number="form.budget_allocation.materials" type="number" min="0" placeholder="0" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:border-brand outline-none" />
+                </div>
+                <div>
+                  <label class="block text-[11px] font-bold text-slate-400 mb-1">Other</label>
+                  <input v-model.number="form.budget_allocation.other" type="number" min="0" placeholder="0" class="w-full border border-slate-200 rounded-xl px-3 py-2 text-sm focus:border-brand outline-none" />
+                </div>
+              </div>
+           </div>
         </div>
       </div>
 
-      <!-- Step 2: Research Details -->
+      <!-- Step 2: Co-Investigators -->
       <div v-show="currentStep === 1" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
-        <h2 class="text-lg font-bold text-slate-800 mb-6">Research Details</h2>
-        <div class="space-y-6">
-          <div>
-            <label class="block text-xs font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">Keywords <span class="text-rose-500">*</span></label>
-            <input v-model="form.keywords" type="text" required
-              class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none transition-all"
-              placeholder="AI, Machine Learning, Agriculture" />
-            <p class="text-[10px] text-slate-400 mt-1.5 ml-1 font-medium">Separate keywords with commas</p>
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">Abstract <span class="text-rose-500">*</span></label>
-            <textarea v-model="form.abstract" required rows="5"
-              class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none resize-none transition-all"
-              placeholder="Provide a brief summary of your research proposal..."></textarea>
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">Objectives <span class="text-rose-500">*</span></label>
-            <textarea v-model="form.objectives" required rows="4"
-              class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none resize-none transition-all"
-              placeholder="1. First objective&#10;2. Second objective&#10;3. Third objective"></textarea>
-          </div>
-          <div>
-            <label class="block text-xs font-bold text-slate-400 capitalize tracking-widest mb-2 ml-1">Methodology <span class="text-rose-500">*</span></label>
-            <textarea v-model="form.methodology" required rows="5"
-              class="w-full border border-slate-300 rounded-xl px-4 py-3 text-sm focus:ring-2 focus:ring-brand/30 focus:border-brand outline-none resize-none transition-all"
-              placeholder="Describe your research methodology in detail..."></textarea>
-          </div>
-        </div>
-      </div>
-
-      <!-- Step 3: Co-Investigators -->
-      <div v-show="currentStep === 2" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
         <div class="flex items-center justify-between mb-6">
           <div>
             <h2 class="text-lg font-bold text-slate-800">Co-Team Members</h2>
@@ -178,40 +209,59 @@
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- Documents Section -->
-        <div class="mt-8 pt-8 border-t border-slate-200">
-          <h2 class="text-lg font-bold text-slate-800 mb-6">Required Documents</h2>
-          <div class="space-y-6">
-            <div>
-              <FileUpload v-model="form.proposal_file" label="Proposal Document" :required="true" />
-              <p class="text-[10px] text-slate-400 mt-1.5 ml-1 font-medium">PDF, DOC, or DOCX format, max 10MB</p>
-            </div>
-            <div>
-              <FileUpload v-model="form.ethics_file" label="Ethics Document (Optional)" />
-              <p class="text-[10px] text-slate-400 mt-1.5 ml-1 font-medium">If your research involves human subjects</p>
-            </div>
+      <!-- Step 3: Documents -->
+      <div v-show="currentStep === 2" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
+        <h2 class="text-lg font-bold text-slate-800 mb-6">Required Documents</h2>
+        <div class="space-y-8">
+          <div class="p-6 bg-slate-50/50 border border-slate-200 rounded-2xl">
+            <FileUpload v-model="form.proposal_file" label="Proposal Core Document" :required="true" />
+            <p class="text-xs text-slate-500 mt-2 font-medium">Upload the full research proposal including literature review and detailed methodology. (PDF, DOC/DOCX, max 10MB)</p>
+          </div>
+          <div class="p-6 bg-slate-50/50 border border-slate-200 rounded-2xl">
+            <FileUpload v-model="form.ethics_file" label="Ethics Clearance Form (Optional)" />
+            <p class="text-xs text-slate-500 mt-2 font-medium">If your research involves human or animal subjects, upload your ethics compliance forms here.</p>
           </div>
         </div>
+      </div>
 
-        <!-- Review & Submit Section -->
-        <div class="mt-8 pt-8 border-t border-slate-200">
-          <h2 class="text-lg font-bold text-slate-800 mb-6">Review & Submit</h2>
-          <div class="bg-slate-50 rounded-xl p-6 border border-slate-200 space-y-4">
-            <div class="flex items-center gap-3">
-              <div class="h-5 w-5 rounded bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs">✓</div>
-              <span class="text-sm text-slate-600">All required fields completed</span>
-            </div>
-            <div class="flex items-center gap-3">
-              <div class="h-5 w-5 rounded bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs">✓</div>
-              <span class="text-sm text-slate-600">Proposal document uploaded</span>
-            </div>
-            <div class="mt-4">
-              <label class="flex items-start gap-3 cursor-pointer">
-                <input type="checkbox" v-model="form.confirmation" class="mt-1" />
-                <span class="text-sm text-slate-600">I confirm that this proposal is my original work and complies with all research ethics guidelines.</span>
-              </label>
-            </div>
+      <!-- Step 4: Review & Submit -->
+      <div v-show="currentStep === 3" class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8">
+        <h2 class="text-lg font-bold text-slate-800 mb-6">Review & Submit</h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8 border-b border-slate-100 pb-8">
+           <div>
+              <h4 class="text-xs font-bold text-slate-400 capitalize tracking-widest mb-1.5">Proposal Title</h4>
+              <p class="text-sm font-bold text-slate-800">{{ form.title || '—' }}</p>
+           </div>
+           <div>
+              <h4 class="text-xs font-bold text-slate-400 capitalize tracking-widest mb-1.5">Total Budget</h4>
+              <p class="text-sm font-bold text-brand">{{ form.budget ? form.budget + ' ETB' : '—' }}</p>
+           </div>
+           <div>
+              <h4 class="text-xs font-bold text-slate-400 capitalize tracking-widest mb-1.5">Methodology Status</h4>
+              <p class="text-sm font-bold text-slate-800">{{ form.methodology ? 'Competed' : 'Missing' }}</p>
+           </div>
+           <div>
+              <h4 class="text-xs font-bold text-slate-400 capitalize tracking-widest mb-1.5">Team Size</h4>
+              <p class="text-sm font-bold text-slate-800">1 PI + {{ form.investigators.length }} Co-investigators</p>
+           </div>
+        </div>
+
+        <div class="bg-slate-50 rounded-xl p-6 border border-slate-200 space-y-4">
+          <div class="flex items-center gap-3">
+            <div class="h-5 w-5 rounded bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs">✓</div>
+            <span class="text-sm text-slate-600 font-medium">All required data structural checks passed</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <div class="h-5 w-5 rounded bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs">✓</div>
+            <span class="text-sm text-slate-600 font-medium">Data integrity verification ready</span>
+          </div>
+          <div class="mt-4 pt-4 border-t border-slate-200">
+            <label class="flex items-start gap-3 cursor-pointer group">
+              <input type="checkbox" v-model="form.confirmation" class="mt-0.5 accent-brand" />
+              <span class="text-sm text-slate-700 font-bold group-hover:text-brand transition-colors">I confirm that this proposal is my original work and complies with all institutional research ethics guidelines.</span>
+            </label>
           </div>
         </div>
       </div>
@@ -238,7 +288,7 @@
           <button v-else type="submit" :disabled="submitting"
             class="inline-flex items-center gap-2 px-8 py-3 text-sm font-bold text-white bg-emerald-600 rounded-xl shadow-lg shadow-emerald-600/30 hover:shadow-emerald-600/50 hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:pointer-events-none">
             <svg v-if="submitting" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
-            {{ submitting ? 'Saving...' : 'Save as Draft' }}
+            {{ submitting ? 'Submitting...' : 'Submit Proposal' }}
           </button>
         </div>
       </div>
@@ -260,7 +310,7 @@ const route = useRoute()
 const auth = useAuthStore()
 const notif = useNotificationStore()
 
-const steps = ['Summary', 'Details', 'Team', 'Documents']
+const steps = ['Basic Info', 'Co-Investigators', 'Documents', 'Review & Submit']
 const currentStep = ref(0)
 const draftRestored = ref(false)
 
@@ -274,6 +324,7 @@ const form = reactive({
   objectives: '',
   methodology: '',
   budget: null,
+  budget_allocation: { personnel: null, equipment: null, travel: null, materials: null, other: null },
   proposal_file: null,
   ethics_file: null,
   investigators: [],
@@ -303,12 +354,14 @@ function nextStep() {
   if (currentStep.value === 0) {
     if (!form.title) { notif.error('Title is required.'); return }
     if (!form.type_id) { notif.error('Proposal type is required.'); return }
-    if (!form.budget) { notif.error('Budget is required.'); return }
-  }
-  if (currentStep.value === 1) {
+    if (!form.keywords) { notif.error('Keywords are required.'); return }
     if (!form.abstract) { notif.error('Abstract is required.'); return }
     if (!form.objectives) { notif.error('Objectives are required.'); return }
     if (!form.methodology) { notif.error('Methodology is required.'); return }
+    if (!form.budget) { notif.error('Total Budget is required.'); return }
+  }
+  if (currentStep.value === 2) {
+    if (!form.proposal_file) { notif.error('Proposal Core Document is required.'); return }
   }
   currentStep.value++
 }
@@ -326,7 +379,9 @@ async function handleSubmit() {
     payload.append('objectives', form.objectives)
     payload.append('methodology', form.methodology)
     payload.append('budget', form.budget)
+    payload.append('budget_allocation', JSON.stringify(form.budget_allocation))
     if (form.proposal_file) payload.append('proposal_file', form.proposal_file)
+    if (form.ethics_file) payload.append('ethics_file', form.ethics_file)
     payload.append('investigators', JSON.stringify(
       form.investigators.map(inv => ({
         user_id: inv.user_id || null,

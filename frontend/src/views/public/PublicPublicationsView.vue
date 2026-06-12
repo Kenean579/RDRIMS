@@ -1,11 +1,11 @@
 <template>
   <div class="flex flex-col gap-5 pb-6 animate-fade">
-    <div class="mb-4 p-6 rounded-2xl bg-linear-to-br from-indigo-500 to-purple-600 text-white shadow-lg overflow-hidden relative">
+    <div class="card p-8 bg-slate-50 border-slate-100 relative overflow-hidden">
       <div class="relative z-10">
-        <h1 class="text-xl font-bold text-white tracking-tight">Research Repository</h1>
-        <p class="text-indigo-100 font-medium mt-1">Institutional publications, journal papers, and technical reports.</p>
+        <h1 class="text-xl font-bold text-slate-900 tracking-tight">Research Repository</h1>
+        <p class="text-slate-500 font-medium mt-1">Institutional publications, journal papers, and technical reports.</p>
       </div>
-      <div class="absolute right-0 top-0 w-32 h-32 bg-white/10 rounded-full translate-x-8 -translate-y-8"></div>
+      <div class="absolute right-0 top-0 w-32 h-32 bg-brand/5 rounded-full translate-x-8 -translate-y-8"></div>
     </div>
 
     <div class="card p-8 flex flex-col gap-5">
@@ -27,7 +27,7 @@
           </select>
         </div>
       </div>
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <div>
           <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">University</label>
           <select v-model="filters.university_id" class="input font-bold" @change="onUniversityChange">
@@ -54,6 +54,14 @@
           <select v-model="filters.department_id" class="input font-bold" :disabled="!filters.faculty_id" @change="fetchPublications(1)">
             <option value="">All Departments</option>
             <option v-for="d in filteredDepartments" :key="d.id" :value="d.id">{{ d.name }}</option>
+          </select>
+        </div>
+        <!-- Research Centre (independent) -->
+        <div>
+          <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Research Centre</label>
+          <select v-model="filters.research_center_id" class="input font-bold" @change="fetchPublications(1)">
+            <option value="">All Centres</option>
+            <option v-for="rc in researchCentres" :key="rc.id" :value="rc.id">{{ rc.name }}</option>
           </select>
         </div>
       </div>
@@ -106,11 +114,12 @@ const loading = ref(true)
 const search = ref('')
 const yearFilter = ref('')
 const years = ref([])
-const filters = ref({ university_id: '', campus_id: '', faculty_id: '', department_id: '' })
+const filters = ref({ university_id: '', campus_id: '', faculty_id: '', department_id: '', research_center_id: '' })
 const universities = ref([])
 const campuses = ref([])
 const faculties = ref([])
 const departments = ref([])
+const researchCentres = ref([])
 
 const filteredCampuses = computed(() => campuses.value.filter(c => String(c.university_id) === String(filters.value.university_id)))
 const filteredFaculties = computed(() => faculties.value.filter(f => String(f.campus_id) === String(filters.value.campus_id)))
@@ -146,6 +155,7 @@ async function fetchPublications(page = 1) {
     if (filters.value.campus_id) params.campus_id = filters.value.campus_id
     if (filters.value.faculty_id) params.faculty_id = filters.value.faculty_id
     if (filters.value.department_id) params.department_id = filters.value.department_id
+    if (filters.value.research_center_id) params.research_center_id = filters.value.research_center_id
     const { data } = await api.get('/publications', { params })
     publications.value = data.data || data
   } catch (e) {} finally { loading.value = false }
@@ -157,11 +167,13 @@ onMounted(async () => {
     const c = await api.get('/campuses')
     const f = await api.get('/faculties')
     const d = await api.get('/departments')
+    const rc = await api.get('/research-centers')
     const pubs = await api.get('/publications', { params: { per_page: 200 } })
     universities.value = (u.data.data || u.data)
     campuses.value = (c.data.data || c.data)
     faculties.value = (f.data.data || f.data)
     departments.value = (d.data.data || d.data)
+    researchCentres.value = (rc.data.data || rc.data)
     const pubData = pubs.data.data || pubs.data
     const yearSet = new Set(pubData.map(p => p.publication_date?.substring(0, 4)).filter(Boolean))
     years.value = Array.from(yearSet).sort((a, b) => b - a)

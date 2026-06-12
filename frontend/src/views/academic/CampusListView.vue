@@ -35,6 +35,9 @@
           </div>
         </div>
         <div class="flex gap-2 shrink-0">
+          <button @click="openSetUpAdmin(campus)" class="btn btn-ghost border border-brand/20 text-brand hover:bg-brand hover:text-white h-9 px-4 text-xs font-bold">
+            Set Up Admin
+          </button>
           <button @click="editCampus(campus)" class="btn btn-secondary h-9 px-4 text-xs font-medium">
             Edit
           </button>
@@ -71,6 +74,44 @@
     </Modal>
 
     <ConfirmDialog :show="showDelete" title="Delete Campus" :message="'Are you sure you want to delete \'' + (deletingCampus?.name) + '\'?'" confirmText="Delete" variant="danger" @confirm="deleteCampus" @cancel="showDelete = false" />
+
+    <!-- Set Up Admin Modal -->
+    <Modal :show="showSetUpAdmin" title="Assign Campus Admin" @close="showSetUpAdmin = false">
+      <form @submit.prevent="saveAdmin" class="space-y-6 p-1">
+        <div class="p-4 bg-brand/5 border border-brand/10 rounded-2xl mb-4">
+           <p class="text-xs text-brand font-bold tracking-wide mb-1">Target Campus</p>
+           <h4 class="text-lg font-bold text-slate-800">{{ targetCampus?.name }}</h4>
+        </div>
+
+        <div class="space-y-4">
+          <div class="space-y-1.5">
+            <label class="block text-xs font-bold text-slate-500 ml-1">Admin Full Name *</label>
+            <input v-model="adminForm.name" type="text" required placeholder="e.g. Dr. Jane Smith" class="input h-12 font-medium" />
+          </div>
+          <div class="space-y-1.5">
+            <label class="block text-xs font-bold text-slate-500 ml-1">Admin Email *</label>
+            <input v-model="adminForm.email" type="email" required placeholder="admin@university.edu" class="input h-12 font-medium" />
+          </div>
+          <div class="space-y-1.5">
+            <label class="block text-xs font-bold text-slate-500 ml-1">Default Password *</label>
+            <input v-model="adminForm.password" type="password" required class="input h-12 font-medium" />
+          </div>
+        </div>
+
+        <div class="p-4 bg-slate-50 rounded-2xl">
+          <p class="text-xs text-slate-500 leading-relaxed">
+            This user will be granted the <strong>campus_admin</strong> role. They will have control over research data and faculty hierarchies within this campus.
+          </p>
+        </div>
+
+        <div class="flex justify-end gap-3 pt-6 border-t border-slate-100">
+          <button type="button" @click="showSetUpAdmin = false" class="btn btn-secondary h-11 px-6">Discard</button>
+          <button type="submit" class="btn btn-primary h-11 px-6" :disabled="submittingAdmin">
+            {{ submittingAdmin ? 'Creating...' : 'Create & Assign Role' }}
+          </button>
+        </div>
+      </form>
+    </Modal>
   </div>
 </template>
 
@@ -88,11 +129,67 @@ const campuses = ref([]); const loading = ref(true); const universities = ref([]
 const showCreate = ref(false); const editingCampus = ref(null); const showDelete = ref(false); const deletingCampus = ref(null)
 const form = reactive({ name: '', code: '', university_id: '' })
 
+// Admin setup state
+const showSetUpAdmin = ref(false); const targetCampus = ref(null); const submittingAdmin = ref(false)
+const adminForm = reactive({ name: '', email: '', password: '' })
+
 async function fetchData() { loading.value = true; try { const cRes = await api.get('/campuses'); const uRes = await api.get('/universities'); campuses.value = cRes.data; universities.value = uRes.data } catch (e) {} finally { loading.value = false } }
 function editCampus(c) { editingCampus.value = c; Object.assign(form, { name: c.name, code: c.code, university_id: c.university_id || '' }) }
 function closeModal() { showCreate.value = false; editingCampus.value = null; Object.assign(form, { name: '', code: '', university_id: '' }) }
 function confirmDelete(c) { deletingCampus.value = c; showDelete.value = true }
 async function saveCampus() { try { const payload = { ...form, university_id: form.university_id || null }; if (editingCampus.value) await api.put(`/campuses/${editingCampus.value.id}`, payload); else await api.post('/campuses', payload); notif.success(editingCampus.value ? 'Updated!' : 'Created!'); closeModal(); fetchData() } catch (err) { notif.error('Failed') } }
 async function deleteCampus() { try { await api.delete(`/campuses/${deletingCampus.value.id}`); notif.success('Deleted!'); showDelete.value = false; fetchData() } catch (err) { notif.error('Failed') } }
+
+function openSetUpAdmin(campus) {
+  targetCampus.value = campus
+  showSetUpAdmin.value = true
+  Object.assign(adminForm, { name: '', email: '', password: '' })
+}
+
+async function saveAdmin() {
+  submittingAdmin.value = true
+  try {
+    let userId = null
+    // 1. Create User
+    try {
+      const res = await api.post('/users', {
+        ...adminForm,
+        password_confirmation: adminForm.password,
+        university_id: targetCampus.value.university_id,
+        is_active: true
+      })
+      userId = res.data.id
+    } catch (createErr) {
+      const errors = createErr.response?.data?.errors
+      if (errors?.email) {
+        const { data: usersData } = await api.get('/users', { params: { search: adminForm.email } })
+        const existing = (usersData.data || usersData).find(u => u.email === adminForm.email)
+        if (!existing) throw new Error('Email conflict, user not found.')
+        userId = existing.id
+        notif.info(`Reassigning role to existing user ${existing.name}`)
+      } else throw createErr
+    }
+
+    // 2. Assign Campus (Update user model)
+    await api.put(`/users/${userId}`, { 
+      campus_id: targetCampus.value.id,
+      university_id: targetCampus.value.university_id
+    })
+
+    // 3. Assign Role (campus_admin)
+    const { data: roles } = await api.get('/admin/roles')
+    const campusAdminRole = roles.find(r => r.name === 'campus_admin')
+    if (campusAdminRole) {
+      await api.post(`/users/${userId}/roles`, { role_id: campusAdminRole.id })
+    }
+
+    notif.success(`Campus Admin assigned to ${targetCampus.value.name}`)
+    showSetUpAdmin.value = false
+  } catch (err) {
+    notif.error(err.response?.data?.message || err.message || 'Failed to setup admin')
+  } finally {
+    submittingAdmin.value = false
+  }
+}
 onMounted(fetchData)
 </script>

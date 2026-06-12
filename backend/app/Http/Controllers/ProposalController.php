@@ -78,13 +78,29 @@ class ProposalController extends Controller
     public function store(StoreProposalRequest $request): JsonResponse
     {
         return DB::transaction(function () use ($request) {
+            $call = null;
+            if ($request->call_id) {
+                $call = \App\Models\Call::find($request->call_id);
+                if ($call && $call->deadline < now()) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'call_id' => 'The deadline for this call has passed.'
+                    ]);
+                }
+            }
+
+            $academicYearId = $request->academic_year_id;
+            if (!$academicYearId) {
+                $academicYearId = \App\Models\AcademicYear::where('is_current', true)->first()?->id;
+            }
+
             $proposal = Proposal::create([
-                ...$request->safe()->except(['investigators', 'proposal_file']),
+                ...$request->safe()->except(['investigators', 'proposal_file', 'ethics_file', 'academic_year_id']),
                 'submitted_by' => $request->user()->id,
                 'submitted_at'  => now(),
-                'status_id'     => ProposalStatus::where('name', 'draft')->first()->id ?? 1,
-                // Auto‑set research centre from the user's primary centre
-                'research_center_id' => $request->user()->research_center_id,
+                'status_id'     => ProposalStatus::where('name', 'submitted')->first()->id ?? 1,
+                'academic_year_id' => $academicYearId,
+                // Inherit center from call if available, else use user's primary
+                'research_center_id' => $call?->research_center_id ?? $request->user()->research_center_id,
             ]);
 
             // Handle file upload
@@ -93,6 +109,14 @@ class ProposalController extends Controller
                     $request->file('proposal_file'), $request->user()->id, false
                 );
                 $proposal->update(['file_id' => $file->id]);
+            }
+
+            // Handle ethics file
+            if ($request->hasFile('ethics_file')) {
+                $ethicsFile = $this->fileService->upload(
+                    $request->file('ethics_file'), $request->user()->id, false
+                );
+                $proposal->update(['ethics_file_id' => $ethicsFile->id]);
             }
 
             // Attach investigators
@@ -154,6 +178,8 @@ class ProposalController extends Controller
             $validated = $request->validated();
             $investigators = $validated['investigators'] ?? null;
             unset($validated['investigators']);
+            unset($validated['proposal_file']);
+            unset($validated['ethics_file']);
 
             $proposal->update($validated);
 
@@ -163,6 +189,13 @@ class ProposalController extends Controller
                     $request->file('proposal_file'), $request->user()->id, false
                 );
                 $proposal->update(['file_id' => $file->id]);
+            }
+
+            if ($request->hasFile('ethics_file')) {
+                $ethicsFile = $this->fileService->upload(
+                    $request->file('ethics_file'), $request->user()->id, false
+                );
+                $proposal->update(['ethics_file_id' => $ethicsFile->id]);
             }
 
             // Replace investigators if provided
@@ -203,6 +236,16 @@ class ProposalController extends Controller
         $this->authorize('submit', $proposal);
         $this->proposalService->submit($proposal, $request->user());
         return response()->json(['message' => 'Proposal submitted successfully.', 'proposal' => $proposal]);
+    }
+
+    /**
+     * Run automated institutional checks (admin).
+     */
+    public function runChecks(Request $request, Proposal $proposal): JsonResponse
+    {
+        $this->authorize('update', $proposal);
+        $this->proposalService->runChecks($proposal, $request->user());
+        return response()->json(['message' => 'Background checks initiated.', 'proposal' => $proposal->fresh('status')]);
     }
 
     /**

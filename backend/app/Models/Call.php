@@ -22,6 +22,7 @@ class Call extends Model
         'status_id',
         'academic_year_id',
         'guideline_file_id',
+        'community_problem_id',
         'university_id',
         'research_center_id',
         'campus_id',
@@ -46,6 +47,11 @@ class Call extends Model
     public function academicYear(): BelongsTo
     {
         return $this->belongsTo(AcademicYear::class);
+    }
+
+    public function communityProblem(): BelongsTo
+    {
+        return $this->belongsTo(CommunityProblem::class, 'community_problem_id');
     }
 
     public function guidelineFile(): BelongsTo

@@ -38,7 +38,14 @@ class AuthController extends Controller
         $token = $user->createToken('auth_token')->plainTextToken;
 
         return response()->json([
-            'user' => $user->load('roles.permissions', 'expertise'),
+            'user' => $user->load(
+                'roles.permissions',
+                'department.faculty.campus.university',
+                'university',
+                'researchCenter',
+                'profileImage',
+                'expertise'
+            ),
             'access_token' => $token,
             'token_type' => 'Bearer',
         ]);
@@ -111,6 +118,13 @@ class AuthController extends Controller
 
     public function user(Request $request): JsonResponse
     {
-        return response()->json($request->user()->load('roles.permissions', 'department.faculty', 'profileImage', 'expertise'));
+        return response()->json($request->user()->load(
+            'roles.permissions',
+            'department.faculty.campus.university',
+            'university',
+            'researchCenter',
+            'profileImage',
+            'expertise'
+        ));
     }
 }

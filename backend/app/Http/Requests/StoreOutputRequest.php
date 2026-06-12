@@ -28,6 +28,9 @@ class StoreOutputRequest extends FormRequest
             'academic_year_id' => 'nullable|exists:academic_years,id',
             'budget' => 'nullable|numeric|min:0',
             'research_center_id' => 'nullable|exists:research_centers,id',
+            'participants' => 'nullable|array',
+            'participants.*.user_id' => 'nullable|exists:users,id',
+            'participants.*.participant_type_id' => 'required|exists:participant_types,id',
         ];
     }
 }

@@ -84,4 +84,25 @@ class Output extends Model
                     ->withPivot('created_at')
                     ->using(OutputFile::class);
     }
+
+    public function participants(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'output_participants', 'output_id', 'user_id')
+                    ->withPivot('participant_type_id')
+                    ->withTimestamps()
+                    ->using(OutputParticipant::class);
+    }
+
+    public function participantsWithType(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'output_participants', 'output_id', 'user_id')
+                    ->withPivot('participant_type_id')
+                    ->withTimestamps()
+                    ->using(OutputParticipant::class);
+    }
+
+    public function participantEntries(): HasMany
+    {
+        return $this->hasMany(OutputParticipant::class);
+    }
 }

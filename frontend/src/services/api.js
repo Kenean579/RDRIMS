@@ -6,8 +6,9 @@ const CACHE_DURATION = 50000 // 50 seconds cache duration
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api',
-  headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
-  timeout: 30000,
+  headers: { 'Accept': 'application/json' },
+  timeout: 60000,
+  withCredentials: true,
   // Add compression support
   decompress: true,
   // Optimize connection pooling
@@ -15,9 +16,9 @@ const api = axios.create({
   httpsAgent: undefined,
   // Enable response caching for GET requests
   maxRedirects: 2,
-  // Optimize network performance
-  maxContentLength: 10 * 1024 * 1024, // 10MB
-  maxBodyLength: 10 * 1024 * 1024, // 10MB
+  // Optimize network performance for uploads
+  maxContentLength: 50 * 1024 * 1024, // 50MB
+  maxBodyLength: 50 * 1024 * 1024, // 50MB
 })
 
 import { useContextStore } from '@/stores/context'

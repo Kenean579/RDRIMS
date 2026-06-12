@@ -22,6 +22,11 @@ class UpdateCallRequest extends FormRequest
             'status_id' => 'nullable|exists:call_statuses,id',
             'thematic_areas' => 'nullable|string',
             'guideline_file_id' => 'nullable|exists:files,id',
+            'university_id' => 'nullable|exists:universities,id',
+            'campus_id' => 'nullable|exists:campuses,id',
+            'faculty_id' => 'nullable|exists:faculties,id',
+            'department_id' => 'nullable|exists:departments,id',
+            'research_center_id' => 'nullable|exists:research_centers,id',
         ];
     }
 }
