@@ -130,6 +130,12 @@ class DashboardController extends Controller
             
             'university_stats' => $universityStats,
             'status_breakdown' => $statusBreakdown,
+            'monthly_trend' => Proposal::hierarchical($user, 'submitted_by')
+                ->where('created_at', '>=', now()->subMonths(6))
+                ->select(DB::raw('DATE_FORMAT(created_at, "%b") as month'), DB::raw('count(*) as count'), DB::raw('MONTH(created_at) as month_num'))
+                ->groupBy('month', 'month_num')
+                ->orderBy('month_num')
+                ->get(),
             'recent_proposals' => Proposal::hierarchical($user, 'submitted_by')
                 ->with(['submittedBy', 'status'])
                 ->latest()->limit(8)->get(),
@@ -284,6 +290,12 @@ private function userDashboard(User $user): JsonResponse
             'draft_count' => $user->submittedProposals()->whereHas('status', fn($q) => $q->where('name', 'draft'))->count(),
             'publications_count' => $user->publications()->count(),
             'status_breakdown' => $statusBreakdown,
+            'monthly_trend' => Proposal::where('submitted_by', $user->getKey())
+                ->where('created_at', '>=', now()->subMonths(6))
+                ->select(DB::raw('DATE_FORMAT(created_at, "%b") as month'), DB::raw('count(*) as count'), DB::raw('MONTH(created_at) as month_num'))
+                ->groupBy('month', 'month_num')
+                ->orderBy('month_num')
+                ->get(),
             'recent_proposals' => $user->submittedProposals()->with('status')->latest()->limit(8)->get(),
         ]);
     }

@@ -57,7 +57,7 @@
           </div>
           <span class="text-xs font-bold text-slate-900  tracking-widest group-hover:text-brand transition-colors">{{ exp.name }}</span>
           
-          <div v-if="auth.hasRole('super_admin')" class="flex items-center gap-1 pl-4 ml-2 opacity-0 group-hover:opacity-100 transition-opacity translate-x-2 group-hover:translate-x-0 transition-all duration-300" style="border-left: 1px solid #f1f5f9">
+          <div v-if="auth.hasRole('super_admin')" class="flex items-center gap-1 pl-4 ml-2 opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 transition-all duration-300" style="border-left: 1px solid #f1f5f9">
             <button @click="editItem(exp)" class="w-8 h-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-brand hover:bg-brand/5 transition-all" title="Edit Domain">
               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
             </button>
@@ -181,7 +181,10 @@ onMounted(fetchExpertise)
 </script>
 
 <style scoped>
-.card { @apply rounded-[2.5rem]; background: #fff; border: 1px solid #e8ecf1; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
-.btn { @apply inline-flex items-center justify-center transition-all active:scale-95 disabled:opacity-50; border-radius: 1rem; }
-.input { @apply w-full outline-none focus:ring-4 transition-all; background: #f8fafc; border: 1px solid #f1f5f9; border-radius: 1rem; padding-left: 1.25rem; padding-right: 1.25rem; box-shadow: 0 0 0 4px var(--color-brand-light); font-size: 0.875rem; }
+.card { border-radius: 2.5rem; background: #fff; border: 1px solid #e8ecf1; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
+.btn { display: inline-flex; align-items: center; justify-content: center; transition: all 150ms ease; border-radius: 1rem; }
+.btn:active { transform: scale(0.95); }
+.btn:disabled { opacity: 0.5; }
+.input { width: 100%; outline: none; transition: all 150ms ease; background: #f8fafc; border: 1px solid #f1f5f9; border-radius: 1rem; padding-left: 1.25rem; padding-right: 1.25rem; font-size: 0.875rem; }
+.input:focus { border-color: var(--color-brand); background: #fff; box-shadow: 0 0 0 4px var(--color-brand-light); }
 </style>

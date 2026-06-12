@@ -80,10 +80,10 @@ const routes = [
       // Administration
       { path: 'users', name: 'Users', component: () => import('@/views/users/UserListView.vue'), meta: { title: 'Users', roles: ['super_admin', 'research_admin', 'campus_admin', 'faculty_admin', 'department_head', 'director'] } },
       { path: 'users/:id', name: 'UserDetail', component: () => import('@/views/users/UserDetailView.vue'), meta: { title: 'User Detail', roles: ['super_admin', 'research_admin', 'campus_admin', 'faculty_admin', 'department_head', 'director'] } },
-      { path: 'roles', name: 'Roles', component: () => import('@/views/roles/RoleListView.vue'), meta: { title: 'Roles', roles: ['super_admin','research_admin'] } },
+      { path: 'roles', name: 'Roles', component: () => import('@/views/roles/RoleListView.vue'), meta: { title: 'Roles', roles: ['super_admin'] } },
       { path: 'institution/roles', name: 'InstitutionRoles', component: () => import('@/views/roles/InstitutionRoleListView.vue'), meta: { title: 'University Roles', roles: ['research_admin','campus_admin','faculty_admin'] } },
       { path: 'institution/permissions', name: 'InstitutionPermissions', component: () => import('@/views/roles/InstitutionPermissionListView.vue'), meta: { title: 'Institution Permissions', roles: ['research_admin','campus_admin','faculty_admin'] } },
-      { path: 'permissions', name: 'Permissions', component: () => import('@/views/permissions/PermissionListView.vue'), meta: { title: 'Permissions', roles: ['super_admin','research_admin'] } },
+      { path: 'permissions', name: 'Permissions', component: () => import('@/views/permissions/PermissionListView.vue'), meta: { title: 'Permissions', roles: ['super_admin'] } },
       { path: 'audit-logs', name: 'AuditLogs', component: () => import('@/views/audit/AuditLogListView.vue'), meta: { title: 'Audit Logs', roles: ['super_admin', 'research_admin', 'campus_admin', 'faculty_admin', 'department_head', 'director'] } },
       
       // Finance & Ethics

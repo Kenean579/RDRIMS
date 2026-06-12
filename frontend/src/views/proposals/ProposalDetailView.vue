@@ -87,7 +87,7 @@
         <!-- Main Content -->
         <div class="lg:col-span-2 space-y-8">
           <!-- Quick Summary -->
-          <div class="card p-8/20">
+          <div class="card p-8">
             <h2 class="text-xs font-medium text-slate-400 mb-5 flex items-center gap-2">
               <span class="w-1 h-3 bg-brand rounded-full"></span>
               Institutional Metadata

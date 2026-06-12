@@ -210,8 +210,8 @@ async function saveAdmin() {
       }
     }
 
-    // Fetch roles from admin endpoint (available to super_admin)
-    const { data: rolesData } = await api.get('/admin/roles')
+    // Fetch roles from global endpoint
+    const { data: rolesData } = await api.get('/roles')
     // Handle both wrapped and unwrapped responses
     const roles = Array.isArray(rolesData) ? rolesData : (rolesData.data || [])
     const researchAdminRole = roles.find(r => r.name === 'research_admin')

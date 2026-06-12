@@ -365,7 +365,7 @@ async function saveAdmin() {
     })
 
     // 3. Assign Role (director)
-    const { data: roles } = await api.get('/admin/roles')
+    const { data: roles } = await api.get('/roles')
     const directorRole = roles.find(r => r.name === 'director')
     if (directorRole) {
       await api.post(`/users/${userId}/roles`, { role_id: directorRole.id })
