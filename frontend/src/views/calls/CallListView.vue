@@ -32,7 +32,7 @@
     </div>
 
     <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-      <div v-for="call in calls" :key="call.id" class="card group card-hover flex flex-col p-8/20 transition-all">
+      <div v-for="call in calls" :key="call.id" class="card group card-hover flex flex-col p-8 transition-all">
         <div class="flex flex-col sm:flex-row justify-between items-start gap-4 mb-6">
           <StatusBadge :status="call.status?.name || 'open'" />
           <div class="flex items-center gap-2 text-xs font-medium text-slate-400 bg-slate-100 px-3 py-1.5 rounded-2xl">
