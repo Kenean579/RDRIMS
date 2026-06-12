@@ -22,7 +22,7 @@ class StoreOutputRequest extends FormRequest
             'abstract' => 'nullable|string',
             'partner_id' => 'nullable|exists:partners,id',
             'project_id' => 'nullable|exists:projects,id',
-            'status_id' => 'required|exists:output_statuses,id',
+            'status_id' => 'sometimes|nullable|exists:output_statuses,id',
             'start_date' => 'nullable|date',
             'end_date' => 'nullable|date|after_or_equal:start_date',
             'academic_year_id' => 'nullable|exists:academic_years,id',

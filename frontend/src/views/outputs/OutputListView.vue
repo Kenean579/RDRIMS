@@ -90,7 +90,7 @@
             <div v-if="form.participant_type === 'student'" class="grid grid-cols-1 md:grid-cols-2 gap-6">
               <div>
                 <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Level <span class="text-rose-500">*</span></label>
-                <select v-model="form.level_id" required class="input h-12 font-bold">
+                <select v-model="form.student_level_id" required class="input h-12 font-bold">
                   <option value="">Select level</option>
                   <option v-for="l in studentLevels" :key="l.id" :value="l.id">{{ l.name }}</option>
                 </select>
@@ -186,7 +186,7 @@ const pagination = reactive({ current_page: 1, last_page: 1, total: 0 })
 const search = ref(''); const statusFilter = ref(''); const categoryFilter = ref('')
 const outputStatuses = ref([]); const outputCategories = ref([]); const outputSubtypes = ref([]); const studentLevels = ref([]); const users = ref([]); const participantTypes = ref([])
 const showCreate = ref(false); const editingOutput = ref(null); const showDelete = ref(false); const deletingOutput = ref(null)
-const form = reactive({ title: '', abstract: '', category_id: '', subtype_id: '', participant_type: 'student', level_id: '', participants: [] })
+const form = reactive({ title: '', abstract: '', category_id: '', subtype_id: '', participant_type: 'student', student_level_id: '', participants: [] })
 let searchTimer = null
 
 async function fetchOutputs(page = 1) {
@@ -207,7 +207,7 @@ function debounceSearch() { clearTimeout(searchTimer); searchTimer = setTimeout(
 
 function closeModal() {
   showCreate.value = false; editingOutput.value = null
-  Object.assign(form, { title: '', abstract: '', category_id: '', subtype_id: '', participant_type: 'student', level_id: '', participants: [] })
+  Object.assign(form, { title: '', abstract: '', category_id: '', subtype_id: '', participant_type: 'student', student_level_id: '', participants: [] })
 }
 
 function addParticipant() { 
@@ -224,7 +224,7 @@ function editOutput(o) {
     category_id: o.category_id,
     subtype_id: o.subtype_id,
     participant_type: o.participant_type || 'student',
-    level_id: o.level_id || '',
+    student_level_id: o.student_level_id || '',
     participants: (o.participants || []).map(p => ({ user_id: p.user_id || '', name: p.name || '', email: p.email || '' }))
   })
 }
