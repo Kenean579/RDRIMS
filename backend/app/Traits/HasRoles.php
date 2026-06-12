@@ -19,6 +19,15 @@ trait HasRoles
 
     public function isAdmin(): bool
     {
-        return $this->hasRole('super_admin', 'research_admin', 'admin');
+        return $this->hasRole(
+            'super_admin', 
+            'research_admin', 
+            'campus_admin', 
+            'faculty_admin', 
+            'department_head', 
+            'director',
+            'finance_officer',
+            'ethics_officer'
+        );
     }
 }

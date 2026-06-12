@@ -26,11 +26,37 @@ class CallController extends Controller
                   ->orWhere('thematic_areas', 'LIKE', '%' . $request->input('search') . '%')
             )
             // Apply hierarchical filters if provided
-            ->when($request->filled('university_id'), fn($q) => $q->where('university_id', $request->input('university_id')))
-            ->when($request->filled('campus_id'), fn($q) => $q->where('campus_id', $request->input('campus_id')))
-            ->when($request->filled('faculty_id'), fn($q) => $q->where('faculty_id', $request->input('faculty_id')))
-            ->when($request->filled('department_id'), fn($q) => $q->where('department_id', $request->input('department_id')))
-            ->when($request->filled('research_center_id'), fn($q) => $q->where('research_center_id', $request->input('research_center_id')))
+            // Apply hierarchical filters if provided (include NULL for global visibility)
+            ->when($request->filled('university_id'), fn($q) => 
+                $q->where(function($sq) use ($request) {
+                    $sq->where('university_id', $request->input('university_id'))
+                       ->orWhereNull('university_id');
+                })
+            )
+            ->when($request->filled('campus_id'), fn($q) => 
+                $q->where(function($sq) use ($request) {
+                    $sq->where('campus_id', $request->input('campus_id'))
+                       ->orWhereNull('campus_id');
+                })
+            )
+            ->when($request->filled('faculty_id'), fn($q) => 
+                $q->where(function($sq) use ($request) {
+                    $sq->where('faculty_id', $request->input('faculty_id'))
+                       ->orWhereNull('faculty_id');
+                })
+            )
+            ->when($request->filled('department_id'), fn($q) => 
+                $q->where(function($sq) use ($request) {
+                    $sq->where('department_id', $request->input('department_id'))
+                       ->orWhereNull('department_id');
+                })
+            )
+            ->when($request->filled('research_center_id'), fn($q) => 
+                $q->where(function($sq) use ($request) {
+                    $sq->where('research_center_id', $request->input('research_center_id'))
+                       ->orWhereNull('research_center_id');
+                })
+            )
             // Scoping by user role (if no explicit filter is already applied)
             ->when(!$request->hasAny(['university_id','campus_id','faculty_id','department_id','research_center_id']),
                 function ($query) use ($user) {
@@ -85,10 +111,24 @@ class CallController extends Controller
     public function store(StoreCallRequest $request): JsonResponse
     {
         $user = $request->user();
+        $this->authorize('create', Call::class);
         $this->validateScopeForRole($request, $user);
 
+        $validated = $request->validated();
+        
+        // Ensure a status is set if not provided (non-nullable in DB)
+        if (empty($validated['status_id'])) {
+            $defaultStatus = \App\Models\CallStatus::where('name', 'open')->first();
+            $validated['status_id'] = $defaultStatus ? $defaultStatus->id : 2; // Default to 2 (open)
+        }
+
+        // Ensure thematic_areas is not null (required in DB)
+        if (empty($validated['thematic_areas'])) {
+            $validated['thematic_areas'] = 'General';
+        }
+
         $call = Call::create([
-            ...$request->validated(),
+            ...$validated,
             'created_by' => $user->id,
         ]);
 
@@ -109,6 +149,7 @@ class CallController extends Controller
      */
     public function update(UpdateCallRequest $request, Call $call): JsonResponse
     {
+        $this->authorize('update', $call);
         $call->update($request->validated());
         return response()->json($call);
     }
@@ -118,6 +159,7 @@ class CallController extends Controller
      */
     public function destroy(Call $call): JsonResponse
     {
+        $this->authorize('delete', $call);
         $call->delete();
         return response()->json(['message' => 'Call deleted.']);
     }
@@ -132,9 +174,9 @@ class CallController extends Controller
         }
 
         // Helper to extract the user's institution chain
-        $userUniversity = $user->department?->faculty?->campus?->university_id;
-        $userCampus    = $user->department?->faculty?->campus_id;
-        $userFaculty   = $user->department?->faculty_id;
+        $userUniversity = $user->university_id ?: $user->department?->faculty?->campus?->university_id;
+        $userCampus    = $user->campus_id ?: $user->department?->faculty?->campus_id;
+        $userFaculty   = $user->faculty_id ?: $user->department?->faculty_id;
         $userDept      = $user->department_id;
 
         if ($user->hasRole('research_admin')) {
