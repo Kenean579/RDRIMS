@@ -12,9 +12,10 @@ class Notification extends Model
 
     public $timestamps = false; // only created_at and read_at
 
-    protected $fillable = ['user_id', 'type', 'message', 'read_at', 'created_at'];
+    protected $fillable = ['user_id', 'type', 'message', 'data', 'priority', 'read_at', 'created_at'];
 
     protected $casts = [
+        'data'       => 'array',
         'read_at'    => 'datetime',
         'created_at' => 'datetime',
     ];

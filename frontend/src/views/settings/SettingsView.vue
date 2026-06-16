@@ -3,13 +3,13 @@
     <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
       <div>
         <h1 class="text-xl font-bold text-slate-900 tracking-tight">System Settings</h1>
-        <p class="text-slate-500 font-medium mt-1">Configure global platform variables and institutional branding.</p>
+        <p class="text-slate-500 font-medium mt-1 break-words">Configure global platform variables and institutional branding.</p>
       </div>
       <div class="flex gap-3">
         <router-link to="/app/settings/lookups" class="btn btn-secondary h-11 px-6 text-xs font-medium border border-slate-100">
           Advanced Lookups
         </router-link>
-        <button @click="saveAll" class="btn btn-primary h-11 px-5 text-xs font-medium">
+        <button @click="saveAll" class="btn btn-primary h-11 px-5 text-xs font-medium hover:bg-blue-600 transition duration-300">
           Save All Changes
         </button>
       </div>
@@ -18,6 +18,16 @@
     <div v-if="loading" class="card p-8 flex justify-center"><div class="animate-spin rounded-full h-10 w-10 border-b-2 border-brand"></div></div>
     
     <div v-else class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      <!-- System Health Banner -->
+      <div class="lg:col-span-3 space-y-6">
+        <div class="card p-4 bg-yellow-50 border border-yellow-200 rounded-lg" v-if="systemHealth.warnings && systemHealth.warnings.length">
+          <h3 class="text-sm font-bold text-yellow-800">System Warnings</h3>
+          <ul class="list-disc list-inside text-xs text-yellow-700 mt-1">
+            <li v-for="warn in systemHealth.warnings" :key="warn">{{ warn }}</li>
+          </ul>
+        </div>
+      </div>
+
       <!-- Branding -->
       <div class="lg:col-span-1 space-y-8 font-bold">
         <div class="card p-8">
@@ -50,17 +60,7 @@
             Operational Tuning
           </h2>
           <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div>
-              <label class="block text-xs text-slate-500 mb-2 ml-1">Default Proposal Budget Cap</label>
-              <div class="relative">
-                <span class="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 text-xs">ETB</span>
-                <input v-model="settings.default_budget_cap" type="number" class="input h-12 pl-12 font-bold" />
-              </div>
-            </div>
-            <div>
-              <label class="block text-xs text-slate-500 mb-2 ml-1">Review Period (Days)</label>
-              <input v-model="settings.review_period_days" type="number" class="input h-12 font-bold" />
-            </div>
+
             <div class="md:col-span-2">
                <label class="flex items-center gap-3 p-4 bg-slate-50 border border-slate-100 rounded-2xl cursor-pointer hover:bg-white transition-all">
                  <input v-model="settings.allow_public_registration" type="checkbox" class="w-5 h-5 rounded border-slate-300 text-brand focus:ring-brand" />
@@ -81,8 +81,6 @@
             </div>
           </div>
         </div>
-
-        <!-- PlagiarismCheck.org Settings -->
         <div class="card p-8">
           <h2 class="text-xs font-medium text-slate-400 mb-6 flex items-center gap-2">
             <span class="w-1 h-3 bg-indigo-500 rounded-full"></span>
@@ -105,19 +103,7 @@
         </div>
 
         <!-- Raw Metadata -->
-        <div class="card p-8 bg-slate-900 border-0 shadow-2xl relative overflow-hidden">
-          <div class="absolute right-0 top-0 w-32 h-32 bg-brand/10 rounded-full blur-3xl"></div>
-          <h2 class="text-xs font-medium text-slate-500 mb-6 flex items-center gap-2">
-            <span class="w-1 h-3 bg-brand rounded-full"></span>
-            Internal Registry (Advanced)
-          </h2>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-             <div v-for="(val, key) in rawSettings" :key="key" class="bg-slate-800 p-3 rounded-2xl border border-slate-700/50">
-               <p class="text-xs font-medium text-slate-500 mb-1">{{ key }}</p>
-               <p class="text-xs font-bold text-white truncate">{{ val }}</p>
-             </div>
-          </div>
-        </div>
+        
       </div>
     </div>
   </div>
@@ -134,19 +120,25 @@ const settings = reactive({
   app_name: 'RDRIMS',
   institution_domain: '',
   support_email: '',
-  default_budget_cap: 500000,
-  review_period_days: 14,
   allow_public_registration: true,
   maintenance_mode: false,
   plagiarismcheck_group_token: '',
   plagiarismcheck_author_email: '',
   plagiarismcheck_api_base_url: 'https://plagiarismcheck.org/api/v1'
 })
+
+// System health data (including SMTP status)
+const systemHealth = ref({})
+
 const rawSettings = ref({})
 
 async function fetchSettings() {
   loading.value = true
   try {
+    // Load system health first
+    const healthRes = await api.get('/system-health')
+    systemHealth.value = healthRes.data || healthRes
+
     const { data } = await api.get('/settings')
     const items = Array.isArray(data) ? data : (data.data || [])
     
@@ -159,7 +151,11 @@ async function fetchSettings() {
       rawSettings.value[s.key] = s.value
     })
   } catch (err) {
-    notif.error('Failed to load settings')
+    if (err.response && err.response.status === 403) {
+      notif.error('Access denied: you do not have permission to view system settings.')
+    } else {
+      notif.error('Failed to load settings')
+    }
   } finally {
     loading.value = false
   }

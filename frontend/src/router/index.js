@@ -101,6 +101,7 @@ const routes = [
       { path: 'community-problems', name: 'Community', component: () => import('@/views/community/CommunityProblemListView.vue'), meta: { title: 'Community' } },
       { path: 'reports', name: 'Reports', component: () => import('@/views/reports/ReportView.vue'), meta: { title: 'Reports', roles: ['super_admin', 'research_admin', 'campus_admin', 'faculty_admin', 'director', 'department_head', 'finance_officer'] } },
       { path: 'settings', name: 'Settings', component: () => import('@/views/settings/SettingsView.vue'), meta: { title: 'Settings', roles: ['super_admin'] } },
+      { path: 'email-config', name: 'EmailConfiguration', component: () => import('@/views/settings/EmailConfigurationView.vue'), meta: { title: 'Email Configuration', roles: ['super_admin'] } },
       { path: 'settings/lookups', name: 'LookupManager', component: () => import('@/views/settings/LookupManagerView.vue'), meta: { title: 'Lookups', roles: ['super_admin'] } },
       { path: 'files', name: 'Files', component: () => import('@/views/files/FileListView.vue'), meta: { title: 'Files' } },
       { path: 'files/:id', name: 'FileDetail', component: () => import('@/views/files/FileDetailView.vue'), meta: { title: 'File Detail' } },

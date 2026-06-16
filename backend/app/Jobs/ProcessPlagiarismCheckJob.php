@@ -113,7 +113,7 @@ class ProcessPlagiarismCheckJob implements ShouldQueue
 
         } catch (\Exception $e) {
             $this->markFailed('Processing error: ' . $e->getMessage());
-            throw $e;
+            \Illuminate\Support\Facades\Log::error("Plagiarism check background job failed for Request ID: {$this->detectionRequest->id}. Error: " . $e->getMessage());
         }
     }
 

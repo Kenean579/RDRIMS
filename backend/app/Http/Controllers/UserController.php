@@ -54,7 +54,7 @@ class UserController extends Controller
         $this->authorize('update', $user);
         $user->update($request->validated());
 
-        if ($request->has('roles') && $request->user()->isAdmin()) {
+        if ($request->has('roles') && $request->user()->hasRole('super_admin')) {
             $user->roles()->sync($request->roles);
         }
 

@@ -40,7 +40,7 @@ class ProcessDetectionJob implements ShouldQueue
             ]);
         } catch (\Exception $e) {
             $this->detectionRequest->update(['status_id' => 4]); // failed
-            throw $e;
+            \Illuminate\Support\Facades\Log::error("Detection background job failed for Request ID: {$this->detectionRequest->id}. Error: " . $e->getMessage());
         }
     }
 }

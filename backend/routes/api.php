@@ -46,7 +46,9 @@ use App\Http\Controllers\ReviewCriterionController;
 use App\Http\Controllers\ReviewerProposalController;
 use App\Http\Controllers\RoleController;
 use App\Http\Controllers\SearchController;
+use App\Http\Controllers\InstitutionSettingController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\ThematicAreaController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\UniversityController;
 use App\Http\Controllers\UserController;
@@ -63,9 +65,19 @@ Route::post('login', [AuthController::class, 'login']);
 Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
 Route::post('reset-password', [AuthController::class, 'resetPassword']);
 
+// System Health
+Route::get('system/health', function () {
+    $mailConfigured = !empty(config('mail.mailers.smtp.host')) && config('mail.mailers.smtp.host') !== '127.0.0.1';
+    return response()->json([
+        'status' => 'ok',
+        'smtp_configured' => $mailConfigured,
+        'warnings' => $mailConfigured ? [] : ['SMTP is not configured properly. Email notifications will fail.']
+    ]);
+});
+
 // Lookups & settings (public read)
 Route::get('lookups/{table}', [LookupController::class, 'index']);
-Route::get('settings', [SettingController::class, 'index']);
+Route::middleware(['auth:sanctum', 'role:super_admin,research_admin,campus_admin,faculty_admin,department_head'])->get('settings', [SettingController::class, 'index']);
 
 // Academic hierarchy (public read)
 Route::get('universities', [UniversityController::class, 'index']);
@@ -129,6 +141,17 @@ Route::middleware('auth:sanctum')->group(function () {
     // ── Audit logs ────────────────────────────────────────────────────────────
     Route::get('audit-logs', [AuditLogController::class, 'index'])
         ->middleware('role:super_admin,research_admin,campus_admin,faculty_admin,department_head,director');
+
+    // ── Super Admin Specific Routes ───────────────────────────────────────────
+    Route::middleware('role:super_admin')->group(function () {
+        // System Health
+        Route::get('system-health', [\App\Http\Controllers\HealthController::class, 'index']);
+        
+        // Email Configuration
+        Route::get('email-config', [\App\Http\Controllers\EmailConfigurationController::class, 'show']);
+        Route::post('email-config', [\App\Http\Controllers\EmailConfigurationController::class, 'update']);
+        Route::post('email-config/test', [\App\Http\Controllers\EmailConfigurationController::class, 'testEmail']);
+    });
 
     // ── Roles (read-only listing for all auth users, e.g. role-assignment dropdowns)
     Route::get('roles', [RoleController::class, 'index']);
@@ -194,10 +217,22 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('permissions', [\App\Http\Controllers\Institution\PermissionController::class, 'index']);
     });
 
-    // â”€â”€ Settings (write) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // ── Settings (write) ─────────────────────────────────────────────────────
+    Route::post('settings/bulk', [SettingController::class, 'bulk'])->middleware('role:super_admin');
     Route::post('settings', [SettingController::class, 'store'])->middleware('role:super_admin');
     Route::put('settings/{setting}', [SettingController::class, 'update'])->middleware('role:super_admin');
     Route::delete('settings/{setting}', [SettingController::class, 'destroy'])->middleware('role:super_admin');
+
+    // ── Institution Settings (org-level overrides) ──────────────────────────
+    Route::apiResource('institution-settings', InstitutionSettingController::class)
+        ->middleware('role:research_admin,campus_admin,faculty_admin,department_head,director');
+
+    // ── Thematic Areas ──────────────────────────────────────────────────────
+    Route::get('thematic-areas', [ThematicAreaController::class, 'index']);
+    Route::post('thematic-areas', [ThematicAreaController::class, 'store'])->middleware('role:research_admin');
+    Route::get('thematic-areas/{thematic_area}', [ThematicAreaController::class, 'show']);
+    Route::put('thematic-areas/{thematic_area}', [ThematicAreaController::class, 'update'])->middleware('role:research_admin');
+    Route::delete('thematic-areas/{thematic_area}', [ThematicAreaController::class, 'destroy'])->middleware('role:research_admin');
 
     // â”€â”€ Expertise â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     Route::get('expertise', [ExpertiseController::class, 'index']);
@@ -226,6 +261,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::post('proposals/{proposal}/files', [ProposalFileController::class, 'attach']);
     Route::delete('proposals/{proposal}/files/{file}', [ProposalFileController::class, 'detach']);
     Route::apiResource('proposals.investigators', ProposalInvestigatorController::class)->only(['index', 'store', 'destroy']);
+    Route::get('proposals/{proposal}/reviewers/recommendations', [ProposalReviewerController::class, 'recommendations']);
     Route::apiResource('proposals.reviewers', ProposalReviewerController::class)->only(['index', 'store', 'destroy']);
 
     

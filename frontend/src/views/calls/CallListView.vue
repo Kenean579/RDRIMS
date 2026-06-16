@@ -155,46 +155,80 @@
         <!-- Hierarchical Scope Fields -->
         <div class="bg-slate-50 rounded-2xl p-6 border border-slate-100 space-y-6">
           <h4 class="text-xs font-medium text-slate-400 border-b border-slate-100 pb-3">Scope & Targeting</h4>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            <div>
-              <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">University</label>
-              <select v-model="callForm.university_id" :disabled="auth.hasRole('research_admin','campus_admin','faculty_admin','director','department_head')" class="input h-12 font-bold" :class="{ 'bg-slate-100 cursor-not-allowed': auth.hasRole('research_admin','campus_admin','faculty_admin','director','department_head') }">
-                <option value="">All Universities</option>
-                <option v-for="u in universities" :key="u.id" :value="u.id">{{ u.name }}</option>
-              </select>
-              <p v-if="auth.hasRole('research_admin','campus_admin','faculty_admin','director','department_head')" class="text-xs text-slate-400 mt-1 ml-1">Auto-set by role</p>
-            </div>
+
+          <!-- Read-only hierarchy breadcrumb derived from auth context -->
+          <div v-if="userHierarchyBreadcrumb.length" class="flex items-center gap-2 flex-wrap bg-white rounded-xl px-4 py-3 border border-slate-200">
+            <svg class="w-4 h-4 text-slate-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+            <template v-for="(crumb, ci) in userHierarchyBreadcrumb" :key="ci">
+              <span class="text-xs font-bold text-slate-600">{{ crumb }}</span>
+              <svg v-if="ci < userHierarchyBreadcrumb.length - 1" class="w-3 h-3 text-slate-300 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </template>
+            <span class="ml-auto text-[10px] text-slate-400 font-medium italic">Auto-detected from your role</span>
+          </div>
+
+          <!-- Target scope selector -->
+          <div>
+            <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Target Scope *</label>
+            <select v-model="callForm.target_scope" class="input h-12 font-bold">
+              <option v-for="opt in availableTargetScopes" :key="opt.value" :value="opt.value">{{ opt.label }}</option>
+            </select>
+            <p class="text-[10px] text-slate-400 mt-1.5 ml-1 font-medium italic">Choose how broadly this call should be visible.</p>
+          </div>
+
+          <!-- Conditional child dropdowns based on selected scope -->
+          <div v-if="callForm.target_scope === 'campus'" class="transition-all">
+            <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Select Campus</label>
+            <select v-model="callForm.campus_id" class="input h-12 font-bold">
+              <option value="">Choose a campus...</option>
+              <option v-for="c in filteredCampuses" :key="c.id" :value="c.id">{{ c.name }}</option>
+            </select>
+          </div>
+          <div v-if="callForm.target_scope === 'faculty'" class="space-y-4 transition-all">
             <div>
               <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Campus</label>
-              <select v-model="callForm.campus_id" :disabled="auth.hasRole('campus_admin','faculty_admin','director','department_head')" class="input h-12 font-bold" :class="{ 'bg-slate-100 cursor-not-allowed': auth.hasRole('campus_admin','faculty_admin','director','department_head') }">
+              <select v-model="callForm.campus_id" class="input h-12 font-bold">
                 <option value="">All Campuses</option>
-                <option v-for="c in campuses" :key="c.id" :value="c.id">{{ c.name }}</option>
+                <option v-for="c in filteredCampuses" :key="c.id" :value="c.id">{{ c.name }}</option>
               </select>
-              <p v-if="auth.hasRole('campus_admin','faculty_admin','director','department_head')" class="text-xs text-slate-400 mt-1 ml-1">Auto-set by role</p>
+            </div>
+            <div>
+              <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Select Faculty</label>
+              <select v-model="callForm.faculty_id" class="input h-12 font-bold">
+                <option value="">Choose a faculty...</option>
+                <option v-for="f in filteredFaculties" :key="f.id" :value="f.id">{{ f.name }}</option>
+              </select>
+            </div>
+          </div>
+          <div v-if="callForm.target_scope === 'department'" class="space-y-4 transition-all">
+            <div>
+              <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Campus</label>
+              <select v-model="callForm.campus_id" class="input h-12 font-bold">
+                <option value="">All Campuses</option>
+                <option v-for="c in filteredCampuses" :key="c.id" :value="c.id">{{ c.name }}</option>
+              </select>
             </div>
             <div>
               <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Faculty</label>
-              <select v-model="callForm.faculty_id" :disabled="auth.hasRole('faculty_admin','director','department_head')" class="input h-12 font-bold" :class="{ 'bg-slate-100 cursor-not-allowed': auth.hasRole('faculty_admin','director','department_head') }">
+              <select v-model="callForm.faculty_id" class="input h-12 font-bold">
                 <option value="">All Faculties</option>
-                <option v-for="f in faculties" :key="f.id" :value="f.id">{{ f.name }}</option>
+                <option v-for="f in filteredFaculties" :key="f.id" :value="f.id">{{ f.name }}</option>
               </select>
-              <p v-if="auth.hasRole('faculty_admin','director','department_head')" class="text-xs text-slate-400 mt-1 ml-1">Auto-set by role</p>
             </div>
             <div>
-              <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Department</label>
-              <select v-model="callForm.department_id" :disabled="auth.hasRole('director','department_head')" class="input h-12 font-bold" :class="{ 'bg-slate-100 cursor-not-allowed': auth.hasRole('director','department_head') }">
-                <option value="">All Departments</option>
-                <option v-for="d in departments" :key="d.id" :value="d.id">{{ d.name }}</option>
+              <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Select Department</label>
+              <select v-model="callForm.department_id" class="input h-12 font-bold">
+                <option value="">Choose a department...</option>
+                <option v-for="d in filteredDepartments" :key="d.id" :value="d.id">{{ d.name }}</option>
               </select>
-              <p v-if="auth.hasRole('director','department_head')" class="text-xs text-slate-400 mt-1 ml-1">Auto-set by role</p>
             </div>
+          </div>
+          <div v-if="callForm.target_scope === 'research_center'" class="space-y-4 transition-all">
             <div>
-              <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Research Center</label>
-              <select v-model="callForm.research_center_id" :disabled="auth.hasRole('director','department_head')" class="input h-12 font-bold" :class="{ 'bg-slate-100 cursor-not-allowed': auth.hasRole('director','department_head') }">
-                <option value="">All Centers</option>
-                <option v-for="rc in researchCenters" :key="rc.id" :value="rc.id">{{ rc.name }}</option>
+              <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Select Research Center</label>
+              <select v-model="callForm.research_center_id" class="input h-12 font-bold">
+                <option value="">Choose a research center...</option>
+                <option v-for="rc in filteredResearchCenters" :key="rc.id" :value="rc.id">{{ rc.name }}</option>
               </select>
-              <p v-if="auth.hasRole('director','department_head')" class="text-xs text-slate-400 mt-1 ml-1">Auto-set by role</p>
             </div>
           </div>
         </div>
@@ -208,12 +242,17 @@
             </select>
           </div>
           <div>
-            <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Guideline (File Reference)</label>
+            <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Guideline (Select Existing File)</label>
             <select v-model="callForm.guideline_file_id" class="input h-12 font-bold">
               <option value="">No Guideline Attached</option>
               <option v-for="f in files" :key="f.id" :value="f.id">{{ f.original_filename }}</option>
             </select>
           </div>
+        </div>
+
+        <div>
+          <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Or Upload New Guideline Document</label>
+          <FileUpload v-model="guidelineUploadFile" @update:modelValue="onGuidelineFileChange" />
         </div>
         <div class="flex justify-end gap-4 pt-6 border-t border-slate-100">
           <button type="button" @click="closeCallModal" class="btn btn-secondary px-5 h-11 text-xs font-medium">Cancel</button>
@@ -227,7 +266,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, watch } from 'vue'
+import { ref, reactive, onMounted, watch, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationStore } from '@/stores/notification'
@@ -235,6 +274,7 @@ import api from '@/services/api'
 import StatusBadge from '@/components/StatusBadge.vue'
 import Modal from '@/components/Modal.vue'
 import EmptyState from '@/components/EmptyState.vue'
+import FileUpload from '@/components/FileUpload.vue'
 import { formatDate, formatCurrency } from '@/utils/formatters'
 
 const route = useRoute()
@@ -257,11 +297,142 @@ const departments = ref([])
 const researchCenters = ref([])
 const communityProblems = ref([])
 
+const guidelineUploadFile = ref(null)
+
 const callForm = reactive({
   title: '', description: '', deadline: '', budget_limit: null,
   academic_year_id: '', status_id: '', thematic_areas: '', guideline_file_id: '',
+  target_scope: 'organization', // 'organization' | 'campus' | 'faculty' | 'department' | 'research_center'
   university_id: '', campus_id: '', faculty_id: '', department_id: '', research_center_id: '',
   community_problem_id: ''
+})
+
+// ─── Computed: User hierarchy breadcrumb (read-only display) ───
+const userHierarchyBreadcrumb = computed(() => {
+  const user = auth.user
+  if (!user) return []
+  const crumbs = []
+
+  // Build from user data — use generic terms
+  if (user.university?.name || user.university_name) {
+    crumbs.push(user.university?.name || user.university_name)
+  }
+  if (user.department?.faculty?.campus?.name) {
+    crumbs.push(user.department.faculty.campus.name)
+  } else if (user.campus_name) {
+    crumbs.push(user.campus_name)
+  }
+  if (user.department?.faculty?.name) {
+    crumbs.push(user.department.faculty.name)
+  } else if (user.faculty_name) {
+    crumbs.push(user.faculty_name)
+  }
+  if (user.department?.name) {
+    crumbs.push(user.department.name)
+  } else if (user.department_name) {
+    crumbs.push(user.department_name)
+  }
+  if (user.research_centers?.length) {
+    crumbs.push(user.research_centers[0].name)
+  }
+
+  // If super_admin, show "Platform (All Organizations)"
+  if (auth.hasRole('super_admin') && crumbs.length === 0) {
+    crumbs.push('Platform (All Organizations)')
+  }
+
+  return crumbs
+})
+
+// ─── Computed: Available target scopes (based on user role) ───
+const availableTargetScopes = computed(() => {
+  const scopes = []
+  const scope = auth.userScope
+
+  // Everyone can target their entire org
+  scopes.push({ value: 'organization', label: 'Entire Organization' })
+
+  // Narrower scopes available based on user hierarchy level
+  if (['system', 'university', 'campus'].includes(scope) || auth.hasRole('super_admin')) {
+    scopes.push({ value: 'campus', label: 'Specific Campus' })
+  }
+  if (['system', 'university', 'campus', 'faculty'].includes(scope) || auth.hasRole('super_admin')) {
+    scopes.push({ value: 'faculty', label: 'Specific Faculty' })
+  }
+  if (['system', 'university', 'campus', 'faculty', 'department'].includes(scope) || auth.hasRole('super_admin')) {
+    scopes.push({ value: 'department', label: 'Specific Department' })
+  }
+  // Research center is always an option
+  scopes.push({ value: 'research_center', label: 'Specific Research Center' })
+
+  return scopes
+})
+
+const filteredCampuses = computed(() => {
+  if (!callForm.university_id) return campuses.value
+  return campuses.value.filter(c => c.university_id == callForm.university_id)
+})
+
+const filteredFaculties = computed(() => {
+  if (!callForm.campus_id) return faculties.value
+  return faculties.value.filter(f => f.campus_id == callForm.campus_id)
+})
+
+const filteredDepartments = computed(() => {
+  if (!callForm.faculty_id) return departments.value
+  return departments.value.filter(d => d.faculty_id == callForm.faculty_id)
+})
+
+const filteredResearchCenters = computed(() => {
+  let rc = researchCenters.value
+  
+  if (callForm.department_id) {
+    return rc.filter(r => r.parent_department_id == callForm.department_id)
+  }
+  
+  if (callForm.faculty_id) {
+    const deptIds = departments.value
+      .filter(d => d.faculty_id == callForm.faculty_id)
+      .map(d => d.id)
+    return rc.filter(r => 
+      r.parent_faculty_id == callForm.faculty_id || 
+      (r.parent_department_id && deptIds.includes(r.parent_department_id))
+    )
+  }
+  
+  if (callForm.campus_id) {
+    const facIds = faculties.value
+      .filter(f => f.campus_id == callForm.campus_id)
+      .map(f => f.id)
+    const deptIds = departments.value
+      .filter(d => facIds.includes(d.faculty_id))
+      .map(d => d.id)
+    return rc.filter(r => 
+      r.parent_campus_id == callForm.campus_id ||
+      (r.parent_faculty_id && facIds.includes(r.parent_faculty_id)) ||
+      (r.parent_department_id && deptIds.includes(r.parent_department_id))
+    )
+  }
+  
+  if (callForm.university_id) {
+    const campIds = campuses.value
+      .filter(c => c.university_id == callForm.university_id)
+      .map(c => c.id)
+    const facIds = faculties.value
+      .filter(f => campIds.includes(f.campus_id))
+      .map(f => f.id)
+    const deptIds = departments.value
+      .filter(d => facIds.includes(d.faculty_id))
+      .map(d => d.id)
+    return rc.filter(r => 
+      r.parent_university_id == callForm.university_id ||
+      (r.parent_campus_id && campIds.includes(r.parent_campus_id)) ||
+      (r.parent_faculty_id && facIds.includes(r.parent_faculty_id)) ||
+      (r.parent_department_id && deptIds.includes(r.parent_department_id))
+    )
+  }
+  
+  return rc
 })
 
 async function fetchCalls() {
@@ -281,6 +452,14 @@ function handleGuestApply() {
 
 function editCall(call) {
   editingCall.value = call
+
+  // Derive target_scope from existing call data
+  let derivedScope = 'organization'
+  if (call.research_center_id) derivedScope = 'research_center'
+  else if (call.department_id) derivedScope = 'department'
+  else if (call.faculty_id) derivedScope = 'faculty'
+  else if (call.campus_id) derivedScope = 'campus'
+
   Object.assign(callForm, {
     title: call.title,
     description: call.description,
@@ -290,6 +469,7 @@ function editCall(call) {
     status_id: call.status_id || '',
     thematic_areas: call.thematic_areas || '',
     guideline_file_id: call.guideline_file_id || '',
+    target_scope: derivedScope,
     university_id: call.university_id || '',
     campus_id: call.campus_id || '',
     faculty_id: call.faculty_id || '',
@@ -304,9 +484,11 @@ function editCall(call) {
 function closeCallModal() {
   showCreate.value = false
   editingCall.value = null
+  guidelineUploadFile.value = null
   Object.assign(callForm, { 
     title: '', description: '', deadline: '', budget_limit: null, 
     academic_year_id: '', status_id: '', thematic_areas: '', guideline_file_id: '',
+    target_scope: 'organization',
     university_id: '', campus_id: '', faculty_id: '', department_id: '', research_center_id: '',
     community_problem_id: ''
   })
@@ -318,35 +500,41 @@ function autoSetScopeByRole() {
   
   // Super Admin: No auto-restriction (can scope to any level)
   if (auth.hasRole('super_admin')) {
-    return // Super admin can set any scope manually
+    // Default target_scope stays 'organization', admin can change it
+    return
   }
   
-  // Research Admin: University fixed to their university (can scope down to campus/faculty/department/center)
+  // Research Admin: University fixed to their university
   if (auth.hasRole('research_admin') && !auth.hasRole('super_admin')) {
-    if (user.department_id) {
-      // Get university from user's department hierarchy
+    if (user.university_id) {
+      callForm.university_id = user.university_id
+    } else if (user.department_id) {
       callForm.university_id = user.department?.faculty?.campus?.university_id || ''
     }
+    // Default to organization-wide within their university
+    if (!callForm.target_scope || callForm.target_scope === '') callForm.target_scope = 'organization'
   }
   
-  // Campus Admin: Campus fixed to their campus (can scope down to faculty/department)
+  // Campus Admin: Campus fixed, default scope to campus
   if (auth.hasRole('campus_admin') && !auth.hasRole('research_admin', 'super_admin')) {
     if (user.department_id) {
       callForm.university_id = user.department?.faculty?.campus?.university_id || ''
       callForm.campus_id = user.department?.faculty?.campus_id || ''
     }
+    if (!callForm.target_scope || callForm.target_scope === '') callForm.target_scope = 'organization'
   }
   
-  // Faculty Admin: Faculty fixed to their faculty (can scope down to department)
+  // Faculty Admin: Faculty fixed, default scope to faculty
   if (auth.hasRole('faculty_admin') && !auth.hasRole('campus_admin', 'research_admin', 'super_admin')) {
     if (user.department_id) {
       callForm.university_id = user.department?.faculty?.campus?.university_id || ''
       callForm.campus_id = user.department?.faculty?.campus_id || ''
       callForm.faculty_id = user.department?.faculty_id || ''
     }
+    if (!callForm.target_scope || callForm.target_scope === '') callForm.target_scope = 'organization'
   }
   
-  // Department Head: Department fixed to their department (no lower levels available)
+  // Department Head: Department fixed, default scope to department
   if (auth.hasRole('department_head') && !auth.hasRole('faculty_admin', 'campus_admin', 'research_admin', 'super_admin')) {
     if (user.department_id) {
       callForm.university_id = user.department?.faculty?.campus?.university_id || ''
@@ -354,34 +542,59 @@ function autoSetScopeByRole() {
       callForm.faculty_id = user.department?.faculty_id || ''
       callForm.department_id = user.department_id || ''
     }
+    callForm.target_scope = 'department'
   }
   
-  // Director: Research center fixed to their center (no lower levels available)
+  // Director: Research center fixed, scope to center
   if (auth.hasRole('director') && !auth.hasRole('department_head', 'faculty_admin', 'campus_admin', 'research_admin', 'super_admin')) {
-    // Directors manage research centers, which are independent entities
-    // The research_center_id should be set from their assigned centers
-    // This would need to be fetched from user_research_centers relationship
     if (user.research_centers && user.research_centers.length > 0) {
       callForm.research_center_id = user.research_centers[0].id
     }
+    callForm.target_scope = 'research_center'
+  }
+}
+
+async function onGuidelineFileChange(file) {
+  if (!file) {
+    callForm.guideline_file_id = ''
+    return
+  }
+  const fd = new FormData()
+  fd.append('file', file)
+  try {
+    notif.info('Uploading guideline file...')
+    const { data } = await api.post('/files', fd)
+    const uploadedFile = data.data || data
+    files.value.push(uploadedFile)
+    callForm.guideline_file_id = uploadedFile.id
+    notif.success('Guideline file uploaded successfully!')
+  } catch (err) {
+    notif.error('Failed to upload guideline file')
+    guidelineUploadFile.value = null
   }
 }
 
 async function saveCall() {
   saving.value = true
   try {
+    // Build payload — only include scope-relevant IDs based on target_scope
+    const scope = callForm.target_scope
     const payload = { 
       ...callForm, 
       budget_limit: callForm.budget_limit || null, 
       academic_year_id: callForm.academic_year_id || null, 
       status_id: callForm.status_id || null,
-      university_id: callForm.university_id || null,
-      campus_id: callForm.campus_id || null,
-      faculty_id: callForm.faculty_id || null,
-      department_id: callForm.department_id || null,
-      research_center_id: callForm.research_center_id || null,
+      // Auto-set university_id from user context if not already set
+      university_id: callForm.university_id || auth.user?.university_id || null,
+      // Only include child IDs if the scope is narrow enough
+      campus_id: ['campus','faculty','department'].includes(scope) ? (callForm.campus_id || null) : null,
+      faculty_id: ['faculty','department'].includes(scope) ? (callForm.faculty_id || null) : null,
+      department_id: scope === 'department' ? (callForm.department_id || null) : null,
+      research_center_id: scope === 'research_center' ? (callForm.research_center_id || null) : null,
       community_problem_id: callForm.community_problem_id || null
     }
+    // Remove target_scope from payload (it's a frontend-only field)
+    delete payload.target_scope
     if (editingCall.value) {
       await api.put(`/calls/${editingCall.value.id}`, payload)
       notif.success('Call updated successfully!')
@@ -442,4 +655,37 @@ watch(showCreate, (isOpen) => {
     autoSetScopeByRole()
   }
 })
+// Watch target_scope changes to clear child selections
+watch(() => callForm.target_scope, (newScope) => {
+  // Clear all child IDs when scope changes, then let watchers handle the rest
+  if (newScope === 'organization') {
+    callForm.campus_id = ''
+    callForm.faculty_id = ''
+    callForm.department_id = ''
+    callForm.research_center_id = ''
+  } else if (newScope === 'campus') {
+    callForm.faculty_id = ''
+    callForm.department_id = ''
+    callForm.research_center_id = ''
+  } else if (newScope === 'faculty') {
+    callForm.department_id = ''
+    callForm.research_center_id = ''
+  } else if (newScope === 'department') {
+    callForm.research_center_id = ''
+  } else if (newScope === 'research_center') {
+    callForm.campus_id = ''
+    callForm.faculty_id = ''
+    callForm.department_id = ''
+  }
+})
+
+// Watchers to clear dependent fields when parent changes
+watch(() => callForm.campus_id, () => {
+  callForm.faculty_id = ''
+  callForm.department_id = ''
+})
+watch(() => callForm.faculty_id, () => {
+  callForm.department_id = ''
+})
+
 </script>

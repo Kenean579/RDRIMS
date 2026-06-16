@@ -40,13 +40,14 @@ class User extends Authenticatable
         'name', 'email', 'password', 'university_id', 'department_id', 'profile_image_id',
         'research_center_id', 'center_role_id',
         'orcid_id', 'google_scholar_id', 'scopus_id', 'linkedin_url',
-        'is_active', 'bio', 'expertise_keywords'
+        'is_active', 'bio', 'expertise_keywords', 'email_notifications'
     ];
 
     protected $hidden = ['password'];
 
     protected $casts = [
         'is_active' => 'boolean',
+        'email_notifications' => 'boolean',
     ];
 
     public function university(): BelongsTo

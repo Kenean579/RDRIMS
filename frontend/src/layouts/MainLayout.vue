@@ -138,6 +138,18 @@
           </div>
         </div>
 
+        <!-- Global warning banner for Super Admin when SMTP is failing/missing -->
+        <div v-if="auth.hasRole('super_admin') && smtpWarning" class="mb-6 p-4 bg-red-50 border border-red-200 rounded-2xl text-red-800 text-sm font-medium flex items-start gap-3">
+          <span class="text-xl">🚨</span>
+          <div class="flex-1">
+            <p class="font-bold mb-0.5">Critical System Warning: Email Service Unavailable</p>
+            <p>SMTP is not configured properly or the connection is failing. //Users will not receive critical email notifications.</p>
+          </div>
+          <router-link to="/app/email-config" class="shrink-0 px-3 py-1.5 bg-red-100 text-red-700 hover:bg-red-200 rounded-lg text-xs font-bold transition-colors">
+            Configure SMTP
+          </router-link>
+        </div>
+
         <router-view v-slot="{ Component }">
           <transition name="fade" mode="out-in">
             <component :is="Component" />
@@ -170,6 +182,7 @@ const unreadCount  = ref(0)
 const searchQuery  = ref('')
 const isMobile     = ref(false)
 const openGroups   = reactive({})
+const smtpWarning  = ref(false)
 
 // ── Role Display Name Mapping ──────────────────────────────
 const roleDisplayMap = {
@@ -231,10 +244,26 @@ async function fetchUnreadCount() {
   } catch (e) {}
 }
 
+async function fetchSystemHealth() {
+  if (auth.hasRole('super_admin')) {
+    try {
+      const { data } = await api.get('/system-health')
+      if (data.email?.status === 'error' || data.email?.status === 'warning') {
+        smtpWarning.value = true
+      } else {
+        smtpWarning.value = false
+      }
+    } catch (e) {
+      smtpWarning.value = true
+    }
+  }
+}
+
 onMounted(() => {
   checkMobile()
   window.addEventListener('resize', checkMobile)
   fetchUnreadCount()
+  fetchSystemHealth()
   
   // Initialize all groups to open by default
   navigation.value.forEach(g => {

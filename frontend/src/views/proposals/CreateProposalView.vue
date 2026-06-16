@@ -285,7 +285,7 @@
             Next
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
           </button>
-          <button v-else type="submit" :disabled="submitting"
+          <button v-else type="submit" :disabled="submitting || !form.confirmation"
             class="inline-flex items-center gap-2 px-8 py-3 text-sm font-bold text-white bg-emerald-600 rounded-xl shadow-lg shadow-emerald-600/30 hover:shadow-emerald-600/50 hover:-translate-y-0.5 transition-all disabled:opacity-60 disabled:pointer-events-none">
             <svg v-if="submitting" class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
             {{ submitting ? 'Submitting...' : 'Submit Proposal' }}
@@ -367,6 +367,28 @@ function nextStep() {
 }
 
 async function handleSubmit() {
+  if (currentStep.value !== steps.length - 1) {
+    notif.error('Please complete all steps first.')
+    return
+  }
+
+  if (!form.title || !form.type_id || !form.keywords || !form.abstract || !form.objectives || !form.methodology || !form.budget) {
+    notif.error('Please complete all required fields on Step 1.')
+    currentStep.value = 0
+    return
+  }
+
+  if (!form.proposal_file) {
+    notif.error('Proposal Core Document is required on Step 3.')
+    currentStep.value = 2
+    return
+  }
+
+  if (!form.confirmation) {
+    notif.error('Please confirm that this proposal is your original work and complies with ethics guidelines.')
+    return
+  }
+
   submitting.value = true
   try {
     const payload = new FormData()
@@ -382,6 +404,7 @@ async function handleSubmit() {
     payload.append('budget_allocation', JSON.stringify(form.budget_allocation))
     if (form.proposal_file) payload.append('proposal_file', form.proposal_file)
     if (form.ethics_file) payload.append('ethics_file', form.ethics_file)
+    payload.append('confirmation', form.confirmation ? '1' : '0')
     payload.append('investigators', JSON.stringify(
       form.investigators.map(inv => ({
         user_id: inv.user_id || null,
@@ -407,6 +430,7 @@ onMounted(async () => {
     try {
       const parsed = JSON.parse(saved)
       Object.assign(form, parsed)
+      form.confirmation = false // Always start as false on restore
       draftRestored.value = true
       notif.success('Draft restored from your previous session.')
     } catch (e) {}
@@ -434,6 +458,7 @@ const timer = setInterval(() => {
   const toSave = { ...form }
   delete toSave.proposal_file
   delete toSave.ethics_file
+  toSave.confirmation = false // Never save confirmation as true in draft
   localStorage.setItem('rdrims_proposal_draft', JSON.stringify(toSave))
 }, 30000)
 

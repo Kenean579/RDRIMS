@@ -49,6 +49,7 @@ class StoreProposalRequest extends FormRequest
             'proposal_file' => 'nullable|file|mimes:pdf,doc,docx,xlsx,xls,csv,jpg,jpeg,png|max:20480',
             'ethics_file'  => 'nullable|file|mimes:pdf,doc,docx,xlsx,xls,csv,jpg,jpeg,png|max:20480',
             'budget_allocation' => 'nullable|array',
+            'confirmation' => 'required|accepted',
             'investigators'          => 'nullable|array',
             'investigators.*.user_id'  => 'nullable|exists:users,id',
             'investigators.*.name'     => 'nullable|string',

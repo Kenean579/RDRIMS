@@ -154,6 +154,47 @@
                </div>
             </div>
 
+            <!-- Notification Preferences -->
+            <div class="space-y-6 pt-4 border-t border-slate-50">
+               <h2 class="text-[13px] font-bold text-slate-900 tracking-widest flex items-center gap-3">
+                  Notification Preferences
+               </h2>
+               
+               <div class="space-y-4 p-6 bg-slate-50 rounded-3xl border border-slate-100">
+                  <label class="flex items-start gap-3 cursor-pointer">
+                    <div class="flex items-center h-5">
+                      <input type="checkbox" v-model="form.email_notifications" class="w-5 h-5 rounded border-slate-300 text-brand focus:ring-brand">
+                    </div>
+                    <div>
+                      <p class="text-sm font-bold text-slate-700">Email Notifications (Master Toggle)</p>
+                      <p class="text-xs text-slate-500 mt-0.5">Receive critical system emails (password resets, proposal decisions, etc.). Turning this off disables ALL emails.</p>
+                    </div>
+                  </label>
+                  
+                  <div class="pl-8 space-y-4 mt-4" :class="{ 'opacity-50 pointer-events-none': !form.email_notifications }">
+                    <label class="flex items-start gap-3 cursor-pointer">
+                      <div class="flex items-center h-5">
+                        <input type="checkbox" v-model="form.email_important" class="w-5 h-5 rounded border-slate-300 text-brand focus:ring-brand">
+                      </div>
+                      <div>
+                        <p class="text-sm font-bold text-slate-700">Important Updates</p>
+                        <p class="text-xs text-slate-500 mt-0.5">Receive emails for review deadlines, action items, and status changes.</p>
+                      </div>
+                    </label>
+
+                    <label class="flex items-start gap-3 cursor-pointer">
+                      <div class="flex items-center h-5">
+                        <input type="checkbox" v-model="form.email_informational" class="w-5 h-5 rounded border-slate-300 text-brand focus:ring-brand">
+                      </div>
+                      <div>
+                        <p class="text-sm font-bold text-slate-700">Informational</p>
+                        <p class="text-xs text-slate-500 mt-0.5">Receive emails for new call announcements, general events, and system news.</p>
+                      </div>
+                    </label>
+                  </div>
+               </div>
+            </div>
+
             <div class="pt-6 flex justify-end">
               <button type="submit" :disabled="saving" class="btn btn-primary h-14 px-10 text-xs font-bold  tracking-widest shadow-xl shadow-brand/20">
                 {{ saving ? 'Propagating Updates...' : 'Synchronize Profile' }}
@@ -187,7 +228,10 @@ const form = reactive({
   google_scholar_id: '', 
   scopus_id: '', 
   linkedin_url: '',
-  expertise: []
+  expertise: [],
+  email_notifications: true,
+  email_important: false,
+  email_informational: false
 })
 
 async function fetchExpertise() {
@@ -219,7 +263,10 @@ onMounted(async () => {
       google_scholar_id: auth.user.google_scholar_id || '', 
       scopus_id: auth.user.scopus_id || '', 
       linkedin_url: auth.user.linkedin_url || '',
-      expertise: (auth.user.expertise || []).map(e => e.id)
+      expertise: (auth.user.expertise || []).map(e => e.id),
+      email_notifications: !!auth.user.email_notifications,
+      email_important: !!auth.user.email_important,
+      email_informational: !!auth.user.email_informational
     })
   }
 })

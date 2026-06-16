@@ -2,20 +2,26 @@
 
 namespace App\Services;
 
-
 use App\Models\Role;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Str;
 
 class UserService
 {
+    public function __construct(private NotificationService $notificationService) {}
+
     public function register(array $data): User
     {
+        // Use provided password or generate a random secure one
+        $password = $data['password'] ?? Str::random(16);
+
         $user = User::create([
             'name' => $data['name'],
             'email' => $data['email'],
-            'password' => Hash::make($data['password']),
+            'password' => Hash::make($password),
             'university_id' => $data['university_id'] ?? null,
             'department_id' => $data['department_id'] ?? null,
             'is_active' => true,
@@ -29,6 +35,17 @@ class UserService
                 'assigned_at' => now(),
             ]);
         }
+
+        // Generate password reset token for account activation
+        $token = Password::broker()->createToken($user);
+        
+        $frontendUrl = config('app.frontend_url', env('FRONTEND_URL', 'http://localhost:5173'));
+        $resetLink = "{$frontendUrl}/reset-password?token={$token}&email=" . urlencode($user->email);
+
+        $this->notificationService->notify($user, 'account_activated',
+            "Your account has been created. Please activate your account and set your password using the link below. This link will expire in " . config('auth.passwords.users.expire', 60) . " minutes.",
+            ['link' => $resetLink, 'action_text' => 'Activate Account']
+        );
 
         return $user->load('roles');
     }

@@ -6,16 +6,19 @@ use App\Http\Requests\StoreSettingRequest;
 use App\Http\Requests\UpdateSettingRequest;
 use App\Models\Setting;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class SettingController extends Controller
 {
     public function index(): JsonResponse
     {
+        $this->authorize('viewAny', \App\Models\Setting::class);
         return response()->json(Setting::all());
     }
 
     public function store(StoreSettingRequest $request): JsonResponse
     {
+        $this->authorize('create', \App\Models\Setting::class);
         $setting = Setting::create($request->validated());
         return response()->json($setting, 201);
     }
@@ -27,10 +30,37 @@ class SettingController extends Controller
         return response()->json($setting);
     }
 
+    public function view(User $user, Setting $setting): bool
+    {
+        // Super admin can view all; institution admins can view scoped settings
+        return $user->hasRole('super_admin') || $user->hasScopeForSetting($setting);
+    }
+
     public function destroy(Setting $setting): JsonResponse
     {
         $this->authorize('delete', $setting);
         $setting->delete();
         return response()->json(['message' => 'Setting deleted.']);
     }
+
+    public function bulk(Request $request): JsonResponse
+    {
+        // Bulk updates should be allowed for super admin only
+        $this->authorize('create', Setting::class);
+        $request->validate([
+            'settings' => 'required|array',
+            'settings.*.key' => 'required|string',
+            'settings.*.value' => 'required|string',
+        ]);
+
+        foreach ($request->settings as $settingData) {
+            Setting::updateOrCreate(
+                ['key' => $settingData['key']],
+                ['value' => $settingData['value']]
+            );
+        }
+
+        return response()->json(['message' => 'Settings updated successfully.']);
+    }
 }
+?>

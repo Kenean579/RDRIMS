@@ -71,6 +71,9 @@ class AuthController extends Controller
             'profile_image_id'   => 'nullable|exists:files,id',
             'expertise'          => 'nullable|array',
             'expertise.*'        => 'exists:expertises,id',
+            'email_notifications'=> 'sometimes|boolean',
+            'email_important'    => 'sometimes|boolean',
+            'email_informational'=> 'sometimes|boolean',
         ]);
         
         $user->update($validated);
