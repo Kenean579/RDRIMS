@@ -34,10 +34,11 @@
             <p class="text-xs font-medium text-slate-400">{{ formatDate(m.start_date) }} – {{ formatDate(m.end_date) }}</p>
           </div>
         </div>
-        <div class="flex gap-2">
-          <button @click="editMoU(m)" class="btn btn-ghost text-blue-600 font-bold" style="padding: 6px 10px; font-size: 11px">Edit</button>
-          <button @click="confirmDelete(m)" class="btn btn-ghost text-red-500 hover:bg-red-50" style="padding: 6px 10px; font-size: 11px">Delete</button>
-        </div>
+        <ActionMenu :actions="[
+          { key: 'edit', label: 'Edit', handler: () => editMoU(m) },
+          { separator: true },
+          { key: 'delete', label: 'Delete', handler: () => confirmDelete(m) }
+        ]" />
       </div>
     </div>
 
@@ -73,6 +74,7 @@ import Modal from '@/components/Modal.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import LoadingSkeleton from '@/components/LoadingSkeleton.vue'
 import EmptyState from '@/components/EmptyState.vue'
+import ActionMenu from '@/components/ActionMenu.vue'
 import { formatDate } from '@/utils/formatters'
 
 const route = useRoute(); const notif = useNotificationStore()

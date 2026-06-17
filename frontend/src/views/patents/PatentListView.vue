@@ -52,10 +52,12 @@
 
         <div class="mt-auto pt-5 border-t border-slate-50 flex items-center justify-between">
           <span class="text-xs font-medium text-brand bg-brand-light px-2.5 py-1 rounded-2xl">{{ patent.licenses?.length || 0 }} Licenses</span>
-          <div class="flex gap-2">
-            <button @click="editPatent(patent)" class="btn btn-ghost hover:bg-slate-100 text-xs font-medium py-2">Edit</button>
-            <button @click="confirmDelete(patent)" class="btn btn-ghost text-red-500 hover:bg-red-50 text-xs font-medium py-2">Delete</button>
-          </div>
+          <ActionMenu :actions="[
+            { key: 'view', label: 'View Licenses', handler: () => $router.push(`/app/patents/${patent.id}/licenses`) },
+            { key: 'edit', label: 'Edit', handler: () => editPatent(patent) },
+            { separator: true },
+            { key: 'delete', label: 'Delete', handler: () => confirmDelete(patent) }
+          ]" />
         </div>
       </div>
     </div>
@@ -116,6 +118,7 @@ import Modal from '@/components/Modal.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import LoadingSkeleton from '@/components/LoadingSkeleton.vue'
 import EmptyState from '@/components/EmptyState.vue'
+import ActionMenu from '@/components/ActionMenu.vue'
 import { formatDate } from '@/utils/formatters'
 import { formatStatusName } from '@/utils/colors'
 

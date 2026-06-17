@@ -39,13 +39,12 @@
           </div>
         </div>
         
-        <div class="flex items-center justify-between gap-3 pt-5 border-t border-slate-50 mt-auto">
-          <button @click="downloadFile(file)" class="btn btn-ghost hover:bg-brand-light hover:text-brand flex-1 justify-center text-xs font-medium py-2">
-             <svg class="w-3.5 h-3.5 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
-             Download
-          </button>
-          <div class="w-px h-4 bg-slate-100"></div>
-          <button @click="confirmDelete(file)" class="btn btn-ghost text-red-400 hover:bg-red-50 hover:text-red-600 flex-1 justify-center text-xs font-medium py-2">Delete</button>
+        <div class="flex items-center justify-end gap-3 pt-5 border-t border-slate-50 mt-auto">
+          <ActionMenu :actions="[
+            { key: 'download', label: 'Download', handler: () => downloadFile(file) },
+            { separator: true },
+            { key: 'delete', label: 'Delete', handler: () => confirmDelete(file) }
+          ]" />
         </div>
       </div>
     </div>
@@ -61,6 +60,7 @@ import api from '@/services/api'
 import LoadingSkeleton from '@/components/LoadingSkeleton.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import EmptyState from '@/components/EmptyState.vue'
+import ActionMenu from '@/components/ActionMenu.vue'
 
 const notif = useNotificationStore()
 const files = ref([]); const loading = ref(true)

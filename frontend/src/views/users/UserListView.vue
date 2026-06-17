@@ -65,15 +65,19 @@
         <h3 class="text-base font-semibold text-slate-800 leading-tight mb-1 group-hover:text-brand transition-colors">{{ u.name }}</h3>
         <p class="text-xs text-slate-400 font-medium mb-4 truncate w-full px-2">{{ u.email }}</p>
 
-        <div class="w-full pt-4 border-t border-slate-50 mt-auto flex flex-col gap-2">
+           <div class="w-full pt-4 border-t border-slate-50 mt-auto flex flex-col gap-2">
            <div class="flex items-center gap-1.5 justify-center mb-4">
              <i class="fas fa-building text-xs text-slate-300"></i>
              <span class="text-xs font-medium text-slate-400">{{ u.department?.name || 'Central Unit' }}</span>
            </div>
            
-           <div class="grid grid-cols-2 gap-2">
-             <button @click="editUser(u)" class="btn btn-ghost border border-slate-100 hover:border-brand hover:text-brand text-xs font-medium py-2 rounded-2xl">Profile</button>
-             <button @click="confirmDelete(u)" class="btn btn-ghost border border-rose-300 hover:bg-rose-50 text-rose-500 text-xs font-medium py-2 rounded-2xl">Manage</button>
+           <div class="flex justify-center">
+             <ActionMenu :actions="[
+               { key: 'view', label: 'View Profile', handler: () => $router.push(`/app/users/${u.id}`) },
+               { key: 'edit', label: 'Edit User', handler: () => editUser(u) },
+               { separator: true },
+               { key: 'delete', label: 'Deactivate', handler: () => confirmDelete(u) }
+             ]" />
            </div>
         </div>
       </div>
@@ -172,6 +176,7 @@ import Modal from '@/components/Modal.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import Pagination from '@/components/Pagination.vue'
 import EmptyState from '@/components/EmptyState.vue'
+import ActionMenu from '@/components/ActionMenu.vue'
 
 const notif = useNotificationStore()
 const users = ref([]); const loading = ref(true); const error = ref(null)

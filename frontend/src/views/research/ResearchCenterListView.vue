@@ -60,8 +60,11 @@
           <button @click="openSetUpAdmin(center)" class="btn btn-ghost border border-brand/20 text-brand hover:bg-brand hover:text-white flex-1 justify-center text-xs font-bold py-2">
             Set Up Admin
           </button>
-          <button @click="editCenter(center)" class="btn btn-ghost hover:bg-indigo-50 hover:text-indigo-600 flex-1 justify-center text-xs font-medium  tracking-wider py-2" style="background: #fff">Edit</button>
-          <button @click="confirmDelete(center)" class="btn btn-ghost text-rose-500 hover:bg-rose-50 flex-1 justify-center text-xs font-medium  tracking-wider py-2">Delete</button>
+          <ActionMenu :actions="[
+            { key: 'edit', label: 'Edit', handler: () => editCenter(center) },
+            { separator: true },
+            { key: 'delete', label: 'Delete', handler: () => confirmDelete(center) }
+          ]" />
         </div>
       </div>
     </div>
@@ -195,6 +198,7 @@ import Modal from '@/components/Modal.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import LoadingSkeleton from '@/components/LoadingSkeleton.vue'
 import EmptyState from '@/components/EmptyState.vue'
+import ActionMenu from '@/components/ActionMenu.vue'
 
 const auth = useAuthStore()
 const notif = useNotificationStore()

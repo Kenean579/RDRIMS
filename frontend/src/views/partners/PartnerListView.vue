@@ -52,11 +52,13 @@
           </div>
         </router-link>
         <!-- Admin actions -->
-        <div v-if="auth.hasRole('super_admin', 'research_admin')" class="px-4 pb-4 flex gap-2">
-          <button @click="editPartner(p)" class="flex-1 btn btn-secondary text-xs font-bold h-8 px-0 justify-center">Edit</button>
-          <button @click="confirmDelete(p)" class="w-8 h-8 flex items-center justify-center rounded-lg text-slate-300 hover:text-rose-500 hover:bg-rose-50 transition-colors">
-            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
-          </button>
+        <div v-if="auth.hasRole('super_admin', 'research_admin')" class="px-4 pb-4 flex justify-center">
+          <ActionMenu :actions="[
+            { key: 'view', label: 'View Details', handler: () => $router.push(`/app/partners/${p.id}`) },
+            { key: 'edit', label: 'Edit Partner', handler: () => editPartner(p) },
+            { separator: true },
+            { key: 'delete', label: 'Delete Partner', handler: () => confirmDelete(p) }
+          ]" />
         </div>
       </div>
     </div>
@@ -129,6 +131,7 @@ import api from '@/services/api'
 import Modal from '@/components/Modal.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import EmptyState from '@/components/EmptyState.vue'
+import ActionMenu from '@/components/ActionMenu.vue'
 
 const auth = useAuthStore()
 const notif = useNotificationStore()

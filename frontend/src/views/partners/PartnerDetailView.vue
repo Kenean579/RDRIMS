@@ -29,11 +29,13 @@
               <button @click="showMoUForm = true" class="text-sm text-blue-600 hover:text-blue-800 font-medium">+ Add MoU</button>
             </div>
             <div v-if="partner.mo_us?.length" class="space-y-2">
-              <div v-for="mou in partner.mo_us" :key="mou.id" class="flex items-center justify-between p-3 border border-slate-100 rounded-2xl">
+              <div v-for="mou in partner.mo_us" :key="mou.id" class="flex items-center justify-between p-3 border border-slate-100 rounded-2xl group hover:border-slate-200 transition-colors">
                 <div>
                   <p class="text-sm text-gray-800">{{ formatDate(mou.start_date) }} – {{ formatDate(mou.end_date) }}</p>
                 </div>
-                <button @click="deleteMoU(mou)" class="text-red-500 text-sm hover:underline">Delete</button>
+                <ActionMenu :actions="[
+                  { key: 'delete', label: 'Delete MoU', handler: () => deleteMoU(mou) }
+                ]" size="sm" />
               </div>
             </div>
             <p v-else class="text-sm text-gray-400">No MoUs yet.</p>
@@ -74,6 +76,7 @@ import api from '@/services/api'
 import StatusBadge from '@/components/StatusBadge.vue'
 import LoadingSkeleton from '@/components/LoadingSkeleton.vue'
 import Modal from '@/components/Modal.vue'
+import ActionMenu from '@/components/ActionMenu.vue'
 import { formatDate } from '@/utils/formatters'
 
 const route = useRoute(); const notif = useNotificationStore()

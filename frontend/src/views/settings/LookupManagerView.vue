@@ -64,9 +64,12 @@
                       <span class="px-3 py-1 bg-slate-100 text-slate-700 text-xs font-bold  tracking-tight rounded-2xl border border-slate-100">{{ item.name }}</span>
                     </td>
                     <td class="pr-8 py-4 text-right">
-                      <div class="flex justify-end gap-2">
-                        <button @click="editItem(item)" class="btn btn-ghost text-xs font-medium py-1.5 px-3">Rename</button>
-                        <button @click="confirmDelete(item)" class="btn btn-ghost text-rose-500 hover:bg-rose-50 text-xs font-medium py-1.5 px-3">Delete</button>
+                      <div class="flex justify-end">
+                        <ActionMenu :actions="[
+                          { key: 'edit', label: 'Rename', handler: () => editItem(item) },
+                          { separator: true },
+                          { key: 'delete', label: 'Delete', handler: () => confirmDelete(item) }
+                        ]" />
                       </div>
                     </td>
                   </tr>
@@ -103,6 +106,7 @@ import { useNotificationStore } from '@/stores/notification'
 import api from '@/services/api'
 import Modal from '@/components/Modal.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import ActionMenu from '@/components/ActionMenu.vue'
 
 const notif = useNotificationStore()
 const tables = [

@@ -33,17 +33,12 @@
             <span class="inline-block px-2.5 py-0.5 bg-slate-100 text-slate-500 text-xs font-medium rounded-md border border-slate-100">CODE: {{ uni.code }}</span>
           </div>
         </div>
-        <div class="flex gap-2 shrink-0">
-          <button @click="openSetUpAdmin(uni)" class="btn btn-ghost border border-brand/20 text-brand hover:bg-brand hover:text-white h-9 px-4 text-xs font-bold">
-            Set Up Admin
-          </button>
-          <button @click="editUni(uni)" class="btn btn-secondary h-9 px-4 text-xs font-medium">
-            Edit
-          </button>
-          <button @click="confirmDelete(uni)" class="btn btn-danger h-9 px-4 text-xs font-medium">
-            Delete
-          </button>
-        </div>
+        <ActionMenu :actions="[
+          { key: 'setup', label: 'Set Up Admin', handler: () => openSetUpAdmin(uni) },
+          { key: 'edit', label: 'Edit', handler: () => editUni(uni) },
+          { separator: true },
+          { key: 'delete', label: 'Delete', handler: () => confirmDelete(uni) }
+        ]" />
       </div>
     </div>
 
@@ -132,6 +127,7 @@ import Modal from '@/components/Modal.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import LoadingSkeleton from '@/components/LoadingSkeleton.vue'
 import EmptyState from '@/components/EmptyState.vue'
+import ActionMenu from '@/components/ActionMenu.vue'
 import { imageUrl } from '@/utils/formatters'
 
 const notif = useNotificationStore()

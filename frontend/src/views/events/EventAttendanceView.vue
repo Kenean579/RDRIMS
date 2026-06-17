@@ -50,11 +50,12 @@
                   </span>
                 </td>
                 <td class="px-5 py-3">
-                  <div class="flex gap-2">
-                    <button v-if="!reg.attended" @click="markPresent(reg)" class="text-green-600 text-sm font-medium hover:underline">Mark Present</button>
-                    <button v-if="reg.attended" @click="generateSingleCertificate(reg)" class="text-blue-600 text-sm hover:underline">Certificate</button>
-                    <button @click="removeRegistration(reg)" class="text-red-600 text-sm hover:underline">Remove</button>
-                  </div>
+                  <ActionMenu :actions="[
+                    { key: 'approve', label: 'Mark Present', handler: () => markPresent(reg), show: !reg.attended },
+                    { key: 'download', label: 'Generate Certificate', handler: () => generateSingleCertificate(reg), show: reg.attended },
+                    { separator: true, show: reg.attended },
+                    { key: 'delete', label: 'Remove Registration', handler: () => removeRegistration(reg) }
+                  ]" size="sm" align="left" />
                 </td>
               </tr>
             </tbody>
@@ -71,6 +72,7 @@ import { useRoute } from 'vue-router'
 import { useNotificationStore } from '@/stores/notification'
 import api from '@/services/api'
 import LoadingSkeleton from '@/components/LoadingSkeleton.vue'
+import ActionMenu from '@/components/ActionMenu.vue'
 import { imageUrl } from '@/utils/formatters'
 
 const route = useRoute(); const notif = useNotificationStore()

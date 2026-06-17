@@ -27,9 +27,12 @@
         
         <p class="text-sm text-slate-500 font-medium flex-1 line-clamp-2 leading-relaxed mb-6">{{ c.description || 'Grading metric for evaluate research quality and feasibility.' }}</p>
         
-        <div class="flex items-center justify-between bg-slate-50/50 p-1 gap-1" style="border-radius: 1rem">
-          <button @click="editItem(c)" class="btn btn-ghost bg-white hover:bg-brand-light hover:text-brand flex-1 justify-center text-xs font-medium py-2">Edit</button>
-          <button @click="confirmDelete(c)" class="btn btn-ghost text-rose-500 hover:bg-rose-50 flex-1 justify-center text-xs font-medium py-2">Delete</button>
+        <div class="flex items-center justify-end bg-slate-50/50 p-1 gap-1 mt-auto" style="border-radius: 1rem">
+          <ActionMenu :actions="[
+            { key: 'edit', label: 'Edit', handler: () => editItem(c) },
+            { separator: true },
+            { key: 'delete', label: 'Delete', handler: () => confirmDelete(c) }
+          ]" />
         </div>
       </div>
     </div>
@@ -67,6 +70,7 @@ import { useNotificationStore } from '@/stores/notification'
 import api from '@/services/api'
 import Modal from '@/components/Modal.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import ActionMenu from '@/components/ActionMenu.vue'
 
 const notif = useNotificationStore()
 const criteria = ref([]); const loading = ref(true)

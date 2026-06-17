@@ -43,13 +43,13 @@
           <span class="absolute top-3 left-3 px-3 py-1 bg-brand text-white text-xs font-bold rounded-md shadow-lg">{{ event.type?.name || 'Academic' }}</span>
           
           <!-- Admin Quick Actions -->
-          <div v-if="auth.hasRole('super_admin', 'research_admin', 'campus_admin', 'faculty_admin', 'director', 'department_head')" class="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-            <button @click.stop="editEvent(event)" class="w-8 h-8 rounded-lg bg-white/20 backdrop-blur-md text-white hover:bg-white hover:text-brand flex items-center justify-center shadow-lg transition-all">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
-            </button>
-            <button @click.stop="confirmDelete(event)" class="w-8 h-8 rounded-lg bg-white/20 backdrop-blur-md text-white hover:bg-rose-500 hover:text-white flex items-center justify-center shadow-lg transition-all">
-              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M6 18L18 6M6 6l12 12"/></svg>
-            </button>
+          <div v-if="auth.hasRole('super_admin', 'research_admin', 'campus_admin', 'faculty_admin', 'director', 'department_head')" class="absolute top-3 right-3 bg-white rounded-full shadow-md z-10">
+            <ActionMenu :actions="[
+              { key: 'view', label: 'View Details', handler: () => viewEvent(event) },
+              { key: 'edit', label: 'Edit Event', handler: () => editEvent(event) },
+              { separator: true },
+              { key: 'delete', label: 'Delete Event', handler: () => confirmDelete(event) }
+            ]" />
           </div>
         </div>
 
@@ -218,6 +218,7 @@ import api from '@/services/api'
 import Modal from '@/components/Modal.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import EmptyState from '@/components/EmptyState.vue'
+import ActionMenu from '@/components/ActionMenu.vue'
 import { formatDate, imageUrl } from '@/utils/formatters'
 import { useNotificationStore } from '@/stores/notification'
 import { useAuthStore } from '@/stores/auth'

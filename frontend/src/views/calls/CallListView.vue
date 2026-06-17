@@ -54,16 +54,18 @@
             <button v-else @click="handleGuestApply" class="btn btn-primary px-6 text-xs font-medium h-10">
               Apply
             </button>
-            <button @click="viewCall(call)" class="btn btn-ghost border border-slate-100 hover:border-brand hover:text-brand text-xs font-medium h-10 px-5">
-              Info
-            </button>
-            <button v-if="auth.hasRole('super_admin','research_admin','campus_admin','faculty_admin','director','department_head')" @click="editCall(call)" class="btn btn-ghost border border-slate-100 hover:border-amber-600 text-xs font-medium h-10 px-5 text-amber-600 hover:text-amber-700">
-              Edit
-            </button>
           </div>
-          <div class="text-right">
-             <p class="text-xs font-medium text-slate-400 mb-0.5">Award High</p>
-             <p class="text-base font-bold text-brand">{{ formatCurrency(call.budget_limit) }}</p>
+          <div class="flex items-center gap-2">
+            <div class="text-right mr-2">
+               <p class="text-xs font-medium text-slate-400 mb-0.5">Award High</p>
+               <p class="text-base font-bold text-brand">{{ formatCurrency(call.budget_limit) }}</p>
+            </div>
+            <ActionMenu :actions="[
+              { key: 'view', label: 'View Info', handler: () => viewCall(call) },
+              { key: 'edit', label: 'Edit', show: auth.hasRole('super_admin','research_admin','campus_admin','faculty_admin','director','department_head'), handler: () => editCall(call) },
+              { separator: true },
+              { key: 'delete', label: 'Delete', show: auth.hasRole('super_admin','research_admin','campus_admin','faculty_admin','director','department_head'), handler: () => deleteCall(call) }
+            ]" />
           </div>
         </div>
       </div>
@@ -275,6 +277,7 @@ import StatusBadge from '@/components/StatusBadge.vue'
 import Modal from '@/components/Modal.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import FileUpload from '@/components/FileUpload.vue'
+import ActionMenu from '@/components/ActionMenu.vue'
 import { formatDate, formatCurrency } from '@/utils/formatters'
 
 const route = useRoute()
@@ -530,7 +533,7 @@ function autoSetScopeByRole() {
       callForm.university_id = user.department?.faculty?.campus?.university_id || ''
       callForm.campus_id = user.department?.faculty?.campus_id || ''
       callForm.faculty_id = user.department?.faculty_id || ''
-    }
+    }hey
     if (!callForm.target_scope || callForm.target_scope === '') callForm.target_scope = 'organization'
   }
   
@@ -607,6 +610,17 @@ async function saveCall() {
   } catch (err) {
     notif.error(err.response?.data?.message || 'Failed to save call')
   } finally { saving.value = false }
+}
+
+async function deleteCall(call) {
+  if (!confirm(`Delete "${call.title}"? This cannot be undone.`)) return
+  try {
+    await api.delete(`/calls/${call.id}`)
+    notif.success('Call deleted')
+    fetchCalls()
+  } catch (err) {
+    notif.error(err.response?.data?.message || 'Failed to delete call')
+  }
 }
 
 onMounted(async () => {

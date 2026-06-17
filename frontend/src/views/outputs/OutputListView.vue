@@ -54,8 +54,12 @@
             </div>
           </div>
           <div class="flex md:flex-col gap-2 shrink-0">
-            <button @click="editOutput(o)" class="btn btn-secondary text-xs font-medium tracking-widest  py-2.5 px-6">Edit</button>
-            <button @click="confirmDelete(o)" class="btn btn-ghost text-red-500 hover:bg-red-50 text-xs font-medium tracking-widest  py-2.5 px-6">Delete</button>
+            <ActionMenu :actions="[
+              { key: 'view', label: 'View Details', handler: () => $router.push(`/app/outputs/${o.id}`) },
+              { key: 'edit', label: 'Edit Output', handler: () => editOutput(o) },
+              { separator: true },
+              { key: 'delete', label: 'Delete Output', handler: () => confirmDelete(o) }
+            ]" />
           </div>
       </div>
       <div class="card p-4 bg-slate-50/50">
@@ -178,6 +182,7 @@ import Modal from '@/components/Modal.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import Pagination from '@/components/Pagination.vue'
 import EmptyState from '@/components/EmptyState.vue'
+import ActionMenu from '@/components/ActionMenu.vue'
 import { formatStatusName } from '@/utils/colors'
 
 const notif = useNotificationStore()

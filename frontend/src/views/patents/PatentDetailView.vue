@@ -32,11 +32,15 @@
               <button @click="showAddLicense = true" class="text-sm text-blue-600 hover:text-blue-800 font-medium">+ Add</button>
             </div>
             <div v-if="patent.licenses?.length" class="space-y-2">
-              <div v-for="lic in patent.licenses" :key="lic.id" class="p-3 border border-slate-100 rounded-2xl">
-                <p class="text-sm font-medium text-gray-800">{{ lic.company_name }}</p>
-                <p class="text-xs text-gray-500">{{ formatDate(lic.start_date) }} – {{ formatDate(lic.end_date) }}</p>
-                <p class="text-xs text-gray-500">Royalty: {{ lic.royalty_rate }}%</p>
-                <button @click="deleteLicense(lic)" class="text-red-500 text-xs mt-1 hover:underline">Delete</button>
+              <div v-for="lic in patent.licenses" :key="lic.id" class="p-3 border border-slate-100 rounded-2xl flex items-start justify-between group hover:border-slate-200 transition-colors">
+                <div class="flex-1">
+                  <p class="text-sm font-medium text-gray-800">{{ lic.company_name }}</p>
+                  <p class="text-xs text-gray-500">{{ formatDate(lic.start_date) }} – {{ formatDate(lic.end_date) }}</p>
+                  <p class="text-xs text-gray-500">Royalty: {{ lic.royalty_rate }}%</p>
+                </div>
+                <ActionMenu :actions="[
+                  { key: 'delete', label: 'Delete License', handler: () => deleteLicense(lic) }
+                ]" size="sm" />
               </div>
             </div>
             <p v-else class="text-sm text-gray-400">No licenses.</p>
@@ -64,6 +68,7 @@ import api from '@/services/api'
 import StatusBadge from '@/components/StatusBadge.vue'
 import LoadingSkeleton from '@/components/LoadingSkeleton.vue'
 import Modal from '@/components/Modal.vue'
+import ActionMenu from '@/components/ActionMenu.vue'
 import { formatDate } from '@/utils/formatters'
 
 const route = useRoute(); const notif = useNotificationStore()

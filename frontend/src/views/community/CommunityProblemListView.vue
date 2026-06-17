@@ -87,58 +87,27 @@
         </div>
 
         <!-- Card Actions -->
-        <div class="px-6 py-4 bg-slate-50/60 border-t border-slate-100 flex gap-2 flex-wrap">
-          <!-- Claim button: only for open problems that user hasn't submitted -->
-          <button
-            v-if="p.status?.name === 'open'"
-            @click="claimProblem(p)"
-            class="flex-1 btn btn-primary justify-center text-xs font-bold h-10 min-w-[100px]"
-          >Help Out</button>
-
-  <!-- Complete button: only for the person who claimed it -->
-  <button
-    v-if="p.status?.name === 'claimed' && p.claimed_by?.id === auth.user?.id"
-    @click="completeProblem(p)"
-    class="flex-1 btn btn-primary justify-center text-xs font-bold h-10 min-w-[100px]"
-  >Mark Finished</button>
-
-  <router-link
-    v-if="p.status?.name === 'claimed' && p.claimed_by?.id === auth.user?.id && !p.linked_project_id"
-    :to="`/app/calls?community_problem_id=${p.id}`"
-    class="flex-1 btn btn-secondary justify-center text-xs font-bold h-10 min-w-[100px]"
-  >Initiate Call</router-link>
-
-  <!-- Link to project if available -->
-  <router-link
-    v-if="p.linked_project_id"
-    :to="`/app/projects/${p.linked_project_id}`"
-    class="flex-1 btn btn-secondary justify-center text-xs font-bold h-10 min-w-[100px]"
-  >View Linked Project</router-link>
-
-          <!-- Feedback button: completed, no feedback yet, submitted by current user -->
-          <button
-            v-if="p.status?.name === 'completed' && !p.feedback && p.submitted_by?.id === auth.user?.id"
-            @click="openFeedback(p)"
-            class="flex-1 btn btn-secondary justify-center text-xs font-bold h-10 min-w-[100px]"
-          >Leave Feedback</button>
-
-          <!-- Completed with feedback -->
+        <div class="px-6 py-4 bg-slate-50/60 border-t border-slate-100 flex justify-between items-center">
           <span
             v-if="p.status?.name === 'completed' && p.feedback"
-            class="flex-1 text-center py-2 text-xs font-bold text-emerald-700 bg-emerald-50 rounded-2xl border border-emerald-100 flex items-center justify-center gap-2"
+            class="text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-100 flex items-center gap-1.5"
           >
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7"/></svg>
             Resolved
           </span>
+          <span v-else class="text-xs text-slate-400 font-medium italic">
+            {{ p.status?.name === 'claimed' ? 'In progress' : (p.status?.name === 'completed' ? 'Resolved (pending feedback)' : 'Pending response') }}
+          </span>
 
-          <!-- Delete (admin only) -->
-          <button
-            v-if="auth.hasRole('super_admin', 'research_admin')"
-            @click="confirmDelete(p)"
-            class="w-10 h-10 rounded-2xl flex items-center justify-center text-slate-300 hover:text-rose-500 hover:bg-rose-50 border border-slate-200 transition-all"
-          >
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-          </button>
+          <ActionMenu :actions="[
+            { key: 'assign', label: 'Help Out', show: p.status?.name === 'open', handler: () => claimProblem(p) },
+            { key: 'approve', label: 'Mark Finished', show: p.status?.name === 'claimed' && p.claimed_by?.id === auth.user?.id, handler: () => completeProblem(p) },
+            { key: 'link', label: 'Initiate Call', show: p.status?.name === 'claimed' && p.claimed_by?.id === auth.user?.id && !p.linked_project_id, handler: () => $router.push(`/app/calls?community_problem_id=${p.id}`) },
+            { key: 'view', label: 'View Linked Project', show: !!p.linked_project_id, handler: () => $router.push(`/app/projects/${p.linked_project_id}`) },
+            { key: 'edit', label: 'Leave Feedback', show: p.status?.name === 'completed' && !p.feedback && p.submitted_by?.id === auth.user?.id, handler: () => openFeedback(p) },
+            { separator: true, show: auth.hasRole('super_admin', 'research_admin') },
+            { key: 'delete', label: 'Delete', show: auth.hasRole('super_admin', 'research_admin'), handler: () => confirmDelete(p) }
+          ]" />
         </div>
       </div>
     </div>
@@ -229,6 +198,7 @@ import api from '@/services/api'
 import Modal from '@/components/Modal.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import ActionMenu from '@/components/ActionMenu.vue'
 
 const auth = useAuthStore()
 const notif = useNotificationStore()

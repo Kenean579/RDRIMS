@@ -38,12 +38,14 @@
           <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
             <h2 class="text-base font-semibold text-gray-800 mb-4">Registrations</h2>
             <div v-if="event.registrations?.length" class="space-y-2">
-              <div v-for="reg in event.registrations" :key="reg.id" class="flex items-center justify-between p-2 rounded hover:bg-gray-50">
+              <div v-for="reg in event.registrations" :key="reg.id" class="flex items-center justify-between p-2 rounded hover:bg-gray-50 group">
                 <div class="flex items-center gap-2">
                   <span class="text-sm text-gray-800">{{ reg.user?.name }}</span>
                   <span :class="reg.attended ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500'" class="text-xs px-1.5 py-0.5 rounded-full">{{ reg.attended ? 'Attended' : 'Not attended' }}</span>
                 </div>
-                <button v-if="!reg.attended" @click="markAttendance(reg)" class="text-xs text-blue-600 hover:underline">Mark Present</button>
+                <ActionMenu v-if="!reg.attended" :actions="[
+                  { key: 'approve', label: 'Mark Present', handler: () => markAttendance(reg) }
+                ]" size="sm" align="left" />
               </div>
             </div>
             <p v-else class="text-sm text-gray-400">No registrations yet.</p>
@@ -61,6 +63,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useNotificationStore } from '@/stores/notification'
 import api from '@/services/api'
 import LoadingSkeleton from '@/components/LoadingSkeleton.vue'
+import ActionMenu from '@/components/ActionMenu.vue'
 import { formatDateTime } from '@/utils/formatters'
 
 const route = useRoute(); const notif = useNotificationStore()

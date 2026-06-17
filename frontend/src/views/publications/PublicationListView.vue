@@ -73,13 +73,11 @@
              </span>
            </div>
            
-           <div class="flex gap-2">
-             <a v-if="pub.url" :href="pub.url" target="_blank" class="btn btn-ghost text-xs font-medium py-1.5 px-3 text-brand hover:bg-brand-light">
-               Read Link
-             </a>
-             <button @click="$router.push(`/app/publications/${pub.id}`)" class="w-8 h-8 rounded-full flex items-center justify-center bg-slate-50 text-slate-400 group-hover:bg-brand group-hover:text-white transition-all duration-300">
-               <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7" /></svg>
-             </button>
+           <div class="flex gap-2 items-center">
+             <ActionMenu :actions="[
+               { key: 'view', label: 'View Details', handler: () => $router.push(`/app/publications/${pub.id}`) },
+               { key: 'link', label: 'Open Link', show: !!pub.url, handler: () => window.open(pub.url, '_blank') }
+             ]" @click.stop />
            </div>
         </div>
       </div>
@@ -132,6 +130,7 @@ import api from '@/services/api'
 import Pagination from '@/components/Pagination.vue'
 import Modal from '@/components/Modal.vue'
 import EmptyState from '@/components/EmptyState.vue'
+import ActionMenu from '@/components/ActionMenu.vue'
 import { useNotificationStore } from '@/stores/notification'
 const notif = useNotificationStore()
 const loading = ref(true); const publications = ref([]); const showAdd = ref(false)

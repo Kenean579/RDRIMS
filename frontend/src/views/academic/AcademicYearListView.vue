@@ -25,11 +25,12 @@
           </div>
           <p class="text-xs font-medium text-slate-400">{{ formatDate(year.start_date) }} – {{ formatDate(year.end_date) }}</p>
         </div>
-        <div class="flex gap-2">
-          <button v-if="!year.is_current" @click="setCurrent(year)" class="btn btn-ghost text-green-600 font-bold" style="padding: 6px 10px; font-size: 11px">Set Current</button>
-          <button @click="editYear(year)" class="btn btn-ghost text-blue-600 font-bold" style="padding: 6px 10px; font-size: 11px">Edit</button>
-          <button @click="confirmDelete(year)" class="btn btn-ghost text-red-500 hover:bg-red-50" style="padding: 6px 10px; font-size: 11px">Delete</button>
-        </div>
+        <ActionMenu :actions="[
+          { key: 'set-current', label: 'Set Current', show: !year.is_current, handler: () => setCurrent(year) },
+          { key: 'edit', label: 'Edit', handler: () => editYear(year) },
+          { separator: true },
+          { key: 'delete', label: 'Delete', handler: () => confirmDelete(year) }
+        ]" />
       </div>
     </div>
 
@@ -68,6 +69,7 @@ import Modal from '@/components/Modal.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import LoadingSkeleton from '@/components/LoadingSkeleton.vue'
 import EmptyState from '@/components/EmptyState.vue'
+import ActionMenu from '@/components/ActionMenu.vue'
 import { formatDate } from '@/utils/formatters'
 
 const notif = useNotificationStore()

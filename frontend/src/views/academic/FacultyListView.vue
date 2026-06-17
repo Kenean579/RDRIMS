@@ -34,14 +34,11 @@
             </div>
           </div>
         </div>
-        <div class="flex gap-2 shrink-0">
-          <button @click="editFaculty(faculty)" class="btn btn-secondary h-9 px-4 text-xs font-medium">
-            Edit
-          </button>
-          <button @click="confirmDelete(faculty)" class="btn btn-danger h-9 px-4 text-xs font-medium">
-            Delete
-          </button>
-        </div>
+        <ActionMenu :actions="[
+          { key: 'edit', label: 'Edit', handler: () => editFaculty(faculty) },
+          { separator: true },
+          { key: 'delete', label: 'Delete', handler: () => confirmDelete(faculty) }
+        ]" />
       </div>
     </div>
 
@@ -88,6 +85,7 @@ import Modal from '@/components/Modal.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import LoadingSkeleton from '@/components/LoadingSkeleton.vue'
 import EmptyState from '@/components/EmptyState.vue'
+import ActionMenu from '@/components/ActionMenu.vue'
 
 const notif = useNotificationStore()
 const faculties = ref([]); const loading = ref(true); const campuses = ref([]); const universities = ref([])

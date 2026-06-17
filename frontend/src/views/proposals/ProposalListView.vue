@@ -83,24 +83,13 @@
                <span class="text-xs font-medium text-slate-400 mb-0.5">Estimated Budget</span>
                <span class="text-sm font-bold text-slate-900 tracking-tight">{{ formatCurrency(p.budget) }}</span>
              </div>
-             <div class="flex gap-2">
-               <router-link v-if="auth.hasRole('super_admin','research_admin','campus_admin','faculty_admin','director','department_head') || p.submitted_by?.id === auth.user?.id" 
-                 :to="`/app/proposals/${p.id}/edit`" 
-                 class="btn btn-ghost text-xs font-medium py-1.5 px-3 text-amber-600 hover:bg-amber-50"
-                 @click.stop
-               >
-                 Edit
-               </router-link>
-               <button v-if="auth.hasRole('super_admin','research_admin','campus_admin') || p.submitted_by?.id === auth.user?.id" 
-                 @click.stop="deleteProposal(p.id)" 
-                 class="btn btn-ghost text-xs font-medium py-1.5 px-3 text-rose-500 hover:bg-rose-50"
-               >
-                 Delete
-               </button>
-               <button class="w-8 h-8 rounded-full flex items-center justify-center bg-slate-50 text-slate-400 group-hover:bg-brand group-hover:text-white transition-all duration-300">
-                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M9 5l7 7-7 7" /></svg>
-               </button>
-             </div>
+             <div class="flex gap-2 items-center">
+               <ActionMenu :actions="[
+                 { key: 'view', label: 'View', handler: () => $router.push(`/app/proposals/${p.id}`) },
+                 { key: 'edit', label: 'Edit', show: auth.hasRole('super_admin','research_admin','campus_admin','faculty_admin','director','department_head') || p.submitted_by?.id === auth.user?.id, handler: () => $router.push(`/app/proposals/${p.id}/edit`) },
+                 { separator: true },
+                 { key: 'delete', label: 'Delete', show: auth.hasRole('super_admin','research_admin','campus_admin') || p.submitted_by?.id === auth.user?.id, handler: () => deleteProposal(p.id) }
+               ]" @click.stop /></div>
           </div>
         </div>
       </div>
@@ -119,6 +108,7 @@ import api from '@/services/api'
 import StatusBadge from '@/components/StatusBadge.vue'
 import Pagination from '@/components/Pagination.vue'
 import EmptyState from '@/components/EmptyState.vue'
+import ActionMenu from '@/components/ActionMenu.vue'
 import { formatCurrency, formatDate } from '@/utils/formatters'
 import { formatStatusName } from '@/utils/colors'
 

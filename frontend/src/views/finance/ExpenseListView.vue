@@ -39,11 +39,10 @@
                 <span class="badge" :class="{ 'badge-green': ex.status === 'approved', 'badge-red': ex.status === 'rejected', 'badge-yellow': ex.status !== 'approved' && ex.status !== 'rejected' }">{{ ex.status }}</span>
               </td>
               <td>
-
-                <div v-if="ex.status === 'pending' || ex.status === 'submitted'" class="flex gap-2">
-                   <button @click="updateExpenseStatus(ex.id, 'approved')" class="text-xs font-bold text-emerald-600 hover:text-emerald-700 bg-emerald-50 px-2 py-1 rounded">Approve</button>
-                   <button @click="updateExpenseStatus(ex.id, 'rejected')" class="text-xs font-bold text-rose-600 hover:text-rose-700 bg-rose-50 px-2 py-1 rounded">Reject</button>
-                </div>
+                <ActionMenu v-if="ex.status === 'pending' || ex.status === 'submitted'" :actions="[
+                  { key: 'approve', label: 'Approve', handler: () => updateExpenseStatus(ex.id, 'approved') },
+                  { key: 'reject', label: 'Reject', handler: () => updateExpenseStatus(ex.id, 'rejected') }
+                ]" />
               </td>
             </tr>
           </tbody>
@@ -103,6 +102,7 @@ import api from '@/services/api'
 import Pagination from '@/components/Pagination.vue'
 import Modal from '@/components/Modal.vue'
 import LoadingSkeleton from '@/components/LoadingSkeleton.vue'
+import ActionMenu from '@/components/ActionMenu.vue'
 import { formatDate, formatCurrency } from '@/utils/formatters'
 
 const notif = useNotificationStore()

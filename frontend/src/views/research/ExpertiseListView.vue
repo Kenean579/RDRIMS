@@ -57,14 +57,12 @@
           </div>
           <span class="text-xs font-bold text-slate-900  tracking-widest group-hover:text-brand transition-colors">{{ exp.name }}</span>
           
-          <div v-if="auth.hasRole('super_admin')" class="flex items-center gap-1 pl-4 ml-2 opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 transition-all duration-300" style="border-left: 1px solid #f1f5f9">
-            <button @click="editItem(exp)" class="w-8 h-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-brand hover:bg-brand/5 transition-all" title="Edit Domain">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
-            </button>
-            <button @click="confirmDelete(exp)" class="w-8 h-8 rounded-xl flex items-center justify-center text-slate-400 hover:text-rose-500 hover:bg-rose-50 transition-all" title="Retire Domain">
-              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="4" d="M6 18L18 6M6 6l12 12"/></svg>
-            </button>
-          </div>
+          <div v-if="auth.hasRole('super_admin')" class="flex items-center pl-4 ml-2 opacity-0 group-hover:opacity-100 translate-x-2 group-hover:translate-x-0 transition-all duration-300" style="border-left: 1px solid #f1f5f9">
+            <ActionMenu :actions="[
+              { key: 'edit', label: 'Edit', handler: () => editItem(exp) },
+              { separator: true },
+              { key: 'delete', label: 'Delete', handler: () => confirmDelete(exp) }
+            ]" size="sm" /></div>
         </div>
       </div>
     </div>
@@ -99,6 +97,7 @@ import api from '@/services/api'
 import Modal from '@/components/Modal.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import EmptyState from '@/components/EmptyState.vue'
+import ActionMenu from '@/components/ActionMenu.vue'
 
 const auth = useAuthStore()
 const notif = useNotificationStore()

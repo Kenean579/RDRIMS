@@ -7,14 +7,11 @@
           <h1 class="text-xl font-bold text-gray-800">{{ call.title || 'Call Detail' }}</h1>
           <StatusBadge :status="call.status?.name || 'draft'" />
         </div>
-        <div class="flex items-center gap-2" v-if="canEditCall">
-          <button @click="editCall" class="btn btn-secondary px-4 h-10 text-xs font-medium">
-            Edit Call
-          </button>
-          <button @click="deleteCall" class="btn btn-ghost border border-red-200 text-red-600 hover:bg-red-50 px-4 h-10 text-xs font-medium">
-            Delete
-          </button>
-        </div>
+        <ActionMenu v-if="canEditCall" :actions="[
+          { key: 'edit', label: 'Edit Call', handler: editCall },
+          { separator: true },
+          { key: 'delete', label: 'Delete Call', handler: deleteCall }
+        ]" />
       </div>
     </div>
 
@@ -98,6 +95,7 @@ import { useAuthStore } from '@/stores/auth'
 import api from '@/services/api'
 import StatusBadge from '@/components/StatusBadge.vue'
 import LoadingSkeleton from '@/components/LoadingSkeleton.vue'
+import ActionMenu from '@/components/ActionMenu.vue'
 import { formatDate, formatCurrency } from '@/utils/formatters'
 
 const route = useRoute()

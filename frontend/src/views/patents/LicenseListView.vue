@@ -22,10 +22,11 @@
             <p class="text-xs text-gray-500">{{ formatDate(l.start_date) }} – {{ formatDate(l.end_date) }}</p>
             <p class="text-xs text-gray-500">Royalty: {{ l.royalty_rate }}%</p>
           </div>
-          <div class="flex gap-2">
-            <button @click="editLicense(l)" class="text-blue-600 text-sm">Edit</button>
-            <button @click="confirmDelete(l)" class="text-red-600 text-sm">Delete</button>
-          </div>
+          <ActionMenu :actions="[
+            { key: 'edit', label: 'Edit', handler: () => editLicense(l) },
+            { separator: true },
+            { key: 'delete', label: 'Delete', handler: () => confirmDelete(l) }
+          ]" />
         </div>
       </div>
     </div>
@@ -53,6 +54,7 @@ import { useNotificationStore } from '@/stores/notification'
 import api from '@/services/api'
 import Modal from '@/components/Modal.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import ActionMenu from '@/components/ActionMenu.vue'
 import { formatDate } from '@/utils/formatters'
 
 const route = useRoute(); const notif = useNotificationStore()
