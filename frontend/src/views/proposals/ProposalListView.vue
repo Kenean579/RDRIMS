@@ -24,13 +24,27 @@
             <input v-model="filters.search" type="text" placeholder="Search by title or ID..." class="input pl-10" @input="debounceSearch" />
           </div>
         </div>
-        <div class="w-56">
-          <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Status</label>
-          <select v-model="filters.status" multiple @change="fetchProposals(1)" class="input font-bold h-auto py-2">
-            <option v-for="s in proposalStatuses" :key="s.id" :value="s.name" class="py-1">{{ formatStatusName(s.name) }}</option>
-          </select>
-          <p class="text-[10px] text-slate-400 mt-1">Hold Ctrl/Cmd to select multiple</p>
-        </div>
+       <div class="w-56">
+  <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">
+    Status
+  </label>
+
+  <select
+    v-model="filters.status"
+    @change="fetchProposals(1)"
+    class="input font-bold h-11"
+  >
+    <option value="">All Statuses</option>
+
+    <option
+      v-for="s in proposalStatuses"
+      :key="s.id"
+      :value="s.name"
+    >
+      {{ formatStatusName(s.name) }}
+    </option>
+  </select>
+</div>
         <div class="w-56">
           <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Type</label>
           <select v-model="filters.type" @change="fetchProposals(1)" class="input font-bold">
