@@ -17,7 +17,7 @@ class CallController extends Controller
     {
         $user = $request->user();
 
-        $calls = Call::with('status', 'academicYear', 'createdBy.profileImage', 'guidelineFile')
+        $calls = Call::with('status', 'academicYear', 'createdBy.profileImage', 'guidelineFile', 'proposals')->withCount('proposals')
             ->when($request->filled('status'), fn($q) =>
                 $q->whereHas('status', fn($s) => $s->where('name', $request->input('status')))
             )
@@ -115,6 +115,7 @@ class CallController extends Controller
         $this->validateScopeForRole($request, $user);
 
         $validated = $request->validated();
+        $validated = $this->autoFillHierarchy($validated);
         
         // Ensure a status is set if not provided (non-nullable in DB)
         if (empty($validated['status_id'])) {
@@ -150,7 +151,9 @@ class CallController extends Controller
     public function update(UpdateCallRequest $request, Call $call): JsonResponse
     {
         $this->authorize('update', $call);
-        $call->update($request->validated());
+        $validated = $request->validated();
+        $validated = $this->autoFillHierarchy($validated);
+        $call->update($validated);
         return response()->json($call);
     }
 
@@ -161,7 +164,34 @@ class CallController extends Controller
     {
         $this->authorize('delete', $call);
         $call->delete();
-        return response()->json(['message' => 'Call deleted.']);
+        return response()->json(['message' => 'Call deleted']);
+    }
+
+    /**
+     * Automatically populate parent hierarchy IDs if a child ID is provided.
+     */
+    private function autoFillHierarchy(array $data): array
+    {
+        if (!empty($data['department_id'])) {
+            $department = \App\Models\Department::with('faculty.campus')->find($data['department_id']);
+            if ($department) {
+                $data['faculty_id'] = $department->faculty_id;
+                $data['campus_id'] = $department->faculty->campus_id ?? null;
+                $data['university_id'] = $department->faculty->campus->university_id ?? null;
+            }
+        } elseif (!empty($data['faculty_id'])) {
+            $faculty = \App\Models\Faculty::with('campus')->find($data['faculty_id']);
+            if ($faculty) {
+                $data['campus_id'] = $faculty->campus_id;
+                $data['university_id'] = $faculty->campus->university_id ?? null;
+            }
+        } elseif (!empty($data['campus_id'])) {
+            $campus = \App\Models\Campus::find($data['campus_id']);
+            if ($campus) {
+                $data['university_id'] = $campus->university_id;
+            }
+        }
+        return $data;
     }
 
     /**

@@ -45,7 +45,12 @@ class ProposalController extends Controller
             //   director       → research centre
             //   researcher     → own proposals
             //   reviewer       → own proposals (if also researcher)
-            ->hierarchical($user, 'submitted_by')
+            ->where(function ($query) use ($user) {
+                $query->hierarchical($user, 'submitted_by')
+                      ->orWhereHas('call', function ($callQuery) use ($user) {
+                          $callQuery->hierarchical($user, 'created_by');
+                      });
+            })
 
             // Filters
             ->when($request->filled('status'), function($q) use ($request) {
@@ -131,6 +136,35 @@ class ProposalController extends Controller
                     'status_id'   => 1, // pending
                     'invited_at'  => now(),
                 ]);
+            }
+
+            // Log submission
+            $auditLogService = app()->make(\App\Services\AuditLogService::class);
+            $auditLogService->log('submitted', 'proposals', $proposal->id, $request);
+
+            // Send notifications to submitter
+            $notificationService = app()->make(\App\Services\NotificationService::class);
+            $notificationService->proposalSubmitted($request->user(), $proposal->title, $proposal->id);
+
+            // Notify Call Creator
+            if ($call && $call->createdBy && $call->createdBy->id !== $request->user()->id) {
+                $notificationService->proposalReceived($call->createdBy, $proposal->title, $proposal->id, $request->user()->name);
+            }
+
+            // Notify Research Admins (Research Directorate Admins) of the university
+            $universityId = $call?->university_id ?: $request->user()->university_id;
+            if ($universityId) {
+                $researchAdmins = \App\Models\User::whereHas('roles', fn($q) => $q->where('name', 'research_admin'))
+                    ->where(function($q) use ($universityId) {
+                        $q->where('university_id', $universityId)
+                          ->orWhereNull('university_id');
+                    })
+                    ->get();
+                foreach ($researchAdmins as $admin) {
+                    if ($admin->id !== $request->user()->id) {
+                        $notificationService->proposalReceived($admin, $proposal->title, $proposal->id, $request->user()->name);
+                    }
+                }
             }
 
             return response()->json($proposal->load('investigators', 'file'), 201);

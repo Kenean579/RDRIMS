@@ -12,7 +12,8 @@ return new class extends Migration {
     {
         Schema::table('notifications', function (Blueprint $table) {
             $table->json('data')->nullable()->after('message');
-            $table->enum('priority', ['Critical', 'Important', 'Informational'])->default('Informational')->after('data');
+            $table->enum('priority', ['low', 'medium', 'high'])->default('medium')->after('data');
+            $table->string('keywords')->nullable()->default('')->after('priority');
         });
     }
 

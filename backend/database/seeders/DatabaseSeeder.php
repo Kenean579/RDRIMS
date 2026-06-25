@@ -9,19 +9,12 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            UniversitySeeder::class,
-            CampusSeeder::class,
-            FacultySeeder::class,
-            DepartmentSeeder::class,
-            ResearchCenterSeeder::class,
-            AcademicYearSeeder::class,
+            \Database\Seeders\AcademicYearSeeder::class,
 
             RoleSeeder::class,
             PermissionSeeder::class,
             RolePermissionSeeder::class,
             CenterRoleSeeder::class,
-
-            SuperAdminSeeder::class,
 
             CallStatusSeeder::class,
             ProposalTypeSeeder::class,
@@ -49,8 +42,10 @@ class DatabaseSeeder extends Seeder
             ReviewCriteriaSeeder::class,
             SettingSeeder::class,
 
+            ComprehensiveSeeder::class,
+            SuperAdminSeeder::class,
             SampleUserSeeder::class,
-            UserExpertiseSeeder::class,
+            HierarchicalPermissionsSeeder::class,
         ]);
     }
 }

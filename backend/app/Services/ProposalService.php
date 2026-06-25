@@ -36,6 +36,28 @@ class ProposalService
 
         $this->auditLogService->log('submitted', 'proposals', $proposal->id, request());
         $this->notificationService->proposalSubmitted($user, $proposal->title, $proposal->id);
+
+        // Notify Call Creator
+        $call = $proposal->call;
+        if ($call && $call->createdBy && $call->createdBy->id !== $user->id) {
+            $this->notificationService->proposalReceived($call->createdBy, $proposal->title, $proposal->id, $user->name);
+        }
+
+        // Notify Research Admins (Research Directorate Admins) of the university
+        $universityId = $call?->university_id ?: $user->university_id;
+        if ($universityId) {
+            $researchAdmins = User::whereHas('roles', fn($q) => $q->where('name', 'research_admin'))
+                ->where(function($q) use ($universityId) {
+                    $q->where('university_id', $universityId)
+                      ->orWhereNull('university_id');
+                })
+                ->get();
+            foreach ($researchAdmins as $admin) {
+                if ($admin->id !== $user->id) {
+                    $this->notificationService->proposalReceived($admin, $proposal->title, $proposal->id, $user->name);
+                }
+            }
+        }
     }
 
     public function approve(Proposal $proposal, User $approvedBy): void
@@ -102,12 +124,10 @@ class ProposalService
 
     public function assignReviewers(Proposal $proposal, array $reviewerIds, User $assignedBy): void
     {
-        foreach ($reviewerIds as $reviewerId) {
-            $proposal->reviewers()->attach($reviewerId, [
-                'assigned_by' => $assignedBy->id,
-                'assigned_at' => now(),
-            ]);
-        }
+        $proposal->reviewers()->syncWithoutDetaching(array_fill_keys($reviewerIds, [
+            'assigned_by' => $assignedBy->id,
+            'assigned_at' => now(),
+        ]));
 
         $proposal->update(['status_id' => ProposalStatusEnum::UNDER_REVIEW->value]);
 

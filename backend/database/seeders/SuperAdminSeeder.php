@@ -26,7 +26,7 @@ class SuperAdminSeeder extends Seeder
             $superAdmin->roles()->attach($superAdminRole->id, ['assigned_by' => null, 'assigned_at' => now()]);
         }
 
-        
+
         $researchAdmin = User::updateOrCreate(
             ['email' => 'research.admin@wollo.edu.et'],
             [

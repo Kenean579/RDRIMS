@@ -13,8 +13,13 @@ return new class extends Migration
             $table->string('title', 255);
             $table->dateTime('start_date');
             $table->dateTime('end_date');
-            $table->string('venue', 255);
+            $table->string('venue', 255)->nullable();
             $table->text('description');
+            $table->string('type')->default('announcement')->index();
+            $table->unsignedBigInteger('created_by');
+            $table->foreign('created_by')->references('id')->on('users')->cascadeOnDelete();
+            $table->unsignedBigInteger('university_id');
+            $table->foreign('university_id')->references('id')->on('universities')->cascadeOnDelete();
             $table->integer('capacity')->nullable();
             $table->dateTime('registration_deadline')->nullable();
             $table->unsignedBigInteger('research_center_id')->nullable();

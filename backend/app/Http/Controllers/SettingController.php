@@ -12,7 +12,7 @@ class SettingController extends Controller
 {
     public function index(): JsonResponse
     {
-        $this->authorize('viewAny', \App\Models\Setting::class);
+        // Public endpoint: no authorization required
         return response()->json(Setting::all());
     }
 

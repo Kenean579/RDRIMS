@@ -336,15 +336,13 @@ const canManageProposal = computed(() => {
   return auth.hasRole('super_admin', 'research_admin', 'campus_admin', 'faculty_admin', 'department_head', 'director')
 })
 
-const canEditProposal = computed(() => {
-  if (auth.hasRole('super_admin')) return true
-  if (auth.hasRole('research_admin') && auth.userScope === 'university') return true
-  if (auth.hasRole('campus_admin') && auth.userScope === 'campus') return true
-  if (auth.hasRole('faculty_admin') && auth.userScope === 'faculty') return true
-  if (auth.hasRole('department_head') && auth.userScope === 'department') return true
-  if (auth.hasRole('director') && auth.userScope === 'research_center') return true
-  return isOwner.value && proposal.value.status?.name === 'draft'
-})
+const activeTab = ref('summary')
+const tabs = ref([
+  { key: 'summary', label: 'Summary' },
+  { key: 'team', label: 'Team' },
+  { key: 'documents', label: 'Documents' },
+  { key: 'reviews', label: 'Reviews' },
+])
 
 const canAssignReviewers = computed(() => {
   return auth.hasRole('super_admin', 'research_admin', 'campus_admin', 'faculty_admin', 'department_head', 'director') &&

@@ -77,7 +77,8 @@ Route::get('system/health', function () {
 
 // Lookups & settings (public read)
 Route::get('lookups/{table}', [LookupController::class, 'index']);
-Route::middleware(['auth:sanctum', 'role:super_admin,research_admin,campus_admin,faculty_admin,department_head'])->get('settings', [SettingController::class, 'index']);
+Route::get('settings', [SettingController::class, 'index']);
+Route::post('email-config/test', [\App\Http\Controllers\EmailConfigurationController::class, 'testEmail']);
 
 // Academic hierarchy (public read)
 Route::get('universities', [UniversityController::class, 'index']);
@@ -150,7 +151,6 @@ Route::middleware('auth:sanctum')->group(function () {
         // Email Configuration
         Route::get('email-config', [\App\Http\Controllers\EmailConfigurationController::class, 'show']);
         Route::post('email-config', [\App\Http\Controllers\EmailConfigurationController::class, 'update']);
-        Route::post('email-config/test', [\App\Http\Controllers\EmailConfigurationController::class, 'testEmail']);
     });
 
     // ── Roles (read-only listing for all auth users, e.g. role-assignment dropdowns)

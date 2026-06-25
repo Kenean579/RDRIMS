@@ -126,7 +126,7 @@ class DashboardController extends Controller
             'universities_count' => University::count(),
             'campuses_count' => Campus::count(),
             'faculties_count' => Faculty::count(),
-            'calls_count' => Call::whereHas('status', fn($s) => $s->where('name', 'open'))->count(),
+            'calls_count' => Call::visibleTo($user)->whereHas('status', fn($s) => $s->where('name', 'open'))->count(),
             'publications_count' => $pubsQuery->count(),
             
             // Status-specific counts for the new admin grid

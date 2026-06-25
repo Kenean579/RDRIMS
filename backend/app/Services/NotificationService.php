@@ -42,12 +42,19 @@ class NotificationService
      */
     public function createInApp(User $user, string $type, string $message, array $data = [], string $priority = 'Informational'): Notification
     {
+        $dbPriority = match (strtolower($priority)) {
+            'informational', 'low' => 'low',
+            'important', 'medium' => 'medium',
+            'critical', 'high' => 'high',
+            default => 'medium',
+        };
+
         return Notification::create([
             'user_id'    => $user->id,
             'type'       => $type,
             'message'    => $message,
             'data'       => empty($data) ? null : $data,
-            'priority'   => $priority,
+            'priority'   => $dbPriority,
             'created_at' => now(),
             'read_at'    => null,
         ]);
@@ -163,6 +170,7 @@ HTML;
         $subjects = [
             'user_registered'       => 'Welcome to RDRIMS – Account Created',
             'proposal_submitted'    => 'Proposal Submitted Successfully',
+            'proposal_received'     => 'New Proposal Received for Review',
             'proposal_approved'     => 'Your Proposal Has Been Approved',
             'proposal_rejected'     => 'Proposal Status Update – Rejected',
             'reviewer_assigned'     => 'New Review Assignment',
@@ -186,6 +194,14 @@ HTML;
     {
         $this->notify($submitter, 'proposal_submitted',
             "Your proposal \"{$proposalTitle}\" has been submitted successfully and is pending review.",
+            ['link' => url("/proposals/{$proposalId}"), 'action_text' => 'View Proposal']
+        );
+    }
+
+    public function proposalReceived(User $admin, string $proposalTitle, int $proposalId, string $submitterName): void
+    {
+        $this->notify($admin, 'proposal_received',
+            "A new proposal \"{$proposalTitle}\" has been submitted by {$submitterName} and is awaiting your review/action.",
             ['link' => url("/proposals/{$proposalId}"), 'action_text' => 'View Proposal']
         );
     }

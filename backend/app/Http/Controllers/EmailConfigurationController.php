@@ -82,6 +82,17 @@ class EmailConfigurationController extends Controller
             return response()->json(['message' => 'SMTP is disabled. Enable it in Email Configuration first.'], 400);
         }
 
+        if (empty($config->host) || empty($config->port) || empty($config->username) || empty($config->password)) {
+            return response()->json(['message' => 'Incomplete SMTP configuration. Please ensure host, port, username, and password are set.'], 400);
+        }
+
+        \Illuminate\Support\Facades\Log::info('Testing SMTP Configuration', [
+            'host' => $config->host,
+            'port' => $config->port,
+            'username' => $config->username,
+            'encryption' => $config->encryption,
+        ]);
+
         // Dynamically override SMTP settings for this request
         Config::set('mail.default', 'smtp');
         Config::set('mail.mailers.smtp.host', $config->host);

@@ -88,4 +88,55 @@ class Call extends Model
     {
         return $this->hasMany(Proposal::class);
     }
+
+    /**
+     * Scope a query to only include calls visible to the given user.
+     */
+    public function scopeVisibleTo($query, User $user)
+    {
+        if ($user->hasRole('super_admin')) {
+            return $query;
+        }
+
+        return $query->where(function ($q) use ($user) {
+            // Include calls targeted globally
+            $q->whereNull('university_id');
+
+            if ($user->hasRole('research_admin')) {
+                $q->orWhere('university_id', $user->university_id)
+                  ->orWhereHas('createdBy', fn($u) => $u->where('university_id', $user->university_id));
+            }
+            if ($user->hasRole('campus_admin')) {
+                $q->orWhere('campus_id', $user->campus_id);
+            }
+            if ($user->hasRole('faculty_admin')) {
+                $q->orWhere('faculty_id', $user->faculty_id);
+            }
+            if ($user->hasRole('department_head')) {
+                $q->orWhere('department_id', $user->department_id);
+            }
+            if ($user->hasRole('director')) {
+                $centerIds = \Illuminate\Support\Facades\DB::table('user_research_centers')
+                    ->where('user_id', $user->id)->pluck('research_center_id');
+                if ($centerIds->isNotEmpty()) {
+                    $q->orWhereIn('research_center_id', $centerIds);
+                }
+            }
+
+            // Default scoping for researchers, reviewers, students, etc.
+            if ($user->hasRole('researcher', 'reviewer', 'student', 'guest')) {
+                $q->orWhere('university_id', $user->university_id);
+                
+                if ($user->department?->faculty?->campus_id) {
+                    $q->orWhere('campus_id', $user->department->faculty->campus_id);
+                }
+                if ($user->department?->faculty_id) {
+                    $q->orWhere('faculty_id', $user->department->faculty_id);
+                }
+                if ($user->department_id) {
+                    $q->orWhere('department_id', $user->department_id);
+                }
+            }
+        });
+    }
 }
