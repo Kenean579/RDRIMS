@@ -47,7 +47,7 @@ api.interceptors.request.use(config => {
   if (token) config.headers.Authorization = `Bearer ${token}`
   
   // Inject global hierarchical context into GET queries
-  const CONTEXT_EXCLUDED = ['/universities', '/campuses', '/faculties', '/departments', '/lookups', '/settings', '/dashboard']
+  const CONTEXT_EXCLUDED = ['/universities', '/campuses', '/faculties', '/departments', '/lookups', '/settings', '/dashboard', '/calls']
   if (config.method === 'get' || config.method === 'GET') {
     try {
       const isExcluded = CONTEXT_EXCLUDED.some(ep => config.url?.endsWith(ep) || config.url?.match(new RegExp(`${ep}\\?`)) || config.url?.match(new RegExp(`${ep}/`)))

@@ -336,6 +336,13 @@ const canManageProposal = computed(() => {
   return auth.hasRole('super_admin', 'research_admin', 'campus_admin', 'faculty_admin', 'department_head', 'director')
 })
 
+// Edit rights: only draft proposals can be edited, and only by the owner or an admin
+const canEditProposal = computed(() => {
+  const isDraft = proposal.value.status?.name === 'draft'
+  return isDraft && (isOwner.value || canManageProposal.value)
+})
+
+
 const activeTab = ref('summary')
 const tabs = ref([
   { key: 'summary', label: 'Summary' },

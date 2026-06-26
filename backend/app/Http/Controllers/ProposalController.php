@@ -50,6 +50,12 @@ class ProposalController extends Controller
                       ->orWhereHas('call', function ($callQuery) use ($user) {
                           $callQuery->hierarchical($user, 'created_by');
                       });
+                // Ensure admin visibility is limited to their university
+                if (!$user->hasRole('super_admin')) {
+                    $query->orWhereHas('call', function ($cq) use ($user) {
+                        $cq->where('university_id', $user->university_id);
+                    });
+                }
             })
 
             // Filters

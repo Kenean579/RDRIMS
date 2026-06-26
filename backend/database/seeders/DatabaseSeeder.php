@@ -42,7 +42,11 @@ class DatabaseSeeder extends Seeder
             ReviewCriteriaSeeder::class,
             SettingSeeder::class,
 
-            ComprehensiveSeeder::class,
+           // ComprehensiveSeeder::class,
+            UniversitySeeder::class,
+            CampusSeeder::class,
+            FacultySeeder::class,
+            DepartmentSeeder::class,
             SuperAdminSeeder::class,
             SampleUserSeeder::class,
             HierarchicalPermissionsSeeder::class,

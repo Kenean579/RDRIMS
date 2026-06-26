@@ -12,5 +12,6 @@ class UniversitySeeder extends Seeder
         University::firstOrCreate(['name' => 'Wollo University', 'code' => 'WU', 'location' => 'Dessie, Ethiopia']);
         University::firstOrCreate(['name' => 'Addis Ababa University', 'code' => 'AAU', 'location' => 'Addis Ababa, Ethiopia']);
         University::firstOrCreate(['name' => 'Bahir Dar University', 'code' => 'BDU', 'location' => 'Bahir Dar, Ethiopia']);
+        University::firstOrCreate(['name' => 'Gonder University', 'code' => 'GoU', 'location' => 'Gonder, Ethiopia']);
     }
 }
