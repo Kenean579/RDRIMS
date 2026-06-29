@@ -72,8 +72,8 @@ const notif = useNotificationStore()
 async function submit() {
   loading.value = true
   try {
-    await api.post('/forgot-password', { email: email.value })
-    notif.success('Password reset link sent to your email!')
+    const response = await api.post('/forgot-password', { email: email.value })
+    notif.success(response.data?.message || 'We\'ve sent a password reset link to your email.')
     email.value = ''
   } catch (err) {
     notif.error(err.response?.data?.message || 'Failed to send reset link')

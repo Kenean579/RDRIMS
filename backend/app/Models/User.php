@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Notifications\ResetPasswordNotification;
+use Illuminate\Auth\Passwords\CanResetPassword;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -16,7 +18,12 @@ use App\Models\Publication;
 
 class User extends Authenticatable
 {
-    use HasApiTokens, Notifiable, HasFactory, \App\Traits\HasRoles, \App\Traits\HierarchicalScope;
+    use HasApiTokens, Notifiable, HasFactory, CanResetPassword, \App\Traits\HasRoles, \App\Traits\HierarchicalScope;
+
+    public function sendPasswordResetNotification(#[\SensitiveParameter] $token): void
+    {
+        $this->notify(new ResetPasswordNotification($token));
+    }
 
 /**
      * @property int $id

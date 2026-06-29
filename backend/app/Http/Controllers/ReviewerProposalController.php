@@ -33,7 +33,7 @@ class ReviewerProposalController extends Controller
                 $proposal = $pivot->proposal;
                 $proposal->reviewPivot = clone $pivot;
                 // Avoid recursive loops
-                unset($proposal->reviewPivot->proposal); 
+                unset($proposal->reviewPivot->proposal);
                 return $proposal;
             });
             $assignments->setCollection($transformed);
@@ -49,7 +49,7 @@ class ReviewerProposalController extends Controller
     {
         $isReviewer = $proposal->reviewers()->where('reviewer_id', $request->user()->id)->exists();
 
-        if (! $isReviewer) {
+        if (!$isReviewer) {
             abort(403, 'You are not assigned as a reviewer for this proposal.');
         }
 
@@ -72,12 +72,12 @@ class ReviewerProposalController extends Controller
         }
 
         $pivot = ProposalReviewer::where('proposal_id', $proposal->id)
-    ->where('reviewer_id', $reviewerId)
-    ->first();
+            ->where('reviewer_id', $reviewerId)
+            ->first();
 
-if (!$pivot) {
-    abort(403, 'Reviewer assignment not found.');
-}
+        if (!$pivot) {
+            abort(403, 'Reviewer assignment not found.');
+        }
 
         // Save scores per criterion
         foreach ($request->scores as $scoreData) {
@@ -137,13 +137,13 @@ if (!$pivot) {
             // C will be the input
             $sheet->setCellValue('D' . $row, 'Overall Comments ->');
             // E will be the input for comments
-            
+
             $decisionRow = $row; // Store this for later if needed
-            
+
             $row += 2;
             $sheet->setCellValue('A' . $row, '--- Available Decisions (Do not edit below) ---');
             $row++;
-            
+
             $decisions = \App\Models\ReviewDecision::all();
             foreach ($decisions as $d) {
                 $sheet->setCellValue('A' . $row, $d->id);
@@ -236,20 +236,20 @@ if (!$pivot) {
             for ($i = 1; $i <= 200; $i++) {
                 $cellA = trim((string) $sheet->getCell('A' . $i)->getValue());
                 $cellB = trim((string) $sheet->getCell('B' . $i)->getValue());
-                
+
                 if (stripos($cellA, 'Overall Decision') !== false || stripos($cellB, 'Decision ID Input') !== false) {
                     $decisionId = $sheet->getCell('C' . $i)->getValue();
                     $overallComments = $sheet->getCell('E' . $i)->getValue();
-                    
+
                     // Fallback: Check if user put it in B, C, or D by mistake on the next row
                     if (!$decisionId) {
-                        $decisionId = $sheet->getCell('B' . ($i + 1))->getValue() 
-                                   ?? $sheet->getCell('C' . ($i + 1))->getValue() 
-                                   ?? $sheet->getCell('D' . ($i + 1))->getValue();
-                        
+                        $decisionId = $sheet->getCell('B' . ($i + 1))->getValue()
+                            ?? $sheet->getCell('C' . ($i + 1))->getValue()
+                            ?? $sheet->getCell('D' . ($i + 1))->getValue();
+
                         $overallComments = $overallComments ?: $sheet->getCell('E' . ($i + 1))->getValue();
                     }
-                    
+
                     if ($decisionId) {
                         break;
                     }
@@ -264,7 +264,8 @@ if (!$pivot) {
                         if (stripos($val, 'Decision ID Input') !== false) {
                             $nextCol = chr(ord($col) + 1);
                             $decisionId = $sheet->getCell($nextCol . $i)->getValue() ?? $sheet->getCell($col . ($i + 1))->getValue();
-                            if ($decisionId) break 2;
+                            if ($decisionId)
+                                break 2;
                         }
                     }
                 }
@@ -274,8 +275,8 @@ if (!$pivot) {
             if ($decisionId && !is_numeric($decisionId)) {
                 $decisionName = strtolower(trim((string) $decisionId));
                 $decision = \App\Models\ReviewDecision::whereRaw('LOWER(name) = ?', [$decisionName])
-                                ->orWhereRaw('LOWER(name) LIKE ?', ["%{$decisionName}%"])
-                                ->first();
+                    ->orWhereRaw('LOWER(name) LIKE ?', ["%{$decisionName}%"])
+                    ->first();
                 if ($decision) {
                     $decisionId = $decision->id;
                 }

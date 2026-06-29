@@ -75,6 +75,16 @@ const form = reactive({
 onMounted(() => {
   form.email = route.query.email || ''
   form.token = route.query.token || route.params.token || ''
+  console.debug('[ResetPassword] Route query received:', {
+    email: form.email,
+    hasToken: !!form.token,
+    routePath: route.fullPath
+  })
+
+  if (!form.token || !form.email) {
+    notif.error('Invalid or missing password reset link.')
+    router.push('/forgot-password')
+  }
 })
 
 async function submit() {
@@ -84,7 +94,14 @@ async function submit() {
   }
   loading.value = true
   try {
-    await api.post('/reset-password', form)
+    const payload = {
+      email: form.email,
+      token: form.token,
+      password: form.password,
+      password_confirmation: form.password_confirmation
+    }
+    console.debug('[ResetPassword] Submitting payload:', { email: payload.email, hasToken: !!payload.token })
+    await api.post('/reset-password', payload)
     notif.success('Password has been successfully reset!')
     router.push('/login')
   } catch (err) {

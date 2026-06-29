@@ -24,7 +24,7 @@ const api = axios.create({
 import { useContextStore } from '@/stores/context'
 
 // Public endpoints that must NOT trigger a logout redirect on 401, and should not send expired tokens
-const PUBLIC_ENDPOINTS = ['/settings', '/lookups', '/universities', '/campuses', '/faculties', '/departments', '/calls', '/publications', '/community-problems', '/events', '/public', '/users', '/email-config/test']
+const PUBLIC_ENDPOINTS = ['/settings', '/lookups', '/universities', '/campuses', '/faculties', '/departments', '/calls', '/publications', '/community-problems', '/events', '/public', '/users', '/email-config/test', '/forgot-password', '/reset-password', '/login', '/register']
 
 // Add response caching interceptor for GET requests
 api.interceptors.request.use(config => {
@@ -44,7 +44,7 @@ api.interceptors.request.use(config => {
 
   const isPublic = PUBLIC_ENDPOINTS.some(p => config.url?.includes(p))
   const token = localStorage.getItem('rdrims_token')
-  if (token) config.headers.Authorization = `Bearer ${token}`
+  if (token && !isPublic) config.headers.Authorization = `Bearer ${token}`
   
   // Inject global hierarchical context into GET queries
   const CONTEXT_EXCLUDED = ['/universities', '/campuses', '/faculties', '/departments', '/lookups', '/settings', '/dashboard', '/calls']
