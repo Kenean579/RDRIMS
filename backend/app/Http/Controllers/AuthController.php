@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
 
 class AuthController extends Controller
 {
@@ -75,7 +76,7 @@ class AuthController extends Controller
             'email_important'    => 'sometimes|boolean',
             'email_informational'=> 'sometimes|boolean',
         ]);
-        
+
         $user->update($validated);
 
         if ($request->has('expertise')) {
@@ -90,34 +91,56 @@ class AuthController extends Controller
         return response()->json($user->load('roles.permissions', 'profileImage', 'expertise'));
     }
 
-    public function forgotPassword(Request $request): JsonResponse
-    {
-        $request->validate(['email' => 'required|email|exists:users,email']);
+public function forgotPassword(Request $request): JsonResponse
+{
+    $request->validate([
+        'email' => 'required|email|exists:users,email',
+    ]);
 
-        // In a real app, we would send an email. For now, we'll just return success.
-        // Or we can use Laravel's Password broker if we set up mail.
-        
-        // Mocking success
-        return response()->json(['message' => 'Password reset link sent to your email!']);
-    }
+    $user = \App\Models\User::where('email', $request->email)->first();
 
-    public function resetPassword(Request $request): JsonResponse
-    {
-        $request->validate([
-            'token' => 'required',
-            'email' => 'required|email|exists:users,email',
-            'password' => 'required|string|min:8|confirmed',
-        ]);
+    $token = Password::broker()->createToken($user);
 
-        // Simple reset for this demo/local environment
-        $user = \App\Models\User::where('email', $request->input('email'))->first();
-        if ($user) {
-            $user->update(['password' => Hash::make($request->input('password'))]);
-            return response()->json(['message' => 'Password has been reset successfully.']);
+    return response()->json([
+        'success' => true,
+        'message' => 'Password reset token generated successfully.',
+        'email' => $user->email,
+        'token' => $token,
+        'reset_url' => url('/reset-password?token='.$token.'&email='.$user->email),
+    ]);
+}
+public function resetPassword(Request $request): JsonResponse
+{
+    $request->validate([
+        'token' => 'required',
+        'email' => 'required|email',
+        'password' => 'required|string|min:8|confirmed',
+    ]);
+
+    $status = Password::reset(
+        $request->only(
+            'email',
+            'password',
+            'password_confirmation',
+            'token'
+        ),
+        function ($user, $password) {
+
+            $user->forceFill([
+                'password' => Hash::make($password),
+                'remember_token' => Str::random(60),
+            ])->save();
         }
+    );
 
-        return response()->json(['message' => 'Invalid request.'], 400);
-    }
+    return $status === Password::PASSWORD_RESET
+        ? response()->json([
+            'message' => 'Password reset successfully.'
+        ])
+        : response()->json([
+            'message' => __($status)
+        ], 400);
+}
 
     public function user(Request $request): JsonResponse
     {

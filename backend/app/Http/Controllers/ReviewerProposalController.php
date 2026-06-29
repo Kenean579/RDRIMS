@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Log;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\IOFactory;
+use PhpOffice\PhpSpreadsheet\Reader\Exception as ReaderException;
 use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ReviewerProposalController extends Controller
@@ -231,12 +232,52 @@ if (!$pivot) {
             $decisionId = null;
             $overallComments = '';
 
-            for ($i = $row; $i < $row + 20; $i++) {
-                if ($sheet->getCell('A' . $i)->getValue() == 'Overall Decision') {
-                    // Based on the new layout, Decision ID is in C, Comments in E
+            // More robust search: scan up to 200 rows to find the decision row
+            for ($i = 1; $i <= 200; $i++) {
+                $cellA = trim((string) $sheet->getCell('A' . $i)->getValue());
+                $cellB = trim((string) $sheet->getCell('B' . $i)->getValue());
+                
+                if (stripos($cellA, 'Overall Decision') !== false || stripos($cellB, 'Decision ID Input') !== false) {
                     $decisionId = $sheet->getCell('C' . $i)->getValue();
                     $overallComments = $sheet->getCell('E' . $i)->getValue();
-                    break;
+                    
+                    // Fallback: Check if user put it in B, C, or D by mistake on the next row
+                    if (!$decisionId) {
+                        $decisionId = $sheet->getCell('B' . ($i + 1))->getValue() 
+                                   ?? $sheet->getCell('C' . ($i + 1))->getValue() 
+                                   ?? $sheet->getCell('D' . ($i + 1))->getValue();
+                        
+                        $overallComments = $overallComments ?: $sheet->getCell('E' . ($i + 1))->getValue();
+                    }
+                    
+                    if ($decisionId) {
+                        break;
+                    }
+                }
+            }
+
+            // Fallback search over the whole block if still not found
+            if (!$decisionId) {
+                for ($i = 1; $i <= 200; $i++) {
+                    for ($col = 'A'; $col <= 'E'; $col++) {
+                        $val = trim((string) $sheet->getCell($col . $i)->getValue());
+                        if (stripos($val, 'Decision ID Input') !== false) {
+                            $nextCol = chr(ord($col) + 1);
+                            $decisionId = $sheet->getCell($nextCol . $i)->getValue() ?? $sheet->getCell($col . ($i + 1))->getValue();
+                            if ($decisionId) break 2;
+                        }
+                    }
+                }
+            }
+
+            // Map Decision Names (e.g. 'accept') to their IDs in case the user typed the name instead of the number
+            if ($decisionId && !is_numeric($decisionId)) {
+                $decisionName = strtolower(trim((string) $decisionId));
+                $decision = \App\Models\ReviewDecision::whereRaw('LOWER(name) = ?', [$decisionName])
+                                ->orWhereRaw('LOWER(name) LIKE ?', ["%{$decisionName}%"])
+                                ->first();
+                if ($decision) {
+                    $decisionId = $decision->id;
                 }
             }
 
@@ -244,7 +285,18 @@ if (!$pivot) {
                 return response()->json(['message' => 'Overall Decision ID not found in Excel.'], 422);
             }
 
+            if (!\App\Models\ReviewDecision::where('id', $decisionId)->exists()) {
+                return response()->json(['message' => 'Invalid Overall Decision provided in Excel.'], 422);
+            }
+
             $overallScore = $totalMax > 0 ? ($totalReceived / $totalMax) * 5 : 0;
+
+            $validCriterionIds = \App\Models\ReviewCriterion::pluck('id')->toArray();
+            foreach ($scoresData as $sd) {
+                if (!in_array($sd['criterion_id'], $validCriterionIds)) {
+                    return response()->json(['message' => "Invalid Criterion ID found in Excel: {$sd['criterion_id']}"], 422);
+                }
+            }
 
             foreach ($scoresData as $sd) {
                 ProposalReviewScore::updateOrCreate(
@@ -268,6 +320,10 @@ if (!$pivot) {
             ]);
 
             return response()->json(['message' => 'Excel review imported successfully.', 'overall_score' => $overallScore]);
+        } catch (ReaderException $e) {
+            return response()->json([
+                'message' => 'Invalid file format. Please upload a valid Excel file.',
+            ], 400);
         } catch (\Throwable $e) {
             Log::channel('reviewer')->error('Review import failed', [
                 'proposal_id' => $proposal->id,
