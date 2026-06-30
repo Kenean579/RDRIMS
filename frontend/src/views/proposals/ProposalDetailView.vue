@@ -229,9 +229,9 @@
                  <div v-for="r in proposal.reviewers" :key="r.id" class="p-4 bg-slate-50 rounded-2xl border border-slate-100 relative group">
                     <div class="flex justify-between items-center mb-1">
                       <p class="text-sm font-bold text-slate-700">{{ r.name }}</p>
-                      <span v-if="r.pivot?.overall_score" class="text-brand font-bold">{{ r.pivot.overall_score }}/5</span>
+                      <span v-if="r.pivot?.submitted_at" class="text-brand font-bold">{{ r.pivot.overall_score }}/5</span>
                     </div>
-                    <p class="text-xs font-medium  text-slate-400 tracking-widest">{{ r.pivot?.overall_score ? 'Feedback Provided' : 'Under Review' }}</p>
+                    <p class="text-xs font-medium  text-slate-400 tracking-widest">{{ r.pivot?.submitted_at ? 'Feedback Provided' : 'Under Review' }}</p>
                  </div>
               </div>
               <p v-else class="text-xs font-medium text-slate-400  italic">No reviewers assigned.</p>

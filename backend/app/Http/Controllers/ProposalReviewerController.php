@@ -4,10 +4,16 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\AssignReviewersRequest;
 use App\Models\Proposal;
+use App\Models\ProposalReviewer;
+use App\Services\ReviewService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 
 class ProposalReviewerController extends Controller
 {
+    public function __construct(
+        private ReviewService $reviewService
+    ) {}
     public function index(Proposal $proposal): JsonResponse
     {
         return response()->json($proposal->reviewers);
@@ -83,6 +89,20 @@ class ProposalReviewerController extends Controller
         return response()->json([
             'message' => $recommended->isEmpty() ? 'No reviewer with the required expertise is currently registered.' : 'Reviewers recommended based on expertise.',
             'recommendations' => $recommended
+        ]);
+    }
+
+    public function reopen(Request $request, Proposal $proposal, int $reviewer): JsonResponse
+    {
+        $pivot = ProposalReviewer::where('proposal_id', $proposal->id)
+            ->where('reviewer_id', $reviewer)
+            ->firstOrFail();
+
+        $pivot = $this->reviewService->reopenReview($pivot, $request->user());
+
+        return response()->json([
+            'message' => 'Review reopened for revision.',
+            'review' => $pivot,
         ]);
     }
 }

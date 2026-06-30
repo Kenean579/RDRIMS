@@ -238,7 +238,7 @@ const keywordsList = computed(() => {
   return proposal.value.keywords.split(',').map(k => k.trim())
 })
 
-const alreadyReviewed = computed(() => proposal.value.reviewPivot?.overall_score !== null)
+const alreadyReviewed = computed(() => !!proposal.value.reviewPivot?.submitted_at || proposal.value.is_locked)
 const existingScore = computed(() => proposal.value.reviewPivot?.overall_score)
 
 async function fetchProposal() {
@@ -305,7 +305,7 @@ async function submitReview() {
     notif.success('Review submitted successfully!')
     await fetchProposal()
   } catch (err) {
-    notif.error('Failed to submit review. Please try again.')
+    notif.error(err.response?.data?.message || err.response?.data?.errors?.review?.[0] || 'Failed to submit review. Please try again.')
   } finally { submitting.value = false }
 }
 

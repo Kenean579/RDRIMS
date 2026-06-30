@@ -50,13 +50,14 @@ class SettingController extends Controller
         $request->validate([
             'settings' => 'required|array',
             'settings.*.key' => 'required|string',
-            'settings.*.value' => 'required|string',
+            // Some system settings are intentionally optional and may be blank.
+            'settings.*.value' => 'nullable|string',
         ]);
 
         foreach ($request->settings as $settingData) {
             Setting::updateOrCreate(
                 ['key' => $settingData['key']],
-                ['value' => $settingData['value']]
+                ['value' => (string) ($settingData['value'] ?? '')]
             );
         }
 

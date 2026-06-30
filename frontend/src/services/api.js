@@ -23,8 +23,10 @@ const api = axios.create({
 
 import { useContextStore } from '@/stores/context'
 
-// Public endpoints that must NOT trigger a logout redirect on 401, and should not send expired tokens
-const PUBLIC_ENDPOINTS = ['/settings', '/lookups', '/universities', '/campuses', '/faculties', '/departments', '/calls', '/publications', '/community-problems', '/events', '/public', '/users', '/email-config/test', '/forgot-password', '/reset-password', '/login', '/register']
+// Endpoints that are truly auth-free for all methods
+const AUTH_FREE_ENDPOINTS = ['/forgot-password', '/reset-password', '/login', '/register', '/email-config/test']
+// Endpoints that are public only for GET reads
+const PUBLIC_READ_ENDPOINTS = ['/settings', '/lookups', '/universities', '/campuses', '/faculties', '/departments', '/calls', '/publications', '/community-problems', '/events', '/public', '/users']
 
 // Add response caching interceptor for GET requests
 api.interceptors.request.use(config => {
@@ -42,7 +44,10 @@ api.interceptors.request.use(config => {
     }
   }
 
-  const isPublic = PUBLIC_ENDPOINTS.some(p => config.url?.includes(p))
+  const method = String(config.method || 'get').toLowerCase()
+  const isAuthFree = AUTH_FREE_ENDPOINTS.some(p => config.url?.includes(p))
+  const isPublicRead = method === 'get' && PUBLIC_READ_ENDPOINTS.some(p => config.url?.includes(p))
+  const isPublic = isAuthFree || isPublicRead
   const token = localStorage.getItem('rdrims_token')
   if (token && !isPublic) config.headers.Authorization = `Bearer ${token}`
   
@@ -81,7 +86,10 @@ api.interceptors.response.use(
   error => {
     if (error.response?.status === 401) {
       const url = error.config?.url || ''
-      const isPublic = PUBLIC_ENDPOINTS.some(p => url.includes(p))
+      const method = String(error.config?.method || 'get').toLowerCase()
+      const isAuthFree = AUTH_FREE_ENDPOINTS.some(p => url.includes(p))
+      const isPublicRead = method === 'get' && PUBLIC_READ_ENDPOINTS.some(p => url.includes(p))
+      const isPublic = isAuthFree || isPublicRead
       if (!isPublic) {
         localStorage.removeItem('rdrims_token')
         localStorage.removeItem('rdrims_user')

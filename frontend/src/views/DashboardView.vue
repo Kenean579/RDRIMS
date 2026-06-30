@@ -344,8 +344,8 @@ function applyRoleStats(d, actualCounts) {
   } else if (auth.hasRole('reviewer')) {
     statsArr.push({ ...baseStats[12], value: String(d.pending_reviews || 0) })
     statsArr.push({ ...baseStats[13], value: String(d.completed_reviews || 0) })
-    statsArr.push({ ...baseStats[7], value: String(d.projects_count || 0) })
-    statsArr.push({ ...baseStats[11], value: String(d.publications_count || 0) })
+    statsArr.push({ ...baseStats[7], value: String(d.assigned_reviews || 0) })
+    statsArr.push({ ...baseStats[11], value: String(d.average_score ?? 0) })
   } else if (auth.hasRole('finance_officer')) {
     statsArr.push({ ...baseStats[14], value: String(d.pending_finance_checks || 0) })
     statsArr.push({ ...baseStats[15], value: String(d.approved_budgets || 0) })

@@ -172,7 +172,13 @@ async function saveAll() {
     notif.success('System settings updated!')
     fetchSettings()
   } catch (err) {
-    notif.error('Failed to save settings')
+    const validationErrors = err.response?.data?.errors
+    if (validationErrors) {
+      const firstError = Object.values(validationErrors)[0]?.[0]
+      notif.error(firstError || 'Failed to save settings')
+    } else {
+      notif.error(err.response?.data?.message || 'Failed to save settings')
+    }
   }
 }
 

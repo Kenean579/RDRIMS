@@ -9,6 +9,11 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (DB::getDriverName() === 'sqlite') {
+            // SQLite does not support MySQL-style MODIFY COLUMN syntax.
+            return;
+        }
+
         // Ensure priority column has proper enum definition and default
         DB::statement("ALTER TABLE notifications MODIFY COLUMN priority ENUM('low','medium','high') NOT NULL DEFAULT 'medium'");
         // Make keywords column nullable with default empty string
@@ -17,6 +22,10 @@ return new class extends Migration
 
     public function down(): void
     {
+        if (DB::getDriverName() === 'sqlite') {
+            return;
+        }
+
         // Revert modifications (allow nulls again for keywords)
         DB::statement("ALTER TABLE notifications MODIFY COLUMN keywords VARCHAR(255) NULL");
         // Keep priority as is (cannot revert without losing data)

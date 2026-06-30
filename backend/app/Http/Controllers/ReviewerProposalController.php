@@ -5,12 +5,12 @@ namespace App\Http\Controllers;
 use App\Http\Requests\SubmitReviewRequest;
 use App\Models\Proposal;
 use App\Models\ProposalReviewer;
-use App\Models\ProposalReviewScore;
 use App\Models\ReviewCriterion;
 use App\Models\ReviewDecision;
+use App\Services\ReviewService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Validation\ValidationException;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -19,6 +19,10 @@ use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class ReviewerProposalController extends Controller
 {
+    public function __construct(
+        private ReviewService $reviewService
+    ) {}
+
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
@@ -29,11 +33,10 @@ class ReviewerProposalController extends Controller
                 ->paginate(20);
 
             $transformed = $assignments->getCollection()->map(function ($pivot) {
-                // Ensure proposal is returned but disguised as having the pivot explicitly named reviewPivot
                 $proposal = $pivot->proposal;
                 $proposal->reviewPivot = clone $pivot;
-                // Avoid recursive loops
                 unset($proposal->reviewPivot->proposal);
+                $proposal->review_progress = $this->reviewService->getProposalReviewProgress($proposal);
                 return $proposal;
             });
             $assignments->setCollection($transformed);
@@ -47,53 +50,37 @@ class ReviewerProposalController extends Controller
 
     public function show(Proposal $proposal, Request $request): JsonResponse
     {
-        $isReviewer = $proposal->reviewers()->where('reviewer_id', $request->user()->id)->exists();
+        $pivot = $this->reviewService->getAssignment($proposal, $request->user()->id);
 
-        if (!$isReviewer) {
-            abort(403, 'You are not assigned as a reviewer for this proposal.');
-        }
-
-        // Load only necessary relations and hide submitter for blind review
         $proposal->load('status', 'type', 'file');
         $proposal->setRelation('submittedBy', null);
         $proposal->setRelation('investigators', collect([]));
         $proposal->submitted_by = null;
+
+        $pivot->load('scores', 'decision');
+        $proposal->reviewPivot = $pivot;
+        $proposal->is_locked = $pivot->submitted_at !== null;
 
         return response()->json($proposal);
     }
 
     public function storeReview(SubmitReviewRequest $request, Proposal $proposal): JsonResponse
     {
-        $reviewerId = $request->user()->id;
-        $reviewer = $proposal->reviewers()->where('reviewer_id', $reviewerId)->first();
+        $pivot = $this->reviewService->getAssignment($proposal, $request->user()->id);
+        $this->reviewService->assertNotLocked($pivot);
 
-        if (!$reviewer) {
-            abort(403, 'You are not assigned as a reviewer for this proposal.');
-        }
+        $this->reviewService->submitReview(
+            $pivot,
+            $request->scores,
+            (float) $request->overall_score,
+            $request->overall_comments,
+            (int) $request->decision_id
+        );
 
-        $pivot = ProposalReviewer::where('proposal_id', $proposal->id)
-            ->where('reviewer_id', $reviewerId)
-            ->first();
-
-        if (!$pivot) {
-            abort(403, 'Reviewer assignment not found.');
-        }
-
-        // Save scores per criterion
-        foreach ($request->scores as $scoreData) {
-            $pivot->scores()->create([
-                'criterion_id' => $scoreData['criterion_id'],
-                'score' => $scoreData['score'],
-                'comments' => $scoreData['comments'] ?? null,
-            ]);
-        }
-
-        // Update pivot with overall review
-        $proposal->reviewers()->updateExistingPivot($reviewerId, [
+        $this->reviewService->logAction('reviewer_submit_review', $proposal, $request->user(), [
+            'proposal_reviewer_id' => $pivot->id,
             'overall_score' => $request->overall_score,
-            'overall_comments' => $request->overall_comments,
             'decision_id' => $request->decision_id,
-            'submitted_at' => now(),
         ]);
 
         return response()->json(['message' => 'Review submitted.']);
@@ -101,21 +88,19 @@ class ReviewerProposalController extends Controller
 
     public function downloadTemplate(Proposal $proposal, Request $request): StreamedResponse|JsonResponse
     {
-        $this->validateReviewer($proposal, $request->user()->id);
+        $this->reviewService->getAssignment($proposal, $request->user()->id);
 
         try {
             $spreadsheet = new Spreadsheet();
             $sheet = $spreadsheet->getActiveSheet();
             $sheet->setTitle('Review Template');
 
-            // Headers
             $sheet->setCellValue('A1', 'Criterion ID');
             $sheet->setCellValue('B1', 'Criterion Name');
             $sheet->setCellValue('C1', 'Max Score');
             $sheet->setCellValue('D1', 'Score (Your Input)');
             $sheet->setCellValue('E1', 'Comments');
 
-            // Metadata (Hidden or at the end)
             $sheet->setCellValue('G1', 'Proposal ID');
             $sheet->setCellValue('H1', 'Reviewer ID');
             $sheet->setCellValue('G2', $proposal->id);
@@ -130,21 +115,15 @@ class ReviewerProposalController extends Controller
                 $row++;
             }
 
-            // Decision section
             $row += 2;
             $sheet->setCellValue('A' . $row, 'Overall Decision');
             $sheet->setCellValue('B' . $row, 'Your Decision ID Input ->');
-            // C will be the input
-            $sheet->setCellValue('D' . $row, 'Overall Comments ->');
-            // E will be the input for comments
-
-            $decisionRow = $row; // Store this for later if needed
 
             $row += 2;
             $sheet->setCellValue('A' . $row, '--- Available Decisions (Do not edit below) ---');
             $row++;
 
-            $decisions = \App\Models\ReviewDecision::all();
+            $decisions = ReviewDecision::all();
             foreach ($decisions as $d) {
                 $sheet->setCellValue('A' . $row, $d->id);
                 $sheet->setCellValue('B' . $row, $d->name);
@@ -160,20 +139,10 @@ class ReviewerProposalController extends Controller
             $response->headers->set('Content-Disposition', 'attachment;filename="Review_Template_Proposal_' . $proposal->id . '.xlsx"');
             $response->headers->set('Cache-Control', 'max-age=0');
 
-            Log::channel('reviewer')->info('Template downloaded', [
-                'proposal_id' => $proposal->id,
-                'user_id' => $request->user()->id,
-            ]);
+            $this->reviewService->logAction('reviewer_download_template', $proposal, $request->user());
 
             return $response;
         } catch (\Throwable $e) {
-            Log::channel('reviewer')->error('Template download failed', [
-                'proposal_id' => $proposal->id,
-                'user_id' => $request->user()->id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
             return response()->json([
                 'message' => 'Failed to generate review template.',
                 'error' => config('app.debug') ? $e->getMessage() : 'Internal server error.',
@@ -183,27 +152,25 @@ class ReviewerProposalController extends Controller
 
     public function importReview(Request $request, Proposal $proposal): JsonResponse
     {
-        $this->validateReviewer($proposal, $request->user()->id);
+        $pivot = $this->reviewService->getAssignment($proposal, $request->user()->id);
+        $this->reviewService->assertNotLocked($pivot);
 
         $request->validate([
-            'file' => 'required|file|mimes:xlsx,xls'
+            'file' => 'required|file|mimes:xlsx,xls',
         ]);
 
         try {
             $spreadsheet = IOFactory::load($request->file('file')->getRealPath());
             $sheet = $spreadsheet->getActiveSheet();
 
-            // Validate Metadata
             $excelProposalId = $sheet->getCell('G2')->getValue();
             $excelReviewerId = $sheet->getCell('H2')->getValue();
 
             if ($excelProposalId != $proposal->id || $excelReviewerId != $request->user()->id) {
-                return response()->json(['message' => 'The uploaded file does not match this proposal assignment.'], 422);
+                throw ValidationException::withMessages([
+                    'file' => ['The uploaded file does not match this proposal assignment.'],
+                ]);
             }
-
-            $pivot = ProposalReviewer::where('proposal_id', $proposal->id)
-                ->where('reviewer_id', $request->user()->id)
-                ->firstOrFail();
 
             $row = 2;
             $totalReceived = 0;
@@ -220,19 +187,17 @@ class ReviewerProposalController extends Controller
                     $totalReceived += $receivedScore;
                     $totalMax += $maxScore;
                     $scoresData[] = [
-                        'criterion_id' => $criterionId,
+                        'criterion_id' => (int) $criterionId,
                         'score' => $receivedScore,
-                        'comments' => $comments
+                        'comments' => $comments,
                     ];
                 }
                 $row++;
             }
 
-            // Search for decision after the criteria block
             $decisionId = null;
             $overallComments = '';
 
-            // More robust search: scan up to 200 rows to find the decision row
             for ($i = 1; $i <= 200; $i++) {
                 $cellA = trim((string) $sheet->getCell('A' . $i)->getValue());
                 $cellB = trim((string) $sheet->getCell('B' . $i)->getValue());
@@ -241,7 +206,6 @@ class ReviewerProposalController extends Controller
                     $decisionId = $sheet->getCell('C' . $i)->getValue();
                     $overallComments = $sheet->getCell('E' . $i)->getValue();
 
-                    // Fallback: Check if user put it in B, C, or D by mistake on the next row
                     if (!$decisionId) {
                         $decisionId = $sheet->getCell('B' . ($i + 1))->getValue()
                             ?? $sheet->getCell('C' . ($i + 1))->getValue()
@@ -256,7 +220,6 @@ class ReviewerProposalController extends Controller
                 }
             }
 
-            // Fallback search over the whole block if still not found
             if (!$decisionId) {
                 for ($i = 1; $i <= 200; $i++) {
                     for ($col = 'A'; $col <= 'E'; $col++) {
@@ -264,17 +227,17 @@ class ReviewerProposalController extends Controller
                         if (stripos($val, 'Decision ID Input') !== false) {
                             $nextCol = chr(ord($col) + 1);
                             $decisionId = $sheet->getCell($nextCol . $i)->getValue() ?? $sheet->getCell($col . ($i + 1))->getValue();
-                            if ($decisionId)
+                            if ($decisionId) {
                                 break 2;
+                            }
                         }
                     }
                 }
             }
 
-            // Map Decision Names (e.g. 'accept') to their IDs in case the user typed the name instead of the number
             if ($decisionId && !is_numeric($decisionId)) {
                 $decisionName = strtolower(trim((string) $decisionId));
-                $decision = \App\Models\ReviewDecision::whereRaw('LOWER(name) = ?', [$decisionName])
+                $decision = ReviewDecision::whereRaw('LOWER(name) = ?', [$decisionName])
                     ->orWhereRaw('LOWER(name) LIKE ?', ["%{$decisionName}%"])
                     ->first();
                 if ($decision) {
@@ -283,68 +246,59 @@ class ReviewerProposalController extends Controller
             }
 
             if (!$decisionId) {
-                return response()->json(['message' => 'Overall Decision ID not found in Excel.'], 422);
+                throw ValidationException::withMessages([
+                    'file' => ['Overall Decision ID not found in Excel.'],
+                ]);
             }
 
-            if (!\App\Models\ReviewDecision::where('id', $decisionId)->exists()) {
-                return response()->json(['message' => 'Invalid Overall Decision provided in Excel.'], 422);
+            if (!ReviewDecision::where('id', $decisionId)->exists()) {
+                throw ValidationException::withMessages([
+                    'file' => ['Invalid Overall Decision provided in Excel.'],
+                ]);
             }
 
-            $overallScore = $totalMax > 0 ? ($totalReceived / $totalMax) * 5 : 0;
-
-            $validCriterionIds = \App\Models\ReviewCriterion::pluck('id')->toArray();
+            $validCriterionIds = ReviewCriterion::pluck('id')->toArray();
             foreach ($scoresData as $sd) {
                 if (!in_array($sd['criterion_id'], $validCriterionIds)) {
-                    return response()->json(['message' => "Invalid Criterion ID found in Excel: {$sd['criterion_id']}"], 422);
+                    throw ValidationException::withMessages([
+                        'file' => ["Invalid Criterion ID found in Excel: {$sd['criterion_id']}"],
+                    ]);
                 }
             }
 
-            foreach ($scoresData as $sd) {
-                ProposalReviewScore::updateOrCreate(
-                    ['proposal_reviewer_id' => $pivot->id, 'criterion_id' => $sd['criterion_id']],
-                    ['score' => $sd['score'], 'comments' => $sd['comments']]
-                );
-            }
+            $this->reviewService->validateScores($scoresData);
 
-            $proposal->reviewers()->updateExistingPivot($request->user()->id, [
+            $overallScore = $totalMax > 0 ? ($totalReceived / $totalMax) * 5 : 0;
+
+            $this->reviewService->submitReview(
+                $pivot,
+                $scoresData,
+                $overallScore,
+                $overallComments,
+                (int) $decisionId
+            );
+
+            $this->reviewService->logAction('reviewer_upload_review', $proposal, $request->user(), [
+                'proposal_reviewer_id' => $pivot->id,
                 'overall_score' => $overallScore,
-                'overall_comments' => $overallComments,
-                'decision_id' => $decisionId,
-                'submitted_at' => now(),
+                'decision_id' => (int) $decisionId,
             ]);
 
-            Log::channel('reviewer')->info('Review imported via Excel', [
-                'proposal_id' => $proposal->id,
-                'user_id' => $request->user()->id,
+            return response()->json([
+                'message' => 'Excel review imported successfully.',
                 'overall_score' => $overallScore,
-                'decision_id' => $decisionId,
             ]);
-
-            return response()->json(['message' => 'Excel review imported successfully.', 'overall_score' => $overallScore]);
+        } catch (ValidationException $e) {
+            throw $e;
         } catch (ReaderException $e) {
             return response()->json([
                 'message' => 'Invalid file format. Please upload a valid Excel file.',
             ], 400);
         } catch (\Throwable $e) {
-            Log::channel('reviewer')->error('Review import failed', [
-                'proposal_id' => $proposal->id,
-                'user_id' => $request->user()->id,
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
-
             return response()->json([
                 'message' => 'Failed to import review file.',
                 'error' => config('app.debug') ? $e->getMessage() : 'Internal server error.',
             ], 500);
-        }
-    }
-
-    private function validateReviewer(Proposal $proposal, int $userId): void
-    {
-        $isReviewer = $proposal->reviewers()->where('reviewer_id', $userId)->exists();
-        if (!$isReviewer) {
-            abort(403, 'You are not assigned as a reviewer for this proposal.');
         }
     }
 }

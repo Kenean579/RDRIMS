@@ -102,6 +102,10 @@ class DashboardController extends Controller
 
         $countsByStatus = $statusBreakdown->pluck('count', 'name');
 
+        $proposalIds = Proposal::hierarchical($user, 'submitted_by')->pluck('id');
+        $reviewProgress = app(\App\Services\ReviewService::class)
+            ->getInstitutionalReviewProgress($proposalIds);
+
         $universityStats = University::all()->map(function($u) use ($user) {
             $count = Proposal::whereIn('submitted_by', function($q) use ($u) {
                 $q->select('users.id')->from('users')
@@ -134,6 +138,8 @@ class DashboardController extends Controller
             'in_progress_count' => ($countsByStatus['under_review'] ?? 0) + ($countsByStatus['revision_requested'] ?? 0),
             'pending_count' => $countsByStatus['submitted'] ?? 0,
             
+            'review_progress' => $reviewProgress,
+            
             'university_stats' => $universityStats,
             'status_breakdown' => $statusBreakdown,
             'monthly_trend' => Proposal::hierarchical($user, 'submitted_by')
@@ -150,20 +156,19 @@ class DashboardController extends Controller
 
     private function reviewerDashboard(User $user): JsonResponse
     {
-        $reviews = DB::table('proposal_reviewers')->where('reviewer_id', $user->getKey())->get();
-        $pending = $reviews->whereNull('submitted_at')->count();
-        $completed = $reviews->whereNotNull('submitted_at')->count();
-        $avgScore = $reviews->whereNotNull('submitted_at')->avg('overall_score') ?? 0;
+        $stats = app(\App\Services\ReviewService::class)->getReviewerStats($user);
 
         return response()->json([
-            'pending_reviews' => $pending,
-            'completed_reviews' => $completed,
-            'average_score' => round($avgScore, 1),
+            ...$stats,
             'status_breakdown' => [
-                ['name' => 'Pending', 'count' => $pending],
-                ['name' => 'Completed', 'count' => $completed],
+                ['name' => 'Pending', 'count' => $stats['pending_reviews']],
+                ['name' => 'Completed', 'count' => $stats['completed_reviews']],
             ],
-            'recent_proposals' => $user->reviewedProposals()->with(['status', 'submittedBy'])->latest()->limit(8)->get(),
+            'recent_proposals' => $user->reviewedProposals()
+                ->with(['status'])
+                ->latest()
+                ->limit(8)
+                ->get(),
         ]);
     }
 

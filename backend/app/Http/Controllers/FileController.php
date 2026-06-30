@@ -5,7 +5,9 @@ namespace App\Http\Controllers;
 use App\Http\Requests\UpdateFileRequest;
 use App\Http\Requests\UploadFileRequest;
 use App\Models\File;
+use App\Models\Proposal;
 use App\Services\FileService;
+use App\Services\ReviewService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -13,6 +15,7 @@ class FileController extends Controller
 {
     public function __construct(
         private FileService $fileService,
+        private ReviewService $reviewService,
     ) {}
 
     public function index(Request $request): JsonResponse
@@ -38,9 +41,17 @@ class FileController extends Controller
         return response()->json($file, 201);
     }
 
-    public function download(File $file): mixed
+    public function download(Request $request, File $file): mixed
     {
         $this->authorize('view', $file);
+
+        $proposal = Proposal::where('file_id', $file->id)->first();
+        if ($proposal && $proposal->reviewers()->where('reviewer_id', $request->user()->id)->exists()) {
+            $this->reviewService->logAction('reviewer_download_proposal', $proposal, $request->user(), [
+                'file_id' => $file->id,
+            ]);
+        }
+
         return $this->fileService->download($file);
     }
 

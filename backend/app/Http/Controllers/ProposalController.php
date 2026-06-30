@@ -204,6 +204,9 @@ class ProposalController extends Controller
             $proposal->submitted_by = null;
         }
 
+        $proposal->review_progress = app(\App\Services\ReviewService::class)
+            ->getProposalReviewProgress($proposal);
+
         return response()->json($proposal);
     }
 

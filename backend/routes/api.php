@@ -262,6 +262,8 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::delete('proposals/{proposal}/files/{file}', [ProposalFileController::class, 'detach']);
     Route::apiResource('proposals.investigators', ProposalInvestigatorController::class)->only(['index', 'store', 'destroy']);
     Route::get('proposals/{proposal}/reviewers/recommendations', [ProposalReviewerController::class, 'recommendations']);
+    Route::post('proposals/{proposal}/reviewers/{reviewer}/reopen', [ProposalReviewerController::class, 'reopen'])
+        ->middleware('role:super_admin,research_admin');
     Route::apiResource('proposals.reviewers', ProposalReviewerController::class)->only(['index', 'store', 'destroy']);
 
     
