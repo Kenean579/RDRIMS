@@ -62,6 +62,12 @@ class ProposalResource extends JsonResource
             'ethics_requests'=> EthicsRequestResource::collection($this->whenLoaded('ethicsRequests')),
             'detection'     => DetectionRequestResource::collection($this->whenLoaded('detectionRequests')),
             'project'       => $this->whenLoaded('project', fn() => ['id' => $this->project->id]),
+            'ethics_status' => $this->relationLoaded('ethicsRequests') 
+                ? ($this->ethicsRequests->sortByDesc('created_at')->first()?->approvalStatus?->name ?? 'not_requested')
+                : 'not_requested',
+            'finance_status' => $this->relationLoaded('financeChecks')
+                ? ($this->financeChecks->sortByDesc('created_at')->first()?->status?->name ?? 'pending')
+                : 'pending',
             'submitted_at'  => $this->submitted_at?->toISOString(),
             'approved_at'   => $this->approved_at?->toISOString(),
             'created_at'    => $this->created_at->toISOString(),

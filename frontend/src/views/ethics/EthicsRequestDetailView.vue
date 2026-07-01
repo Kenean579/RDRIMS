@@ -11,7 +11,7 @@
         <p class="text-slate-500 font-medium mt-1 text-xs">Reviewing submission details for safety and ethics.</p>
       </div>
       <div v-if="!loading" class="flex items-center gap-3">
-        <StatusBadge :status="request.status?.name" size="lg" />
+        <StatusBadge :status="request.approval_status?.name" size="lg" />
       </div>
     </div>
 

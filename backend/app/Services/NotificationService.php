@@ -249,4 +249,13 @@ HTML;
             ['link' => url("/outputs/{$outputId}"), 'action_text' => 'View Output']
         );
     }
+
+    public function ethicsDecisionMade(User $submitter, string $proposalTitle, string $status, ?string $comment): void
+    {
+        $statusText = str_replace('_', ' ', $status);
+        $this->notify($submitter, 'ethics_decision_made',
+            "The ethics request for your proposal \"{$proposalTitle}\" has been updated to: {$statusText}." . ($comment ? " Remarks: {$comment}" : ""),
+            ['link' => url("/proposals"), 'action_text' => 'View Proposals']
+        );
+    }
 }

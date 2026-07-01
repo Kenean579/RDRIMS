@@ -13,7 +13,8 @@ class CommunityProblemController extends Controller
 {
     public function __construct(
         private CommunityProblemService $communityProblemService,
-    ) {}
+    ) {
+    }
 
     public function index(Request $request): JsonResponse
     {

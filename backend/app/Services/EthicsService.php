@@ -10,6 +10,8 @@ use Illuminate\Support\Facades\Storage;
 
 class EthicsService
 {
+    public function __construct(private NotificationService $notificationService) {}
+
     /**
      * Generate an Ethics/IRB request PDF from proposal data and store it.
      */
@@ -51,17 +53,30 @@ class EthicsService
 
     public function approve(EthicsRequest $request, User $approvedBy, ?string $comment = null): void
     {
-        $request->update([
-            'approval_status_id' => EthicsRequest::getStatusId('approved'),
-            'comments' => $comment,
-        ]);
+        $this->makeDecision($request, 'approved', $approvedBy, $comment);
     }
 
     public function reject(EthicsRequest $request, User $rejectedBy, string $comment): void
     {
+        $this->makeDecision($request, 'rejected', $rejectedBy, $comment);
+    }
+
+    public function makeDecision(EthicsRequest $request, string $status, User $reviewer, ?string $comment = null): void
+    {
         $request->update([
-            'approval_status_id' => EthicsRequest::getStatusId('rejected'),
+            'approval_status_id' => EthicsRequest::getStatusId($status),
             'comments' => $comment,
+            'reviewer_id' => $reviewer->id,
+            'reviewed_at' => now(),
         ]);
+
+        if ($request->proposal && $request->proposal->submittedBy) {
+            $this->notificationService->ethicsDecisionMade(
+                $request->proposal->submittedBy,
+                $request->proposal->title,
+                $status,
+                $comment
+            );
+        }
     }
 }

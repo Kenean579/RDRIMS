@@ -70,10 +70,65 @@ class ProposalService
 
     public function approve(Proposal $proposal, User $approvedBy): void
     {
-        if ($proposal->status_id !== $this->statusId('under_review')) {
+        $allowedStatuses = [
+            $this->statusId('under_review'),
+            $this->statusId('finance_check'),
+            $this->statusId('ethics_pending'),
+        ];
+
+        if (!in_array($proposal->status_id, $allowedStatuses)) {
             throw ValidationException::withMessages([
-                'status' => 'Only proposals under review can be approved.',
+                'status' => 'Only proposals under review, finance check, or ethics pending can be approved.',
             ]);
+        }
+
+        // 1. All reviews must be completed
+        $reviewers = $proposal->reviewers;
+        if ($reviewers->isEmpty()) {
+            throw ValidationException::withMessages([
+                'status' => 'Reviewer assignment is incomplete. Please assign reviewers first.',
+            ]);
+        }
+        $pendingReviews = $proposal->reviewers()->wherePivotNull('submitted_at')->count();
+        if ($pendingReviews > 0) {
+            throw ValidationException::withMessages([
+                'status' => "Cannot approve proposal. There are still {$pendingReviews} pending peer reviews.",
+            ]);
+        }
+
+        // 2. Finance Approved (if required)
+        $autoApproveBelowBudget = (float) (\App\Models\Setting::where('key', 'auto_approve_below_budget')->value('value') ?? 100000);
+        $financeRequired = (float) $proposal->budget >= $autoApproveBelowBudget;
+        if ($financeRequired) {
+            $latestFinanceCheck = $proposal->financeChecks()->latest()->first();
+            if (!$latestFinanceCheck) {
+                throw ValidationException::withMessages([
+                    'status' => 'Cannot approve proposal. Budget evaluation / Finance check has not been requested.',
+                ]);
+            }
+            $approvedStatusId = \App\Models\FinanceCheckStatus::where('name', 'approved')->value('id');
+            if ($latestFinanceCheck->status_id !== $approvedStatusId) {
+                throw ValidationException::withMessages([
+                    'status' => 'Cannot approve proposal. Finance check is not approved.',
+                ]);
+            }
+        }
+
+        // 3. Ethics Approved (if required)
+        $ethicsRequired = \App\Models\Setting::where('key', 'ethics_required')->value('value') === 'true';
+        if ($ethicsRequired) {
+            $latestEthicsRequest = $proposal->ethicsRequests()->latest()->first();
+            if (!$latestEthicsRequest) {
+                throw ValidationException::withMessages([
+                    'status' => 'Cannot approve proposal. Ethics clearance / IRB request has not been generated.',
+                ]);
+            }
+            $approvedStatusId = \App\Models\EthicsApprovalStatus::where('name', 'approved')->value('id');
+            if ($latestEthicsRequest->approval_status_id !== $approvedStatusId) {
+                throw ValidationException::withMessages([
+                    'status' => 'Cannot approve proposal. Ethics clearance is not approved.',
+                ]);
+            }
         }
 
         $proposal->update([

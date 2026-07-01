@@ -18,8 +18,9 @@ enum ProposalStatusEnum: int
     case CHECKING      = 3;
     case UNDER_REVIEW  = 4;
     case FINANCE_CHECK = 5;
-    case APPROVED      = 6;
-    case REJECTED      = 7;
+    case APPROVED       = 6;
+    case REJECTED       = 7;
+    case ETHICS_PENDING = 8;
 
     /**
      * Resolve the ID at runtime from the database.
@@ -36,13 +37,14 @@ enum ProposalStatusEnum: int
     public function label(): string
     {
         return match ($this) {
-            self::DRAFT         => 'Draft',
-            self::SUBMITTED     => 'Submitted',
-            self::CHECKING      => 'Checking',
-            self::UNDER_REVIEW  => 'Under Review',
-            self::FINANCE_CHECK => 'Finance Check',
-            self::APPROVED      => 'Approved',
-            self::REJECTED      => 'Rejected',
+            self::DRAFT          => 'Draft',
+            self::SUBMITTED      => 'Submitted',
+            self::CHECKING       => 'Checking',
+            self::UNDER_REVIEW   => 'Under Review',
+            self::FINANCE_CHECK  => 'Finance Check',
+            self::APPROVED       => 'Approved',
+            self::REJECTED       => 'Rejected',
+            self::ETHICS_PENDING => 'Ethics Pending',
         };
     }
 }

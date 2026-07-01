@@ -329,7 +329,44 @@ const showDetectionServiceModal = ref(false); const detectionServices = ref([]);
 const rejectSource = ref('admin') // 'admin', 'finance', or 'ethics'
 
 const isOwner = computed(() => auth.user?.id === proposal.value.submitted_by?.id)
-const canApprove = computed(() => ['submitted','under_review','finance_check'].includes(proposal.value.status?.name))
+const settings = ref([])
+
+const getSetting = (key, defaultVal) => {
+  const s = settings.value.find(x => x.key === key)
+  return s ? s.value : defaultVal
+}
+
+const canApprove = computed(() => {
+  if (!['under_review', 'finance_check', 'ethics_pending'].includes(proposal.value.status?.name)) {
+    return false
+  }
+
+  // 1. All reviews must be completed
+  const reviewers = proposal.value.reviewers || []
+  if (reviewers.length === 0) {
+    return false
+  }
+  const allReviewsCompleted = reviewers.every(r => r.pivot?.submitted_at)
+  if (!allReviewsCompleted) {
+    return false
+  }
+
+  // 2. Finance Approved (if required)
+  const budget = parseFloat(proposal.value.budget || 0)
+  const autoApproveBelowBudget = parseFloat(getSetting('auto_approve_below_budget', '100000'))
+  const financeRequired = budget >= autoApproveBelowBudget
+  if (financeRequired && proposal.value.finance_status !== 'approved') {
+    return false
+  }
+
+  // 3. Ethics Approved (if required)
+  const ethicsRequired = getSetting('ethics_required', 'true') === 'true'
+  if (ethicsRequired && proposal.value.ethics_status !== 'approved') {
+    return false
+  }
+
+  return true
+})
 
 // Hierarchical management rights
 const canManageProposal = computed(() => {
@@ -541,6 +578,10 @@ async function uploadDocument() {
 
 onMounted(async () => {
   await fetchProposal()
+  try {
+    const { data: setRes } = await api.get('/settings')
+    settings.value = setRes.data || setRes
+  } catch (e) {}
   try {
     if (auth.hasPermission('assign_reviewers') || auth.hasRole('super_admin', 'research_admin', 'campus_admin', 'faculty_admin', 'director', 'department_head')) {
       const { data } = await api.get(`/proposals/${route.params.id}/suggest-reviewers`)

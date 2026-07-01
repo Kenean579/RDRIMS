@@ -22,10 +22,29 @@ class EthicsRequestController extends Controller
         );
     }
 
+    public function show(EthicsRequest $ethicsRequest): JsonResponse
+    {
+        $ethicsRequest->load([
+            'proposal.submittedBy',
+            'proposal.thematicArea',
+            'proposal.files',
+            'approvalStatus',
+            'reviewer',
+        ]);
+
+        return response()->json($ethicsRequest);
+    }
+
     public function store(Request $request, Proposal $proposal): JsonResponse
     {
         // Researcher or Admin triggers IRB PDF generation
         $ethicsRequest = $this->ethicsService->generateRequest($proposal, $request->user());
+
+        $proposalStatusId = \App\Models\ProposalStatus::where('name', 'ethics_pending')->value('id');
+        if ($proposalStatusId) {
+            $proposal->update(['status_id' => $proposalStatusId]);
+        }
+
         return response()->json($ethicsRequest, 201);
     }
 
@@ -37,6 +56,10 @@ class EthicsRequestController extends Controller
 
     public function update(Request $request, EthicsRequest $ethicsRequest): JsonResponse
     {
+        if (!$request->user()->hasRole('super_admin', 'research_admin', 'ethics_officer')) {
+            return response()->json(['message' => 'Unauthorized.'], 403);
+        }
+
         // Ethics Officer decides (Approve/Reject)
         $request->validate([
             'approval_status_id' => 'required|exists:ethics_approval_statuses,id',
@@ -49,5 +72,21 @@ class EthicsRequestController extends Controller
         ]);
 
         return response()->json($ethicsRequest);
+    }
+
+    public function decision(Request $request, EthicsRequest $ethicsRequest): JsonResponse
+    {
+        if (!$request->user()->hasRole('super_admin', 'research_admin', 'ethics_officer')) {
+            return response()->json(['message' => 'Unauthorized.'], 403);
+        }
+
+        $request->validate([
+            'status' => 'required|in:approved,needs_revision,rejected',
+            'note' => 'nullable|string'
+        ]);
+
+        $this->ethicsService->makeDecision($ethicsRequest, $request->status, $request->user(), $request->note);
+
+        return response()->json(['message' => 'Decision recorded successfully', 'data' => $ethicsRequest->fresh(['approvalStatus', 'proposal'])]);
     }
 }

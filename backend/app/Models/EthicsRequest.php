@@ -14,11 +14,13 @@ class EthicsRequest extends Model
 
     protected $fillable = [
         'proposal_id', 'generated_pdf_path', 'submitted_to_irb',
-        'approval_status_id', 'comments', 'version'
+        'approval_status_id', 'comments', 'version',
+        'reviewer_id', 'reviewed_at'
     ];
 
     protected $casts = [
         'submitted_to_irb' => 'boolean',
+        'reviewed_at' => 'datetime',
     ];
 
     public function proposal(): BelongsTo
@@ -29,5 +31,10 @@ class EthicsRequest extends Model
     public function approvalStatus(): BelongsTo
     {
         return $this->belongsTo(EthicsApprovalStatus::class, 'approval_status_id');
+    }
+
+    public function reviewer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'reviewer_id');
     }
 }

@@ -10,6 +10,7 @@ use App\Models\ReviewDecision;
 use App\Services\ReviewService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Validation\ValidationException;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
@@ -86,9 +87,21 @@ class ReviewerProposalController extends Controller
         return response()->json(['message' => 'Review submitted.']);
     }
 
-    public function downloadTemplate(Proposal $proposal, Request $request): StreamedResponse|JsonResponse
+    public function downloadTemplate(Proposal $proposal, Request $request)
     {
-        $this->reviewService->getAssignment($proposal, $request->user()->id);
+        try {
+            $this->reviewService->getAssignment($proposal, $request->user()->id);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => 'You are not assigned as a reviewer for this proposal.',
+                'error' => $e->getMessage(),
+            ], 403);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'Failed to verify reviewer assignment.',
+                'error' => config('app.debug') ? $e->getMessage() : 'Internal server error.',
+            ], 500);
+        }
 
         try {
             $spreadsheet = new Spreadsheet();
@@ -107,6 +120,7 @@ class ReviewerProposalController extends Controller
             $sheet->setCellValue('H2', $request->user()->id);
 
             $criteria = ReviewCriterion::where('is_active', true)->get();
+            
             $row = 2;
             foreach ($criteria as $c) {
                 $sheet->setCellValue('A' . $row, $c->id);
@@ -124,6 +138,7 @@ class ReviewerProposalController extends Controller
             $row++;
 
             $decisions = ReviewDecision::all();
+            
             foreach ($decisions as $d) {
                 $sheet->setCellValue('A' . $row, $d->id);
                 $sheet->setCellValue('B' . $row, $d->name);
@@ -140,9 +155,10 @@ class ReviewerProposalController extends Controller
             $response->headers->set('Cache-Control', 'max-age=0');
 
             $this->reviewService->logAction('reviewer_download_template', $proposal, $request->user());
-
+            
             return $response;
         } catch (\Throwable $e) {
+            \Log::error('Template download error: ' . $e->getMessage(), ['trace' => $e->getTraceAsString()]);
             return response()->json([
                 'message' => 'Failed to generate review template.',
                 'error' => config('app.debug') ? $e->getMessage() : 'Internal server error.',
@@ -152,15 +168,33 @@ class ReviewerProposalController extends Controller
 
     public function importReview(Request $request, Proposal $proposal): JsonResponse
     {
-        $pivot = $this->reviewService->getAssignment($proposal, $request->user()->id);
-        $this->reviewService->assertNotLocked($pivot);
+        try {
+            $pivot = $this->reviewService->getAssignment($proposal, $request->user()->id);
+            $this->reviewService->assertNotLocked($pivot);
+        } catch (ValidationException $e) {
+            return response()->json([
+                'message' => $e->getMessage(),
+                'errors' => $e->errors(),
+            ], 403);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'message' => 'Failed to verify reviewer assignment.',
+                'error' => config('app.debug') ? $e->getMessage() : 'Internal server error.',
+            ], 500);
+        }
 
         $request->validate([
             'file' => 'required|file|mimes:xlsx,xls',
         ]);
 
         try {
-            $spreadsheet = IOFactory::load($request->file('file')->getRealPath());
+            $filePath = $request->file('file')->getRealPath();
+            
+            if (!file_exists($filePath)) {
+                throw new \Exception('Uploaded file not found.');
+            }
+
+            $spreadsheet = IOFactory::load($filePath);
             $sheet = $spreadsheet->getActiveSheet();
 
             $excelProposalId = $sheet->getCell('G2')->getValue();
@@ -293,11 +327,13 @@ class ReviewerProposalController extends Controller
         } catch (ReaderException $e) {
             return response()->json([
                 'message' => 'Invalid file format. Please upload a valid Excel file.',
+                'error' => config('app.debug') ? $e->getMessage() : null,
             ], 400);
         } catch (\Throwable $e) {
             return response()->json([
                 'message' => 'Failed to import review file.',
                 'error' => config('app.debug') ? $e->getMessage() : 'Internal server error.',
+                'trace' => config('app.debug') ? $e->getTraceAsString() : null,
             ], 500);
         }
     }

@@ -25,8 +25,8 @@ class FinanceService
 
         $check->update([
             'status_id' => $statusId,
-            'checked_by' => $officer->id,
-            'check_date' => now(),
+            'checker_id' => $officer->id,
+            'checked_at' => now(),
             'comments' => $comment,
         ]);
     }
@@ -35,8 +35,8 @@ class FinanceService
     {
         $check->update([
             'status_id' => FinanceCheckStatus::where('name', 'rejected')->first()->id,
-            'checked_by' => $officer->id,
-            'check_date' => now(),
+            'checker_id' => $officer->id,
+            'checked_at' => now(),
             'comments' => $comment,
         ]);
     }
