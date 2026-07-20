@@ -107,6 +107,11 @@ export const useAuthStore = defineStore('auth', () => {
     return userRoles.value.some(role => ['finance_officer', 'ethics_officer'].includes(role))
   })
 
+  // Whether the user has completed their profile (provisioned users start with null)
+  const isProfileComplete = computed(() => {
+    return !!user.value?.profile_completed_at
+  })
+
   // Get user's scope level for UI context
   const userScope = computed(() => {
     if (userRoles.value.includes('super_admin')) return 'system'
@@ -193,6 +198,22 @@ export const useAuthStore = defineStore('auth', () => {
     finally { loading.value = false }
   }
 
+  /**
+   * Mark the current user's profile as complete.
+   * Called once after a provisioned user finishes the onboarding step.
+   * Updates the local user state so isProfileComplete becomes true immediately.
+   */
+  async function completeProfile() {
+    loading.value = true; error.value = null
+    try {
+      const { data } = await api.post('/profile/complete')
+      user.value = data.user
+      localStorage.setItem('rdrims_user', JSON.stringify(data.user))
+      return true
+    } catch (err) { error.value = err.response?.data?.message || 'Failed to complete profile'; return false }
+    finally { loading.value = false }
+  }
+
   return { 
     user, token, loading, error, 
     isAuthenticated, 
@@ -201,7 +222,8 @@ export const useAuthStore = defineStore('auth', () => {
     hasRole, hasPermission, 
     primaryRole, allRoles,
     isAdmin, isFunctionalAdmin,
+    isProfileComplete,
     userScope,
-    login, register, fetchUser, updateProfile, clearError, logout 
+    login, register, fetchUser, updateProfile, completeProfile, clearError, logout 
   }
 })

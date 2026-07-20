@@ -19,40 +19,24 @@ class StoreProposalRequest extends FormRequest
                 'investigators' => json_decode($this->investigators, true) ?? [],
             ]);
         }
-        
-        // Also decode budget allocation if it's sent as a JSON string
-        if (is_string($this->budget_allocation)) {
-            $this->merge([
-                'budget_allocation' => json_decode($this->budget_allocation, true) ?? [],
-            ]);
-        }
-    }
-
-    protected function failedValidation(\Illuminate\Contracts\Validation\Validator $validator)
-    {
-        \Illuminate\Support\Facades\Log::error('Validation failed Proposal: ', $validator->errors()->toArray());
-        parent::failedValidation($validator);
     }
 
     public function rules(): array
     {
         return [
-            'title'        => 'required|string|max:255',
-            'abstract'     => 'required|string',
+            'title'        => 'required|string|max:255|min:5',
+            'abstract'     => 'required|string|min:20',
             'call_id'      => 'nullable|exists:calls,id',
             'type_id'      => 'nullable|exists:proposal_types,id',
             'academic_year_id' => 'nullable|exists:academic_years,id',
-            'budget'       => 'required|numeric|min:0',
-            'keywords'     => 'nullable|string',
-            'objectives'   => 'nullable|string',
-            'methodology'  => 'nullable|string',
-            'proposal_file' => 'nullable|file|mimes:pdf,doc,docx,xlsx,xls,csv,jpg,jpeg,png|max:20480',
-            'ethics_file'  => 'nullable|file|mimes:pdf,doc,docx,xlsx,xls,csv,jpg,jpeg,png|max:20480',
-            'budget_allocation' => 'nullable|array',
-            'confirmation' => 'required|accepted',
+            'budget'       => 'required|numeric|min:1',
+            'keywords'     => 'nullable|string|max:500',
+            'objectives'   => 'nullable|string|min:20',
+            'methodology'  => 'nullable|string|min:20',
+            'proposal_file' => 'nullable|file|mimes:pdf,doc,docx|max:20480',
             'investigators'          => 'nullable|array',
             'investigators.*.user_id'  => 'nullable|exists:users,id',
-            'investigators.*.name'     => 'nullable|string',
+            'investigators.*.name'     => 'nullable|string|max:255',
             'investigators.*.email'    => 'nullable|email',
             'investigators.*.role_id'  => 'required_with:investigators|exists:investigator_roles,id',
         ];

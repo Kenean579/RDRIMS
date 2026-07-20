@@ -20,9 +20,24 @@ class FileController extends Controller
 
     public function index(Request $request): JsonResponse
     {
+        $user = $request->user();
+        $tenantUniversityId = $user->resolvedUniversityId();
+
         $files = File::with('uploader')
-            ->when(! $request->user()->isAdmin(), fn($q) => $q->where('is_public', true)
-                ->orWhere('uploaded_by', $request->user()->id))
+            ->when(! $user->hasRole('super_admin'), function ($q) use ($user, $tenantUniversityId): void {
+                $q->whereHas('uploader', function ($uploaderQuery) use ($tenantUniversityId): void {
+                    $uploaderQuery->where('university_id', $tenantUniversityId);
+                });
+
+                if ($user->isAdmin()) {
+                    return;
+                }
+
+                $q->where(function ($scope) use ($user): void {
+                    $scope->where('is_public', true)
+                        ->orWhere('uploaded_by', $user->id);
+                });
+            })
             ->when($request->search, fn($q) => $q->where('file_path', 'LIKE', '%' . $request->search . '%'))
             ->orderBy('created_at', 'desc')
             ->paginate(20);
@@ -43,7 +58,7 @@ class FileController extends Controller
 
     public function download(Request $request, File $file): mixed
     {
-        $this->authorize('view', $file);
+        $this->authorizeTenantResource($file, 'download');
 
         $proposal = Proposal::where('file_id', $file->id)->first();
         if ($proposal && $proposal->reviewers()->where('reviewer_id', $request->user()->id)->exists()) {
@@ -57,25 +72,27 @@ class FileController extends Controller
 
     public function update(UpdateFileRequest $request, File $file): JsonResponse
     {
-        $this->authorize('update', $file);
+        $this->authorizeTenantResource($file, 'update');
         $file->update($request->validated());
         return response()->json($file);
     }
 
     public function destroy(File $file): JsonResponse
     {
-        $this->authorize('delete', $file);
+        $this->authorizeTenantResource($file, 'delete');
         $this->fileService->delete($file);
         return response()->json(['message' => 'File deleted.']);
     }
 
     public function versions(File $file): JsonResponse
     {
+        $this->authorizeTenantResource($file, 'view');
         return response()->json($file->versions()->orderBy('version_number', 'desc')->get());
     }
 
     public function uploadNewVersion(Request $request, File $file): JsonResponse
     {
+        $this->authorizeTenantResource($file, 'update');
         $request->validate(['file' => 'required|file|max:10240']);
         $newFile = $this->fileService->uploadNewVersion($file, $request->file('file'));
         return response()->json($newFile);

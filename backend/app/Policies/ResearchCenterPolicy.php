@@ -2,19 +2,26 @@
 
 namespace App\Policies;
 
-use App\Models\User;
 use App\Models\ResearchCenter;
+use App\Models\User;
 
 class ResearchCenterPolicy
 {
     public function viewAny(User $user): bool
     {
-        return true;
+        return $user->id !== null;
     }
 
     public function view(User $user, ResearchCenter $researchCenter): bool
     {
-        return true;
+        if ($user->hasRole('super_admin')) {
+            return true;
+        }
+
+        $userUniversityId = $user->resolvedUniversityId();
+        $centerUniversityId = $researchCenter->parent_university_id ?? $researchCenter->university_id ?? null;
+
+        return $userUniversityId !== null && $centerUniversityId !== null && (int) $centerUniversityId === (int) $userUniversityId;
     }
 
     public function create(User $user): bool
@@ -24,11 +31,18 @@ class ResearchCenterPolicy
 
     public function update(User $user, ResearchCenter $researchCenter): bool
     {
-        return $user->isAdmin();
+        if ($user->hasRole('super_admin')) {
+            return true;
+        }
+
+        $userUniversityId = $user->resolvedUniversityId();
+        $centerUniversityId = $researchCenter->parent_university_id ?? $researchCenter->university_id ?? null;
+
+        return $user->isAdmin() && $userUniversityId !== null && $centerUniversityId !== null && (int) $centerUniversityId === (int) $userUniversityId;
     }
 
     public function delete(User $user, ResearchCenter $researchCenter): bool
     {
-        return $user->hasRole('super_admin');
+        return $this->update($user, $researchCenter);
     }
 }

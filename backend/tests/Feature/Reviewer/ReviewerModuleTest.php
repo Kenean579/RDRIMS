@@ -77,6 +77,7 @@ class ReviewerModuleTest extends TestCase
             'name' => 'Outsider',
             'email' => 'outsider@test.com',
             'password' => bcrypt('password'),
+            'university_id' => \App\Models\University::first()?->id ?? 1,
             'is_active' => true,
         ]);
 

@@ -29,20 +29,32 @@ class ReviewerProposalController extends Controller
         $user = $request->user();
 
         if ($user->hasRole('super_admin', 'research_admin')) {
-            $assignments = ProposalReviewer::with(['proposal.status', 'proposal.type', 'reviewer'])
+            // Scope assignments to proposals visible in the user's institution hierarchy
+            $assignmentsQuery = ProposalReviewer::with(['proposal.status', 'proposal.type', 'reviewer'])
+                ->when(!$user->hasRole('super_admin'), function ($q) use ($user) {
+                    // research_admin: default to tenant-scoped proposals.
+                    // Backward-compatible fallback for legacy records/users missing institution linkage.
+                    if ($user->resolvedUniversityId()) {
+                        $q->whereHas('proposal', function ($pq) use ($user) {
+                            $pq->hierarchical($user, 'submitted_by');
+                        });
+                    } else {
+                        $q->where('assigned_by', $user->id);
+                    }
+                })
                 ->orderBy('created_at', 'desc')
                 ->paginate(20);
 
-            $transformed = $assignments->getCollection()->map(function ($pivot) {
+            $transformed = $assignmentsQuery->getCollection()->map(function ($pivot) {
                 $proposal = $pivot->proposal;
                 $proposal->reviewPivot = clone $pivot;
                 unset($proposal->reviewPivot->proposal);
                 $proposal->review_progress = $this->reviewService->getProposalReviewProgress($proposal);
                 return $proposal;
             });
-            $assignments->setCollection($transformed);
+            $assignmentsQuery->setCollection($transformed);
 
-            return response()->json($assignments);
+            return response()->json($assignmentsQuery);
         }
 
         $proposals = $user->reviewedProposals()->with('status', 'type')->paginate(20);

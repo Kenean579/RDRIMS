@@ -30,12 +30,14 @@ class ProjectController extends Controller
 
     public function store(StoreProjectRequest $request): JsonResponse
     {
+        $this->authorize('create', Project::class);
         $project = Project::create($request->validated());
         return response()->json($project, 201);
     }
 
     public function show(Project $project): JsonResponse
     {
+        $this->authorize('view', $project);
         return response()->json($project->load('status', 'pi.profileImage', 'investigators.user', 'milestones.tasks', 'expenses', 'publications', 'patents', 'outputs', 'coverImage'));
     }
 
@@ -55,6 +57,7 @@ class ProjectController extends Controller
 
     public function createFromProposal(Proposal $proposal, Request $request): JsonResponse
     {
+        $this->authorize('view', $proposal);
         $project = $this->projectService->createFromProposal($proposal, $request->user());
         return response()->json($project, 201);
     }

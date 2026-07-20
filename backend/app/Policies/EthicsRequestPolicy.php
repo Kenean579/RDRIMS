@@ -14,11 +14,27 @@ class EthicsRequestPolicy
 
     public function view(User $user, EthicsRequest $ethicsRequest): bool
     {
-        return $user->isAdmin() || $user->hasRole('ethics_officer') || $ethicsRequest->submitted_by === $user->id;
+        $submitter = $ethicsRequest->proposal?->submittedBy;
+
+        if ($submitter && $submitter->id === $user->id) {
+            return true;
+        }
+
+        if (! ($user->isAdmin() || $user->hasRole('ethics_officer'))) {
+            return false;
+        }
+
+        return $submitter ? $user->sharesInstitutionWith($submitter) : false;
     }
 
     public function update(User $user, EthicsRequest $ethicsRequest): bool
     {
-        return $user->hasRole('ethics_officer') || $user->isAdmin();
+        if (! ($user->hasRole('ethics_officer') || $user->isAdmin())) {
+            return false;
+        }
+
+        $submitter = $ethicsRequest->proposal?->submittedBy;
+
+        return $submitter ? $user->sharesInstitutionWith($submitter) : false;
     }
 }

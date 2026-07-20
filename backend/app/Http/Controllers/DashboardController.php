@@ -74,11 +74,15 @@ class DashboardController extends Controller
     private function institutionalAdminDashboard(User $user): JsonResponse
     {
         $request = request();
-        
+
         $proposalsQuery = Proposal::hierarchical($user, 'submitted_by');
-        $projectsQuery = Project::hierarchical($user, 'pi_id');
-        $usersQuery = User::query();
-        
+        $projectsQuery  = Project::hierarchical($user, 'pi_id');
+        $usersQuery     = User::query();
+
+        // Resolve user's university for scoping institution-wide counts
+        $userUniversityId = $user->university_id
+            ?: $user->department?->faculty?->campus?->university_id;
+
         if ($request->hasAny(['university_id', 'campus_id', 'faculty_id', 'department_id'])) {
             $usersQuery->join('departments', 'users.department_id', '=', 'departments.id')
                 ->join('faculties', 'departments.faculty_id', '=', 'faculties.id')
@@ -88,15 +92,18 @@ class DashboardController extends Controller
                 ->when($request->campus_id, fn($q) => $q->where('campuses.id', $request->campus_id))
                 ->when($request->university_id, fn($q) => $q->where('campuses.university_id', $request->university_id))
                 ->select('users.*');
+        } else {
+            // Scope users to the authenticated user's institutional hierarchy
+            $usersQuery->hierarchical($user, 'id');
         }
 
-        $pubsQuery = Publication::whereHas('project', function($q) use ($user) {
+        $pubsQuery = Publication::whereHas('project', function ($q) use ($user) {
             $q->hierarchical($user, 'pi_id');
         });
 
         $statusBreakdown = Proposal::hierarchical($user, 'submitted_by')
             ->join('proposal_statuses', 'proposals.status_id', '=', 'proposal_statuses.id')
-            ->select('proposal_statuses.name', DB::raw('count(*) as count'))
+            ->select('proposal_statuses.name', \Illuminate\Support\Facades\DB::raw('count(*) as count'))
             ->groupBy('proposal_statuses.id', 'proposal_statuses.name')
             ->get();
 
@@ -106,45 +113,42 @@ class DashboardController extends Controller
         $reviewProgress = app(\App\Services\ReviewService::class)
             ->getInstitutionalReviewProgress($proposalIds);
 
-        $universityStats = University::all()->map(function($u) use ($user) {
-            $count = Proposal::whereIn('submitted_by', function($q) use ($u) {
-                $q->select('users.id')->from('users')
-                    ->join('departments', 'users.department_id', '=', 'departments.id')
-                    ->join('faculties', 'departments.faculty_id', '=', 'faculties.id')
-                    ->join('campuses', 'faculties.campus_id', '=', 'campuses.id')
-                    ->where('campuses.university_id', $u->id);
-            })->hierarchical($user, 'submitted_by')->count();
-            
-            return [
-                'name' => $u->name,
-                'code' => $u->code,
-                'proposals_count' => $count
-            ];
-        });
+        // Centers, campuses, faculties scoped to user's university only
+        $centersCount    = \App\Models\ResearchCenter::where('university_id', $userUniversityId)->count();
+        $campusesCount   = \App\Models\Campus::where('university_id', $userUniversityId)->count();
+        $facultiesCount  = \App\Models\Faculty::whereHas('campus', fn($q) => $q->where('university_id', $userUniversityId))->count();
+
+        // University stats: show only the user's own university (not all universities)
+        $ownUniversity = \App\Models\University::find($userUniversityId);
+        $universityStats = $ownUniversity ? collect([[
+            'name'            => $ownUniversity->name,
+            'code'            => $ownUniversity->code,
+            'proposals_count' => Proposal::hierarchical($user, 'submitted_by')->count(),
+        ]]) : collect([]);
 
         return response()->json([
-            'proposals_count' => $proposalsQuery->count(),
-            'projects_count' => $projectsQuery->count(),
-            'users_count' => $usersQuery->count(),
-            'centers_count' => ResearchCenter::count(),
-            'universities_count' => University::count(),
-            'campuses_count' => Campus::count(),
-            'faculties_count' => Faculty::count(),
-            'calls_count' => Call::visibleTo($user)->whereHas('status', fn($s) => $s->where('name', 'open'))->count(),
+            'proposals_count'    => $proposalsQuery->count(),
+            'projects_count'     => $projectsQuery->count(),
+            'users_count'        => $usersQuery->count(),
+            'centers_count'      => $centersCount,
+            'universities_count' => $ownUniversity ? 1 : 0,
+            'campuses_count'     => $campusesCount,
+            'faculties_count'    => $facultiesCount,
+            'calls_count'        => \App\Models\Call::visibleTo($user)->whereHas('status', fn($s) => $s->where('name', 'open'))->count(),
             'publications_count' => $pubsQuery->count(),
-            
+
             // Status-specific counts for the new admin grid
-            'completed_count' => ($countsByStatus['approved'] ?? 0) + ($countsByStatus['rejected'] ?? 0),
-            'in_progress_count' => ($countsByStatus['under_review'] ?? 0) + ($countsByStatus['revision_requested'] ?? 0),
-            'pending_count' => $countsByStatus['submitted'] ?? 0,
-            
-            'review_progress' => $reviewProgress,
-            
+            'completed_count'  => ($countsByStatus['approved'] ?? 0) + ($countsByStatus['rejected'] ?? 0),
+            'in_progress_count'=> ($countsByStatus['under_review'] ?? 0) + ($countsByStatus['revision_requested'] ?? 0),
+            'pending_count'    => $countsByStatus['submitted'] ?? 0,
+
+            'review_progress'  => $reviewProgress,
+
             'university_stats' => $universityStats,
             'status_breakdown' => $statusBreakdown,
-            'monthly_trend' => Proposal::hierarchical($user, 'submitted_by')
+            'monthly_trend'    => Proposal::hierarchical($user, 'submitted_by')
                 ->where('created_at', '>=', now()->subMonths(6))
-                ->select(DB::raw('DATE_FORMAT(created_at, "%b") as month'), DB::raw('count(*) as count'), DB::raw('MONTH(created_at) as month_num'))
+                ->select(\Illuminate\Support\Facades\DB::raw('DATE_FORMAT(created_at, "%b") as month'), \Illuminate\Support\Facades\DB::raw('count(*) as count'), \Illuminate\Support\Facades\DB::raw('MONTH(created_at) as month_num'))
                 ->groupBy('month', 'month_num')
                 ->orderBy('month_num')
                 ->get(),

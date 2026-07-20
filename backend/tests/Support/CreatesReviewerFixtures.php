@@ -22,6 +22,9 @@ trait CreatesReviewerFixtures
 
     protected function seedReviewerFixtures(): void
     {
+        \DB::table('proposal_types')->truncate();
+        \DB::table('proposal_statuses')->truncate();
+
         \DB::table('proposal_types')->insert([
             'id' => 1,
             'name' => 'research',
@@ -43,10 +46,16 @@ trait CreatesReviewerFixtures
             'updated_at' => now(),
         ]);
 
+        $university = \App\Models\University::firstOrCreate(
+            ['code' => 'TEST'],
+            ['name' => 'Test University', 'location' => 'Test Location']
+        );
+
         $this->submitterUser = User::create([
             'name' => 'Submitter',
             'email' => 'submitter@test.com',
             'password' => Hash::make('password'),
+            'university_id' => $university->id,
             'is_active' => true,
         ]);
 
@@ -54,6 +63,7 @@ trait CreatesReviewerFixtures
             'name' => 'Reviewer',
             'email' => 'reviewer@test.com',
             'password' => Hash::make('password'),
+            'university_id' => $university->id,
             'is_active' => true,
         ]);
 
@@ -61,6 +71,7 @@ trait CreatesReviewerFixtures
             'name' => 'Research Admin',
             'email' => 'admin@test.com',
             'password' => Hash::make('password'),
+            'university_id' => $university->id,
             'is_active' => true,
         ]);
 

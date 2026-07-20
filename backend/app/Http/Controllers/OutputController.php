@@ -20,7 +20,7 @@ class OutputController extends Controller
     public function index(Request $request): JsonResponse
     {
         $user = auth()->user();
-        
+
         $query = Output::with(['category', 'status', 'subtype', 'participantEntries.user', 'participantEntries.participantType'])
             ->when($request->status, fn($q) => $q->whereHas('status', fn($s) => $s->where('name', $request->status)))
             ->when($request->category, fn($q) => $q->whereHas('category', fn($c) => $c->where('name', $request->category)))
@@ -28,20 +28,18 @@ class OutputController extends Controller
             ->when($request->subtype, fn($q) => $q->whereHas('subtype', fn($st) => $st->where('name', $request->subtype)))
             ->when($request->search, fn($q) => $q->where('title', 'LIKE', '%' . $request->search . '%'));
 
-        // Role-based scoping for student outputs
-        if ($user) {
+        // Tenant isolation: scope by the participants' institutional hierarchy.
+        if ($user && !$user->hasRole('super_admin')) {
             if ($user->hasRole('student')) {
                 // Students see only their own outputs
-                $query->whereHas('participantEntries', function($q) use ($user) {
+                $query->whereHas('participantEntries', function ($q) use ($user) {
                     $q->where('user_id', $user->id)
-                      ->whereHas('participantType', function($pt) {
-                          $pt->where('name', 'student');
-                      });
+                      ->whereHas('participantType', fn($pt) => $pt->where('name', 'student'));
                 });
-            } elseif ($user->hasRole('department_head')) {
-                // Department heads see outputs in their department
-                $query->whereHas('participants.user', function($q) use ($user) {
-                    $q->where('department_id', $user->department_id);
+            } else {
+                // All other roles: scope via participant user's institutional hierarchy
+                $query->whereHas('participants', function ($q) use ($user) {
+                    $q->hierarchical($user, 'id');
                 });
             }
         }
@@ -106,6 +104,7 @@ class OutputController extends Controller
 
     public function show(Output $output): JsonResponse
     {
+        $this->authorize('view', $output);
         return response()->json($output->load('category', 'status', 'participantEntries.user', 'participantEntries.participantType', 'files', 'project'));
     }
 
@@ -125,6 +124,7 @@ class OutputController extends Controller
 
     public function changeStatus(ChangeOutputStatusRequest $request, Output $output): JsonResponse
     {
+        $this->authorize('changeStatus', $output);
         $this->outputService->changeStatus($output, $request->status_id);
         return response()->json(['message' => 'Status updated.']);
     }

@@ -13,7 +13,15 @@ class UserPolicy
 
     public function view(User $user, User $model): bool
     {
-        return $user->isAdmin() || $user->id === $model->id;
+        if ($user->id === $model->id) {
+            return true;
+        }
+
+        if (! $user->isAdmin()) {
+            return false;
+        }
+
+        return $user->sharesInstitutionWith($model);
     }
 
     public function create(User $user): bool
@@ -23,7 +31,15 @@ class UserPolicy
 
     public function update(User $user, User $model): bool
     {
-        return $user->isAdmin() || $user->id === $model->id;
+        if ($user->id === $model->id) {
+            return true;
+        }
+
+        if (! $user->isAdmin()) {
+            return false;
+        }
+
+        return $user->sharesInstitutionWith($model);
     }
 
     public function delete(User $user, User $model): bool

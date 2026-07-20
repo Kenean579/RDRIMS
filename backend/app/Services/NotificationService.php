@@ -169,6 +169,7 @@ HTML;
     {
         $subjects = [
             'user_registered'       => 'Welcome to RDRIMS – Account Created',
+            'user_invited'          => 'You Have Been Invited to RDRIMS – Activate Your Account',
             'proposal_submitted'    => 'Proposal Submitted Successfully',
             'proposal_received'     => 'New Proposal Received for Review',
             'proposal_approved'     => 'Your Proposal Has Been Approved',
@@ -189,6 +190,166 @@ HTML;
     }
 
     // ── Convenience methods for common events ─────────────────────────
+
+    /**
+     * Send a professional invitation email to a newly provisioned user.
+     *
+     * Called exclusively by UserService::provision().
+     * Never called during self-registration.
+     * Reuses the Laravel Password Broker token for the activation link.
+     *
+     * @param User   $user          The provisioned user.
+     * @param string $activationUrl The full activation URL including token & email.
+     */
+    public function sendInvitationEmail(User $user, string $activationUrl): void
+    {
+        $appName    = config('app.name', 'RDRIMS');
+        $expireMin  = config('auth.passwords.users.expire', 60);
+        $expireText = $expireMin >= 60
+            ? ($expireMin / 60) . ' hour' . ($expireMin / 60 !== 1 ? 's' : '')
+            : $expireMin . ' minutes';
+
+        // Create in-app notification first (always, regardless of email settings)
+        $this->createInApp(
+            $user,
+            'user_invited',
+            "An account has been created for you on {$appName}. Click the activation link sent to your email to set your password and get started.",
+            ['link' => $activationUrl, 'action_text' => 'Activate Account'],
+            'Important'
+        );
+
+        // Send the invitation email directly — bypasses the shouldSendEmail() guard
+        // because this is a transactional security email that must always be delivered.
+        $subject = $this->getEmailSubject('user_invited', []);
+        $html    = $this->buildInvitationHtml($user, $activationUrl, $expireText);
+        try {
+            Mail::html(
+                $html,
+                function ($mail) use ($user, $subject) {
+                    $mail->to($user->email, $user->name)->subject($subject);
+                }
+            );
+            logger()->info('Invitation email sent', ['user_id' => $user->id, 'email' => $user->email]);
+        } catch (\Exception $e) {
+            logger()->error('Failed to send invitation email', [
+                'user_id' => $user->id,
+                'email'   => $user->email,
+                'error'   => $e->getMessage(),
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Build a professional HTML invitation email body.
+     * Distinct from buildEmailHtml() — purpose-built for account activation.
+     */
+    private function buildInvitationHtml(User $user, string $activationUrl, string $expireText): string
+    {
+        $appName = config('app.name', 'RDRIMS');
+
+        return <<<HTML
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Activate Your RDRIMS Account</title>
+</head>
+<body style="margin:0;padding:0;background:#f0f4f8;font-family:'Segoe UI',Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background:#f0f4f8;padding:40px 20px;">
+    <tr>
+      <td align="center">
+        <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+
+          <!-- Header -->
+          <tr>
+            <td style="background:linear-gradient(135deg,#1a3a5c 0%,#1e5fa8 100%);padding:36px 40px;text-align:center;">
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center">
+                    <div style="display:inline-block;width:56px;height:56px;background:rgba(255,255,255,0.15);border-radius:14px;line-height:56px;text-align:center;font-size:28px;font-weight:900;color:#ffffff;margin-bottom:16px;">R</div>
+                    <br />
+                    <span style="color:#ffffff;font-size:22px;font-weight:700;letter-spacing:-0.5px;">{$appName}</span>
+                    <br />
+                    <span style="color:rgba(255,255,255,0.75);font-size:13px;font-weight:400;margin-top:4px;display:block;">Research &amp; Development Information Management System</span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="padding:40px 40px 32px;">
+              <p style="margin:0 0 8px;font-size:13px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:1px;">Account Invitation</p>
+              <h1 style="margin:0 0 20px;font-size:26px;font-weight:700;color:#1a202c;line-height:1.3;">Welcome, {$user->name}! 🎉</h1>
+
+              <p style="margin:0 0 16px;font-size:15px;color:#4b5563;line-height:1.7;">
+                An account has been created for you on <strong>{$appName}</strong>. You're one step away from accessing the platform.
+              </p>
+              <p style="margin:0 0 28px;font-size:15px;color:#4b5563;line-height:1.7;">
+                Click the button below to <strong>activate your account</strong>, create your password, and complete your profile.
+              </p>
+
+              <!-- CTA Button -->
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td align="center" style="padding:0 0 28px;">
+                    <a href="{$activationUrl}"
+                       style="display:inline-block;padding:16px 40px;background:linear-gradient(135deg,#1a3a5c 0%,#1e5fa8 100%);color:#ffffff;text-decoration:none;font-size:15px;font-weight:700;border-radius:10px;letter-spacing:0.3px;box-shadow:0 4px 14px rgba(30,95,168,0.35);">
+                      ✓ &nbsp; Activate My Account
+                    </a>
+                  </td>
+                </tr>
+              </table>
+
+              <!-- Steps -->
+              <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;border-radius:12px;padding:20px;margin-bottom:24px;">
+                <tr>
+                  <td style="padding:0 0 12px;">
+                    <p style="margin:0 0 12px;font-size:12px;font-weight:700;color:#6b7280;text-transform:uppercase;letter-spacing:1px;">What happens next</p>
+                  </td>
+                </tr>
+                <tr><td style="padding:4px 0;"><span style="color:#1e5fa8;font-weight:700;">① </span><span style="font-size:14px;color:#4b5563;">Click "Activate My Account"</span></td></tr>
+                <tr><td style="padding:4px 0;"><span style="color:#1e5fa8;font-weight:700;">② </span><span style="font-size:14px;color:#4b5563;">Create your secure password</span></td></tr>
+                <tr><td style="padding:4px 0;"><span style="color:#1e5fa8;font-weight:700;">③ </span><span style="font-size:14px;color:#4b5563;">Complete your researcher profile</span></td></tr>
+                <tr><td style="padding:4px 0;"><span style="color:#1e5fa8;font-weight:700;">④ </span><span style="font-size:14px;color:#4b5563;">Access the full RDRIMS platform</span></td></tr>
+              </table>
+
+              <!-- Security Notice -->
+              <div style="border-left:3px solid #f59e0b;padding:12px 16px;background:#fffbeb;border-radius:0 8px 8px 0;margin-bottom:24px;">
+                <p style="margin:0;font-size:13px;color:#92400e;line-height:1.6;">
+                  <strong>⏱ This activation link expires in {$expireText}.</strong><br />
+                  If the link expires, contact your administrator to request a new invitation.
+                </p>
+              </div>
+
+              <!-- Fallback URL -->
+              <p style="margin:0 0 4px;font-size:12px;color:#9ca3af;">If the button does not work, copy and paste this link into your browser:</p>
+              <p style="margin:0;font-size:11px;color:#6b7280;word-break:break-all;">{$activationUrl}</p>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background:#f8fafc;padding:20px 40px;border-top:1px solid #e5e7eb;">
+              <p style="margin:0;font-size:12px;color:#9ca3af;text-align:center;line-height:1.6;">
+                This invitation was sent by <strong>{$appName}</strong>.<br />
+                If you did not expect this email, you can safely ignore it — no account action will be taken until you click the activation link.<br />
+                <strong>Never share this link with anyone.</strong>
+              </p>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>
+HTML;
+    }
 
     public function proposalSubmitted(User $submitter, string $proposalTitle, int $proposalId): void
     {

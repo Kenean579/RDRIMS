@@ -22,8 +22,10 @@ class CallController extends Controller
                 $q->whereHas('status', fn($s) => $s->where('name', $request->input('status')))
             )
             ->when($request->filled('search'), fn($q) =>
-                $q->where('title', 'LIKE', '%' . $request->input('search') . '%')
-                  ->orWhere('thematic_areas', 'LIKE', '%' . $request->input('search') . '%')
+                $q->where(function ($searchQuery) use ($request) {
+                    $searchQuery->where('title', 'LIKE', '%' . $request->input('search') . '%')
+                        ->orWhere('thematic_areas', 'LIKE', '%' . $request->input('search') . '%');
+                })
             )
             // Apply hierarchical filters if provided
             // Apply hierarchical filters if provided (include NULL for global visibility)
@@ -58,47 +60,7 @@ class CallController extends Controller
                 })
             )
             // Scoping by user role (if no explicit filter is already applied)
-            ->when(!$request->hasAny(['university_id','campus_id','faculty_id','department_id','research_center_id']),
-                function ($query) use ($user) {
-                    if (!$user || $user->hasRole('super_admin')) {
-                        return;
-                    }
-                    $query->where(function ($q) use ($user) {
-                        if ($user->hasRole('research_admin')) {
-                            $q->where('university_id', $user->university_id)
-                              ->orWhereHas('createdBy', fn($u) => $u->where('university_id', $user->university_id));
-                        }
-                        if ($user->hasRole('campus_admin')) {
-                            $q->orWhere('campus_id', $user->campus_id);
-                        }
-                        if ($user->hasRole('faculty_admin')) {
-                            $q->orWhere('faculty_id', $user->faculty_id);
-                        }
-                        if ($user->hasRole('department_head')) {
-                            $q->orWhere('department_id', $user->department_id);
-                        }
-                        if ($user->hasRole('director')) {
-                            $q->orWhereIn('research_center_id', $user->researchCenters->pluck('id'));
-                        }
-                        
-                        // Default scoping for researchers, reviewers, and students
-                        if ($user->hasRole('researcher', 'reviewer', 'student', 'guest')) {
-                            $q->orWhereNull('university_id')
-                              ->orWhere('university_id', $user->university_id);
-                              
-                            if ($user->department?->faculty?->campus_id) {
-                                $q->orWhere('campus_id', $user->department->faculty->campus_id);
-                            }
-                            if ($user->department?->faculty_id) {
-                                $q->orWhere('faculty_id', $user->department->faculty_id);
-                            }
-                            if ($user->department_id) {
-                                $q->orWhere('department_id', $user->department_id);
-                            }
-                        }
-                    });
-                }
-            )
+            ->when($user, fn ($query) => $query->visibleTo($user))
             ->orderBy('deadline', 'desc')
             ->paginate(20);
 
@@ -115,7 +77,7 @@ class CallController extends Controller
         $this->validateScopeForRole($request, $user);
 
         $validated = $request->validated();
-        $validated = $this->autoFillHierarchy($validated);
+        $validated = $this->autoFillHierarchy($validated, $user);
         
         // Ensure a status is set if not provided (non-nullable in DB)
         if (empty($validated['status_id'])) {
@@ -141,7 +103,7 @@ class CallController extends Controller
      */
     public function show(Call $call): JsonResponse
     {
-        // Public access is allowed for open calls
+        $this->authorize('view', $call);
         return response()->json($call->load('status', 'academicYear', 'guidelineFile', 'proposals'));
     }
 
@@ -150,9 +112,12 @@ class CallController extends Controller
      */
     public function update(UpdateCallRequest $request, Call $call): JsonResponse
     {
+        $call = $call->withoutGlobalScopes();
         $this->authorize('update', $call);
+        $this->validateScopeForRole($request, $request->user());
+        
         $validated = $request->validated();
-        $validated = $this->autoFillHierarchy($validated);
+        $validated = $this->autoFillHierarchy($validated, $request->user());
         $call->update($validated);
         return response()->json($call);
     }
@@ -162,6 +127,7 @@ class CallController extends Controller
      */
     public function destroy(Call $call): JsonResponse
     {
+        $call = $call->withoutGlobalScopes();
         $this->authorize('delete', $call);
         $call->delete();
         return response()->json(['message' => 'Call deleted']);
@@ -170,7 +136,7 @@ class CallController extends Controller
     /**
      * Automatically populate parent hierarchy IDs if a child ID is provided.
      */
-    private function autoFillHierarchy(array $data): array
+    private function autoFillHierarchy(array $data, $user): array
     {
         if (!empty($data['department_id'])) {
             $department = \App\Models\Department::with('faculty.campus')->find($data['department_id']);
@@ -191,6 +157,10 @@ class CallController extends Controller
                 $data['university_id'] = $campus->university_id;
             }
         }
+        if (empty($data['university_id']) && $user && !$user->hasRole('super_admin')) {
+            $data['university_id'] = $user->resolvedUniversityId();
+        }
+
         return $data;
     }
 

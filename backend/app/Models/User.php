@@ -47,14 +47,16 @@ class User extends Authenticatable
         'name', 'email', 'password', 'university_id', 'department_id', 'profile_image_id',
         'research_center_id', 'center_role_id',
         'orcid_id', 'google_scholar_id', 'scopus_id', 'linkedin_url',
-        'is_active', 'bio', 'expertise_keywords', 'email_notifications'
+        'is_active', 'bio', 'expertise_keywords', 'email_notifications',
+        'profile_completed_at',
     ];
 
     protected $hidden = ['password'];
 
     protected $casts = [
-        'is_active' => 'boolean',
-        'email_notifications' => 'boolean',
+        'is_active'             => 'boolean',
+        'email_notifications'   => 'boolean',
+        'profile_completed_at'  => 'datetime',
     ];
 
     public function university(): BelongsTo
@@ -155,8 +157,12 @@ class User extends Authenticatable
      */
     public function getEffectivePermissionIds(): array
     {
-        $cacheKey = "user_{$this->id}_effective_permissions_v3";
-        
+        $universityIdForCache = $this->university_id
+            ?: $this->department?->faculty?->campus?->university_id
+            ?: 0;
+
+        $cacheKey = "user_{$this->id}_uni_{$universityIdForCache}_effective_permissions_v4";
+
         return \Illuminate\Support\Facades\Cache::remember($cacheKey, now()->addMinutes(30), function () {
             $universityId = $this->university_id ?: $this->department?->faculty?->campus?->university_id;
             $campusId = $this->department?->faculty?->campus_id;
@@ -172,21 +178,21 @@ class User extends Authenticatable
                 ->whereNull('department_id')
                 ->whereNull('research_center_id')
                 ->pluck('roles.id');
-                
+
             $globalPermIds = \App\Models\Permission::whereHas('roles', function ($q) use ($globalRoleIds) {
                 $q->whereIn('role_id', $globalRoleIds);
             })->pluck('id');
 
             // 2. Hierarchical specific roles (assigned to this user at ANY level)
-            $hierarchicalRoleIds = $this->roles()->where(function($q) use ($universityId, $campusId, $facultyId, $departmentId, $researchCenterId) {
+            $hierarchicalRoleIds = $this->roles()->where(function ($q) use ($universityId, $campusId, $facultyId, $departmentId, $researchCenterId) {
                 $q->where('university_id', $universityId)
                   ->orWhere('campus_id', $campusId)
                   ->orWhere('faculty_id', $facultyId)
                   ->orWhere('department_id', $departmentId)
                   ->orWhere('research_center_id', $researchCenterId);
             })->pluck('roles.id');
-                
-            $hierarchicalPermIds = $hierarchicalRoleIds->isNotEmpty() 
+
+            $hierarchicalPermIds = $hierarchicalRoleIds->isNotEmpty()
                 ? \App\Models\Permission::whereHas('roles', function ($q) use ($hierarchicalRoleIds) {
                     $q->whereIn('role_id', $hierarchicalRoleIds);
                 })->pluck('id')
@@ -195,7 +201,7 @@ class User extends Authenticatable
             // 3. Overrides at ALL levels of user's hierarchy
             $userRoleIds = $this->roles->pluck('id');
             $overrides = \App\Models\InstitutionRolePermission::whereIn('role_id', $userRoleIds)
-                ->where(function($q) use ($universityId, $campusId, $facultyId, $departmentId, $researchCenterId) {
+                ->where(function ($q) use ($universityId, $campusId, $facultyId, $departmentId, $researchCenterId) {
                     $q->where('university_id', $universityId)
                       ->orWhere('campus_id', $campusId)
                       ->orWhere('faculty_id', $facultyId)
@@ -203,12 +209,12 @@ class User extends Authenticatable
                       ->orWhere('research_center_id', $researchCenterId);
                 })->get();
 
-            $added = $overrides->where('granted', true)->pluck('permission_id');
+            $added   = $overrides->where('granted', true)->pluck('permission_id');
             $removed = $overrides->where('granted', false)->pluck('permission_id');
 
             // Merge: (Global + HierarchicalRoles + Added) - Removed
             $all = $globalPermIds->merge($hierarchicalPermIds)->merge($added)->diff($removed)->unique();
-            
+
             return $all->values()->toArray();
         });
     }
@@ -227,5 +233,25 @@ class User extends Authenticatable
         });
 
         return $permId && in_array($permId, $effectiveIds);
+    }
+
+    public function resolvedUniversityId(): ?int
+    {
+        return $this->university_id ?: $this->department?->faculty?->campus?->university_id;
+    }
+
+    public function getUniversityId(): ?int
+    {
+        return $this->resolvedUniversityId();
+    }
+
+    public function sharesInstitutionWith(User $other): bool
+    {
+        $thisUniversityId = $this->resolvedUniversityId();
+        $otherUniversityId = $other->resolvedUniversityId();
+
+        return $thisUniversityId !== null
+            && $otherUniversityId !== null
+            && (int) $thisUniversityId === (int) $otherUniversityId;
     }
 }

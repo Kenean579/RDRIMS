@@ -9,12 +9,26 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         $this->call([
-            \Database\Seeders\AcademicYearSeeder::class,
+
+            /*
+            |--------------------------------------------------------------------------
+            | Core System Configuration
+            |--------------------------------------------------------------------------
+            */
 
             RoleSeeder::class,
             PermissionSeeder::class,
             RolePermissionSeeder::class,
             CenterRoleSeeder::class,
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Global Lookup Tables
+            |--------------------------------------------------------------------------
+            */
+
+            AcademicYearSeeder::class,
 
             CallStatusSeeder::class,
             ProposalTypeSeeder::class,
@@ -38,18 +52,49 @@ class DatabaseSeeder extends Seeder
             ParticipantTypeSeeder::class,
             OutputStatusSeeder::class,
 
-            ExpertiseSeeder::class,
-            ReviewCriteriaSeeder::class,
-            SettingSeeder::class,
 
-           // ComprehensiveSeeder::class,
+            /*
+            |--------------------------------------------------------------------------
+            | Tenant Organization Hierarchy
+            |--------------------------------------------------------------------------
+            */
+
             UniversitySeeder::class,
             CampusSeeder::class,
             FacultySeeder::class,
             DepartmentSeeder::class,
+            ResearchCenterSeeder::class,
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Users
+            |--------------------------------------------------------------------------
+            */
+
             SuperAdminSeeder::class,
             SampleUserSeeder::class,
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Advanced Permission Assignment
+            |--------------------------------------------------------------------------
+            */
+
             HierarchicalPermissionsSeeder::class,
+
+
+            /*
+            |--------------------------------------------------------------------------
+            | Supporting Data
+            |--------------------------------------------------------------------------
+            */
+
+            ExpertiseSeeder::class,
+            ReviewCriteriaSeeder::class,
+            SettingSeeder::class,
+
         ]);
     }
 }

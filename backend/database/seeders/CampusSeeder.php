@@ -3,17 +3,83 @@
 namespace Database\Seeders;
 
 use App\Models\Campus;
+use App\Models\University;
 use Illuminate\Database\Seeder;
 
 class CampusSeeder extends Seeder
 {
     public function run(): void
     {
-        Campus::firstOrCreate(['name' => 'Dessie Campus', 'code' => 'WU-DESSIE', 'university_id' => 1]);
-        Campus::firstOrCreate(['name' => 'Kombolcha Campus', 'code' => 'WU-KOMBOLCHA', 'university_id' => 1]);
-        Campus::firstOrCreate(['name' => 'Siddist Kilo Campus', 'code' => 'AAU-SK', 'university_id' => 2]);
-        Campus::firstOrCreate(['name' => 'Arat Kilo Campus', 'code' => 'AAU-AK', 'university_id' => 2]);
-        Campus::firstOrCreate(['name' => 'Main Campus', 'code' => 'BDU-MAIN', 'university_id' => 3]);
-        Campus::firstOrCreate(['name' => 'Poly Campus', 'code' => 'BDU-POLY', 'university_id' => 3]);
+        $wolloUniversity = University::where('code', 'WU')->first();
+        $aauUniversity = University::where('code', 'AAU')->first();
+        $bduUniversity = University::where('code', 'BDU')->first();
+
+        /*
+        |--------------------------------------------------------------------------
+        | Wollo University Campuses
+        |--------------------------------------------------------------------------
+        */
+
+        Campus::updateOrCreate(
+            ['code' => 'WU-DESSIE'],
+            [
+                'name' => 'Dessie Campus',
+                'university_id' => $wolloUniversity?->id,
+            ]
+        );
+
+        Campus::updateOrCreate(
+            ['code' => 'WU-KOMBOLCHA'],
+            [
+                'name' => 'Kombolcha Campus',
+                'university_id' => $wolloUniversity?->id,
+            ]
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Addis Ababa University Campuses
+        |--------------------------------------------------------------------------
+        */
+
+        Campus::updateOrCreate(
+            ['code' => 'AAU-SK'],
+            [
+                'name' => 'Siddist Kilo Campus',
+                'university_id' => $aauUniversity?->id,
+            ]
+        );
+
+        Campus::updateOrCreate(
+            ['code' => 'AAU-AK'],
+            [
+                'name' => 'Arat Kilo Campus',
+                'university_id' => $aauUniversity?->id,
+            ]
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Bahir Dar University Campuses
+        |--------------------------------------------------------------------------
+        */
+
+        Campus::updateOrCreate(
+            ['code' => 'BDU-MAIN'],
+            [
+                'name' => 'Main Campus',
+                'university_id' => $bduUniversity?->id,
+            ]
+        );
+
+        Campus::updateOrCreate(
+            ['code' => 'BDU-POLY'],
+            [
+                'name' => 'Poly Campus',
+                'university_id' => $bduUniversity?->id,
+            ]
+        );
     }
 }

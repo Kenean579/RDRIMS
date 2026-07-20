@@ -14,11 +14,23 @@ class FinanceCheckPolicy
 
     public function view(User $user, FinanceCheck $financeCheck): bool
     {
-        return $user->isAdmin() || $user->hasRole('finance_officer');
+        if (! ($user->isAdmin() || $user->hasRole('finance_officer'))) {
+            return false;
+        }
+
+        $submitter = $financeCheck->proposal?->submittedBy;
+
+        return $submitter ? $user->sharesInstitutionWith($submitter) : false;
     }
 
     public function update(User $user, FinanceCheck $financeCheck): bool
     {
-        return $user->hasRole('finance_officer') || $user->isAdmin();
+        if (! ($user->hasRole('finance_officer') || $user->isAdmin())) {
+            return false;
+        }
+
+        $submitter = $financeCheck->proposal?->submittedBy;
+
+        return $submitter ? $user->sharesInstitutionWith($submitter) : false;
     }
 }

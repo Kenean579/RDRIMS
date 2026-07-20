@@ -14,11 +14,14 @@ class ReviewerSuggestionService
      */
     public function suggest(Proposal $proposal, int $limit = 5): Collection
     {
+        $actor = auth()->user();
         $proposalKeywords = array_filter(explode(',', $proposal->keywords));
         $proposalKeywords = array_map(fn($k) => strtolower(trim($k)), $proposalKeywords);
 
         if (empty($proposalKeywords)) {
-            return User::whereHas('roles', fn($q) => $q->where('name', 'reviewer'))
+            return User::query()
+                ->whereHas('roles', fn($q) => $q->where('name', 'reviewer'))
+                ->when($actor && !$actor->hasRole('super_admin'), fn($q) => $q->hierarchical($actor, 'id'))
                 ->where('id', '!=', $proposal->submitted_by)
                 ->limit($limit)
                 ->get();
@@ -28,6 +31,7 @@ class ReviewerSuggestionService
         $investigatorUserIds = $proposal->investigators()->whereNotNull('user_id')->pluck('user_id')->toArray();
         $eligibleReviewers = User::withCount('reviewedProposals')
             ->whereHas('roles', fn($q) => $q->where('name', 'reviewer'))
+            ->when($actor && !$actor->hasRole('super_admin'), fn($q) => $q->hierarchical($actor, 'id'))
             ->where('id', '!=', $proposal->submitted_by)
             ->whereNotIn('id', $investigatorUserIds)
             ->with(['expertise', 'department'])

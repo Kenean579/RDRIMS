@@ -21,11 +21,14 @@ class UserResearchCenterController extends Controller
     {
         $this->authorize('update', $user);
         $request->validate(['research_center_id' => 'required|exists:research_centers,id', 'center_role_id' => 'required|integer']);
-        
+
+        $researchCenter = \App\Models\ResearchCenter::findOrFail($request->research_center_id);
+        $this->authorize('view', $researchCenter);
+
         $user->researchCenters()->syncWithoutDetaching([$request->research_center_id => [
             'center_role_id' => $request->center_role_id,
         ]]);
-        
+
         return response()->json($user->load('researchCenters'));
     }
 

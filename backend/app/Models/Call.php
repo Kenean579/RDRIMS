@@ -3,16 +3,22 @@
 namespace App\Models;
 
 use App\Models\User;
+use App\Traits\BelongsToUniversity;
 use App\Traits\HierarchicalScope;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Call extends Model
 {
-    use HasFactory, HierarchicalScope;
+    use HasFactory, SoftDeletes, HierarchicalScope, BelongsToUniversity;
 
+    /**
+     * Mass assignable attributes.
+     */
     protected $fillable = [
         'title',
         'description',
@@ -22,119 +28,290 @@ class Call extends Model
         'status_id',
         'academic_year_id',
         'guideline_file_id',
-        'community_problem_id',
         'university_id',
         'research_center_id',
         'campus_id',
         'faculty_id',
-        'department_id'
+        'department_id',
+        'published_at',
+        'opens_at',
+        'closes_at',
+        'is_public',
+        'is_featured',
+        'metadata',
     ];
 
+    /**
+     * Attribute casting.
+     */
     protected $casts = [
-        'deadline' => 'date',
+        'deadline'      => 'date',
+        'published_at'  => 'datetime',
+        'opens_at'      => 'datetime',
+        'closes_at'     => 'datetime',
+        'is_public'     => 'boolean',
+        'is_featured'   => 'boolean',
+        'metadata'      => 'array',
     ];
 
+    /*
+    |--------------------------------------------------------------------------
+    | Relationships
+    |--------------------------------------------------------------------------
+    */
+
+    /**
+     * User who created the call.
+     */
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
     }
 
+    /**
+     * Call status.
+     */
     public function status(): BelongsTo
     {
         return $this->belongsTo(CallStatus::class, 'status_id');
     }
 
+    /**
+     * Academic year.
+     */
     public function academicYear(): BelongsTo
     {
         return $this->belongsTo(AcademicYear::class);
     }
 
-    public function communityProblem(): BelongsTo
-    {
-        return $this->belongsTo(CommunityProblem::class, 'community_problem_id');
-    }
-
+    /**
+     * Guideline document.
+     */
     public function guidelineFile(): BelongsTo
     {
         return $this->belongsTo(File::class, 'guideline_file_id');
     }
 
-    public function researchCenter(): BelongsTo
-    {
-        return $this->belongsTo(ResearchCenter::class, 'research_center_id');
-    }
-
-    public function campus(): BelongsTo
-    {
-        return $this->belongsTo(Campus::class);
-    }
-
-    public function faculty(): BelongsTo
-    {
-        return $this->belongsTo(Faculty::class);
-    }
-
-    public function department(): BelongsTo
-    {
-        return $this->belongsTo(Department::class);
-    }
-
+    /**
+     * University.
+     */
     public function university(): BelongsTo
     {
         return $this->belongsTo(University::class, 'university_id');
     }
 
+    /**
+     * Research center.
+     */
+    public function researchCenter(): BelongsTo
+    {
+        return $this->belongsTo(
+            ResearchCenter::class,
+            'research_center_id'
+        );
+    }
+
+    /**
+     * Campus.
+     */
+    public function campus(): BelongsTo
+    {
+        return $this->belongsTo(Campus::class);
+    }
+
+    /**
+     * Faculty.
+     */
+    public function faculty(): BelongsTo
+    {
+        return $this->belongsTo(Faculty::class);
+    }
+
+    /**
+     * Department.
+     */
+    public function department(): BelongsTo
+    {
+        return $this->belongsTo(Department::class);
+    }
+
+    /**
+     * Submitted proposals.
+     */
     public function proposals(): HasMany
     {
         return $this->hasMany(Proposal::class);
     }
 
+    /*
+    |--------------------------------------------------------------------------
+    | Query Scopes
+    |--------------------------------------------------------------------------
+    */
+
     /**
-     * Scope a query to only include calls visible to the given user.
+     * Only published calls.
      */
-    public function scopeVisibleTo($query, User $user)
+    public function scopePublished(Builder $query): Builder
     {
+        return $query->whereNotNull('published_at');
+    }
+
+    /**
+     * Only open calls.
+     */
+    public function scopeOpen(Builder $query): Builder
+    {
+        return $query
+            ->whereNotNull('opens_at')
+            ->whereNotNull('closes_at')
+            ->where('opens_at', '<=', now())
+            ->where('closes_at', '>=', now());
+    }
+
+    /**
+     * Only public calls.
+     */
+    public function scopePublic(Builder $query): Builder
+    {
+        return $query->where('is_public', true);
+    }
+
+    /**
+     * Scope calls visible to the authenticated user.
+     *
+     * NOTE:
+     * This scope will be simplified after introducing
+     * the CallService and TenantService.
+     */
+    public function scopeVisibleTo(Builder $query, User $user): Builder
+    {
+        // Super Admin can view all calls.
         if ($user->hasRole('super_admin')) {
             return $query;
         }
 
-        return $query->where(function ($q) use ($user) {
-            // Include calls targeted globally
+        return $query->where(function (Builder $q) use ($user) {
+
+            // Global calls.
             $q->whereNull('university_id');
 
+            /*
+            |--------------------------------------------------------------------------
+            | Research Administration
+            |--------------------------------------------------------------------------
+            */
+
             if ($user->hasRole('research_admin')) {
-                $q->orWhere('university_id', $user->university_id)
-                  ->orWhereHas('createdBy', fn($u) => $u->where('university_id', $user->university_id));
+
+                $q->orWhere(
+                    'university_id',
+                    $user->resolvedUniversityId()
+                );
             }
-            if ($user->hasRole('campus_admin')) {
+
+            /*
+            |--------------------------------------------------------------------------
+            | Campus Administration
+            |--------------------------------------------------------------------------
+            */
+
+            if (
+                $user->hasRole('campus_admin') &&
+                $user->campus_id
+            ) {
                 $q->orWhere('campus_id', $user->campus_id);
             }
-            if ($user->hasRole('faculty_admin')) {
+
+            /*
+            |--------------------------------------------------------------------------
+            | Faculty Administration
+            |--------------------------------------------------------------------------
+            */
+
+            if (
+                $user->hasRole('faculty_admin') &&
+                $user->faculty_id
+            ) {
                 $q->orWhere('faculty_id', $user->faculty_id);
             }
-            if ($user->hasRole('department_head')) {
-                $q->orWhere('department_id', $user->department_id);
+
+            /*
+            |--------------------------------------------------------------------------
+            | Department Administration
+            |--------------------------------------------------------------------------
+            */
+
+            if (
+                $user->hasRole('department_head') &&
+                $user->department_id
+            ) {
+                $q->orWhere(
+                    'department_id',
+                    $user->department_id
+                );
             }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Research Center Director
+            |--------------------------------------------------------------------------
+            */
+
             if ($user->hasRole('director')) {
-                $centerIds = \Illuminate\Support\Facades\DB::table('user_research_centers')
-                    ->where('user_id', $user->id)->pluck('research_center_id');
+
+                $centerIds = $user->researchCenters()
+                    ->pluck('research_centers.id');
+
                 if ($centerIds->isNotEmpty()) {
-                    $q->orWhereIn('research_center_id', $centerIds);
+                    $q->orWhereIn(
+                        'research_center_id',
+                        $centerIds
+                    );
                 }
             }
 
-            // Default scoping for researchers, reviewers, students, etc.
-            if ($user->hasRole('researcher', 'reviewer', 'student', 'guest')) {
-                $q->orWhere('university_id', $user->university_id);
-                
-                if ($user->department?->faculty?->campus_id) {
-                    $q->orWhere('campus_id', $user->department->faculty->campus_id);
+            /*
+            |--------------------------------------------------------------------------
+            | Researchers / Reviewers / Students / Guests
+            |--------------------------------------------------------------------------
+            */
+
+            if (
+                $user->hasAnyRole([
+                    'researcher',
+                    'reviewer',
+                    'student',
+                    'guest'
+                ])
+            ) {
+
+                if ($user->resolvedUniversityId()) {
+                    $q->orWhere(
+                        'university_id',
+                        $user->resolvedUniversityId()
+                    );
                 }
-                if ($user->department?->faculty_id) {
-                    $q->orWhere('faculty_id', $user->department->faculty_id);
+
+                if ($user->campus_id) {
+                    $q->orWhere(
+                        'campus_id',
+                        $user->campus_id
+                    );
                 }
+
+                if ($user->faculty_id) {
+                    $q->orWhere(
+                        'faculty_id',
+                        $user->faculty_id
+                    );
+                }
+
                 if ($user->department_id) {
-                    $q->orWhere('department_id', $user->department_id);
+                    $q->orWhere(
+                        'department_id',
+                        $user->department_id
+                    );
                 }
             }
         });

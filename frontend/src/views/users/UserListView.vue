@@ -101,10 +101,11 @@
            </div>
         </div>
         
-        <div class="space-y-2" v-if="!editingUser">
-          <label class="block text-xs text-slate-500 font-medium ml-1">Password *</label>
-          <input v-model="form.password" type="password" required minlength="8" placeholder="••••••••" class="input h-12 font-bold" />
-          <p class="text-xs text-slate-400 font-medium mt-2 ml-1">Min. 8 characters</p>
+        <div class="p-3 bg-brand/5 border border-brand/10 rounded-xl mb-4 flex items-start gap-2.5" v-if="!editingUser">
+          <svg class="w-4 h-4 text-brand mt-0.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+          <p class="text-xs text-brand leading-relaxed font-semibold">
+            No password required. A secure activation email will be sent automatically to the new user to set their password.
+          </p>
         </div>
 
         <div class="space-y-4">
@@ -119,21 +120,21 @@
             </div>
             <div class="space-y-2">
               <label class="block text-xs text-slate-400 font-medium ml-1">Campus</label>
-              <select v-model="form.campus_id" class="input h-11 text-sm font-bold text-slate-700" :disabled="auth.hierarchicalLevel > 1 || !form.university_id">
+              <select v-model="form.campus_id" class="input h-11 text-sm font-bold text-slate-700" :disabled="auth.hierarchicalLevel > 1">
                 <option value="">Select Campus</option>
                 <option v-for="c in filteredCampuses" :key="c.id" :value="c.id">{{ c.name }}</option>
               </select>
             </div>
             <div class="space-y-2">
-              <label class="block text-xs text-slate-400 font-medium ml-1">Faculty / College</label>
-              <select v-model="form.faculty_id" class="input h-11 text-sm font-bold text-slate-700" :disabled="auth.hierarchicalLevel > 2 || !form.campus_id">
+              <label class="block text-xs text-slate-400 font-medium ml-1">Faculty</label>
+              <select v-model="form.faculty_id" class="input h-11 text-sm font-bold text-slate-700" :disabled="auth.hierarchicalLevel > 2">
                 <option value="">Select Faculty</option>
                 <option v-for="f in filteredFaculties" :key="f.id" :value="f.id">{{ f.name }}</option>
               </select>
             </div>
             <div class="space-y-2">
               <label class="block text-xs text-slate-400 font-medium ml-1">Department</label>
-              <select v-model="form.department_id" class="input h-11 text-sm font-bold text-slate-700" :disabled="auth.hierarchicalLevel > 3 || !form.faculty_id">
+              <select v-model="form.department_id" class="input h-11 text-sm font-bold text-slate-700" :disabled="auth.hierarchicalLevel > 3">
                 <option value="">Select Department</option>
                 <option v-for="d in filteredDepartments" :key="d.id" :value="d.id">{{ d.name }}</option>
               </select>
@@ -141,110 +142,117 @@
           </div>
         </div>
 
-        <div class="space-y-3">
-          <label class="block text-xs text-slate-500 font-medium ml-1">Roles</label>
-          <div class="grid grid-cols-2 gap-3 bg-slate-50 p-4 rounded-2xl border border-slate-100 max-h-48 overflow-y-auto">
-            <label v-for="r in manageableRoles" :key="r.id" class="flex items-center gap-2.5 text-xs font-bold text-slate-600 p-2.5 cursor-pointer hover:bg-white rounded-2xl transition-all shadow-sm border border-transparent hover:border-slate-100">
-              <input type="checkbox" :value="r.id" v-model="form.role_ids" class="w-4.5 h-4.5 rounded-2xl border-slate-300 text-brand focus:ring-brand shadow-sm" />
-              {{ r.name.replace(/_/g, ' ') }}
+        <div class="space-y-2 pt-2">
+          <label class="block text-xs text-slate-500 font-medium ml-1">Roles *</label>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-3.5 bg-slate-50 p-4 rounded-2xl border border-slate-100/50">
+            <label v-for="r in roles" :key="r.id" class="flex items-center gap-2.5 text-xs text-slate-600 font-bold select-none cursor-pointer hover:text-slate-800 transition">
+              <input type="checkbox" :value="r.id" v-model="form.role_ids" class="rounded border-slate-300 text-brand focus:ring-brand" />
+              {{ r.name.replace('_', ' ').toUpperCase() }}
             </label>
           </div>
-          <p v-if="manageableRoles.length === 0" class="text-[10px] text-rose-500 font-bold ml-1 italic">You do not have permission to assign any roles.</p>
         </div>
 
-        <div class="flex justify-end gap-3 pt-6 mt-6 border-t border-slate-100">
-          <button type="button" @click="closeModal" class="btn btn-secondary px-6 font-bold text-xs">Discard</button>
-          <button type="submit" class="btn btn-primary px-5 font-bold text-xs">
-            {{ editingUser ? 'Save Changes' : 'Add Person' }}
+        <div class="flex justify-end gap-3 pt-6 border-t border-slate-100">
+          <button type="button" @click="closeModal" class="btn btn-secondary h-11 px-6">Discard</button>
+          <button type="submit" class="btn btn-primary h-11 px-6">
+            {{ editingUser ? 'Update User' : 'Create & Send Invitation' }}
           </button>
         </div>
       </form>
     </Modal>
 
-    <ConfirmDialog :show="showDelete" title="Deactivate User" :message="'Are you sure you want to turn off access for ' + (deletingUser?.name) + '?'" confirmText="Deactivate" variant="danger" @confirm="deactivateUser" @cancel="showDelete = false" />
+    <ConfirmDialog :show="showDelete" title="Deactivate User" :message="'Are you sure you want to deactivate \'' + (deletingUser?.name) + '\'? This will block their login.'" confirmText="Deactivate" variant="danger" @confirm="deactivateUser" @cancel="showDelete = false" />
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch, onMounted } from 'vue'
-import { useAuthStore } from '@/stores/auth'
+import { ref, reactive, computed, onMounted } from 'vue'
 import { useNotificationStore } from '@/stores/notification'
+import { useAuthStore } from '@/stores/auth'
 import api from '@/services/api'
-
-const auth = useAuthStore()
 import Modal from '@/components/Modal.vue'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
-import Pagination from '@/components/Pagination.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import ActionMenu from '@/components/ActionMenu.vue'
 
 const notif = useNotificationStore()
-const users = ref([]); const loading = ref(true); const error = ref(null)
+const auth = useAuthStore()
+
+const users = ref([]); const loading = ref(true)
+const universities = ref([]); const campuses = ref([]); const faculties = ref([]); const departments = ref([]); const roles = ref([])
+
+const showCreate = ref(false); const editingUser = ref(null)
+const showDelete = ref(false); const deletingUser = ref(null)
 const pagination = reactive({ current_page: 1, last_page: 1, total: 0 })
 const search = ref(''); const roleFilter = ref('')
-const roles = ref([]); const departments = ref([]); const universities = ref([]); const campuses = ref([]); const faculties = ref([])
-const showCreate = ref(false); const editingUser = ref(null); const showDelete = ref(false); const deletingUser = ref(null)
-const form = reactive({ name: '', email: '', password: '', university_id: '', campus_id: '', faculty_id: '', department_id: '', role_ids: [] })
-let searchTimer = null
 
-const manageableRoles = computed(() => {
-  return roles.value.filter(r => auth.canManageLevel(r.name))
+const form = reactive({ name: '', email: '', university_id: '', campus_id: '', faculty_id: '', department_id: '', role_ids: [] })
+
+const filteredCampuses = computed(() => {
+  if (!form.university_id) return []
+  return campuses.value.filter(c => c.university_id === form.university_id)
 })
 
-// Prefill form based on auth context for new users
-watch(showCreate, (val) => {
-  if (val && !editingUser.value) {
-    if (auth.hierarchicalLevel > 0) {
-       // Deep prefill logic based on current user's location
-       const user = auth.user
-       if (user.department?.faculty?.campus?.university_id) {
-          form.university_id = user.department.faculty.campus.university_id
-          form.campus_id = user.department.faculty.campus_id
-          form.faculty_id = user.department.faculty_id
-          form.department_id = user.department_id
-       }
-    }
-  }
+const filteredFaculties = computed(() => {
+  if (!form.campus_id) return []
+  return faculties.value.filter(f => f.campus_id === form.campus_id)
+})
+
+const filteredDepartments = computed(() => {
+  if (!form.faculty_id) return []
+  return departments.value.filter(d => d.faculty_id === form.faculty_id)
 })
 
 async function fetchUsers(page = 1) {
-  loading.value = true; error.value = null
-  try { const params = { page }; if (search.value) params.search = search.value; if (roleFilter.value) params.role = roleFilter.value; const { data } = await api.get('/users', { params }); users.value = data.data; Object.assign(pagination, { current_page: data.current_page, last_page: data.last_page, total: data.total }) }
-  catch (err) { error.value = err.response?.data?.message || 'Failed' } finally { loading.value = false }
+  try { const params = { page }; if (search.value) params.search = search.value; if (roleFilter.value) params.role = roleFilter.value; const { data } = await api.get('/users', { params }); users.value = data.data; Object.assign(pagination, { current_page: data.current_page, last_page: data.last_page, total: data.total }) } catch (e) {}
 }
-function debounceSearch() { clearTimeout(searchTimer); searchTimer = setTimeout(() => fetchUsers(1), 400) }
 
-// Computed hierarchy
-const filteredCampuses = computed(() => campuses.value.filter(c => c.university_id === form.university_id))
-const filteredFaculties = computed(() => faculties.value.filter(f => f.campus_id === form.campus_id))
-const filteredDepartments = computed(() => departments.value.filter(d => d.faculty_id === form.faculty_id))
+async function fetchHierarchies() {
+  try {
+    const [u, c, f, d, r] = await Promise.all([
+      api.get('/universities'),
+      api.get('/campuses'),
+      api.get('/faculties'),
+      api.get('/departments'),
+      api.get('/roles')
+    ])
+    universities.value = u.data; campuses.value = c.data; faculties.value = f.data; departments.value = d.data
+    roles.value = Array.isArray(r.data) ? r.data : (r.data.data || [])
+  } catch (e) {}
+}
 
-// Watchers to clear children on change
-watch(() => form.university_id, () => { form.campus_id = ''; form.faculty_id = ''; form.department_id = '' })
-watch(() => form.campus_id, () => { form.faculty_id = ''; form.department_id = '' })
-watch(() => form.faculty_id, () => { form.department_id = '' })
+async function fetchData() {
+  loading.value = true
+  await Promise.all([fetchUsers(), fetchHierarchies()])
+  loading.value = false
+}
+
+function openCreate() {
+  editingUser.value = null
+  Object.assign(form, { name: '', email: '', university_id: '', campus_id: '', faculty_id: '', department_id: '', role_ids: [] })
+  showCreate.value = true
+}
 
 function editUser(u) {
-  let uid = u.university_id || '', cid = '', fid = u.department?.faculty_id || ''
-  if (u.department_id) {
-    const dept = departments.value.find(d => d.id === u.department_id)
-    if (dept) {
-      fid = dept.faculty_id
-      const fac = faculties.value.find(f => f.id === fid)
-      if (fac) {
-        cid = fac.campus_id
-        if (!uid) {
-           const camp = campuses.value.find(c => c.id === cid)
-           if (camp) uid = camp.university_id
-        }
+  let uid = u.department?.faculty?.campus?.university_id || ''
+  let cid = u.department?.faculty?.campus_id || ''
+  let fid = u.department?.faculty_id || ''
+  
+  if (u.university_id) {
+    uid = u.university_id
+    if (u.campus_id) {
+      cid = u.campus_id
+      if (u.faculty_id) {
+        fid = u.faculty_id
       }
     }
   }
   editingUser.value = u
-  Object.assign(form, { name: u.name, email: u.email, password: '', university_id: uid, campus_id: cid, faculty_id: fid, department_id: u.department_id || '', role_ids: u.roles?.map(r => r.id) || [] })
+  Object.assign(form, { name: u.name, email: u.email, university_id: uid, campus_id: cid, faculty_id: fid, department_id: u.department_id || '', role_ids: u.roles?.map(r => r.id) || [] })
+  showCreate.value = true
 }
 
-function closeModal() { showCreate.value = false; editingUser.value = null; Object.assign(form, { name: '', email: '', password: '', university_id: '', campus_id: '', faculty_id: '', department_id: '', role_ids: [] }) }
+function closeModal() { showCreate.value = false; editingUser.value = null; Object.assign(form, { name: '', email: '', university_id: '', campus_id: '', faculty_id: '', department_id: '', role_ids: [] }) }
 function confirmDelete(u) { deletingUser.value = u; showDelete.value = true }
 
 async function saveUser() {
@@ -254,9 +262,8 @@ async function saveUser() {
       email: form.email, 
       university_id: form.university_id || null,
       department_id: form.department_id || null,
-      roles: form.role_ids // Backend expects 'roles' for sync
+      roles: form.role_ids
     }
-    if (!editingUser.value) payload.password = form.password
     
     if (editingUser.value) { 
       await api.put(`/users/${editingUser.value.id}`, payload); 

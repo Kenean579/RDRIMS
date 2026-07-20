@@ -112,6 +112,7 @@ class AuthServiceProvider extends ServiceProvider
         // Use hierarchical permissions as a fallback for all abilities
         Gate::after(function (User $user, string $ability, $result) {
             if ($result === true) return true;
+            if ($result === false) return false;
             return $user->hasPermission($ability);
         });
     }

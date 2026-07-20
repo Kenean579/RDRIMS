@@ -2,31 +2,61 @@
 
 namespace App\Policies;
 
-use App\Models\User;
 use App\Models\Proposal;
+use App\Models\User;
 
 class ProposalPolicy
 {
     public function viewAny(User $user): bool
     {
-        return true;
+        return $user->id !== null;
     }
 
     public function view(User $user, Proposal $proposal): bool
     {
-        return $user->isAdmin() || 
-               $proposal->submitted_by === $user->id || 
-               $proposal->reviewers()->where('reviewer_id', $user->id)->exists();
+        if ($user->hasRole('super_admin')) {
+            return true;
+        }
+
+        if ($proposal->submitted_by === $user->id) {
+            return true;
+        }
+
+        if ($proposal->reviewers()->where('reviewer_id', $user->id)->exists()) {
+            return true;
+        }
+
+        $submittedBy = $proposal->relationLoaded('submittedBy')
+            ? $proposal->getRelation('submittedBy')
+            : $proposal->submittedBy;
+
+        if ($submittedBy instanceof User && $user->sharesInstitutionWith($submittedBy)) {
+            return $user->isAdmin();
+        }
+
+        return false;
     }
 
     public function create(User $user): bool
     {
-        return $user->hasRole('researcher', 'student');
+        return $user->id !== null;
     }
 
     public function update(User $user, Proposal $proposal): bool
     {
-        return ($proposal->submitted_by === $user->id && $proposal->status_id === 1) || $user->isAdmin();
+        if ($proposal->submitted_by === $user->id && $proposal->status_id === 1) {
+            return true;
+        }
+
+        if ($user->hasRole('super_admin')) {
+            return true;
+        }
+
+        $submittedBy = $proposal->relationLoaded('submittedBy')
+            ? $proposal->getRelation('submittedBy')
+            : $proposal->submittedBy;
+
+        return $user->isAdmin() && $submittedBy instanceof User && $user->sharesInstitutionWith($submittedBy);
     }
 
     public function delete(User $user, Proposal $proposal): bool
@@ -44,8 +74,20 @@ class ProposalPolicy
         return $proposal->reviewers()->where('reviewer_id', $user->id)->exists();
     }
 
-    public function assignReviewers(User $user): bool
+    public function assignReviewers(User $user, Proposal $proposal): bool
     {
-        return $user->isAdmin();
+        if ($user->hasRole('super_admin')) {
+            return true;
+        }
+
+        if (! $user->isAdmin()) {
+            return false;
+        }
+
+        $submittedBy = $proposal->relationLoaded('submittedBy')
+            ? $proposal->getRelation('submittedBy')
+            : $proposal->submittedBy;
+
+        return $submittedBy instanceof User && $user->sharesInstitutionWith($submittedBy);
     }
 }

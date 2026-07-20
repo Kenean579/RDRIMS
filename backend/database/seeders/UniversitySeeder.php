@@ -9,9 +9,36 @@ class UniversitySeeder extends Seeder
 {
     public function run(): void
     {
-        University::firstOrCreate(['name' => 'Wollo University', 'code' => 'WU', 'location' => 'Dessie, Ethiopia']);
-        University::firstOrCreate(['name' => 'Addis Ababa University', 'code' => 'AAU', 'location' => 'Addis Ababa, Ethiopia']);
-        University::firstOrCreate(['name' => 'Bahir Dar University', 'code' => 'BDU', 'location' => 'Bahir Dar, Ethiopia']);
-        University::firstOrCreate(['name' => 'Gonder University', 'code' => 'GoU', 'location' => 'Gonder, Ethiopia']);
+        University::updateOrCreate(
+            ['code' => 'WU'],
+            [
+                'name' => 'Wollo University',
+                'location' => 'Dessie, Ethiopia',
+            ]
+        );
+
+        University::updateOrCreate(
+            ['code' => 'AAU'],
+            [
+                'name' => 'Addis Ababa University',
+                'location' => 'Addis Ababa, Ethiopia',
+            ]
+        );
+
+        University::updateOrCreate(
+            ['code' => 'BDU'],
+            [
+                'name' => 'Bahir Dar University',
+                'location' => 'Bahir Dar, Ethiopia',
+            ]
+        );
+
+        University::updateOrCreate(
+            ['code' => 'GoU'],
+            [
+                'name' => 'Gonder University',
+                'location' => 'Gonder, Ethiopia',
+            ]
+        );
     }
 }

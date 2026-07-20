@@ -26,7 +26,7 @@ import { useContextStore } from '@/stores/context'
 // Endpoints that are truly auth-free for all methods
 const AUTH_FREE_ENDPOINTS = ['/forgot-password', '/reset-password', '/login', '/register', '/email-config/test']
 // Endpoints that are public only for GET reads
-const PUBLIC_READ_ENDPOINTS = ['/settings', '/lookups', '/universities', '/campuses', '/faculties', '/departments', '/calls', '/publications', '/community-problems', '/events', '/public']
+const PUBLIC_READ_ENDPOINTS = ['/settings', '/lookups', '/universities', '/campuses', '/faculties', '/departments', '/calls', '/publications', '/community-problems', '/events', '/public'];
 
 // Add response caching interceptor for GET requests
 api.interceptors.request.use(config => {

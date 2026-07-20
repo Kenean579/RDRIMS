@@ -21,8 +21,10 @@ class UserController extends Controller
             ->hierarchical($request->user(), 'id');
 
         if ($request->has('search') && $request->search != '') {
-            $query->where('name', 'like', '%' . $request->search . '%')
-                  ->orWhere('email', 'like', '%' . $request->search . '%');
+            $query->where(function ($searchQuery) use ($request) {
+                $searchQuery->where('name', 'like', '%' . $request->search . '%')
+                    ->orWhere('email', 'like', '%' . $request->search . '%');
+            });
         }
 
         if ($request->has('role') && $request->role != '') {
@@ -32,27 +34,45 @@ class UserController extends Controller
         return response()->json($query->paginate($request->input('per_page', 15)));
     }
 
+    /**
+     * Admin User Provisioning (Workflow 2).
+     *
+     * Creates an account for an internal user WITHOUT requiring a password.
+     * Delegates to UserService::provision() which:
+     *  - Creates the user with a random secure password (never exposed).
+     *  - Assigns the specified roles (or defaults to guest).
+     *  - Generates a Password Broker activation token.
+     *  - Sends a professional "Activate Your Account" invitation email.
+     *
+     * This is intentionally separate from AuthController::register()
+     * (self-registration / Workflow 1) to enforce Single Responsibility.
+     */
     public function store(UserRequest $request): JsonResponse
     {
         $this->authorize('create', User::class);
-        $user = $this->userService->register($request->validated());
-        
-        if ($request->has('roles')) {
-            $user->roles()->sync($request->roles);
-        }
 
-        return response()->json($user, 201);
+        $user = $this->userService->provision($request->validated());
+
+        return response()->json($user->load('roles', 'department.faculty'), 201);
     }
 
     public function show(User $user): JsonResponse
     {
+        $this->authorize('view', $user);
         return response()->json($user->load('roles.permissions', 'department.faculty', 'expertise', 'profileImage'));
     }
 
     public function update(UserRequest $request, User $user): JsonResponse
     {
         $this->authorize('update', $user);
-        $user->update($request->validated());
+
+        $data = $request->validated();
+
+        // Never allow password to be set via the admin update endpoint.
+        // Users change their own passwords via the reset-password flow.
+        unset($data['password']);
+
+        $user->update($data);
 
         if ($request->has('roles') && $request->user()->hasRole('super_admin')) {
             $user->roles()->sync($request->roles);

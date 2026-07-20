@@ -46,15 +46,31 @@ class ProposalController extends Controller
             //   researcher     → own proposals
             //   reviewer       → own proposals (if also researcher)
             ->where(function ($query) use ($user) {
-                $query->hierarchical($user, 'submitted_by')
-                      ->orWhereHas('call', function ($callQuery) use ($user) {
-                          $callQuery->hierarchical($user, 'created_by');
-                      });
-                // Ensure admin visibility is limited to their university
-                if (!$user->hasRole('super_admin')) {
-                    $query->orWhereHas('call', function ($cq) use ($user) {
-                        $cq->where('university_id', $user->university_id);
-                    });
+                // Super Admin sees everything
+                if ($user->hasRole('super_admin')) {
+                    return;
+                }
+
+                if ($user->isAdmin()) {
+                    // Admins see proposals within their hierarchy or submitted to calls belonging to their university
+                    $query->hierarchical($user, 'submitted_by')
+                          ->orWhereHas('call', function ($cq) use ($user) {
+                              $cq->where('university_id', $user->resolvedUniversityId());
+                          });
+                } else {
+                    // Researchers, reviewers, students can only see proposals they submitted or where they are investigators/reviewers
+                    $query->where('submitted_by', $user->id)
+                          ->orWhereIn('id', function ($sub) use ($user) {
+                              $sub->select('proposal_id')->from('proposal_investigators')
+                                  ->where('user_id', $user->id);
+                          });
+
+                    if ($user->hasRole('reviewer')) {
+                        $query->orWhereIn('id', function ($sub) use ($user) {
+                            $sub->select('proposal_id')->from('proposal_reviewers')
+                                ->where('reviewer_id', $user->id);
+                        });
+                    }
                 }
             })
 
@@ -91,7 +107,11 @@ class ProposalController extends Controller
         return DB::transaction(function () use ($request) {
             $call = null;
             if ($request->call_id) {
-                $call = \App\Models\Call::find($request->call_id);
+                $call = \App\Models\Call::withoutGlobalScopes()->find($request->call_id);
+                if (! $call || ! $request->user()->can('view', $call)) {
+                    abort(403, 'You do not have access to this call.');
+                }
+
                 if ($call && $call->deadline < now()) {
                     throw \Illuminate\Validation\ValidationException::withMessages([
                         'call_id' => 'The deadline for this call has passed.'
@@ -317,7 +337,7 @@ class ProposalController extends Controller
      */
     public function assignReviewers(AssignReviewersRequest $request, Proposal $proposal): JsonResponse
     {
-        $this->authorize('assignReviewers', Proposal::class);
+        $this->authorize('assignReviewers', $proposal);
         $this->proposalService->assignReviewers(
             $proposal, $request->input('reviewer_ids'), $request->user()
         );
@@ -329,7 +349,7 @@ class ProposalController extends Controller
      */
     public function suggestReviewers(Proposal $proposal): JsonResponse
     {
-        $this->authorize('assignReviewers', Proposal::class);
+        $this->authorize('assignReviewers', $proposal);
         $suggestions = $this->reviewerSuggestionService->suggest($proposal);
         return response()->json($suggestions);
     }

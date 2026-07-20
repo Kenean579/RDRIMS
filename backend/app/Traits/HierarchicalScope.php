@@ -34,7 +34,7 @@ trait HierarchicalScope
                 }
             }
 
-            if (!$user->department_id) return;
+            if (!$user->department_id && !$user->hasRole('research_admin', 'finance_officer', 'ethics_officer')) return;
 
             if ($user->hasRole('department_head')) {
                 $q->orWhereIn($this->getTable().'.'.$userColumn, function ($sub) use ($user) {
@@ -76,7 +76,7 @@ trait HierarchicalScope
                         ->join('campuses as c', 'f.campus_id', '=', 'c.id')
                         ->where('c.university_id', $user->university_id);
                 });
-                
+
                 $q->orWhereIn($this->getTable().'.'.$userColumn, function ($sub) use ($user) {
                     $sub->select('id')->from('users')->where('university_id', $user->university_id);
                 });
@@ -117,38 +117,60 @@ trait HierarchicalScope
             return true;
         }
 
+        $createdBy = $this->resolveCreatedBy();
+
         if ($user->hasRole('research_admin')) {
-            $userUniversityId = $user->university_id ?: ($user->department?->faculty?->campus?->university_id);
-            return $this->university_id === $userUniversityId
-                || ($this->createdBy && $this->createdBy->university_id === $userUniversityId);
+            $userUniversityId = $user->getAttribute('university_id') ?: ($user->department?->faculty?->campus?->university_id);
+            $resourceUniversityId = $this->getAttribute('university_id');
+            return $resourceUniversityId === $userUniversityId
+                || ($createdBy && $createdBy->getAttribute('university_id') === $userUniversityId);
         }
 
-        if ($user->hasRole('campus_admin') && $user->department_id) {
+        if ($user->hasRole('campus_admin') && $user->getAttribute('department_id')) {
             $userCampus = $user->department->faculty->campus_id ?? null;
-            return $this->campus_id === $userCampus
-                || ($this->createdBy && $userCampus
-                    && $this->createdBy->department && $this->createdBy->department->faculty
-                    && $this->createdBy->department->faculty->campus_id === $userCampus);
+            $resourceCampusId = $this->getAttribute('campus_id');
+            return $resourceCampusId === $userCampus
+                || ($createdBy && $userCampus
+                    && $createdBy->getAttribute('department_id')
+                    && $createdBy->department && $createdBy->department->faculty
+                    && $createdBy->department->faculty->campus_id === $userCampus);
         }
 
-        if ($user->hasRole('faculty_admin') && $user->department_id) {
+        if ($user->hasRole('faculty_admin') && $user->getAttribute('department_id')) {
             $userFaculty = $user->department->faculty_id ?? null;
-            return $this->faculty_id === $userFaculty
-                || ($this->createdBy && $userFaculty && $this->createdBy->department_id
-                    && $this->createdBy->department->faculty_id === $userFaculty);
+            $resourceFacultyId = $this->getAttribute('faculty_id');
+            return $resourceFacultyId === $userFaculty
+                || ($createdBy && $userFaculty && $createdBy->getAttribute('department_id')
+                    && $createdBy->department->faculty_id === $userFaculty);
         }
 
-        if ($user->hasRole('department_head') && $user->department_id) {
-            return $this->department_id === $user->department_id
-                || ($this->createdBy && $this->createdBy->department_id === $user->department_id);
+        if ($user->hasRole('department_head') && $user->getAttribute('department_id')) {
+            return $this->getAttribute('department_id') === $user->getAttribute('department_id')
+                || ($createdBy && $createdBy->getAttribute('department_id') === $user->getAttribute('department_id'));
         }
 
         if ($user->hasRole('director')) {
             $centerIds = $user->research_centers->pluck('id')->toArray();
-            return in_array($this->research_center_id, $centerIds)
-                || ($this->createdBy && $this->createdBy->research_centers->pluck('id')->intersect($centerIds)->isNotEmpty());
+            $resourceCenterId = $this->getAttribute('research_center_id');
+            return in_array($resourceCenterId, $centerIds, true)
+                || ($createdBy && $createdBy->research_centers->pluck('id')->intersect($centerIds)->isNotEmpty());
         }
 
         return false;
+    }
+
+    protected function resolveCreatedBy(): ?User
+    {
+        if (! method_exists($this, 'createdBy')) {
+            return null;
+        }
+
+        try {
+            return $this->relationLoaded('createdBy')
+                ? $this->getRelation('createdBy')
+                : $this->getRelationValue('createdBy');
+        } catch (\Throwable) {
+            return null;
+        }
     }
 }

@@ -24,6 +24,8 @@ const routes = [
   { path: '/register', name: 'Register', component: () => import('@/views/auth/RegisterView.vue'), meta: { guest: true, title: 'Create Account' } },
   { path: '/forgot-password', name: 'ForgotPassword', component: () => import('@/views/auth/ForgotPasswordView.vue'), meta: { guest: true, title: 'Forgot Password' } },
   { path: '/reset-password/:token?', name: 'ResetPassword', component: () => import('@/views/auth/ResetPasswordView.vue'), meta: { guest: true, title: 'Reset Password' } },
+  // Account activation for admin-provisioned users (uses Password Broker token, same as reset-password)
+  { path: '/activate-account', name: 'ActivateAccount', component: () => import('@/views/auth/ActivateAccountView.vue'), meta: { guest: true, title: 'Activate Your Account' } },
   { path: '/dashboard', redirect: '/app/dashboard' },
   {
     path: '/app',
@@ -125,9 +127,10 @@ const router = createRouter({
 router.beforeEach((to, from) => {
   const auth = useAuthStore()
   document.title = to.meta.title ? `${to.meta.title} – RDRIMS` : 'RDRIMS'
-  
+
   if (to.meta.requiresAuth && !auth.isAuthenticated) return '/login'
-  if (to.meta.guest && auth.isAuthenticated) return '/dashboard'
+  // Allow activation page even if already authenticated (e.g., admin session)
+  if (to.meta.guest && auth.isAuthenticated && to.name !== 'ActivateAccount') return '/dashboard'
   if (to.meta.roles?.length && !auth.hasRole(...to.meta.roles)) return '/app/403'
   if (to.meta.permissions && !auth.hasPermission(to.meta.permissions)) return '/app/403'
 })

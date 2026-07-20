@@ -14,7 +14,12 @@ class OutputPolicy
 
     public function view(User $user, Output $output): bool
     {
-        return true;
+        if ($user->hasRole('super_admin')) {
+            return true;
+        }
+
+        return $output->participants()->where('users.id', $user->id)->exists()
+            || $output->participants()->hierarchical($user, 'id')->exists();
     }
 
     public function create(User $user): bool
@@ -24,17 +29,35 @@ class OutputPolicy
 
     public function update(User $user, Output $output): bool
     {
-        $project = $output->project;
-        return $user->isAdmin() || $project->pi_id === $user->id || $output->submitted_by === $user->id;
+        if ($user->hasRole('super_admin')) {
+            return true;
+        }
+
+        if ($output->submitted_by === $user->id) {
+            return true;
+        }
+
+        $project = $output->relationLoaded('project') ? $output->getRelation('project') : $output->project;
+        $pi = $project?->relationLoaded('pi') ? $project->getRelation('pi') : $project?->pi;
+
+        return $user->isAdmin() && $pi instanceof User && $user->sharesInstitutionWith($pi);
     }
 
     public function delete(User $user, Output $output): bool
     {
-        return $user->isAdmin() || $output->submitted_by === $user->id;
+        if ($user->hasRole('super_admin')) {
+            return true;
+        }
+
+        return $output->submitted_by === $user->id;
     }
 
     public function changeStatus(User $user, Output $output): bool
     {
-        return $user->isAdmin() || $output->submitted_by === $user->id;
+        if ($user->hasRole('super_admin')) {
+            return true;
+        }
+
+        return $output->submitted_by === $user->id;
     }
 }

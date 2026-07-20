@@ -23,6 +23,30 @@ class FinanceCheckController extends Controller
 
     public function store(Request $request, Proposal $proposal): JsonResponse
     {
+        $this->authorize('view', $proposal);
+        // 1. All peer reviews must be completed first
+        $reviewers = $proposal->reviewers;
+        if ($reviewers->isEmpty()) {
+            return response()->json(['message' => 'Reviewer assignment is incomplete. Please assign reviewers first.'], 422);
+        }
+        $pendingReviews = $proposal->reviewers()->wherePivotNull('submitted_at')->count();
+        if ($pendingReviews > 0) {
+            return response()->json(['message' => "Cannot request Finance check. There are still {$pendingReviews} pending peer reviews."], 422);
+        }
+
+        // 2. Ethics approval must be completed first (if required)
+        $ethicsRequired = \App\Models\Setting::where('key', 'ethics_required')->value('value') === 'true';
+        if ($ethicsRequired) {
+            $latestEthicsRequest = $proposal->ethicsRequests()->latest()->first();
+            if (!$latestEthicsRequest) {
+                return response()->json(['message' => 'Ethics clearance must be requested and approved before Finance check.'], 422);
+            }
+            $approvedStatusId = \App\Models\EthicsApprovalStatus::where('name', 'approved')->value('id');
+            if ($latestEthicsRequest->approval_status_id !== $approvedStatusId) {
+                return response()->json(['message' => 'Ethics clearance is not yet approved. Finance check cannot proceed.'], 422);
+            }
+        }
+
         // Admin sends proposal to Finance Check
         $check = $this->financeService->createCheck($proposal, $request->user());
 
@@ -36,6 +60,7 @@ class FinanceCheckController extends Controller
 
     public function update(Request $request, FinanceCheck $financeCheck): JsonResponse
     {
+        $this->authorize('update', $financeCheck);
         $statusInput = $request->input('status');
         $statusId = null;
 
@@ -61,5 +86,12 @@ class FinanceCheckController extends Controller
         ]);
 
         return response()->json($financeCheck);
+    }
+
+    public function show(FinanceCheck $financeCheck): JsonResponse
+    {
+        $this->authorize('view', $financeCheck);
+
+        return response()->json($financeCheck->load(['proposal', 'status', 'checker']));
     }
 }

@@ -89,6 +89,26 @@ class AuthController extends Controller
         return response()->json($user->load('roles.permissions', 'profileImage', 'expertise'));
     }
 
+    /**
+     * Mark the authenticated user's profile as complete.
+     *
+     * Called by provisioned users after they finish the post-activation
+     * onboarding step. Records the timestamp so the frontend no longer
+     * redirects them to the profile completion page.
+     *
+     * This endpoint is intentionally separate from updateProfile() because
+     * profile completion is a one-time transition, not a general profile edit.
+     */
+    public function completeProfile(Request $request): JsonResponse
+    {
+        $this->userService->markProfileComplete($request->user());
+
+        return response()->json([
+            'message' => 'Profile marked as complete.',
+            'user'    => $request->user()->load('roles.permissions', 'department.faculty.campus.university', 'university', 'researchCenter', 'profileImage', 'expertise'),
+        ]);
+    }
+
     public function forgotPassword(Request $request): JsonResponse
     {
         $request->validate([

@@ -3,31 +3,215 @@
 namespace Database\Seeders;
 
 use App\Models\Department;
+use App\Models\Faculty;
 use Illuminate\Database\Seeder;
 
 class DepartmentSeeder extends Seeder
 {
     public function run(): void
     {
-        Department::firstOrCreate(['name' => 'Computer Science', 'code' => 'CS', 'faculty_id' => 1]);
-        Department::firstOrCreate(['name' => 'Information Technology', 'code' => 'IT', 'faculty_id' => 1]);
-        Department::firstOrCreate(['name' => 'Physics', 'code' => 'PHYS', 'faculty_id' => 1]);
-        Department::firstOrCreate(['name' => 'Chemistry', 'code' => 'CHEM', 'faculty_id' => 1]);
-        Department::firstOrCreate(['name' => 'Mathematics', 'code' => 'MATH', 'faculty_id' => 1]);
-        Department::firstOrCreate(['name' => 'Biology', 'code' => 'BIO', 'faculty_id' => 1]);
-        Department::firstOrCreate(['name' => 'Geography & Environmental Studies', 'code' => 'GEOG', 'faculty_id' => 2]);
-        Department::firstOrCreate(['name' => 'History & Heritage Management', 'code' => 'HIST', 'faculty_id' => 2]);
-        Department::firstOrCreate(['name' => 'Sociology', 'code' => 'SOC', 'faculty_id' => 2]);
-        Department::firstOrCreate(['name' => 'Electrical & Computer Engineering', 'code' => 'ECE', 'faculty_id' => 3]);
-        Department::firstOrCreate(['name' => 'Mechanical Engineering', 'code' => 'ME', 'faculty_id' => 3]);
-        Department::firstOrCreate(['name' => 'Civil Engineering', 'code' => 'CE', 'faculty_id' => 3]);
-        Department::firstOrCreate(['name' => 'Accounting and Finance', 'code' => 'ACFN', 'faculty_id' => 4]);
-        Department::firstOrCreate(['name' => 'Management', 'code' => 'MGMT', 'faculty_id' => 4]);
-        Department::firstOrCreate(['name' => 'Public Health', 'code' => 'PH', 'faculty_id' => 5]);
-        Department::firstOrCreate(['name' => 'Nursing', 'code' => 'NURS', 'faculty_id' => 5]);
-        Department::firstOrCreate(['name' => 'Plant Science', 'code' => 'PLSC', 'faculty_id' => 6]);
-        Department::firstOrCreate(['name' => 'Animal Science', 'code' => 'ANSC', 'faculty_id' => 6]);
-        Department::firstOrCreate(['name' => 'History', 'code' => 'AAU-HIST', 'faculty_id' => 7]);
-        Department::firstOrCreate(['name' => 'Political Science', 'code' => 'AAU-POLS', 'faculty_id' => 8]);
+        /*
+        |--------------------------------------------------------------------------
+        | Faculty 1: Wollo - Natural and Computational Sciences
+        |--------------------------------------------------------------------------
+        */
+
+        $fncs = Faculty::where('code', 'WU-DESSIE-FNCS')->first();
+
+        $this->createDepartment(
+            'Computer Science',
+            'CS',
+            $fncs
+        );
+
+        $this->createDepartment(
+            'Information Technology',
+            'IT',
+            $fncs
+        );
+
+        $this->createDepartment(
+            'Physics',
+            'PHYS',
+            $fncs
+        );
+
+        $this->createDepartment(
+            'Chemistry',
+            'CHEM',
+            $fncs
+        );
+
+        $this->createDepartment(
+            'Mathematics',
+            'MATH',
+            $fncs
+        );
+
+        $this->createDepartment(
+            'Biology',
+            'BIO',
+            $fncs
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Faculty 2: Wollo - Social Sciences
+        |--------------------------------------------------------------------------
+        */
+
+        $socialScience = Faculty::where('code', 'WU-DESSIE-FSSH')->first();
+
+        $this->createDepartment(
+            'Geography & Environmental Studies',
+            'GEOG',
+            $socialScience
+        );
+
+        $this->createDepartment(
+            'History & Heritage Management',
+            'HIST',
+            $socialScience
+        );
+
+        $this->createDepartment(
+            'Sociology',
+            'SOC',
+            $socialScience
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Faculty 3: Wollo Engineering
+        |--------------------------------------------------------------------------
+        */
+
+        $engineering = Faculty::where('code', 'WU-DESSIE-FET')->first();
+
+        $this->createDepartment(
+            'Electrical & Computer Engineering',
+            'ECE',
+            $engineering
+        );
+
+        $this->createDepartment(
+            'Mechanical Engineering',
+            'ME',
+            $engineering
+        );
+
+        $this->createDepartment(
+            'Civil Engineering',
+            'CE',
+            $engineering
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Faculty 4: Business
+        |--------------------------------------------------------------------------
+        */
+
+        $business = Faculty::where('code', 'WU-KOM-FBE')->first();
+
+        $this->createDepartment(
+            'Accounting and Finance',
+            'ACFN',
+            $business
+        );
+
+        $this->createDepartment(
+            'Management',
+            'MGMT',
+            $business
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Faculty 5: Health Sciences
+        |--------------------------------------------------------------------------
+        */
+
+        $health = Faculty::where('code', 'WU-KOM-FHS')->first();
+
+        $this->createDepartment(
+            'Public Health',
+            'PH',
+            $health
+        );
+
+        $this->createDepartment(
+            'Nursing',
+            'NURS',
+            $health
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | Faculty 6: Agriculture
+        |--------------------------------------------------------------------------
+        */
+
+        $agriculture = Faculty::where('code', 'WU-KOM-FAG')->first();
+
+        $this->createDepartment(
+            'Plant Science',
+            'PLSC',
+            $agriculture
+        );
+
+        $this->createDepartment(
+            'Animal Science',
+            'ANSC',
+            $agriculture
+        );
+
+
+        /*
+        |--------------------------------------------------------------------------
+        | AAU Departments
+        |--------------------------------------------------------------------------
+        */
+
+        $aauNatural = Faculty::where('code', 'AAU-SK-CNS')->first();
+
+        $this->createDepartment(
+            'History',
+            'AAU-HIST',
+            $aauNatural
+        );
+
+
+        $aauSocial = Faculty::where('code', 'AAU-SK-CSS')->first();
+
+        $this->createDepartment(
+            'Political Science',
+            'AAU-POLS',
+            $aauSocial
+        );
+    }
+
+
+    private function createDepartment(
+        string $name,
+        string $code,
+        ?Faculty $faculty
+    ): void {
+        if (!$faculty) {
+            return;
+        }
+
+        Department::updateOrCreate(
+            ['code' => $code],
+            [
+                'name' => $name,
+                'faculty_id' => $faculty->id,
+            ]
+        );
     }
 }

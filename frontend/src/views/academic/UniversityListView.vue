@@ -93,9 +93,11 @@
             <label class="block text-xs font-bold text-slate-500 ml-1">Admin Email *</label>
             <input v-model="adminForm.email" type="email" required placeholder="admin@university.edu" class="input h-12 font-medium" />
           </div>
-          <div class="space-y-1.5">
-            <label class="block text-xs font-bold text-slate-500 ml-1">Default Password *</label>
-            <input v-model="adminForm.password" type="password" required minlength="8" placeholder="••••••••" class="input h-12 font-bold" />
+          <div class="p-3 bg-brand/5 border border-brand/10 rounded-xl mb-2 flex items-start gap-2.5">
+            <svg class="w-4 h-4 text-brand mt-0.5 shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            <p class="text-xs text-brand leading-relaxed font-semibold">
+              No password required. A secure activation email will be sent automatically to the new administrator to set their password.
+            </p>
           </div>
         </div>
 
@@ -137,7 +139,7 @@ const form = reactive({ name: '', code: '', logo_file_id: null, logo_file: null 
 const uploadingLogo = ref(false)
 
 const showSetUpAdmin = ref(false); const targetUni = ref(null); const submittingAdmin = ref(false)
-const adminForm = reactive({ name: '', email: '', password: '' })
+const adminForm = reactive({ name: '', email: '' })
 
 async function fetchUniversities() {
   loading.value = true
@@ -173,7 +175,7 @@ async function uploadLogo(event) {
 function openSetUpAdmin(uni) {
   targetUni.value = uni
   showSetUpAdmin.value = true
-  Object.assign(adminForm, { name: '', email: '', password: '' })
+  Object.assign(adminForm, { name: '', email: '' })
 }
 
 async function saveAdmin() {
@@ -184,10 +186,11 @@ async function saveAdmin() {
     // Try to create the user; if email exists, find them instead
     try {
       const res = await api.post('/users', {
-        ...adminForm,
+        name: adminForm.name,
+        email: adminForm.email,
         university_id: targetUni.value.id,
         department_id: null,
-        password_confirmation: adminForm.password
+        is_active: true
       })
       userId = res.data.id
     } catch (createErr) {

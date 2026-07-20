@@ -39,7 +39,7 @@ class RunProposalChecksJob implements ShouldQueue
         $this->proposal->update([
             'originality_score' => $score,
             'plagiarism_report_url' => "https://plagiarism.mockapi.service/report/{$this->proposal->id}",
-            'status_id' => ProposalStatus::where('name', 'under_review')->first()->id ?? 3
+            'status_id' => ProposalStatus::where('name', 'submitted')->first()->id ?? 2
         ]);
 
         Log::info("Checks completed for Proposal ID: {$this->proposal->id} with score: {$score}%");

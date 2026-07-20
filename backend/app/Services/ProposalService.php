@@ -190,6 +190,12 @@ class ProposalService
 
     public function assignReviewers(Proposal $proposal, array $reviewerIds, User $assignedBy): void
     {
+        if (is_null($proposal->originality_score)) {
+            throw ValidationException::withMessages([
+                'status' => 'Originality/plagiarism check must be completed before assigning reviewers.',
+            ]);
+        }
+
         $proposal->reviewers()->syncWithoutDetaching(array_fill_keys($reviewerIds, [
             'assigned_by' => $assignedBy->id,
             'assigned_at' => now(),
@@ -208,6 +214,8 @@ class ProposalService
 
     public function runChecks(Proposal $proposal, User $user): void
     {
+        $proposal->update(['status_id' => $this->statusId('checking')]);
+
         // Dispatch automated checks
         \App\Jobs\RunProposalChecksJob::dispatch($proposal);
 

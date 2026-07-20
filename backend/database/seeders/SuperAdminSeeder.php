@@ -49,8 +49,8 @@ class SuperAdminSeeder extends Seeder
             [
                 'name' => 'Dr. Mesfin Tadesse',
                 'password' => Hash::make('Admin@123'),
-                'department_id' => 1,
-                'university_id' => 1,
+                'department_id' => 19, // AAU History Department
+                'university_id' => 2,
                 'is_active' => true,
                 'bio' => 'Research Administrator at Addis Ababa University.',
             ]
