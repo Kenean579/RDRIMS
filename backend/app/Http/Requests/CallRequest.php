@@ -29,5 +29,7 @@ class CallRequest extends FormRequest
             'max_budget' => 'nullable|numeric|min:0',
             'is_active' => 'boolean',
         ];
+        'message' = 'MELIKT',
+        
     }
 }

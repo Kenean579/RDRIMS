@@ -179,10 +179,29 @@ class Call extends Model
 
     /**
      * Scope calls visible to the authenticated user.
-     *
-     * NOTE:
-     * This scope will be simplified after introducing
-     * the CallService and TenantService.
+     * 
+     * IMPORTANT: This scope is PRESERVED for backward compatibility.
+     * Dashboard and other modules depend on this method signature.
+     * 
+     * The implementation uses complex role-based filtering logic.
+     * For new features, prefer using CallService->getVisibleCalls() or
+     * policy-based authorization instead.
+     * 
+     * Business Logic:
+     * - Super Admin: sees all calls (though policy now denies access)
+     * - Research Admin: university-level calls
+     * - Campus Admin: campus-level calls
+     * - Faculty Admin: faculty-level calls
+     * - Department Head: department-level calls
+     * - Director: research center calls
+     * - Researcher/Reviewer/Student/Guest: calls matching their hierarchy
+     * 
+     * @param Builder $query
+     * @param User $user
+     * @return Builder
+     * 
+     * @see CallService::getVisibleCalls() For cleaner implementation
+     * @deprecated Consider refactoring to CallService in future major version
      */
     public function scopeVisibleTo(Builder $query, User $user): Builder
     {

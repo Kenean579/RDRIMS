@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('name', 255);
             $table->string('code', 50)->unique();
-            $table->foreignId('faculty_id')->constrained('faculties')->restrictOnDelete();
+            $table->foreignId('faculty_id')->constrained('faculties')->cascadeOnDelete();
             $table->unsignedBigInteger('logo_file_id')->nullable()->index();
             $table->timestamps();
 

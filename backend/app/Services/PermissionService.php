@@ -25,7 +25,9 @@ class PermissionService
      */
     public function clearUserCache(User $user): void
     {
-        Cache::forget("user_{$user->id}_effective_permissions_v2");
+        $universityId = $user->resolvedUniversityId() ?: 0;
+
+        Cache::forget("user_{$user->id}_uni_{$universityId}_effective_permissions_v4");
     }
 
     /**
@@ -35,13 +37,13 @@ class PermissionService
     public function clearCacheForUniversity(int $universityId): void
     {
         // Find all users associated with this university
-        $userIds = User::where('university_id', $universityId)
+        $users = User::where('university_id', $universityId)
             ->orWhereHas('department.faculty.campus', function ($q) use ($universityId) {
                 $q->where('university_id', $universityId);
-            })->pluck('id');
+            })->get();
 
-        foreach ($userIds as $uid) {
-            Cache::forget("user_{$uid}_effective_permissions_v2");
+        foreach ($users as $user) {
+            $this->clearUserCache($user);
         }
     }
 }

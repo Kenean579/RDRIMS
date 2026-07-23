@@ -37,7 +37,7 @@ return new class extends Migration
 
         Schema::table('institution_role_permissions', function (Blueprint $table) {
             $table->dropColumn(['campus_id', 'faculty_id', 'department_id', 'research_center_id']);
-            $table->unsignedBigInteger('university_id')->nullable(false)->change();
+            $table->unsignedBigInteger('university_id')->nullable()->change();
         });
     }
 };

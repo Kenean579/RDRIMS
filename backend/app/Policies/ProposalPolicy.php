@@ -44,7 +44,11 @@ class ProposalPolicy
 
     public function update(User $user, Proposal $proposal): bool
     {
-        if ($proposal->submitted_by === $user->id && $proposal->status_id === 1) {
+        // Check if proposal is in draft status
+        $isDraft = $proposal->status?->name === 'draft' 
+            ?? ($proposal->status_id === ProposalStatus::where('name', 'draft')->first()?->id);
+            
+        if ($proposal->submitted_by === $user->id && $isDraft) {
             return true;
         }
 
@@ -61,12 +65,20 @@ class ProposalPolicy
 
     public function delete(User $user, Proposal $proposal): bool
     {
-        return ($proposal->submitted_by === $user->id && $proposal->status_id === 1) || $user->hasRole('super_admin');
+        // Check if proposal is in draft status
+        $isDraft = $proposal->status?->name === 'draft' 
+            ?? ($proposal->status_id === ProposalStatus::where('name', 'draft')->first()?->id);
+            
+        return ($proposal->submitted_by === $user->id && $isDraft) || $user->hasRole('super_admin');
     }
 
     public function submit(User $user, Proposal $proposal): bool
     {
-        return $proposal->submitted_by === $user->id && $proposal->status_id === 1;
+        // Check if proposal is in draft status
+        $isDraft = $proposal->status?->name === 'draft' 
+            ?? ($proposal->status_id === ProposalStatus::where('name', 'draft')->first()?->id);
+            
+        return $proposal->submitted_by === $user->id && $isDraft;
     }
 
     public function review(User $user, Proposal $proposal): bool

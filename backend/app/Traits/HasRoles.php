@@ -7,7 +7,7 @@ trait HasRoles
     public function hasRole(string ...$roles): bool
     {
         $userRoles = $this->roles->pluck('name')->toArray();
-        return ! empty(array_intersect($roles, $userRoles));
+        return !empty(array_intersect($roles, $userRoles));
     }
 
     /**
@@ -16,7 +16,7 @@ trait HasRoles
     public function hasAnyRole(array $roles): bool
     {
         $userRoles = $this->roles->pluck('name')->toArray();
-        return ! empty(array_intersect($roles, $userRoles));
+        return !empty(array_intersect($roles, $userRoles));
     }
 
     public function hasPermission(string $permission): bool

@@ -56,11 +56,11 @@ class ProposalResource extends JsonResource
                 'id'   => $this->ethics_approval_status_id,
                 'name' => $this->ethicsApprovalStatus->name,
             ]),
-            'investigators' => InvestigatorResource::collection($this->whenLoaded('investigators')),
-            'reviewers'     => ReviewerPivotResource::collection($this->whenLoaded('reviewers')),
-            'finance_checks'=> FinanceCheckResource::collection($this->whenLoaded('financeChecks')),
-            'ethics_requests'=> EthicsRequestResource::collection($this->whenLoaded('ethicsRequests')),
-            'detection'     => DetectionRequestResource::collection($this->whenLoaded('detectionRequests')),
+            'investigators' => $this->whenLoaded('investigators'),
+            'reviewers'     => $this->whenLoaded('reviewers'),
+            'finance_checks'=> $this->whenLoaded('financeChecks'),
+            'ethics_requests'=> $this->whenLoaded('ethicsRequests'),
+            'detection'     => $this->whenLoaded('detectionRequests'),
             'project'       => $this->whenLoaded('project', fn() => ['id' => $this->project->id]),
             'ethics_status' => $this->relationLoaded('ethicsRequests') 
                 ? ($this->ethicsRequests->sortByDesc('created_at')->first()?->approvalStatus?->name ?? 'not_requested')

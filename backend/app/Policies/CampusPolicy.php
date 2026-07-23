@@ -12,7 +12,8 @@ class CampusPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->isAdmin();
+        if ($user->hasRole('super_admin')) return false;
+        return $user->hasPermission('campus.viewAny');
     }
 
     /**
@@ -20,7 +21,8 @@ class CampusPolicy
      */
     public function view(User $user, Campus $campus): bool
     {
-        return $this->sameUniversity($user, $campus);
+        if ($user->hasRole('super_admin')) return false;
+        return $user->hasPermission('campus.view') && $this->sameUniversity($user, $campus);
     }
 
     /**
@@ -28,10 +30,8 @@ class CampusPolicy
      */
     public function create(User $user): bool
     {
-        return $user->hasRole(
-            'super_admin',
-            'research_admin'
-        );
+        if ($user->hasRole('super_admin')) return false;
+        return $user->hasPermission('campus.create');
     }
 
     /**
@@ -39,11 +39,8 @@ class CampusPolicy
      */
     public function update(User $user, Campus $campus): bool
     {
-        return $this->sameUniversity($user, $campus)
-            && $user->hasRole(
-                'super_admin',
-                'research_admin'
-            );
+        if ($user->hasRole('super_admin')) return false;
+        return $this->sameUniversity($user, $campus) && $user->hasPermission('campus.update');
     }
 
     /**
@@ -51,11 +48,8 @@ class CampusPolicy
      */
     public function delete(User $user, Campus $campus): bool
     {
-        return $this->sameUniversity($user, $campus)
-            && $user->hasRole(
-                'super_admin',
-                'research_admin'
-            );
+        if ($user->hasRole('super_admin')) return false;
+        return $this->sameUniversity($user, $campus) && $user->hasPermission('campus.delete');
     }
 
     /**
@@ -63,11 +57,6 @@ class CampusPolicy
      */
     private function sameUniversity(User $user, Campus $campus): bool
     {
-        if ($user->hasRole('super_admin')) {
-            return true;
-        }
-
-        return $user->university_id !== null
-            && $user->university_id === $campus->university_id;
+        return $user->university_id !== null && $user->university_id === $campus->university_id;
     }
 }

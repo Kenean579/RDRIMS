@@ -4,12 +4,14 @@ namespace App\Providers;
 
 use App\Models\AcademicYear;
 use App\Models\Call;
+use App\Models\Campus;
 use App\Models\CommunityProblem;
 use App\Models\Department;
 use App\Models\DetectionRequest;
 use App\Models\EthicsRequest;
 use App\Models\Event;
 use App\Models\Expense;
+use App\Models\Faculty;
 use App\Models\File;
 use App\Models\FinanceCheck;
 use App\Models\License;
@@ -30,12 +32,14 @@ use App\Models\Task;
 use App\Models\User;
 use App\Policies\AcademicYearPolicy;
 use App\Policies\CallPolicy;
+use App\Policies\CampusPolicy;
 use App\Policies\CommunityProblemPolicy;
 use App\Policies\DepartmentPolicy;
 use App\Policies\DetectionRequestPolicy;
 use App\Policies\EthicsRequestPolicy;
 use App\Policies\EventPolicy;
 use App\Policies\ExpensePolicy;
+use App\Policies\FacultyPolicy;
 use App\Policies\FilePolicy;
 use App\Policies\FinanceCheckPolicy;
 use App\Policies\LicensePolicy;
@@ -64,6 +68,8 @@ class AuthServiceProvider extends ServiceProvider
         Role::class => RolePolicy::class,
         Permission::class => PermissionPolicy::class,
         AcademicYear::class => AcademicYearPolicy::class,
+        Campus::class => CampusPolicy::class,
+        Faculty::class => FacultyPolicy::class,
         Department::class => DepartmentPolicy::class,
         ResearchCenter::class => ResearchCenterPolicy::class,
         Setting::class => SettingPolicy::class,
@@ -103,6 +109,14 @@ class AuthServiceProvider extends ServiceProvider
         */
         Gate::before(function (User $user, string $ability) {
             if ($user->hasRole('super_admin')) {
+                // Deny super admin for campus, faculty, department, research_center, and call related abilities (tenant resources)
+                if (str_starts_with($ability, 'campus.') 
+                    || str_starts_with($ability, 'faculty.') 
+                    || str_starts_with($ability, 'department.')
+                    || str_starts_with($ability, 'research_center.')
+                    || str_starts_with($ability, 'call.')) {
+                    return false;
+                }
                 return true;
             }
 

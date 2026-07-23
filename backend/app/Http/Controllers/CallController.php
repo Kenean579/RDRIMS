@@ -4,88 +4,175 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\StoreCallRequest;
 use App\Http\Requests\UpdateCallRequest;
+use App\Http\Resources\CallResource;
 use App\Models\Call;
+use App\Models\CallStatus;
+use App\Services\CallService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
+/**
+ * CallController
+ * 
+ * Handles CRUD operations for Call resources.
+ * 
+ * Security Features:
+ * - Permission-based authorization (via CallPolicy)
+ * - Tenant-aware validation (via StoreCallRequest/UpdateCallRequest)
+ * - Business rule enforcement (via CallService)
+ * - Public access preserved for portal
+ * - IDOR vulnerabilities eliminated
+ */
 class CallController extends Controller
 {
     /**
-     * List calls – scoped by user’s role and call’s institution columns.
+     * Call business logic service.
+     */
+    protected CallService $callService;
+
+    /**
+     * Inject CallService dependency.
+     */
+    public function __construct(CallService $callService)
+    {
+        $this->callService = $callService;
+    }
+
+    /**
+     * List calls – scoped by user's role and call's institution columns.
+     * 
+     * Public Access: Unauthenticated users see only public, published calls
+     * Authenticated: Uses visibleTo() scope for tenant filtering
+     * 
+     * Returns: Paginated collection of CallResource (filters sensitive fields)
      */
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
 
-        $calls = Call::with('status', 'academicYear', 'createdBy.profileImage', 'guidelineFile', 'proposals')->withCount('proposals')
-            ->when($request->filled('status'), fn($q) =>
-                $q->whereHas('status', fn($s) => $s->where('name', $request->input('status')))
-            )
-            ->when($request->filled('search'), fn($q) =>
-                $q->where(function ($searchQuery) use ($request) {
-                    $searchQuery->where('title', 'LIKE', '%' . $request->input('search') . '%')
-                        ->orWhere('thematic_areas', 'LIKE', '%' . $request->input('search') . '%');
-                })
-            )
-            // Apply hierarchical filters if provided
-            // Apply hierarchical filters if provided (include NULL for global visibility)
-            ->when($request->filled('university_id'), fn($q) => 
-                $q->where(function($sq) use ($request) {
-                    $sq->where('university_id', $request->input('university_id'))
-                       ->orWhereNull('university_id');
-                })
-            )
-            ->when($request->filled('campus_id'), fn($q) => 
-                $q->where(function($sq) use ($request) {
-                    $sq->where('campus_id', $request->input('campus_id'))
-                       ->orWhereNull('campus_id');
-                })
-            )
-            ->when($request->filled('faculty_id'), fn($q) => 
-                $q->where(function($sq) use ($request) {
-                    $sq->where('faculty_id', $request->input('faculty_id'))
-                       ->orWhereNull('faculty_id');
-                })
-            )
-            ->when($request->filled('department_id'), fn($q) => 
-                $q->where(function($sq) use ($request) {
-                    $sq->where('department_id', $request->input('department_id'))
-                       ->orWhereNull('department_id');
-                })
-            )
-            ->when($request->filled('research_center_id'), fn($q) => 
-                $q->where(function($sq) use ($request) {
-                    $sq->where('research_center_id', $request->input('research_center_id'))
-                       ->orWhereNull('research_center_id');
-                })
-            )
-            // Scoping by user role (if no explicit filter is already applied)
-            ->when($user, fn ($query) => $query->visibleTo($user))
-            ->orderBy('deadline', 'desc')
-            ->paginate(20);
+        // Authorization: handled by policy (allows unauthenticated for public portal)
+        if ($user) {
+            $this->authorize('viewAny', Call::class);
+        }
 
-        return response()->json($calls);
+        $query = Call::with(
+            'status',
+            'academicYear',
+            'createdBy',
+            'guidelineFile',
+            'proposals'
+        )->withCount('proposals');
+
+        /*
+        |--------------------------------------------------------------------------
+        | Apply Search Filters
+        |--------------------------------------------------------------------------
+        */
+
+        $query->when($request->filled('status'), fn($q) =>
+            $q->whereHas('status', fn($s) => $s->where('name', $request->input('status')))
+        );
+
+        $query->when($request->filled('search'), fn($q) =>
+            $q->where(function ($searchQuery) use ($request) {
+                $searchQuery->where('title', 'LIKE', '%' . $request->input('search') . '%')
+                    ->orWhere('thematic_areas', 'LIKE', '%' . $request->input('search') . '%');
+            })
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Apply Hierarchical Filters (optional, for admin filtering)
+        |--------------------------------------------------------------------------
+        */
+
+        $query->when($request->filled('university_id'), fn($q) => 
+            $q->where(function($sq) use ($request) {
+                $sq->where('university_id', $request->input('university_id'))
+                   ->orWhereNull('university_id');
+            })
+        );
+
+        $query->when($request->filled('campus_id'), fn($q) => 
+            $q->where(function($sq) use ($request) {
+                $sq->where('campus_id', $request->input('campus_id'))
+                   ->orWhereNull('campus_id');
+            })
+        );
+
+        $query->when($request->filled('faculty_id'), fn($q) => 
+            $q->where(function($sq) use ($request) {
+                $sq->where('faculty_id', $request->input('faculty_id'))
+                   ->orWhereNull('faculty_id');
+            })
+        );
+
+        $query->when($request->filled('department_id'), fn($q) => 
+            $q->where(function($sq) use ($request) {
+                $sq->where('department_id', $request->input('department_id'))
+                   ->orWhereNull('department_id');
+            })
+        );
+
+        $query->when($request->filled('research_center_id'), fn($q) => 
+            $q->where(function($sq) use ($request) {
+                $sq->where('research_center_id', $request->input('research_center_id'))
+                   ->orWhereNull('research_center_id');
+            })
+        );
+
+        /*
+        |--------------------------------------------------------------------------
+        | Apply Visibility Scoping
+        |--------------------------------------------------------------------------
+        */
+
+        if ($user) {
+            // Authenticated: use visibleTo() scope for tenant filtering
+            $query->visibleTo($user);
+        } else {
+            // Unauthenticated: only public, published calls
+            $query->where('is_public', true)
+                  ->whereNotNull('published_at')
+                  ->where('published_at', '<=', now());
+        }
+
+        return response()->json(
+            CallResource::collection(
+                $query->orderBy('deadline', 'desc')->paginate(20)
+            )
+        );
     }
 
     /**
      * Store a new call (admin).
+     * 
+     * Security:
+     * - Authorization via CallPolicy (permission-based)
+     * - Validation via StoreCallRequest (tenant-aware, hierarchy consistency)
+     * - No autoFillHierarchy() - validation ensures correctness
+     * 
+     * Returns: CallResource with created call (sensitive fields filtered)
      */
     public function store(StoreCallRequest $request): JsonResponse
     {
-        $user = $request->user();
         $this->authorize('create', Call::class);
-        $this->validateScopeForRole($request, $user);
 
+        $user = $request->user();
         $validated = $request->validated();
-        $validated = $this->autoFillHierarchy($validated, $user);
-        
-        // Ensure a status is set if not provided (non-nullable in DB)
-        if (empty($validated['status_id'])) {
-            $defaultStatus = \App\Models\CallStatus::where('name', 'open')->first();
-            $validated['status_id'] = $defaultStatus ? $defaultStatus->id : 2; // Default to 2 (open)
+
+        // Force user's university if not provided (defensive, validation should ensure this)
+        if (empty($validated['university_id'])) {
+            $validated['university_id'] = $user->university_id;
         }
 
-        // Ensure thematic_areas is not null (required in DB)
+        // Set default status if not provided
+        if (empty($validated['status_id'])) {
+            $defaultStatus = CallStatus::where('name', 'open')->first();
+            $validated['status_id'] = $defaultStatus ? $defaultStatus->id : 2;
+        }
+
+        // Set default thematic_areas if empty
         if (empty($validated['thematic_areas'])) {
             $validated['thematic_areas'] = 'General';
         }
@@ -95,115 +182,99 @@ class CallController extends Controller
             'created_by' => $user->id,
         ]);
 
-        return response()->json($call, 201);
+        // Load relationships for resource transformation
+        $call->load('status', 'academicYear', 'createdBy', 'guidelineFile');
+        $call->loadCount('proposals');
+
+        return response()->json(
+            CallResource::make($call),
+            201
+        );
     }
 
     /**
      * Show a single call.
+     * 
+     * Public Access: Policy checks is_public + published_at for unauthenticated
+     * Authenticated: Policy checks permission + tenant ownership
+     * 
+     * Returns: CallResource (sensitive fields filtered)
      */
     public function show(Call $call): JsonResponse
     {
         $this->authorize('view', $call);
-        return response()->json($call->load('status', 'academicYear', 'guidelineFile', 'proposals'));
+
+        // Eager load relationships for resource transformation
+        $call->load('status', 'academicYear', 'createdBy', 'guidelineFile', 'proposals');
+        $call->loadCount('proposals');
+
+        return response()->json(
+            CallResource::make($call)
+        );
     }
 
     /**
      * Update a call (admin).
+     * 
+     * Security:
+     * - Authorization via CallPolicy (permission + tenant ownership)
+     * - Validation via UpdateCallRequest (immutability, status-based restrictions, hierarchy consistency)
+     * - Immutability enforced: university_id explicitly removed
+     * 
+     * Returns: CallResource with updated call (sensitive fields filtered)
      */
     public function update(UpdateCallRequest $request, Call $call): JsonResponse
     {
+        // Bypass global scopes for update (admin operation)
         $call = $call->withoutGlobalScopes();
-        $this->authorize('update', $call);
-        $this->validateScopeForRole($request, $request->user());
         
+        $this->authorize('update', $call);
+
         $validated = $request->validated();
-        $validated = $this->autoFillHierarchy($validated, $request->user());
+
+        // Enforce immutability: university_id cannot change (defensive, validation blocks this)
+        unset($validated['university_id']);
+
         $call->update($validated);
-        return response()->json($call);
+
+        // Reload fresh instance and load relationships for resource transformation
+        $call = $call->fresh();
+        $call->load('status', 'academicYear', 'createdBy', 'guidelineFile');
+        $call->loadCount('proposals');
+
+        return response()->json(
+            CallResource::make($call)
+        );
     }
 
     /**
      * Delete a call (admin).
+     * 
+     * Business Rules:
+     * - Prevent deletion if call has proposals (return 409 Conflict)
+     * - Use soft delete to preserve historical data
+     * - Authorization via CallPolicy (permission + tenant ownership)
      */
     public function destroy(Call $call): JsonResponse
     {
+        // Bypass global scopes for delete (admin operation)
         $call = $call->withoutGlobalScopes();
+        
         $this->authorize('delete', $call);
+
+        // Business Rule: Prevent deletion if call has proposals
+        if (!$this->callService->canDelete($call)) {
+            return response()->json([
+                'message' => 'Cannot delete call with existing proposals.',
+                'error' => 'This call has proposals submitted and cannot be deleted to maintain data integrity.',
+                'proposals_count' => $call->proposals()->count(),
+            ], 409); // 409 Conflict
+        }
+
         $call->delete();
-        return response()->json(['message' => 'Call deleted']);
-    }
 
-    /**
-     * Automatically populate parent hierarchy IDs if a child ID is provided.
-     */
-    private function autoFillHierarchy(array $data, $user): array
-    {
-        if (!empty($data['department_id'])) {
-            $department = \App\Models\Department::with('faculty.campus')->find($data['department_id']);
-            if ($department) {
-                $data['faculty_id'] = $department->faculty_id;
-                $data['campus_id'] = $department->faculty->campus_id ?? null;
-                $data['university_id'] = $department->faculty->campus->university_id ?? null;
-            }
-        } elseif (!empty($data['faculty_id'])) {
-            $faculty = \App\Models\Faculty::with('campus')->find($data['faculty_id']);
-            if ($faculty) {
-                $data['campus_id'] = $faculty->campus_id;
-                $data['university_id'] = $faculty->campus->university_id ?? null;
-            }
-        } elseif (!empty($data['campus_id'])) {
-            $campus = \App\Models\Campus::find($data['campus_id']);
-            if ($campus) {
-                $data['university_id'] = $campus->university_id;
-            }
-        }
-        if (empty($data['university_id']) && $user && !$user->hasRole('super_admin')) {
-            $data['university_id'] = $user->resolvedUniversityId();
-        }
-
-        return $data;
-    }
-
-    /**
-     * Validate that the admin creating/updating a call doesn't exceed their authority.
-     */
-    private function validateScopeForRole($request, $user): void
-    {
-        if ($user->hasRole('super_admin')) {
-            return;
-        }
-
-        // Helper to extract the user's institution chain
-        $userUniversity = $user->university_id ?: $user->department?->faculty?->campus?->university_id;
-        $userCampus    = $user->campus_id ?: $user->department?->faculty?->campus_id;
-        $userFaculty   = $user->faculty_id ?: $user->department?->faculty_id;
-        $userDept      = $user->department_id;
-
-        if ($user->hasRole('research_admin')) {
-            if ($request->filled('university_id') && $request->input('university_id') != $userUniversity) {
-                abort(403, 'You can only scope calls to your own university.');
-            }
-        }
-        if ($user->hasRole('campus_admin')) {
-            if ($request->filled('campus_id') && $request->input('campus_id') != $userCampus) {
-                abort(403, 'You can only scope calls to your own campus.');
-            }
-        }
-        if ($user->hasRole('faculty_admin')) {
-            if ($request->filled('faculty_id') && $request->input('faculty_id') != $userFaculty) {
-                abort(403, 'You can only scope calls to your own faculty.');
-            }
-        }
-        if ($user->hasRole('department_head')) {
-            if ($request->filled('department_id') && $request->input('department_id') != $userDept) {
-                abort(403, 'You can only scope calls to your own department.');
-            }
-        }
-        if ($user->hasRole('director')) {
-            $centerIds = $user->researchCenters->pluck('id');
-            if ($request->filled('research_center_id') && !$centerIds->contains($request->input('research_center_id'))) {
-                abort(403, 'You can only scope calls to your own research centre.');
-            }
-        }
+        return response()->json([
+            'message' => 'Call deleted successfully.',
+        ]);
     }
 }

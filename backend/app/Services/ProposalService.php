@@ -24,7 +24,9 @@ class ProposalService
 
     public function submit(Proposal $proposal, User $user): void
     {
-        if ($proposal->status_id !== $this->statusId('draft')) {
+        $draftStatusId = $this->statusId('draft');
+        
+        if ($proposal->status_id !== $draftStatusId) {
             throw ValidationException::withMessages([
                 'status' => 'Only draft proposals can be submitted.',
             ]);
@@ -36,11 +38,16 @@ class ProposalService
             ]);
         }
 
-        $proposal->update([
-            'status_id' => $this->statusId('submitted'),
-            'submitted_at' => now(),
-            'submitted_by' => $user->id,
-        ]);
+        // SECURITY FIX: Verify the user owns this proposal before submission
+        if ($proposal->submitted_by !== $user->id) {
+            throw ValidationException::withMessages([
+                'authorization' => 'You can only submit your own proposals.',
+            ]);
+        }
+
+        $proposal->status_id = $this->statusId('submitted');
+        $proposal->submitted_at = now();
+        $proposal->save();
 
         $this->auditLogService->log('submitted', 'proposals', $proposal->id, request());
         $this->notificationService->proposalSubmitted($user, $proposal->title, $proposal->id);
@@ -131,11 +138,11 @@ class ProposalService
             }
         }
 
-        $proposal->update([
-            'status_id' => $this->statusId('approved'),
-            'approved_by' => $approvedBy->id,
-            'approved_at' => now(),
-        ]);
+        // SECURITY FIX: Use explicit assignment for protected fields
+        $proposal->status_id = $this->statusId('approved');
+        $proposal->approved_by = $approvedBy->id;
+        $proposal->approved_at = now();
+        $proposal->save();
 
         // Automatically create a project from approved proposal
         $project = $proposal->project()->create([
@@ -171,10 +178,10 @@ class ProposalService
             ]);
         }
 
-        $proposal->update([
-            'status_id' => $this->statusId('rejected'),
-            'status_change_comment' => $comment,
-        ]);
+        // SECURITY FIX: Use explicit assignment for protected fields
+        $proposal->status_id = $this->statusId('rejected');
+        $proposal->status_change_comment = $comment;
+        $proposal->save();
 
         $this->auditLogService->log('rejected', 'proposals', $proposal->id, request());
 
@@ -201,7 +208,9 @@ class ProposalService
             'assigned_at' => now(),
         ]));
 
-        $proposal->update(['status_id' => $this->statusId('under_review')]);
+        // SECURITY FIX: Use explicit assignment for protected field
+        $proposal->status_id = $this->statusId('under_review');
+        $proposal->save();
 
         $this->auditLogService->log('reviewers_assigned', 'proposals', $proposal->id, request());
 
@@ -214,7 +223,9 @@ class ProposalService
 
     public function runChecks(Proposal $proposal, User $user): void
     {
-        $proposal->update(['status_id' => $this->statusId('checking')]);
+        // SECURITY FIX: Use explicit assignment for protected field
+        $proposal->status_id = $this->statusId('checking');
+        $proposal->save();
 
         // Dispatch automated checks
         \App\Jobs\RunProposalChecksJob::dispatch($proposal);

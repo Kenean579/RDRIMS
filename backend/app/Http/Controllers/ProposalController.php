@@ -96,7 +96,7 @@ class ProposalController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
-        return response()->json($proposals);
+        return response()->json(\App\Http\Resources\ProposalResource::collection($proposals));
     }
 
     /**
@@ -107,12 +107,13 @@ class ProposalController extends Controller
         return DB::transaction(function () use ($request) {
             $call = null;
             if ($request->call_id) {
-                $call = \App\Models\Call::withoutGlobalScopes()->find($request->call_id);
+                // SECURITY FIX: Use tenant-scoped query instead of withoutGlobalScopes()
+                $call = \App\Models\Call::query()->find($request->call_id);
                 if (! $call || ! $request->user()->can('view', $call)) {
                     abort(403, 'You do not have access to this call.');
                 }
 
-                if ($call && $call->deadline < now()) {
+                if ($call->deadline < now()) {
                     throw \Illuminate\Validation\ValidationException::withMessages([
                         'call_id' => 'The deadline for this call has passed.'
                     ]);
@@ -124,15 +125,18 @@ class ProposalController extends Controller
                 $academicYearId = \App\Models\AcademicYear::where('is_current', true)->first()?->id;
             }
 
-            $proposal = Proposal::create([
-                ...$request->safe()->except(['investigators', 'proposal_file', 'ethics_file', 'academic_year_id']),
-                'submitted_by' => $request->user()->id,
-                'submitted_at'  => now(),
-                'status_id'     => ProposalStatus::where('name', 'submitted')->first()->id ?? 1,
-                'academic_year_id' => $academicYearId,
-                // Inherit center from call if available, else use user's primary
-                'research_center_id' => $call?->research_center_id ?? $request->user()->research_center_id,
-            ]);
+            // SECURITY FIX: Create as draft, not submitted (prevents status bypass)
+            $draftStatusId = ProposalStatus::where('name', 'draft')->first()->id ?? 1;
+
+            $proposal = new Proposal();
+            // Use explicit assignment instead of mass assignment for protected fields
+            $proposal->fill($request->safe()->except(['investigators', 'proposal_file', 'ethics_file', 'academic_year_id']));
+            $proposal->submitted_by = $request->user()->id;
+            $proposal->status_id = $draftStatusId;
+            $proposal->submitted_at = null; // Set to null for drafts (will be populated on submit)
+            $proposal->academic_year_id = $academicYearId;
+            $proposal->research_center_id = $call?->research_center_id ?? $request->user()->research_center_id;
+            $proposal->save();
 
             // Handle file upload
             if ($request->hasFile('proposal_file')) {
@@ -164,36 +168,15 @@ class ProposalController extends Controller
                 ]);
             }
 
-            // Log submission
+            // Log creation (not submission - draft stage)
             $auditLogService = app()->make(\App\Services\AuditLogService::class);
-            $auditLogService->log('submitted', 'proposals', $proposal->id, $request);
+            $auditLogService->log('created', 'proposals', $proposal->id, $request);
 
-            // Send notifications to submitter
-            $notificationService = app()->make(\App\Services\NotificationService::class);
-            $notificationService->proposalSubmitted($request->user(), $proposal->title, $proposal->id);
-
-            // Notify Call Creator
-            if ($call && $call->createdBy && $call->createdBy->id !== $request->user()->id) {
-                $notificationService->proposalReceived($call->createdBy, $proposal->title, $proposal->id, $request->user()->name);
-            }
-
-            // Notify Research Admins (Research Directorate Admins) of the university
-            $universityId = $call?->university_id ?: $request->user()->university_id;
-            if ($universityId) {
-                $researchAdmins = \App\Models\User::whereHas('roles', fn($q) => $q->where('name', 'research_admin'))
-                    ->where(function($q) use ($universityId) {
-                        $q->where('university_id', $universityId)
-                          ->orWhereNull('university_id');
-                    })
-                    ->get();
-                foreach ($researchAdmins as $admin) {
-                    if ($admin->id !== $request->user()->id) {
-                        $notificationService->proposalReceived($admin, $proposal->title, $proposal->id, $request->user()->name);
-                    }
-                }
-            }
-
-            return response()->json($proposal->load('investigators', 'file'), 201);
+            // SECURITY FIX: Use ProposalResource to prevent data leakage
+            return response()->json(
+                new \App\Http\Resources\ProposalResource($proposal->load('investigators', 'file', 'status', 'type')), 
+                201
+            );
         });
     }
 
@@ -227,7 +210,8 @@ class ProposalController extends Controller
         $proposal->review_progress = app(\App\Services\ReviewService::class)
             ->getProposalReviewProgress($proposal);
 
-        return response()->json($proposal);
+        // SECURITY FIX: Use ProposalResource to prevent data leakage
+        return response()->json(new \App\Http\Resources\ProposalResource($proposal));
     }
 
     /**
@@ -277,7 +261,10 @@ class ProposalController extends Controller
                 }
             }
 
-            return response()->json($proposal->load('investigators', 'file', 'status', 'type'));
+            // SECURITY FIX: Use ProposalResource to prevent data leakage
+            return response()->json(
+                new \App\Http\Resources\ProposalResource($proposal->load('investigators', 'file', 'status', 'type'))
+            );
         });
     }
 

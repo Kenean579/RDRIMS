@@ -41,27 +41,31 @@ class Proposal extends Model
      */
     protected $fillable = [
         'call_id',
-         'type_id',
-         'title',
-         'abstract',
-         'objectives',
-         'methodology',
-         'keywords',
-         'budget',
-          'budget_allocation',
-         'status_change_comment',
-         'status_id',
-          'submitted_by',
-         'submitted_at',
-          'approved_by',
-          'approved_at',
-          'academic_year_id',
-         'file_id',
-          'ethics_file_id',
-          'ethics_approval_status_id',
-          'research_center_id',
-          'originality_score',
-          'plagiarism_report_url'
+        'type_id',
+        'title',
+        'abstract',
+        'objectives',
+        'methodology',
+        'keywords',
+        'budget',
+        'budget_allocation',
+        'status_change_comment',
+        'academic_year_id',
+        'file_id',
+        'ethics_file_id',
+        'research_center_id',
+    ];
+
+    // PROTECTED: Only updated by services/admin actions - prevents mass assignment attacks
+    protected $guarded = [
+        'status_id',
+        'submitted_by',
+        'submitted_at',
+        'approved_by',
+        'approved_at',
+        'ethics_approval_status_id',
+        'originality_score',
+        'plagiarism_report_url'
     ];
 
     protected $casts = [
@@ -70,6 +74,10 @@ class Proposal extends Model
         'budget'            => 'decimal:2',
         'budget_allocation' => 'array',
         'originality_score' => 'decimal:2',
+    ];
+
+    protected $attributes = [
+        'submitted_at' => null,
     ];
 
     public function call(): BelongsTo

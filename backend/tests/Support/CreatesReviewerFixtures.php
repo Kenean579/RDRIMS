@@ -75,8 +75,8 @@ trait CreatesReviewerFixtures
             'is_active' => true,
         ]);
 
-        $reviewerRole = Role::create(['name' => 'reviewer']);
-        $adminRole = Role::create(['name' => 'research_admin']);
+        $reviewerRole = Role::firstOrCreate(['name' => 'reviewer']);
+        $adminRole = Role::firstOrCreate(['name' => 'research_admin']);
 
         $this->reviewerUser->roles()->attach($reviewerRole->id, [
             'assigned_at' => now(),

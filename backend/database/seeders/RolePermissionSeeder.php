@@ -11,11 +11,43 @@ class RolePermissionSeeder extends Seeder
     public function run(): void
     {
         $superAdmin = Role::where('name', 'super_admin')->first();
-        $superAdmin->permissions()->sync(Permission::pluck('id')->toArray());
+        // Campus, Faculty, Department, Research Center, and Call permissions are tenant-resource abilities.
+        // Platform administrators must not receive them through the global Super Admin role.
+        $superAdmin->permissions()->sync(
+            Permission::whereNotIn('name', [
+                'campus.viewAny',
+                'campus.view',
+                'campus.create',
+                'campus.update',
+                'campus.delete',
+                'faculty.viewAny',
+                'faculty.view',
+                'faculty.create',
+                'faculty.update',
+                'faculty.delete',
+                'department.viewAny',
+                'department.view',
+                'department.create',
+                'department.update',
+                'department.delete',
+                'research_center.viewAny',
+                'research_center.view',
+                'research_center.create',
+                'research_center.update',
+                'research_center.delete',
+                'call.viewAny',
+                'call.view',
+                'call.create',
+                'call.update',
+                'call.delete',
+            ])->pluck('id')->toArray()
+        );
 
         $researchAdmin = Role::where('name', 'research_admin')->first();
         $researchAdmin->permissions()->sync(
-            Permission::whereNotIn('name', ['manage_settings', 'manage_roles', 'manage_universities'])->pluck('id')->toArray()
+            Permission::whereNotIn('name', ['manage_settings', 'manage_roles', 'manage_universities'])
+                ->pluck('id')
+                ->all()
         );
 
         $campusAdmin = Role::where('name', 'campus_admin')->first();
@@ -27,6 +59,10 @@ class RolePermissionSeeder extends Seeder
                 'approve_outputs', 'manage_publications', 'manage_patents',
                 'manage_partners', 'manage_events', 'upload_files', 'delete_files',
                 'manage_community_problems', 'generate_reports',
+                'faculty.viewAny', 'faculty.view', 'faculty.create', 'faculty.update', 'faculty.delete',
+                'department.viewAny', 'department.view', 'department.create', 'department.update', 'department.delete',
+                'research_center.viewAny', 'research_center.view', 'research_center.create', 'research_center.update', 'research_center.delete',
+                'call.viewAny', 'call.view', 'call.create', 'call.update', 'call.delete',
             ])->pluck('id')->toArray()
         );
 
@@ -38,6 +74,10 @@ class RolePermissionSeeder extends Seeder
                 'view_all_projects', 'manage_outputs', 'approve_outputs',
                 'manage_publications', 'manage_patents', 'manage_events',
                 'upload_files', 'generate_reports',
+                'faculty.viewAny', 'faculty.view',
+                'department.viewAny', 'department.view', 'department.create', 'department.update', 'department.delete',
+                'research_center.viewAny', 'research_center.view', 'research_center.create', 'research_center.update', 'research_center.delete',
+                'call.viewAny', 'call.view', 'call.create', 'call.update', 'call.delete',
             ])->pluck('id')->toArray()
         );
 
@@ -46,6 +86,9 @@ class RolePermissionSeeder extends Seeder
             Permission::whereIn('name', [
                 'view_users', 'view_all_proposals', 'approve_outputs',
                 'view_all_projects', 'generate_reports', 'upload_files',
+                'department.viewAny', 'department.view',
+                'research_center.viewAny', 'research_center.view',
+                'call.viewAny', 'call.view', 'call.create', 'call.update', 'call.delete',
             ])->pluck('id')->toArray()
         );
 
@@ -56,6 +99,8 @@ class RolePermissionSeeder extends Seeder
                 'view_all_reviews', 'manage_outputs', 'approve_outputs',
                 'manage_publications', 'generate_reports', 'upload_files',
                 'manage_events',
+                'research_center.viewAny', 'research_center.view', 'research_center.update',
+                'call.viewAny', 'call.view', 'call.create', 'call.update', 'call.delete',
             ])->pluck('id')->toArray()
         );
 

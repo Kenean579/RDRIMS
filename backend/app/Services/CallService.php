@@ -3,494 +3,286 @@
 namespace App\Services;
 
 use App\Models\Call;
-use App\Models\User;
 use App\Models\CallStatus;
-use App\Models\Department;
-use App\Models\Faculty;
-use App\Models\Campus;
-use Illuminate\Support\Facades\DB;
-use Illuminate\Auth\Access\AuthorizationException;
+use App\Models\User;
+use Illuminate\Database\Eloquent\Builder;
 
+/**
+ * CallService
+ * 
+ * Business logic layer for Call operations.
+ * Handles status transitions, deletion rules, edit restrictions, and visibility scoping.
+ */
 class CallService
 {
     /**
-     * Create a new call.
+     * Check if a call can be deleted.
+     * 
+     * Prevent deletion if the call has proposals to maintain data integrity.
+     * 
+     * @param Call $call
+     * @return bool True if deletable, false if has proposals
      */
-    public function create(array $data, User $user): Call
+    public function canDelete(Call $call): bool
     {
-        return DB::transaction(function () use ($data, $user) {
+        // Prevent deletion if call has any proposals
+        return $call->proposals()->count() === 0;
+    }
 
-            $this->ensureUserCanCreate($user);
+    /**
+     * Validate status transition.
+     * 
+     * Business Rules (from user approval):
+     * - Draft → Open → Closed (linear progression)
+     * - No reopening (Closed → Open not allowed)
+     * 
+     * @param Call $call
+     * @param int $newStatusId
+     * @return bool True if transition is valid
+     */
+    public function validateStatusTransition(Call $call, int $newStatusId): bool
+    {
+        // If status not changing, always valid
+        if ($call->status_id === $newStatusId) {
+            return true;
+        }
 
-            /*
-            |--------------------------------------------------------------------------
-            | Resolve hierarchy automatically
-            |--------------------------------------------------------------------------
-            */
+        $currentStatus = $call->status?->name;
+        $newStatus = CallStatus::find($newStatusId)?->name;
 
-            $data = $this->resolveHierarchy($data, $user);
+        if (!$currentStatus || !$newStatus) {
+            return false; // Invalid status ID
+        }
 
+        // Define allowed transitions
+        $allowedTransitions = [
+            'draft' => ['open'],              // Draft can only go to Open
+            'open' => ['closed'],             // Open can only go to Closed
+            'closed' => [],                   // Closed is terminal (no reopening)
+        ];
 
-            /*
-            |--------------------------------------------------------------------------
-            | Prevent unauthorized hierarchy assignment
-            |--------------------------------------------------------------------------
-            */
+        return in_array($newStatus, $allowedTransitions[$currentStatus] ?? [], true);
+    }
 
-            $this->validateHierarchyOwnership(
-                $data,
-                $user
-            );
+    /**
+     * Check if a call can be edited based on its status.
+     * 
+     * Business Rules (from user approval):
+     * - Draft status: All fields editable
+     * - Open/Closed status: Restrict editing of workflow-critical fields
+     * 
+     * Immutable fields once Open/Closed:
+     * - university_id (always immutable)
+     * - campus_id, faculty_id, department_id, research_center_id
+     * - deadline (affects proposal submissions)
+     * - thematic_areas (affects proposal targeting)
+     * 
+     * Editable fields when Open/Closed:
+     * - title, description (clarifications allowed)
+     * - is_public, is_featured (visibility changes allowed)
+     * - guideline_file_id (document updates allowed)
+     * - metadata (flexible data allowed)
+     * 
+     * @param Call $call
+     * @param array $fields Fields being edited
+     * @return array ['allowed' => bool, 'restricted_fields' => array]
+     */
+    public function canEdit(Call $call, array $fields): array
+    {
+        $status = $call->status?->name;
 
+        // Draft status: all fields editable
+        if ($status === 'draft') {
+            return [
+                'allowed' => true,
+                'restricted_fields' => [],
+            ];
+        }
 
-            /*
-            |--------------------------------------------------------------------------
-            | Default values
-            |--------------------------------------------------------------------------
-            */
+        // Open/Closed status: restrict workflow-critical fields
+        if (in_array($status, ['open', 'closed'], true)) {
+            $restrictedFields = [
+                'university_id',        // Always immutable
+                'campus_id',            // Organizational structure
+                'faculty_id',           // Organizational structure
+                'department_id',        // Organizational structure
+                'research_center_id',   // Organizational structure
+                'deadline',             // Affects proposal eligibility
+                'thematic_areas',       // Affects proposal targeting
+                'opens_at',             // Workflow timing
+                'closes_at',            // Workflow timing
+            ];
 
-            $data['created_by'] = $user->id;
+            $attemptedRestricted = array_intersect($restrictedFields, array_keys($fields));
 
-
-            if (empty($data['status_id'])) {
-
-                $data['status_id'] = CallStatus::where(
-                    'name',
-                    'open'
-                )->value('id');
+            if (!empty($attemptedRestricted)) {
+                return [
+                    'allowed' => false,
+                    'restricted_fields' => array_values($attemptedRestricted),
+                ];
             }
 
-
-            /*
-            |--------------------------------------------------------------------------
-            | Create call
-            |--------------------------------------------------------------------------
-            */
-
-            return Call::create($data);
-
-        });
-    }
-
-
-    /**
-     * Update existing call.
-     */
-    public function update(
-        Call $call,
-        array $data,
-        User $user
-    ): Call {
-
-        return DB::transaction(function () use (
-            $call,
-            $data,
-            $user
-        ) {
-
-
-            $this->ensureUserCanManage(
-                $call,
-                $user
-            );
-
-
-            /*
-            |--------------------------------------------------------------------------
-            | Resolve hierarchy if changed
-            |--------------------------------------------------------------------------
-            */
-
-            $data = $this->resolveHierarchy(
-                $data,
-                $user
-            );
-
-
-            $this->validateHierarchyOwnership(
-                $data,
-                $user
-            );
-
-
-            $call->update($data);
-
-
-            return $call->refresh();
-
-        });
-    }
-
-
-
-    /**
-     * Delete call.
-     */
-    public function delete(
-        Call $call,
-        User $user
-    ): bool {
-
-        $this->ensureUserCanManage(
-            $call,
-            $user
-        );
-
-
-        return $call->delete();
-    }
-
-
-
-    /**
-     * Restore deleted call.
-     */
-    public function restore(
-        Call $call,
-        User $user
-    ): bool {
-
-
-        $this->ensureUserCanManage(
-            $call,
-            $user
-        );
-
-
-        return $call->restore();
-    }
-
-
-
-    /**
-     * Resolve hierarchy relationships.
-     *
-     * Department
-     *      |
-     *      Faculty
-     *          |
-     *          Campus
-     *              |
-     *              University
-     */
-    private function resolveHierarchy(
-        array $data,
-        User $user
-    ): array {
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Department selected
-        |--------------------------------------------------------------------------
-        */
-
-        if (!empty($data['department_id'])) {
-
-
-            $department = Department::with(
-                'faculty.campus'
-            )
-            ->findOrFail(
-                $data['department_id']
-            );
-
-
-            $data['department_id']
-                = $department->id;
-
-
-            $data['faculty_id']
-                = $department->faculty_id;
-
-
-            $data['campus_id'] = $department->faculty ? $department->faculty->campus_id : null;
-
-            $data['university_id'] = ($department->faculty && $department->faculty->campus) ? $department->faculty->campus->university_id : null;
-
+            return [
+                'allowed' => true,
+                'restricted_fields' => [],
+            ];
         }
 
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Faculty selected
-        |--------------------------------------------------------------------------
-        */
-
-        elseif (!empty($data['faculty_id'])) {
-
-
-            $faculty = Faculty::with(
-                'campus'
-            )
-            ->findOrFail(
-                $data['faculty_id']
-            );
-
-
-            $data['faculty_id']
-                = $faculty->id;
-
-
-            $data['campus_id']
-                = $faculty->campus_id;
-
-
-            $data['university_id'] = $faculty->campus ? $faculty->campus->university_id : null;
-
-        }
-
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Campus selected
-        |--------------------------------------------------------------------------
-        */
-
-        elseif (!empty($data['campus_id'])) {
-
-
-            $campus = Campus::findOrFail(
-                $data['campus_id']
-            );
-
-
-            $data['campus_id']
-                = $campus->id;
-
-
-            $data['university_id']
-                = $campus->university_id;
-
-        }
-
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | No hierarchy provided
-        |--------------------------------------------------------------------------
-        */
-
-        elseif (
-            empty($data['university_id'])
-            &&
-            !$user->hasRole('super_admin')
-        ) {
-
-
-            $data['university_id']
-                = $user->resolvedUniversityId();
-
-        }
-
-
-        return $data;
+        // Unknown status: allow (fallback)
+        return [
+            'allowed' => true,
+            'restricted_fields' => [],
+        ];
     }
 
-
-
-
     /**
-     * Validate user scope before creating/updating.
+     * Get calls visible to the user.
+     * 
+     * This method extracts the complex visibility logic from the model scope
+     * to improve testability and maintainability.
+     * 
+     * Business Rules:
+     * - Super Admin: Cannot access tenant calls (policy denies)
+     * - Research Admin: University-level calls
+     * - Campus Admin: Campus-level calls
+     * - Faculty Admin: Faculty-level calls
+     * - Department Head: Department-level calls
+     * - Director: Research Center calls
+     * - Researcher/Reviewer/Student/Guest: Calls matching their hierarchy
+     * 
+     * @param User $user
+     * @param Builder $query
+     * @return Builder
      */
-    private function validateHierarchyOwnership(
-        array $data,
-        User $user
-    ): void {
-
-
+    public function getVisibleCalls(User $user, Builder $query): Builder
+    {
+        // Super Admin sees all (but policy will deny, so this shouldn't be reached)
         if ($user->hasRole('super_admin')) {
-            return;
+            return $query;
         }
 
+        return $query->where(function (Builder $q) use ($user) {
 
+            // Global calls (university_id is NULL - though schema doesn't support this)
+            $q->whereNull('university_id');
 
-        $universityId =
-            $user->resolvedUniversityId();
+            /*
+            |--------------------------------------------------------------------------
+            | Research Administration
+            |--------------------------------------------------------------------------
+            */
 
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | University Isolation
-        |--------------------------------------------------------------------------
-        */
-
-        if (
-            isset($data['university_id'])
-            &&
-            $data['university_id'] != $universityId
-        ) {
-
-            throw new AuthorizationException(
-                'You cannot create or modify calls outside your university.'
-            );
-        }
-
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Campus Isolation
-        |--------------------------------------------------------------------------
-        */
-
-        if (
-            $user->hasRole('campus_admin')
-            &&
-            isset($data['campus_id'])
-            &&
-            $data['campus_id'] != $user->campus_id
-        ) {
-
-            throw new AuthorizationException(
-                'You cannot manage calls outside your campus.'
-            );
-        }
-
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Faculty Isolation
-        |--------------------------------------------------------------------------
-        */
-
-        if (
-            $user->hasRole('faculty_admin')
-            &&
-            isset($data['faculty_id'])
-            &&
-            $data['faculty_id'] != $user->faculty_id
-        ) {
-
-            throw new AuthorizationException(
-                'You cannot manage calls outside your faculty.'
-            );
-        }
-
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Department Isolation
-        |--------------------------------------------------------------------------
-        */
-
-        if (
-            $user->hasRole('department_head')
-            &&
-            isset($data['department_id'])
-            &&
-            $data['department_id'] != $user->department_id
-        ) {
-
-            throw new AuthorizationException(
-                'You cannot manage calls outside your department.'
-            );
-        }
-
-
-
-        /*
-        |--------------------------------------------------------------------------
-        | Research Center Isolation
-        |--------------------------------------------------------------------------
-        */
-
-        if (
-            $user->hasRole('director')
-            &&
-            isset($data['research_center_id'])
-        ) {
-
-
-            $allowed =
-                $user->researchCenters()
-                ->whereKey(
-                    $data['research_center_id']
-                )
-                ->exists();
-
-
-
-            if (!$allowed) {
-
-                throw new AuthorizationException(
-                    'You cannot manage this research center call.'
+            if ($user->hasRole('research_admin')) {
+                $q->orWhere(
+                    'university_id',
+                    $user->resolvedUniversityId()
                 );
             }
-        }
 
+            /*
+            |--------------------------------------------------------------------------
+            | Campus Administration
+            |--------------------------------------------------------------------------
+            */
+
+            if (
+                $user->hasRole('campus_admin') &&
+                $user->campus_id
+            ) {
+                $q->orWhere('campus_id', $user->campus_id);
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Faculty Administration
+            |--------------------------------------------------------------------------
+            */
+
+            if (
+                $user->hasRole('faculty_admin') &&
+                $user->faculty_id
+            ) {
+                $q->orWhere('faculty_id', $user->faculty_id);
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Department Administration
+            |--------------------------------------------------------------------------
+            */
+
+            if (
+                $user->hasRole('department_head') &&
+                $user->department_id
+            ) {
+                $q->orWhere(
+                    'department_id',
+                    $user->department_id
+                );
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Research Center Director
+            |--------------------------------------------------------------------------
+            */
+
+            if ($user->hasRole('director')) {
+
+                $centerIds = $user->researchCenters()
+                    ->pluck('research_centers.id');
+
+                if ($centerIds->isNotEmpty()) {
+                    $q->orWhereIn(
+                        'research_center_id',
+                        $centerIds
+                    );
+                }
+            }
+
+            /*
+            |--------------------------------------------------------------------------
+            | Researchers / Reviewers / Students / Guests
+            |--------------------------------------------------------------------------
+            */
+
+            if (
+                $user->hasAnyRole([
+                    'researcher',
+                    'reviewer',
+                    'student',
+                    'guest'
+                ])
+            ) {
+
+                if ($user->resolvedUniversityId()) {
+                    $q->orWhere(
+                        'university_id',
+                        $user->resolvedUniversityId()
+                    );
+                }
+
+                if ($user->campus_id) {
+                    $q->orWhere(
+                        'campus_id',
+                        $user->campus_id
+                    );
+                }
+
+                if ($user->faculty_id) {
+                    $q->orWhere(
+                        'faculty_id',
+                        $user->faculty_id
+                    );
+                }
+
+                if ($user->department_id) {
+                    $q->orWhere(
+                        'department_id',
+                        $user->department_id
+                    );
+                }
+            }
+        });
     }
-
-
-
-
-    /**
-     * Check create permission.
-     */
-    private function ensureUserCanCreate(
-        User $user
-    ): void {
-
-
-        if (!$user->isAdmin()) {
-
-            throw new AuthorizationException(
-                'You do not have permission to create calls.'
-            );
-
-        }
-
-    }
-
-
-
-
-    /**
-     * Check update/delete permission.
-     */
-    private function ensureUserCanManage(
-        Call $call,
-        User $user
-    ): void {
-
-
-        if ($user->hasRole('super_admin')) {
-            return;
-        }
-
-
-
-        if (
-            !$user->isAdmin()
-        ) {
-
-            throw new AuthorizationException(
-                'You do not have permission to manage calls.'
-            );
-
-        }
-
-
-
-        if (
-            (int)$call->university_id
-            !==
-            (int)$user->resolvedUniversityId()
-        ) {
-
-
-            throw new AuthorizationException(
-                'You cannot access calls from another university.'
-            );
-
-        }
-
-    }
-
 }

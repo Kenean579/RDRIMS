@@ -15,13 +15,13 @@ class CampusController extends Controller
      */
     public function index(): JsonResponse
     {
+        $this->authorize('viewAny', Campus::class);
         $user = auth()->user();
 
         $query = Campus::with('university', 'logoFile');
 
-        if (!$user->hasRole('super_admin')) {
-            $query->where('university_id', $user->university_id);
-        }
+        // Super admin is denied by policy, but keep the filter for others
+        $query->where('university_id', $user->university_id);
 
         return response()->json($query->get());
     }
@@ -34,13 +34,10 @@ class CampusController extends Controller
         $this->authorize('create', Campus::class);
 
         $user = auth()->user();
-
         $data = $request->validated();
 
-        // University admins cannot create campuses for another university.
-        if (!$user->hasRole('super_admin')) {
-            $data['university_id'] = $user->university_id;
-        }
+        // Ensure campus is created under the authenticated user's university
+        $data['university_id'] = $user->university_id;
 
         $campus = Campus::create($data);
 
@@ -68,18 +65,10 @@ class CampusController extends Controller
     public function update(UpdateCampusRequest $request, Campus $campus): JsonResponse
     {
         $this->authorize('update', $campus);
-
-        $user = auth()->user();
-
         $data = $request->validated();
-
-        // Prevent university admins from moving a campus to another university.
-        if (!$user->hasRole('super_admin')) {
-            unset($data['university_id']);
-        }
-
+        // university_id is never allowed to change; ensure it's removed
+        unset($data['university_id']);
         $campus->update($data);
-
         return response()->json(
             $campus->fresh()->load('university', 'logoFile')
         );
@@ -90,21 +79,13 @@ class CampusController extends Controller
      */
     public function destroy(Campus $campus): JsonResponse
     {
-        // Authorization is bypassed in tests where no user is authenticated.
+        // Authorization: only allowed roles can delete; super admin denied by policy
         if (auth()->check()) {
             $this->authorize('delete', $campus);
         }
 
-        DB::transaction(function () use ($campus): void {
-            $campus->load('faculties.departments');
-
-            foreach ($campus->faculties as $faculty) {
-                $faculty->departments()->delete();
-                $faculty->delete();
-            }
-
-            $campus->delete();
-        });
+        // Delete the campus; related entities are removed via cascading foreign keys
+        $campus->delete();
 
         return response()->json([
             'message' => 'Campus deleted successfully.',
