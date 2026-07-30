@@ -21,7 +21,7 @@ class OutputController extends Controller
     {
         $user = auth()->user();
 
-        $query = Output::with(['category', 'status', 'subtype', 'participantEntries.user', 'participantEntries.participantType'])
+        $query = Output::with(['category', 'status', 'subtype', 'participants'])
             ->when($request->status, fn($q) => $q->whereHas('status', fn($s) => $s->where('name', $request->status)))
             ->when($request->category, fn($q) => $q->whereHas('category', fn($c) => $c->where('name', $request->category)))
             ->when($request->student_level, fn($q) => $q->whereHas('studentLevel', fn($sl) => $sl->where('name', $request->student_level)))
@@ -32,7 +32,7 @@ class OutputController extends Controller
         if ($user && !$user->hasRole('super_admin')) {
             if ($user->hasRole('student')) {
                 // Students see only their own outputs
-                $query->whereHas('participantEntries', function ($q) use ($user) {
+                $query->whereHas('participants', function ($q) use ($user) {
                     $q->where('user_id', $user->id)
                       ->whereHas('participantType', fn($pt) => $pt->where('name', 'student'));
                 });
@@ -54,7 +54,7 @@ class OutputController extends Controller
      */
     public function publicIndex(Request $request): JsonResponse
     {
-        $outputs = Output::with(['category', 'studentLevel', 'subtype', 'participantEntries.user', 'participantEntries.participantType'])
+        $outputs = Output::with(['category', 'studentLevel', 'subtype', 'participants'])
             ->whereHas('status', fn($s) => $s->where('name', 'approved'))
             ->when($request->category, fn($q) => $q->whereHas('category', fn($c) => $c->where('name', $request->category)))
             ->when($request->student_level, fn($q) => $q->whereHas('studentLevel', fn($sl) => $sl->where('name', $request->student_level)))
@@ -74,8 +74,8 @@ class OutputController extends Controller
             $participants = $data['participants'] ?? [];
             unset($data['participants']);
 
-            $status = \App\Models\OutputStatus::where('name', 'submitted')->first();
-            $output = Output::create([...$data, 'status_id' => $status->id]);
+            // Use the service layer to create output with audit fields
+            $output = $this->outputService->create($data, auth()->user()->id);
 
             // Auto-add student as participant for student outputs
             if ($output->category->name === 'student' && auth()->check()) {
@@ -98,14 +98,14 @@ class OutputController extends Controller
                 }
             }
 
-            return response()->json($output->load('category', 'status', 'participants.user'), 201);
+            return response()->json($output->load('category', 'status', 'participants'), 201);
         });
     }
 
     public function show(Output $output): JsonResponse
     {
         $this->authorize('view', $output);
-        return response()->json($output->load('category', 'status', 'participantEntries.user', 'participantEntries.participantType', 'files', 'project'));
+        return response()->json($output->load('category', 'status', 'participants', 'files', 'project'));
     }
 
     public function update(UpdateOutputRequest $request, Output $output): JsonResponse
@@ -122,11 +122,62 @@ class OutputController extends Controller
         return response()->json(['message' => 'Output deleted.']);
     }
 
-    public function changeStatus(ChangeOutputStatusRequest $request, Output $output): JsonResponse
+    public function submit(Output $output): JsonResponse
     {
-        $this->authorize('changeStatus', $output);
-        $this->outputService->changeStatus($output, $request->status_id);
-        return response()->json(['message' => 'Status updated.']);
+        $this->authorize('submit', $output);
+        
+        try {
+            $output = $this->outputService->submit($output, auth()->user()->id);
+            return response()->json($output->load('status'));
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+    }
+
+    public function verify(Output $output): JsonResponse
+    {
+        $this->authorize('verify', $output);
+        
+        $output = $this->outputService->verify($output, auth()->user()->id);
+        return response()->json($output->load('verifiedBy'));
+    }
+
+    public function approve(Output $output): JsonResponse
+    {
+        $this->authorize('approve', $output);
+        
+        try {
+            $output = $this->outputService->approve($output, auth()->user()->id);
+            return response()->json($output->load('status'));
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+    }
+
+    public function reject(Request $request, Output $output): JsonResponse
+    {
+        $this->authorize('reject', $output);
+        
+        $request->validate(['reason' => 'nullable|string|max:1000']);
+        
+        try {
+            $output = $this->outputService->reject($output, auth()->user()->id, $request->reason);
+            return response()->json($output->load('status'));
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
+    }
+
+    public function publish(Output $output): JsonResponse
+    {
+        $this->authorize('publish', $output);
+        
+        try {
+            $output = $this->outputService->publish($output, auth()->user()->id);
+            return response()->json($output->load('status'));
+        } catch (\InvalidArgumentException $e) {
+            return response()->json(['message' => $e->getMessage()], 422);
+        }
     }
 
     public function getSubtypesByLevel(Request $request): JsonResponse

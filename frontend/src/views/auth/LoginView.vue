@@ -125,7 +125,9 @@ async function handleLogin() {
   loading.value = false
   if (success) {
     const redirect = route.query.redirect
-    router.push(redirect ? String(redirect) : '/app/dashboard')
+    console.log('Dashboard route',router.getRoutes().filter(r => r.name === "Dashboard"))
+    console.log('success');
+    router.push({name: "Dashboard"});
   }
 }
 </script>

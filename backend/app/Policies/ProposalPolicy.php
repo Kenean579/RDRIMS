@@ -3,6 +3,7 @@
 namespace App\Policies;
 
 use App\Models\Proposal;
+use App\Models\ProposalStatus;
 use App\Models\User;
 
 class ProposalPolicy

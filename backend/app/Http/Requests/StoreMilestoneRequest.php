@@ -14,9 +14,9 @@ class StoreMilestoneRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'project_id' => 'required|exists:projects,id',
-            'title' => 'required',
+            'title' => 'required|string|max:255',
             'due_date' => 'required|date',
+            'status_id' => 'sometimes|exists:milestone_statuses,id',
         ];
     }
 }

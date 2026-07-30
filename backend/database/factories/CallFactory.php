@@ -31,10 +31,10 @@ class CallFactory extends Factory
             'closes_at' => now()->addDays(30),
             'is_featured' => false,
             'is_public' => true,
-            
+
             // Required field - set to 1 by default for tests
             'university_id' => 1,
-            
+
             // Optional hierarchical fields
             'academic_year_id' => null,
             'guideline_file_id' => null,
@@ -63,14 +63,14 @@ class CallFactory extends Factory
     public function closed(): static
     {
         $closedStatus = CallStatus::firstOrCreate(['name' => 'closed'], ['description' => 'Closed']);
-        
+
         return $this->state(fn (array $attributes) => [
             'status_id' => $closedStatus->id,
             'deadline' => now()->subDays(1),
             'closes_at' => now()->subDays(1),
         ]);
     }
-
+c
     /**
      * Indicate that the call belongs to a university.
      */

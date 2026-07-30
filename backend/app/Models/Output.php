@@ -7,22 +7,28 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Output extends Model
 {
-    use HasFactory, \App\Traits\HasDynamicStatus;
+    use HasFactory, SoftDeletes, \App\Traits\HasDynamicStatus, \App\Traits\HierarchicalScope;
 
     protected $fillable = [
         'category_id', 'student_level_id', 'subtype_id', 'proposal_id',
         'title', 'abstract', 'partner_id', 'project_id', 'status_id',
         'start_date', 'end_date', 'feedback', 'academic_year_id', 'budget',
-        'research_center_id'
+        'research_center_id', 'created_by', 'updated_by', 'verified_by', 'verified_at'
+    ];
+
+    protected $guarded = [
+        'status_id', 'verified_by', 'verified_at'
     ];
 
     protected $casts = [
         'start_date' => 'date',
         'end_date'   => 'date',
         'budget'     => 'decimal:2',
+        'verified_at' => 'datetime',
     ];
 
     public function category(): BelongsTo
@@ -101,8 +107,99 @@ class Output extends Model
                     ->using(OutputParticipant::class);
     }
 
-    public function participantEntries(): HasMany
+    public function createdBy(): BelongsTo
     {
-        return $this->hasMany(OutputParticipant::class);
+        return $this->belongsTo(User::class, 'created_by');
+    }
+
+    public function updatedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'updated_by');
+    }
+
+    public function verifiedBy(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'verified_by');
+    }
+
+    /**
+     * Check if output is verified
+     */
+    public function isVerified(): bool
+    {
+        return $this->verified_at !== null;
+    }
+
+    /**
+     * Check if output is draft
+     */
+    public function isDraft(): bool
+    {
+        return $this->status?->name === 'draft';
+    }
+
+    /**
+     * Check if output is submitted
+     */
+    public function isSubmitted(): bool
+    {
+        return $this->status?->name === 'submitted';
+    }
+
+    /**
+     * Check if output is published
+     */
+    public function isPublished(): bool
+    {
+        return $this->status?->name === 'published';
+    }
+
+    /**
+     * Check if output can be submitted
+     */
+    public function canSubmit(): bool
+    {
+        return $this->isDraft();
+    }
+
+    /**
+     * Check if output can be published
+     */
+    public function canPublish(): bool
+    {
+        return $this->isVerified() && ($this->status?->name === 'approved');
+    }
+
+    /**
+     * Scope: For university (tenant isolation)
+     */
+    public function scopeForUniversity($query, int $universityId)
+    {
+        return $query->whereHas('participants.user', fn($q) => $q->where('university_id', $universityId))
+            ->orWhereHas('project.pi', fn($q) => $q->where('university_id', $universityId));
+    }
+
+    /**
+     * Scope: By status
+     */
+    public function scopeByStatus($query, string $statusName)
+    {
+        return $query->whereHas('status', fn($q) => $q->where('name', $statusName));
+    }
+
+    /**
+     * Scope: By category
+     */
+    public function scopeByCategory($query, string $categoryName)
+    {
+        return $query->whereHas('category', fn($q) => $q->where('name', $categoryName));
+    }
+
+    /**
+     * Scope: Verified outputs
+     */
+    public function scopeVerified($query)
+    {
+        return $query->whereNotNull('verified_at');
     }
 }

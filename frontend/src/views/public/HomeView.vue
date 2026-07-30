@@ -73,15 +73,18 @@ onMounted(async () => {
 async function fetchStats() {
   loading.value = true
   try {
-    const uniRes = await api.get('/universities')
-    const callsRes = await api.get('/calls', { params: { status: 'open', per_page: 1 } })
-    const pubRes = await api.get('/publications', { params: { per_page: 1 } })
-    const commRes = await api.get('/community-problems', { params: { status: 'completed', per_page: 1 } })
+    // Use Promise.allSettled to handle individual endpoint failures gracefully
+    const [uniRes, callsRes, pubRes, commRes] = await Promise.allSettled([
+      api.get('/universities').catch(() => ({ data: { data: [] } })),
+      api.get('/calls', { params: { status: 'open', per_page: 1 } }).catch(() => ({ data: { meta: { total: 0 } } })),
+      api.get('/publications', { params: { per_page: 1 } }).catch(() => ({ data: { meta: { total: 0 } } })),
+      api.get('/community-problems', { params: { status: 'completed', per_page: 1 } }).catch(() => ({ data: { meta: { total: 0 } } }))
+    ])
     
-    stats.value.universities = uniRes.data?.data?.length || uniRes.data?.length || 0
-    stats.value.openCalls = callsRes.data?.meta?.total || callsRes.data?.total || 0
-    stats.value.publications = pubRes.data?.meta?.total || pubRes.data?.total || 0
-    stats.value.problemsSolved = commRes.data?.meta?.total || commRes.data?.total || 0
+    stats.value.universities = uniRes.status === 'fulfilled' ? (uniRes.value.data?.data?.length || uniRes.value.data?.length || 0) : 0
+    stats.value.openCalls = callsRes.status === 'fulfilled' ? (callsRes.value.data?.meta?.total || callsRes.value.data?.total || 0) : 0
+    stats.value.publications = pubRes.status === 'fulfilled' ? (pubRes.value.data?.meta?.total || pubRes.value.data?.total || 0) : 0
+    stats.value.problemsSolved = commRes.status === 'fulfilled' ? (commRes.value.data?.meta?.total || commRes.value.data?.total || 0) : 0
   } catch (err) {
     console.error('Failed to load stats', err)
   } finally {

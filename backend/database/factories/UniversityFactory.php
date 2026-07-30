@@ -17,8 +17,13 @@ class UniversityFactory extends Factory
      */
     public function definition(): array
     {
+        $name = $this->faker->company() . ' University';
+        $code = strtoupper($this->faker->unique()->lexify('???'));
+        
         return [
-            //
+            'name' => $name,
+            'code' => $code,
+            'location' => $this->faker->city() . ', ' . $this->faker->country(),
         ];
     }
 }

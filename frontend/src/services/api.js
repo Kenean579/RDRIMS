@@ -6,7 +6,11 @@ const CACHE_DURATION = 50000 // 50 seconds cache duration
 
 const api = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000/api',
-  headers: { 'Accept': 'application/json' },
+  headers: {
+    'Content-Type': 'application/json',
+    Accept: 'application/json'
+  },
+
   timeout: 60000,
   withCredentials: true,
   // Add compression support
@@ -50,7 +54,7 @@ api.interceptors.request.use(config => {
   const isPublic = isAuthFree || isPublicRead
   const token = localStorage.getItem('rdrims_token')
   if (token && !isPublic) config.headers.Authorization = `Bearer ${token}`
-  
+
   // Inject global hierarchical context into GET queries
   const CONTEXT_EXCLUDED = ['/universities', '/campuses', '/faculties', '/departments', '/lookups', '/settings', '/dashboard', '/calls']
   if (config.method === 'get' || config.method === 'GET') {
@@ -70,7 +74,7 @@ api.interceptors.request.use(config => {
       // Pinia not yet initialized, ignore
     }
   }
-  
+
   return config
 }, error => Promise.reject(error))
 

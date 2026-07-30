@@ -3,14 +3,15 @@
 namespace App\Policies;
 
 use App\Models\Call;
+// use App\Traits\HasTenantPermission;
 use App\Models\User;
 
 /**
  * CallPolicy
- * 
+ *
  * Permission-based authorization for Call resources.
  * Follows the production-ready pattern from Campus/Faculty/Department/Research Center modules.
- * 
+ *
  * Key Features:
  * - Dynamic permission system (call.*)
  * - Strict tenant isolation
@@ -19,9 +20,11 @@ use App\Models\User;
  */
 class CallPolicy
 {
+    // use HasTenantPermission;
+
     /**
      * Determine whether the user can view any calls.
-     * 
+     *
      * Public access preserved for portal.
      * Authenticated users require call.viewAny permission.
      */
@@ -43,7 +46,7 @@ class CallPolicy
 
     /**
      * Determine whether the user can view the call.
-     * 
+     *
      * Public calls: Accessible to unauthenticated users if published
      * Private calls: Require authentication + permission + tenant ownership
      */
@@ -51,8 +54,8 @@ class CallPolicy
     {
         // Unauthenticated: only public, published calls
         if (!$user) {
-            return $call->is_public 
-                && $call->published_at !== null 
+            return $call->is_public
+                && $call->published_at !== null
                 && $call->published_at <= now();
         }
 
@@ -72,7 +75,7 @@ class CallPolicy
 
     /**
      * Determine whether the user can create calls.
-     * 
+     *
      * Requires call.create permission.
      * Super admin explicitly denied.
      */
@@ -89,7 +92,7 @@ class CallPolicy
 
     /**
      * Determine whether the user can update the call.
-     * 
+     *
      * Requires call.update permission + tenant ownership.
      * Additional restrictions enforced by CallService (status-based editing).
      */
@@ -101,13 +104,13 @@ class CallPolicy
         }
 
         // Check permission + tenant ownership
-        return $this->sameUniversity($user, $call) 
+        return $this->sameUniversity($user, $call)
             && $user->hasPermission('call.update');
     }
 
     /**
      * Determine whether the user can delete the call.
-     * 
+     *
      * Requires call.delete permission + tenant ownership.
      * Additional business rules enforced in controller (proposal check).
      */
@@ -119,7 +122,7 @@ class CallPolicy
         }
 
         // Check permission + tenant ownership
-        return $this->sameUniversity($user, $call) 
+        return $this->sameUniversity($user, $call)
             && $user->hasPermission('call.delete');
     }
 
@@ -134,7 +137,7 @@ class CallPolicy
 
     /**
      * Determine whether the user can permanently delete the call.
-     * 
+     *
      * Force delete denied for all users (including super_admin).
      * Use soft delete to preserve historical data integrity.
      */
@@ -145,20 +148,15 @@ class CallPolicy
         return false;
     }
 
-    /**
+    /**c
      * Verify tenant ownership.
-     * 
+     *
      * Ensures the call belongs to the same university as the user.
-     * 
+     *
      * @param User $user
      * @param Call $call
      * @return bool True if user owns the call's university
      */
-    private function sameUniversity(User $user, Call $call): bool
-    {
-        return $user->university_id !== null 
-            && $call->university_id !== null 
-            && $user->university_id === $call->university_id;
-    }
+
 }
 

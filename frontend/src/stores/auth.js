@@ -3,7 +3,20 @@ import { ref, computed } from 'vue'
 import api from '@/services/api'
 
 export const useAuthStore = defineStore('auth', () => {
-  const user = ref(JSON.parse(localStorage.getItem('rdrims_user') || 'null'))
+  // Safely parse user from localStorage with error handling
+  let initialUser = null
+  try {
+    const storedUser = localStorage.getItem('rdrims_user')
+    if (storedUser && storedUser !== 'undefined' && storedUser !== 'null') {
+      initialUser = JSON.parse(storedUser)
+    }
+  } catch (e) {
+    console.warn('Failed to parse stored user, clearing localStorage:', e)
+    localStorage.removeItem('rdrims_user')
+    localStorage.removeItem('rdrims_token')
+  }
+
+  const user = ref(initialUser)
   const token = ref(localStorage.getItem('rdrims_token') || '')
   const loading = ref(false)
   const error = ref(null)
@@ -40,7 +53,7 @@ export const useAuthStore = defineStore('auth', () => {
       'finance_officer': 5, // Functional but university-level
       'ethics_officer': 5  // Functional but university-level
     }
-    
+
     if (!userRoles.value.length) return 0
     return Math.max(...userRoles.value.map(role => roleHierarchy[role] || 0))
   })
@@ -65,10 +78,10 @@ export const useAuthStore = defineStore('auth', () => {
   // Get the highest-level role for display purposes
   const primaryRole = computed(() => {
     if (!userRoles.value.length) return 'Guest'
-    
+
     const roleDisplayOrder = [
       'super_admin',
-      'research_admin', 
+      'research_admin',
       'campus_admin',
       'faculty_admin',
       'department_head',
@@ -79,14 +92,14 @@ export const useAuthStore = defineStore('auth', () => {
       'reviewer',
       'student'
     ]
-    
+
     // Return the highest-level role for display
     for (const role of roleDisplayOrder) {
       if (userRoles.value.includes(role)) {
         return role.replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
       }
     }
-    
+
     return userRoles.value[0].replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
   })
 
@@ -97,7 +110,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   // Check if user is an admin (any admin level)
   const isAdmin = computed(() => {
-    return userRoles.value.some(role => 
+    return userRoles.value.some(role =>
       ['super_admin', 'research_admin', 'campus_admin', 'faculty_admin', 'department_head', 'director', 'finance_officer', 'ethics_officer'].includes(role)
     )
   })
@@ -130,12 +143,16 @@ export const useAuthStore = defineStore('auth', () => {
   async function login(email, password) {
     loading.value = true; error.value = null
     try {
-      const { data } = await api.post('/login', { email, password })
+      const { data } = await api.post('/login', { email, password });
       token.value = data.access_token; user.value = data.user
+      console.log("Token: ", token.value);
       localStorage.setItem('rdrims_token', data.access_token)
       localStorage.setItem('rdrims_user', JSON.stringify(data.user))
       return true
-    } catch (err) { error.value = err.response?.data?.message || 'Login failed'; return false }
+    } catch (err) {
+      console.log("Error", err);
+      error.value = err.response?.data?.message || 'Login failed'; return false
+    }
     finally { loading.value = false }
   }
 
@@ -182,7 +199,7 @@ export const useAuthStore = defineStore('auth', () => {
   function clearError() { error.value = null }
 
   async function logout() {
-    try { await api.post('/logout') } catch (e) {}
+    try { await api.post('/logout') } catch (e) { }
     token.value = ''; user.value = null
     localStorage.removeItem('rdrims_token'); localStorage.removeItem('rdrims_user')
     window.location.href = '/login'
@@ -214,16 +231,16 @@ export const useAuthStore = defineStore('auth', () => {
     finally { loading.value = false }
   }
 
-  return { 
-    user, token, loading, error, 
-    isAuthenticated, 
-    userRoles, userPermissions, 
+  return {
+    user, token, loading, error,
+    isAuthenticated,
+    userRoles, userPermissions,
     hierarchicalLevel, canManageLevel,
-    hasRole, hasPermission, 
+    hasRole, hasPermission,
     primaryRole, allRoles,
     isAdmin, isFunctionalAdmin,
     isProfileComplete,
     userScope,
-    login, register, fetchUser, updateProfile, completeProfile, clearError, logout 
+    login, register, fetchUser, updateProfile, completeProfile, clearError, logout
   }
 })

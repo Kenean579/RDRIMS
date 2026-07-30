@@ -6,20 +6,54 @@ use App\Models\Call;
 use App\Models\CallStatus;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Safe\info;
 
 /**
  * CallService
- * 
+ *
  * Business logic layer for Call operations.
  * Handles status transitions, deletion rules, edit restrictions, and visibility scoping.
  */
 class CallService
 {
+
+    public static function createCall(array $data, User $user): Call
+    {
+        DB::beginTransaction();
+        try {
+            // Set created_by
+            $data['created_by'] = $user->id;
+
+            // Set default thematic_areas if empty
+            if (empty($data['thematic_areas'])) {
+                $data['thematic_areas'] = 'General';
+            }
+
+            // Create the call
+            $call = Call::create($data);
+
+            // Audit log (optional)
+            Log::info('Call created', [
+                'call_id' => $call->id,
+                'created_by' => $user->id,
+                'university_id' => $call->university_id,
+            ]);
+
+            DB::commit();
+            return $call;
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Failed to create call: ' . $e->getMessage());
+            throw $e;
+        }
+    }
     /**
      * Check if a call can be deleted.
-     * 
+     *
      * Prevent deletion if the call has proposals to maintain data integrity.
-     * 
+     *
      * @param Call $call
      * @return bool True if deletable, false if has proposals
      */
@@ -31,11 +65,11 @@ class CallService
 
     /**
      * Validate status transition.
-     * 
+     *
      * Business Rules (from user approval):
      * - Draft → Open → Closed (linear progression)
      * - No reopening (Closed → Open not allowed)
-     * 
+     *
      * @param Call $call
      * @param int $newStatusId
      * @return bool True if transition is valid
@@ -66,23 +100,23 @@ class CallService
 
     /**
      * Check if a call can be edited based on its status.
-     * 
+     *
      * Business Rules (from user approval):
      * - Draft status: All fields editable
      * - Open/Closed status: Restrict editing of workflow-critical fields
-     * 
+     *
      * Immutable fields once Open/Closed:
      * - university_id (always immutable)
      * - campus_id, faculty_id, department_id, research_center_id
      * - deadline (affects proposal submissions)
      * - thematic_areas (affects proposal targeting)
-     * 
+     *
      * Editable fields when Open/Closed:
      * - title, description (clarifications allowed)
      * - is_public, is_featured (visibility changes allowed)
      * - guideline_file_id (document updates allowed)
      * - metadata (flexible data allowed)
-     * 
+     *
      * @param Call $call
      * @param array $fields Fields being edited
      * @return array ['allowed' => bool, 'restricted_fields' => array]
@@ -137,10 +171,10 @@ class CallService
 
     /**
      * Get calls visible to the user.
-     * 
+     *
      * This method extracts the complex visibility logic from the model scope
      * to improve testability and maintainability.
-     * 
+     *
      * Business Rules:
      * - Super Admin: Cannot access tenant calls (policy denies)
      * - Research Admin: University-level calls
@@ -149,7 +183,7 @@ class CallService
      * - Department Head: Department-level calls
      * - Director: Research Center calls
      * - Researcher/Reviewer/Student/Guest: Calls matching their hierarchy
-     * 
+     *
      * @param User $user
      * @param Builder $query
      * @return Builder

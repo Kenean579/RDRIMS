@@ -15,13 +15,15 @@ class ProposalReviewer extends Pivot
     public $timestamps = true;
 
     protected $fillable = [
-        'proposal_id', 'reviewer_id', 'assigned_by', 'assigned_at',
-        'submitted_at', 'overall_score', 'overall_comments', 'decision_id'
+        'proposal_id', 'reviewer_id', 'assigned_by', 'assigned_at', 'deadline_at',
+        // SECURITY: Removed 'submitted_at' and 'version' - timestamps are set by service only
+        'overall_score', 'overall_comments', 'decision_id'
     ];
 
     protected $casts = [
         'assigned_at'  => 'datetime',
         'submitted_at' => 'datetime',
+        'deadline_at'  => 'datetime',
     ];
 
     public function proposal(): BelongsTo

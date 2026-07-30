@@ -22,30 +22,6 @@ trait CreatesReviewerFixtures
 
     protected function seedReviewerFixtures(): void
     {
-        \DB::table('proposal_types')->truncate();
-        \DB::table('proposal_statuses')->truncate();
-
-        \DB::table('proposal_types')->insert([
-            'id' => 1,
-            'name' => 'research',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        \DB::table('proposal_statuses')->insert([
-            'id' => 1,
-            'name' => 'draft',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
-        \DB::table('proposal_statuses')->insert([
-            'id' => 2,
-            'name' => 'under_review',
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
-
         $university = \App\Models\University::firstOrCreate(
             ['code' => 'TEST'],
             ['name' => 'Test University', 'location' => 'Test Location']
@@ -53,24 +29,24 @@ trait CreatesReviewerFixtures
 
         $this->submitterUser = User::create([
             'name' => 'Submitter',
-            'email' => 'submitter@test.com',
-            'password' => Hash::make('password'),
+            'email' => 'submitter-' . uniqid() . '@test.com',
+            'password' => bcrypt('password'),
             'university_id' => $university->id,
             'is_active' => true,
         ]);
 
         $this->reviewerUser = User::create([
             'name' => 'Reviewer',
-            'email' => 'reviewer@test.com',
-            'password' => Hash::make('password'),
+            'email' => 'reviewer-' . uniqid() . '@test.com',
+            'password' => bcrypt('password'),
             'university_id' => $university->id,
             'is_active' => true,
         ]);
 
         $this->adminUser = User::create([
             'name' => 'Research Admin',
-            'email' => 'admin@test.com',
-            'password' => Hash::make('password'),
+            'email' => 'admin-' . uniqid() . '@test.com',
+            'password' => bcrypt('password'),
             'university_id' => $university->id,
             'is_active' => true,
         ]);
@@ -78,41 +54,79 @@ trait CreatesReviewerFixtures
         $reviewerRole = Role::firstOrCreate(['name' => 'reviewer']);
         $adminRole = Role::firstOrCreate(['name' => 'research_admin']);
 
-        $this->reviewerUser->roles()->attach($reviewerRole->id, [
-            'assigned_at' => now(),
-        ]);
+        // Only attach if not already attached
+        if (!$this->reviewerUser->roles()->where('role_id', $reviewerRole->id)->exists()) {
+            $this->reviewerUser->roles()->attach($reviewerRole->id, [
+                'assigned_at' => now(),
+            ]);
+        }
 
-        $this->adminUser->roles()->attach($adminRole->id, [
-            'assigned_at' => now(),
-        ]);
+        if (!$this->adminUser->roles()->where('role_id', $adminRole->id)->exists()) {
+            $this->adminUser->roles()->attach($adminRole->id, [
+                'assigned_at' => now(),
+            ]);
+        }
 
-        $this->criterion = ReviewCriterion::create([
-            'name' => 'Originality',
-            'description' => 'Test criterion',
-            'max_score' => 10,
-            'is_active' => true,
-        ]);
+        $this->criterion = ReviewCriterion::firstOrCreate(
+            ['name' => 'Originality'],
+            [
+                'description' => 'Test criterion',
+                'max_score' => 10,
+                'is_active' => true,
+            ]
+        );
 
-        $this->decision = ReviewDecision::create(['name' => 'accept']);
+        $this->decision = ReviewDecision::firstOrCreate(
+            ['name' => 'accept'],
+            ['name' => 'accept']
+        );
 
-        $this->proposal = Proposal::create([
-            'call_id' => null,
-            'type_id' => 1,
-            'title' => 'Test Proposal',
-            'abstract' => 'Abstract',
-            'objectives' => 'Objectives',
-            'methodology' => 'Methodology',
-            'keywords' => 'ai, health',
-            'budget' => 1000,
-            'status_id' => 2,
-            'submitted_by' => $this->submitterUser->id,
-            'submitted_at' => now(),
-        ]);
+        // Create or get proposal
+        $proposalType = \App\Models\ProposalType::firstOrCreate(
+            ['name' => 'research'],
+            ['name' => 'research']
+        );
 
-        $this->proposal->reviewers()->attach($this->reviewerUser->id, [
-            'assigned_by' => $this->adminUser->id,
-            'assigned_at' => now(),
-        ]);
+        $proposalStatus = \App\Models\ProposalStatus::firstOrCreate(
+            ['name' => 'under_review'],
+            ['name' => 'under_review']
+        );
+
+        // Find or create proposal with status_id
+        $existingProposal = Proposal::where('submitted_by', $this->submitterUser->id)
+            ->where('title', 'Test Proposal')
+            ->first();
+        
+        if ($existingProposal) {
+            $this->proposal = $existingProposal;
+        } else {
+            // Use raw insert to bypass guarded fields
+            $proposalId = \DB::table('proposals')->insertGetId([
+                'call_id' => null,
+                'type_id' => $proposalType->id,
+                'title' => 'Test Proposal',
+                'abstract' => 'Abstract',
+                'objectives' => 'Objectives',
+                'methodology' => 'Methodology',
+                'keywords' => 'ai, health',
+                'budget' => 1000,
+                'status_id' => $proposalStatus->id,
+                'submitted_by' => $this->submitterUser->id,
+                'submitted_at' => now(),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+            $this->proposal = Proposal::find($proposalId);
+        }
+
+        // Attach reviewer if not already attached
+        if (!$this->proposal->reviewers()->where('reviewer_id', $this->reviewerUser->id)->exists()) {
+            $this->proposal->reviewers()->attach($this->reviewerUser->id, [
+                'assigned_by' => $this->adminUser->id,
+                'assigned_at' => now(),
+                'deadline_at' => now()->addDays(14),  // 14 days from now
+            ]);
+        }
 
         $this->assignment = ProposalReviewer::where('proposal_id', $this->proposal->id)
             ->where('reviewer_id', $this->reviewerUser->id)

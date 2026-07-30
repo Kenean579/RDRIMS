@@ -3,6 +3,7 @@
 namespace App\Jobs;
 
 use App\Models\DetectionRequest;
+use App\Services\DetectionService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -17,10 +18,10 @@ class ProcessDetectionJob implements ShouldQueue
         private DetectionRequest $detectionRequest,
     ) {}
 
-    public function handle(): void
+    public function handle(DetectionService $service): void
     {
         // Mark as processing
-        $this->detectionRequest->update(['status_id' => 2]); // processing
+        $service->markProcessing($this->detectionRequest);
 
         try {
             // For now: simple local similarity check (placeholder)
@@ -28,18 +29,16 @@ class ProcessDetectionJob implements ShouldQueue
             $similarityScore = random_int(0, 100) / 100; // dummy
             $aiProbability = random_int(0, 100) / 100;   // dummy
 
-            $this->detectionRequest->results()->create([
-                'similarity_score' => $similarityScore,
-                'ai_probability' => $aiProbability,
-                'raw_response' => ['message' => 'Local detection completed.'],
-            ]);
+            // Complete request with results
+            $service->completeRequest(
+                $this->detectionRequest,
+                $similarityScore,
+                $aiProbability,
+                json_encode(['message' => 'Local detection completed.'])
+            );
 
-            $this->detectionRequest->update([
-                'status_id' => 3, // completed
-                'completed_at' => now(),
-            ]);
         } catch (\Exception $e) {
-            $this->detectionRequest->update(['status_id' => 4]); // failed
+            $service->markFailed($this->detectionRequest, $e->getMessage());
             \Illuminate\Support\Facades\Log::error("Detection background job failed for Request ID: {$this->detectionRequest->id}. Error: " . $e->getMessage());
         }
     }

@@ -18,7 +18,12 @@ class EthicsRequestFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'proposal_id' => \App\Models\Proposal::factory(),
+            'generated_pdf_path' => 'ethics/' . $this->faker->sha256() . '.pdf',
+            'submitted_to_irb' => false,
+            'approval_status_id' => \App\Models\EthicsApprovalStatus::firstOrCreate(['name' => 'pending'])->id,
+            'comments' => $this->faker->optional()->paragraph(),
+            'version' => 1,
         ];
     }
 }

@@ -12,6 +12,158 @@ use Illuminate\Support\Facades\DB;
 
 class OutputService
 {
+    /**
+     * Create a new output with proper initialization
+     */
+    public function create(array $data, int $userId): Output
+    {
+        return DB::transaction(function () use ($data, $userId) {
+            $data['created_by'] = $userId;
+            $data['updated_by'] = $userId;
+            
+            // Get draft status
+            $draftStatus = OutputStatus::where('name', 'draft')->first();
+            if (!$draftStatus) {
+                throw new \Exception('Draft status not found. Please seed output statuses.');
+            }
+            
+            // Unguard to set protected fields
+            Output::unguard();
+            $data['status_id'] = $draftStatus->id;
+            $output = Output::create($data);
+            Output::reguard();
+            
+            return $output->fresh();
+        });
+    }
+
+    /**
+     * Update an output with audit logging
+     */
+    public function update(Output $output, array $data, int $userId): Output
+    {
+        return DB::transaction(function () use ($output, $data, $userId) {
+            $data['updated_by'] = $userId;
+            
+            // Cannot update verified/published outputs
+            if ($output->isVerified() || $output->isPublished()) {
+                throw new \InvalidArgumentException('Cannot update verified or published outputs.');
+            }
+            
+            $output->update($data);
+            return $output->fresh();
+        });
+    }
+
+    /**
+     * Submit output for verification
+     */
+    public function submit(Output $output, int $userId): Output
+    {
+        return DB::transaction(function () use ($output, $userId) {
+            // Validation: must be in draft status
+            if (!$output->isDraft()) {
+                throw new \InvalidArgumentException('Only draft outputs can be submitted');
+            }
+            
+            // Validation: must have at least one participant
+            if ($output->participants()->count() === 0) {
+                throw new \InvalidArgumentException('Output must have at least one participant');
+            }
+            
+            $submittedStatus = OutputStatus::where('name', 'submitted')->first();
+            
+            Output::unguard();
+            $output->update([
+                'status_id' => $submittedStatus->id,
+                'updated_by' => $userId,
+            ]);
+            Output::reguard();
+            
+            return $output->fresh();
+        });
+    }
+
+    /**
+     * Verify output (admin only)
+     */
+    public function verify(Output $output, int $userId): Output
+    {
+        return DB::transaction(function () use ($output, $userId) {
+            Output::unguard();
+            $output->update([
+                'verified_by' => $userId,
+                'verified_at' => now(),
+                'updated_by' => $userId,
+            ]);
+            Output::reguard();
+            
+            return $output->fresh();
+        });
+    }
+
+    /**
+     * Approve output (change status to approved)
+     */
+    public function approve(Output $output, int $userId): Output
+    {
+        return DB::transaction(function () use ($output, $userId) {
+            $approvedStatus = OutputStatus::where('name', 'approved')->first();
+            
+            Output::unguard();
+            $output->update([
+                'status_id' => $approvedStatus->id,
+                'updated_by' => $userId,
+            ]);
+            Output::reguard();
+            
+            return $output->fresh();
+        });
+    }
+
+    /**
+     * Reject output
+     */
+    public function reject(Output $output, int $userId, string $reason = ''): Output
+    {
+        return DB::transaction(function () use ($output, $userId, $reason) {
+            $rejectedStatus = OutputStatus::where('name', 'rejected')->first();
+            
+            Output::unguard();
+            $output->update([
+                'status_id' => $rejectedStatus->id,
+                'feedback' => ($output->feedback ?? '') . "\n[REJECTED] " . $reason,
+                'updated_by' => $userId,
+            ]);
+            Output::reguard();
+            
+            return $output->fresh();
+        });
+    }
+
+    /**
+     * Publish output
+     */
+    public function publish(Output $output, int $userId): Output
+    {
+        return DB::transaction(function () use ($output, $userId) {
+            if (!$output->canPublish()) {
+                throw new \InvalidArgumentException('Output must be verified and approved before publishing');
+            }
+            
+            $publishedStatus = OutputStatus::where('name', 'published')->first();
+            
+            Output::unguard();
+            $output->update([
+                'status_id' => $publishedStatus->id,
+                'updated_by' => $userId,
+            ]);
+            Output::reguard();
+            
+            return $output->fresh();
+        });
+    }
+
     public function changeStatus(Output $output, $newStatusIdOrName): Output
     {
         $currentStatus = $output->status->name;

@@ -57,7 +57,10 @@ class ProposalResource extends JsonResource
                 'name' => $this->ethicsApprovalStatus->name,
             ]),
             'investigators' => $this->whenLoaded('investigators'),
-            'reviewers'     => $this->whenLoaded('reviewers'),
+            'reviewers'     => $this->whenLoaded('reviewers', function() {
+                // SECURITY: Use ProposalReviewerResource to control data exposure
+                return \App\Http\Resources\ProposalReviewerResource::collection($this->reviewers);
+            }),
             'finance_checks'=> $this->whenLoaded('financeChecks'),
             'ethics_requests'=> $this->whenLoaded('ethicsRequests'),
             'detection'     => $this->whenLoaded('detectionRequests'),
@@ -72,6 +75,10 @@ class ProposalResource extends JsonResource
             'approved_at'   => $this->approved_at?->toISOString(),
             'created_at'    => $this->created_at->toISOString(),
             'updated_at'    => $this->updated_at->toISOString(),
+            
+            // REVIEWER: Add dynamic attributes if set by controller
+            'reviewPivot' => $this->when(isset($this->reviewPivot), $this->reviewPivot),
+            'is_locked' => $this->when(isset($this->is_locked), $this->is_locked),
         ];
     }
 }

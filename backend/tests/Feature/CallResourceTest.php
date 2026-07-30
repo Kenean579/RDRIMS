@@ -12,7 +12,7 @@ use Tests\TestCase;
 
 /**
  * CallResourceTest
- * 
+ *
  * Verifies that the API Resource correctly filters sensitive fields
  * and only exposes public business data.
  */
@@ -33,7 +33,7 @@ class CallResourceTest extends TestCase
         $this->university = University::create(['name' => 'Test University', 'code' => 'TEST-UNI']);
         $this->openStatus = CallStatus::firstOrCreate(['name' => 'open']);
         $this->draftStatus = CallStatus::firstOrCreate(['name' => 'draft']);
-        
+
         $this->admin = User::create([
             'name' => 'Admin User',
             'email' => 'admin@example.com',
@@ -60,7 +60,7 @@ class CallResourceTest extends TestCase
         ]);
 
         $response = $this->getJson('/api/calls');
-        
+
         $response->assertOk();
         $response->assertJsonStructure([
             'data' => [
@@ -106,13 +106,13 @@ class CallResourceTest extends TestCase
         $this->assertArrayNotHasKey('faculty_id', $data);
         $this->assertArrayNotHasKey('department_id', $data);
         $this->assertArrayNotHasKey('research_center_id', $data);
-        
+
         // Internal fields should NOT be exposed
         $this->assertArrayNotHasKey('created_by', $data);
         $this->assertArrayNotHasKey('is_featured', $data);
         $this->assertArrayNotHasKey('is_public', $data);
         $this->assertArrayNotHasKey('metadata', $data);
-        
+
         // Public business data SHOULD be exposed
         $this->assertArrayHasKey('title', $data);
         $this->assertArrayHasKey('description', $data);
@@ -138,7 +138,7 @@ class CallResourceTest extends TestCase
         ]);
 
         $response = $this->getJson("/api/calls/{$call->id}");
-        
+
         $response->assertOk();
         $data = $response->json('data');
 
@@ -146,7 +146,7 @@ class CallResourceTest extends TestCase
         $this->assertArrayNotHasKey('university_id', $data);
         $this->assertArrayNotHasKey('campus_id', $data);
         $this->assertArrayNotHasKey('created_by', $data);
-        
+
         // Public business data SHOULD be exposed
         $this->assertArrayHasKey('id', $data);
         $this->assertArrayHasKey('title', $data);
@@ -171,10 +171,10 @@ class CallResourceTest extends TestCase
         ]);
 
         $response = $this->getJson("/api/calls/{$call->id}");
-        
+
         $data = $response->json('data');
         $this->assertArrayHasKey('creator', $data);
-        
+
         $creator = $data['creator'];
         $this->assertArrayHasKey('id', $creator);
         $this->assertArrayHasKey('name', $creator);
@@ -204,7 +204,7 @@ class CallResourceTest extends TestCase
         $this->assertArrayHasKey('id', $data);
         $this->assertArrayHasKey('title', $data);
         $this->assertArrayHasKey('creator', $data);
-        
+
         // Should NOT expose sensitive fields
         $this->assertArrayNotHasKey('university_id', $data);
         $this->assertArrayNotHasKey('created_by', $data);
@@ -240,7 +240,7 @@ class CallResourceTest extends TestCase
         // Should return updated data in resource format
         $this->assertArrayHasKey('id', $data);
         $this->assertEquals('Updated Title', $data['title']);
-        
+
         // Should NOT expose sensitive fields
         $this->assertArrayNotHasKey('university_id', $data);
         $this->assertArrayNotHasKey('created_by', $data);
@@ -272,7 +272,7 @@ class CallResourceTest extends TestCase
         $this->assertArrayHasKey('id', $data);
         $this->assertArrayHasKey('title', $data);
         $this->assertArrayHasKey('deadline', $data);
-        
+
         // Sensitive organizational data should NOT be visible
         $this->assertArrayNotHasKey('university_id', $data);
         $this->assertArrayNotHasKey('campus_id', $data);
@@ -296,10 +296,10 @@ class CallResourceTest extends TestCase
         ]);
 
         $response = $this->getJson("/api/calls/{$call->id}");
-        
+
         $data = $response->json('data');
         $this->assertArrayHasKey('status', $data);
-        
+
         $status = $data['status'];
         $this->assertArrayHasKey('id', $status);
         $this->assertArrayHasKey('name', $status);
@@ -325,7 +325,7 @@ class CallResourceTest extends TestCase
         ]);
 
         $response = $this->getJson("/api/calls/{$call->id}");
-        
+
         $data = $response->json('data');
         $this->assertArrayHasKey('proposals_count', $data);
         $this->assertIsInt($data['proposals_count']);
@@ -349,9 +349,9 @@ class CallResourceTest extends TestCase
         ]);
 
         $response = $this->getJson("/api/calls/{$call->id}");
-        
+
         $data = $response->json('data');
-        
+
         // Check timestamp format (ISO 8601)
         $this->assertStringContainsString('T', $data['created_at']);
         $this->assertStringContainsString('Z', $data['created_at']);

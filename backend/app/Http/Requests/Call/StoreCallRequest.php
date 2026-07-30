@@ -1,43 +1,65 @@
 <?php
+// app/Http/Requests/StoreCallRequest.php
 
 namespace App\Http\Requests\Call;
 
-use Illuminate\Foundation\Http\FormRequest;
 use App\Models\Call;
+use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreCallRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
-        // Policy will handle the actual permission check
         return $this->user()->can('create', Call::class);
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     */
+    protected function prepareForValidation(): void
+    {
+        // Ensure status is set (default to 'open' if not provided)
+        if (!$this->has('status_name') && !$this->has('status_id')) {
+            $this->merge(['status_name' => 'open']);
+        }
+    }
+
     public function rules(): array
     {
-        $user = $this->user();
-        $universityId = $user->university_id;
         return [
-            'title'               => ['required', 'string', 'max:255'],
-            'description'         => ['required', 'string'],
-            'deadline'            => ['required', 'date'],
-            'thematic_areas'      => ['nullable', 'string'],
-            'status_id'           => ['required', 'exists:call_statuses,id'],
-            'academic_year_id'    => ['nullable', 'exists:academic_years,id'],
-            'guideline_file_id'   => ['nullable', 'exists:files,id'],
-            'research_center_id'  => ['nullable', 'exists:research_centers,id', 'exists:research_centers,university_id,' . $universityId],
-            'campus_id'           => ['nullable', 'exists:campuses,id', 'exists:campuses,university_id,' . $universityId],
-            'faculty_id'          => ['nullable', 'exists:faculties,id', 'exists:faculties,university_id,' . $universityId],
-            'department_id'       => ['nullable', 'exists:departments,id', 'exists:departments,university_id,' . $universityId],
-            'is_public'           => ['sometimes', 'boolean'],
-            'is_featured'         => ['sometimes', 'boolean'],
-            'metadata'            => ['sometimes', 'array'],
+            // Basic fields
+            'title' => 'required|string|max:255',
+            'description' => 'required|string',
+            'deadline' => 'required|date|after:today',
+            'thematic_areas' => 'required|string',
+            'budget_limit' => 'nullable|numeric|min:0',
+
+            // Status – accept either name or ID
+            'status_name' => 'sometimes|string|exists:call_statuses,name',
+            'status_id' => 'sometimes|exists:call_statuses,id',
+
+            // Academic Year
+            'academic_year_id' => 'nullable|exists:academic_years,id',
+
+            // File
+            'guideline_file_id' => 'nullable|exists:files,id',
+
+            // Hierarchy
+            'university_id' => 'nullable|exists:universities,id',
+            'campus_id' => 'nullable|exists:campuses,id',
+            'faculty_id' => 'nullable|exists:faculties,id',
+            'department_id' => 'nullable|exists:departments,id',
+            'research_center_id' => 'nullable|exists:research_centers,id',
+
+            // Meta
+            'is_public' => 'boolean',
+            'is_featured' => 'boolean',
+            'metadata' => 'nullable|array',
+        ];
+    }
+
+    public function messages(): array
+    {
+        return [
+            'deadline.after' => 'The deadline must be a future date.',
         ];
     }
 }

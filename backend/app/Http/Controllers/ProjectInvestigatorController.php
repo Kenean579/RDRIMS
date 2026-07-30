@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\AddInvestigatorRequest;
+use App\Http\Resources\ProjectInvestigatorResource;
 use App\Models\Project;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -14,25 +16,29 @@ class ProjectInvestigatorController extends Controller
     public function index(Project $project): JsonResponse
     {
         $this->authorize('view', $project);
-        return response()->json($project->investigators()->with('user')->get());
+        
+        $investigators = $project->investigators()
+            ->with('user.department')
+            ->get();
+            
+        return response()->json(ProjectInvestigatorResource::collection($investigators));
     }
 
-    public function store(Request $request, Project $project): JsonResponse
+    public function store(AddInvestigatorRequest $request, Project $project): JsonResponse
     {
-        $this->authorize('update', $project);
-        $request->validate([
-            'user_id' => 'required|exists:users,id',
-            'role' => 'required|string|in:pi,co_pi,member',
-        ]);
-
-        $investigator = $project->investigators()->create($request->all());
-        return response()->json($investigator, 201);
+        $this->authorize('manageTeam', $project);
+        
+        $investigator = $project->investigators()->create($request->validated());
+        
+        return response()->json(new ProjectInvestigatorResource($investigator->load('user')), 201);
     }
 
     public function destroy(Project $project, int $investigatorId): JsonResponse
     {
-        $this->authorize('update', $project);
+        $this->authorize('manageTeam', $project);
+        
         $project->investigators()->findOrFail($investigatorId)->delete();
-        return response()->json(null, 204);
+        
+        return response()->json(['message' => 'Investigator removed successfully.'], 204);
     }
 }

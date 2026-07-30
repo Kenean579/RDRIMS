@@ -18,7 +18,12 @@ class OutputFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'title' => fake()->sentence(),
+            'abstract' => fake()->paragraph(),
+            'start_date' => now()->subMonths(6)->toDateString(),
+            'end_date' => now()->toDateString(),
+            'budget' => fake()->numberBetween(5000, 50000),
+            'status_id' => \App\Models\OutputStatus::where('name', 'draft')->first()?->id ?? 1,
         ];
     }
 }

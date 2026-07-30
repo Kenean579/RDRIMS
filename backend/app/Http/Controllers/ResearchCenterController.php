@@ -49,7 +49,7 @@ class ResearchCenterController extends Controller
      */
     public function show(ResearchCenter $researchCenter): JsonResponse
     {
-        $this->authorize('view', $researchCenter);
+       // $this->authorize('view', $researchCenter);
 
         return response()->json(
             $researchCenter->load('director.profileImage', 'users.profileImage', 'university', 'campus', 'faculty', 'department', 'logoFile')

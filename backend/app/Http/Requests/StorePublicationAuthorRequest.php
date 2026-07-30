@@ -15,10 +15,12 @@ class StorePublicationAuthorRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'user_id'               => 'nullable|exists:users,id',
-            'external_author_name'   => 'nullable|string|max:255',
-            'external_institution'   => 'nullable|string|max:255',
-            'author_order'           => 'required|integer|min:1',
+            'user_id' => 'nullable|exists:users,id',
+            'external_author_name' => 'nullable|string|max:255',
+            'external_institution' => 'nullable|string|max:255',
+            'author_order' => 'required|integer|min:1',
+            'contribution_role' => 'nullable|in:first_author,corresponding_author,co_author',
+            'is_corresponding' => 'nullable|boolean',
         ];
     }
 }

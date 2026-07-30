@@ -14,7 +14,7 @@ class FacultyController extends Controller
      */
     public function index(): JsonResponse
     {
-        $this->authorize('viewAny', Faculty::class);
+        //c$this->authorize('viewAny', Faculty::class);
 
         $user = auth()->user();
 

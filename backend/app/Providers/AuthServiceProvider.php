@@ -14,7 +14,10 @@ use App\Models\Expense;
 use App\Models\Faculty;
 use App\Models\File;
 use App\Models\FinanceCheck;
+use App\Models\Funding;
+use App\Models\FundingExpense;
 use App\Models\License;
+use App\Models\Milestone;
 use App\Models\MoU;
 use App\Models\Output;
 use App\Models\Partner;
@@ -42,7 +45,10 @@ use App\Policies\ExpensePolicy;
 use App\Policies\FacultyPolicy;
 use App\Policies\FilePolicy;
 use App\Policies\FinanceCheckPolicy;
+use App\Policies\FundingPolicy;
+use App\Policies\FundingExpensePolicy;
 use App\Policies\LicensePolicy;
+use App\Policies\MilestonePolicy;
 use App\Policies\MoUPolicy;
 use App\Policies\OutputPolicy;
 use App\Policies\PartnerPolicy;
@@ -81,6 +87,7 @@ class AuthServiceProvider extends ServiceProvider
         DetectionRequest::class => DetectionRequestPolicy::class,
         File::class => FilePolicy::class,
         Project::class => ProjectPolicy::class,
+        Milestone::class => MilestonePolicy::class,
         Task::class => TaskPolicy::class,
         Output::class => OutputPolicy::class,
         Patent::class => PatentPolicy::class,
@@ -89,6 +96,8 @@ class AuthServiceProvider extends ServiceProvider
         MoU::class => MoUPolicy::class,
         Expense::class => ExpensePolicy::class,
         Event::class => EventPolicy::class,
+        Funding::class => FundingPolicy::class,
+        FundingExpense::class => FundingExpensePolicy::class,
         Publication::class => PublicationPolicy::class,
         CommunityProblem::class => CommunityProblemPolicy::class,
         Report::class => ReportPolicy::class,

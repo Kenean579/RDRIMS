@@ -5,7 +5,7 @@ namespace App\Http\Requests;
 use Illuminate\Foundation\Http\FormRequest;
 
 class CampusAdminRequest extends FormRequest
-{c
+{
     public function authorize(): bool
     {
         // Only super admins can create campus admins

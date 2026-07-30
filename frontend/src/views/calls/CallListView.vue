@@ -268,7 +268,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, watch, computed } from 'vue'
+import { ref, reactive, computed, onMounted, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationStore } from '@/stores/notification'
@@ -291,7 +291,6 @@ const showCreate = ref(false)
 const editingCall = ref(null)
 const academicYears = ref([])
 const callStatuses = ref([])
-const thematicAreas = ref([])
 const files = ref([])
 const universities = ref([])
 const campuses = ref([])
@@ -305,57 +304,29 @@ const guidelineUploadFile = ref(null)
 const callForm = reactive({
   title: '', description: '', deadline: '', budget_limit: null,
   academic_year_id: '', status_id: '', thematic_areas: '', guideline_file_id: '',
-  target_scope: 'organization', // 'organization' | 'campus' | 'faculty' | 'department' | 'research_center'
+  target_scope: 'organization',
   university_id: '', campus_id: '', faculty_id: '', department_id: '', research_center_id: '',
   community_problem_id: ''
 })
 
-// ─── Computed: User hierarchy breadcrumb (read-only display) ───
+// ─── Computed: User hierarchy breadcrumb ───
 const userHierarchyBreadcrumb = computed(() => {
   const user = auth.user
   if (!user) return []
   const crumbs = []
-
-  // Build from user data — use generic terms
-  if (user.university?.name || user.university_name) {
-    crumbs.push(user.university?.name || user.university_name)
-  }
-  if (user.department?.faculty?.campus?.name) {
-    crumbs.push(user.department.faculty.campus.name)
-  } else if (user.campus_name) {
-    crumbs.push(user.campus_name)
-  }
-  if (user.department?.faculty?.name) {
-    crumbs.push(user.department.faculty.name)
-  } else if (user.faculty_name) {
-    crumbs.push(user.faculty_name)
-  }
-  if (user.department?.name) {
-    crumbs.push(user.department.name)
-  } else if (user.department_name) {
-    crumbs.push(user.department_name)
-  }
-  if (user.research_centers?.length) {
-    crumbs.push(user.research_centers[0].name)
-  }
-
-  // If super_admin, show "Platform (All Organizations)"
-  if (auth.hasRole('super_admin') && crumbs.length === 0) {
-    crumbs.push('Platform (All Organizations)')
-  }
-
+  if (user.university?.name) crumbs.push(user.university.name)
+  if (user.department?.faculty?.campus?.name) crumbs.push(user.department.faculty.campus.name)
+  if (user.department?.faculty?.name) crumbs.push(user.department.faculty.name)
+  if (user.department?.name) crumbs.push(user.department.name)
+  if (user.research_centers?.length) crumbs.push(user.research_centers[0].name)
+  if (auth.hasRole('super_admin') && crumbs.length === 0) crumbs.push('Platform (All Organizations)')
   return crumbs
 })
 
-// ─── Computed: Available target scopes (based on user role) ───
+// ─── Available target scopes ───
 const availableTargetScopes = computed(() => {
-  const scopes = []
+  const scopes = [{ value: 'organization', label: 'Entire Organization' }]
   const scope = auth.userScope
-
-  // Everyone can target their entire org
-  scopes.push({ value: 'organization', label: 'Entire Organization' })
-
-  // Narrower scopes available based on user hierarchy level
   if (['system', 'university', 'campus'].includes(scope) || auth.hasRole('super_admin')) {
     scopes.push({ value: 'campus', label: 'Specific Campus' })
   }
@@ -365,9 +336,7 @@ const availableTargetScopes = computed(() => {
   if (['system', 'university', 'campus', 'faculty', 'department'].includes(scope) || auth.hasRole('super_admin')) {
     scopes.push({ value: 'department', label: 'Specific Department' })
   }
-  // Research center is always an option
   scopes.push({ value: 'research_center', label: 'Specific Research Center' })
-
   return scopes
 })
 
@@ -388,86 +357,58 @@ const filteredDepartments = computed(() => {
 
 const filteredResearchCenters = computed(() => {
   let rc = researchCenters.value
-  
   if (callForm.department_id) {
     return rc.filter(r => r.parent_department_id == callForm.department_id)
   }
-  
   if (callForm.faculty_id) {
-    const deptIds = departments.value
-      .filter(d => d.faculty_id == callForm.faculty_id)
-      .map(d => d.id)
-    return rc.filter(r => 
-      r.parent_faculty_id == callForm.faculty_id || 
-      (r.parent_department_id && deptIds.includes(r.parent_department_id))
-    )
+    const deptIds = departments.value.filter(d => d.faculty_id == callForm.faculty_id).map(d => d.id)
+    return rc.filter(r => r.parent_faculty_id == callForm.faculty_id || (r.parent_department_id && deptIds.includes(r.parent_department_id)))
   }
-  
   if (callForm.campus_id) {
-    const facIds = faculties.value
-      .filter(f => f.campus_id == callForm.campus_id)
-      .map(f => f.id)
-    const deptIds = departments.value
-      .filter(d => facIds.includes(d.faculty_id))
-      .map(d => d.id)
-    return rc.filter(r => 
-      r.parent_campus_id == callForm.campus_id ||
-      (r.parent_faculty_id && facIds.includes(r.parent_faculty_id)) ||
-      (r.parent_department_id && deptIds.includes(r.parent_department_id))
-    )
+    const facIds = faculties.value.filter(f => f.campus_id == callForm.campus_id).map(f => f.id)
+    const deptIds = departments.value.filter(d => facIds.includes(d.faculty_id)).map(d => d.id)
+    return rc.filter(r => r.parent_campus_id == callForm.campus_id || (r.parent_faculty_id && facIds.includes(r.parent_faculty_id)) || (r.parent_department_id && deptIds.includes(r.parent_department_id)))
   }
-  
   if (callForm.university_id) {
-    const campIds = campuses.value
-      .filter(c => c.university_id == callForm.university_id)
-      .map(c => c.id)
-    const facIds = faculties.value
-      .filter(f => campIds.includes(f.campus_id))
-      .map(f => f.id)
-    const deptIds = departments.value
-      .filter(d => facIds.includes(d.faculty_id))
-      .map(d => d.id)
-    return rc.filter(r => 
-      r.parent_university_id == callForm.university_id ||
-      (r.parent_campus_id && campIds.includes(r.parent_campus_id)) ||
-      (r.parent_faculty_id && facIds.includes(r.parent_faculty_id)) ||
-      (r.parent_department_id && deptIds.includes(r.parent_department_id))
-    )
+    const campIds = campuses.value.filter(c => c.university_id == callForm.university_id).map(c => c.id)
+    const facIds = faculties.value.filter(f => campIds.includes(f.campus_id)).map(f => f.id)
+    const deptIds = departments.value.filter(d => facIds.includes(d.faculty_id)).map(d => d.id)
+    return rc.filter(r => r.parent_university_id == callForm.university_id || (r.parent_campus_id && campIds.includes(r.parent_campus_id)) || (r.parent_faculty_id && facIds.includes(r.parent_faculty_id)) || (r.parent_department_id && deptIds.includes(r.parent_department_id)))
   }
-  
   return rc
 })
 
+// ─── Fetch functions ───
 async function fetchCalls() {
   loading.value = true
   try {
     const { data } = await api.get('/calls')
     calls.value = data.data || data
-  } catch (e) {}
-  finally { loading.value = false }
+  } catch (e) {
+    console.error('Failed to fetch calls:', e)
+    notif.error('Failed to load calls.')
+  } finally {
+    loading.value = false
+  }
 }
 
 function viewCall(call) { selectedCall.value = call }
 
 function handleGuestApply() {
-  notif.warning('You do not have permission to submit proposals. If this was recently granted, please refresh the page to reload your permissions.')
+  notif.warning('You do not have permission to submit proposals.')
 }
 
 function editCall(call) {
   editingCall.value = call
-
-  // Derive target_scope from existing call data
-  let derivedScope = 'organization'
-  if (call.research_center_id) derivedScope = 'research_center'
-  else if (call.department_id) derivedScope = 'department'
-  else if (call.faculty_id) derivedScope = 'faculty'
-  else if (call.campus_id) derivedScope = 'campus'
-
+  const derivedScope = call.research_center_id ? 'research_center' :
+                        call.department_id ? 'department' :
+                        call.faculty_id ? 'faculty' :
+                        call.campus_id ? 'campus' : 'organization'
   Object.assign(callForm, {
     title: call.title,
     description: call.description,
     deadline: call.deadline?.substring(0, 10) || '',
-    budget_limit: call.budget_limit,
+    budget_limit: call.metadata?.budget_limit || null,
     academic_year_id: call.academic_year_id || '',
     status_id: call.status_id || '',
     thematic_areas: call.thematic_areas || '',
@@ -480,7 +421,7 @@ function editCall(call) {
     research_center_id: call.research_center_id || '',
     community_problem_id: call.community_problem_id || ''
   })
-  // Auto-set scope based on role
+  showCreate.value = true
   autoSetScopeByRole()
 }
 
@@ -501,43 +442,27 @@ function autoSetScopeByRole() {
   const user = auth.user
   if (!user) return
   
-  // Super Admin: No auto-restriction (can scope to any level)
-  if (auth.hasRole('super_admin')) {
-    // Default target_scope stays 'organization', admin can change it
-    return
-  }
+  if (auth.hasRole('super_admin')) return
   
-  // Research Admin: University fixed to their university
   if (auth.hasRole('research_admin') && !auth.hasRole('super_admin')) {
-    if (user.university_id) {
-      callForm.university_id = user.university_id
-    } else if (user.department_id) {
-      callForm.university_id = user.department?.faculty?.campus?.university_id || ''
-    }
-    // Default to organization-wide within their university
-    if (!callForm.target_scope || callForm.target_scope === '') callForm.target_scope = 'organization'
+    if (user.university_id) callForm.university_id = user.university_id
   }
   
-  // Campus Admin: Campus fixed, default scope to campus
   if (auth.hasRole('campus_admin') && !auth.hasRole('research_admin', 'super_admin')) {
     if (user.department_id) {
       callForm.university_id = user.department?.faculty?.campus?.university_id || ''
       callForm.campus_id = user.department?.faculty?.campus_id || ''
     }
-    if (!callForm.target_scope || callForm.target_scope === '') callForm.target_scope = 'organization'
   }
   
-  // Faculty Admin: Faculty fixed, default scope to faculty
   if (auth.hasRole('faculty_admin') && !auth.hasRole('campus_admin', 'research_admin', 'super_admin')) {
     if (user.department_id) {
       callForm.university_id = user.department?.faculty?.campus?.university_id || ''
       callForm.campus_id = user.department?.faculty?.campus_id || ''
       callForm.faculty_id = user.department?.faculty_id || ''
-    }hey
-    if (!callForm.target_scope || callForm.target_scope === '') callForm.target_scope = 'organization'
+    }
   }
   
-  // Department Head: Department fixed, default scope to department
   if (auth.hasRole('department_head') && !auth.hasRole('faculty_admin', 'campus_admin', 'research_admin', 'super_admin')) {
     if (user.department_id) {
       callForm.university_id = user.department?.faculty?.campus?.university_id || ''
@@ -548,7 +473,6 @@ function autoSetScopeByRole() {
     callForm.target_scope = 'department'
   }
   
-  // Director: Research center fixed, scope to center
   if (auth.hasRole('director') && !auth.hasRole('department_head', 'faculty_admin', 'campus_admin', 'research_admin', 'super_admin')) {
     if (user.research_centers && user.research_centers.length > 0) {
       callForm.research_center_id = user.research_centers[0].id
@@ -580,24 +504,31 @@ async function onGuidelineFileChange(file) {
 async function saveCall() {
   saving.value = true
   try {
-    // Build payload — only include scope-relevant IDs based on target_scope
     const scope = callForm.target_scope
+    
+    // Ensure university_id is always present (required by backend)
+    const universityId = callForm.university_id || auth.user?.university_id
+    if (!universityId) {
+      notif.error('University is required to create a call')
+      saving.value = false
+      return
+    }
+    
     const payload = { 
       ...callForm, 
       budget_limit: callForm.budget_limit || null, 
       academic_year_id: callForm.academic_year_id || null, 
       status_id: callForm.status_id || null,
-      // Auto-set university_id from user context if not already set
-      university_id: callForm.university_id || auth.user?.university_id || null,
-      // Only include child IDs if the scope is narrow enough
+      university_id: universityId,
       campus_id: ['campus','faculty','department'].includes(scope) ? (callForm.campus_id || null) : null,
       faculty_id: ['faculty','department'].includes(scope) ? (callForm.faculty_id || null) : null,
       department_id: scope === 'department' ? (callForm.department_id || null) : null,
       research_center_id: scope === 'research_center' ? (callForm.research_center_id || null) : null,
       community_problem_id: callForm.community_problem_id || null
     }
-    // Remove target_scope from payload (it's a frontend-only field)
     delete payload.target_scope
+    
+    // If no status_id is set, backend defaults to 'open'
     if (editingCall.value) {
       await api.put(`/calls/${editingCall.value.id}`, payload)
       notif.success('Call updated successfully!')
@@ -606,10 +537,13 @@ async function saveCall() {
       notif.success('Call for proposal created!')
     }
     closeCallModal()
-    fetchCalls()
+    await fetchCalls()
   } catch (err) {
+    console.error('Save error:', err.response?.data)
     notif.error(err.response?.data?.message || 'Failed to save call')
-  } finally { saving.value = false }
+  } finally { 
+    saving.value = false 
+  }
 }
 
 async function deleteCall(call) {
@@ -617,89 +551,76 @@ async function deleteCall(call) {
   try {
     await api.delete(`/calls/${call.id}`)
     notif.success('Call deleted')
-    fetchCalls()
+    await fetchCalls()
   } catch (err) {
     notif.error(err.response?.data?.message || 'Failed to delete call')
   }
 }
 
-onMounted(async () => {
-  fetchCalls()
+// ─── Load dropdown data ───
+async function loadDropdownData() {
   try {
-    const ysRes = await api.get('/academic-years').catch(() => ({ data: [] }))
-    const ssRes = await api.get('/lookups/call_statuses').catch(() => ({ data: [] }))
-    const tsRes = await api.get('/lookups/thematic_areas').catch(() => ({ data: [] }))
-    const fsRes = await api.get('/files').catch(() => ({ data: [] }))
-    const univRes = await api.get('/universities').catch(() => ({ data: [] }))
-    const campRes = await api.get('/campuses').catch(() => ({ data: [] }))
-    const facRes = await api.get('/faculties').catch(() => ({ data: [] }))
-    const deptRes = await api.get('/departments').catch(() => ({ data: [] }))
-    const rcRes = await api.get('/research-centers').catch(() => ({ data: [] }))
-    academicYears.value = ysRes.data
-    callStatuses.value = ssRes.data
-    thematicAreas.value = tsRes.data
-    files.value = fsRes.data.data || fsRes.data
-    universities.value = univRes.data.data || univRes.data
-    campuses.value = campRes.data.data || campRes.data
-    faculties.value = facRes.data.data || facRes.data
-    departments.value = deptRes.data.data || deptRes.data
-    researchCenters.value = rcRes.data.data || rcRes.data
-    
-    // Fetch community problems to link
-    const cpRes = await api.get('/community-problems', { params: { status: 'open' } })
-    communityProblems.value = cpRes.data.data || cpRes.data
-
-    if (route.query.community_problem_id) {
-       callForm.community_problem_id = route.query.community_problem_id
-       showCreate.value = true
-       
-       // Pre-fill from problem if found
-       const problem = communityProblems.value.find(p => p.id == route.query.community_problem_id)
-       if (problem) {
-         callForm.title = `Research Call: ${problem.title}`
-         callForm.description = `Targeting community issue: ${problem.description}\n\nLocation: ${problem.location}`
-       }
-    }
-  } catch (e) {}
-})
-
-// Watch for create modal open to auto-set scope
-watch(showCreate, (isOpen) => {
-  if (isOpen) {
-    autoSetScopeByRole()
+    const [ys, ss, fs, univ, camp, fac, dept, rc, cp] = await Promise.all([
+      api.get('/academic-years').catch(() => ({ data: [] })),
+      api.get('/lookups/call_statuses').catch(() => ({ data: [] })),
+      api.get('/files').catch(() => ({ data: [] })),
+      api.get('/universities').catch(() => ({ data: [] })),
+      api.get('/campuses').catch(() => ({ data: [] })),
+      api.get('/faculties').catch(() => ({ data: [] })),
+      api.get('/departments').catch(() => ({ data: [] })),
+      api.get('/research-centers').catch(() => ({ data: [] })),
+      api.get('/community-problems', { params: { status: 'open' } }).catch(() => ({ data: [] })),
+    ])
+    academicYears.value = ys.data
+    callStatuses.value = ss.data
+    files.value = fs.data.data || fs.data
+    universities.value = univ.data.data || univ.data
+    campuses.value = camp.data.data || camp.data
+    faculties.value = fac.data.data || fac.data
+    departments.value = dept.data.data || dept.data
+    researchCenters.value = rc.data.data || rc.data
+    communityProblems.value = cp.data.data || cp.data
+  } catch (e) {
+    console.error('Failed to load dropdown data:', e)
   }
+}
+
+// ─── Watchers ───
+watch(showCreate, (isOpen) => {
+  if (isOpen) autoSetScopeByRole()
 })
-// Watch target_scope changes to clear child selections
+
 watch(() => callForm.target_scope, (newScope) => {
-  // Clear all child IDs when scope changes, then let watchers handle the rest
   if (newScope === 'organization') {
-    callForm.campus_id = ''
-    callForm.faculty_id = ''
-    callForm.department_id = ''
-    callForm.research_center_id = ''
+    callForm.campus_id = ''; callForm.faculty_id = ''; callForm.department_id = ''; callForm.research_center_id = ''
   } else if (newScope === 'campus') {
-    callForm.faculty_id = ''
-    callForm.department_id = ''
-    callForm.research_center_id = ''
+    callForm.faculty_id = ''; callForm.department_id = ''; callForm.research_center_id = ''
   } else if (newScope === 'faculty') {
-    callForm.department_id = ''
-    callForm.research_center_id = ''
+    callForm.department_id = ''; callForm.research_center_id = ''
   } else if (newScope === 'department') {
     callForm.research_center_id = ''
   } else if (newScope === 'research_center') {
-    callForm.campus_id = ''
-    callForm.faculty_id = ''
-    callForm.department_id = ''
+    callForm.campus_id = ''; callForm.faculty_id = ''; callForm.department_id = ''
   }
 })
 
-// Watchers to clear dependent fields when parent changes
-watch(() => callForm.campus_id, () => {
-  callForm.faculty_id = ''
-  callForm.department_id = ''
-})
-watch(() => callForm.faculty_id, () => {
-  callForm.department_id = ''
-})
+watch(() => callForm.campus_id, () => { callForm.faculty_id = ''; callForm.department_id = '' })
+watch(() => callForm.faculty_id, () => { callForm.department_id = '' })
+
+// ─── Lifecycle ───
+onMounted(async () => {
+  await loadDropdownData()
+  await fetchCalls()
+  
+  if (route.query.community_problem_id) {
+    callForm.community_problem_id = route.query.community_problem_id
+    showCreate.value = true
+    const problem = communityProblems.value.find(p => p.id == route.query.community_problem_id)
+    if (problem) {
+      callForm.title = `Research Call: ${problem.title}`
+      callForm.description = `Targeting community issue: ${problem.description}\n\nLocation: ${problem.location}`
+    }
+  }
+});
 
 </script>

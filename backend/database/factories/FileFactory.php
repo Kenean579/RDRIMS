@@ -18,7 +18,11 @@ class FileFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'original_filename' => $this->faker->word() . '.pdf',
+            'file_path' => 'test/' . $this->faker->uuid() . '.pdf',
+            'version' => 1,
+            'mime_type' => 'application/pdf',
+            'is_public' => false,
         ];
     }
 }

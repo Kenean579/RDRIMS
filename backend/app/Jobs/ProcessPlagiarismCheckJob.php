@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use App\Models\DetectionRequest;
 use App\Models\File;
+use App\Services\DetectionService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -20,10 +21,10 @@ class ProcessPlagiarismCheckJob implements ShouldQueue
         private DetectionRequest $detectionRequest,
     ) {}
 
-    public function handle(): void
+    public function handle(DetectionService $service): void
     {
         // 1. Mark as processing
-        $this->detectionRequest->update(['status_id' => 2]); // processing
+        $service->markProcessing($this->detectionRequest);
 
         try {
             // 2. Get the file content
@@ -31,7 +32,7 @@ class ProcessPlagiarismCheckJob implements ShouldQueue
             $text = $this->extractText($file);
 
             if (empty($text)) {
-                $this->markFailed('Unable to extract text from file');
+                $service->markFailed($this->detectionRequest, 'Unable to extract text from file');
                 return;
             }
 
@@ -46,7 +47,7 @@ class ProcessPlagiarismCheckJob implements ShouldQueue
             );
 
             if (!$submitResponse->successful() || !$submitResponse['success']) {
-                $this->markFailed('Submission failed: ' . ($submitResponse['message'] ?? 'Unknown error'));
+                $service->markFailed($this->detectionRequest, 'Submission failed: ' . ($submitResponse['message'] ?? 'Unknown error'));
                 return;
             }
 
@@ -77,13 +78,13 @@ class ProcessPlagiarismCheckJob implements ShouldQueue
                 }
 
                 if ($state === 4) { // STATE_FAILED
-                    $this->markFailed('PlagiarismCheck.org reported a failure');
+                    $service->markFailed($this->detectionRequest, 'PlagiarismCheck.org reported a failure');
                     return;
                 }
             }
 
             if (!$status) {
-                $this->markFailed('Timed out waiting for results');
+                $service->markFailed($this->detectionRequest, 'Timed out waiting for results');
                 return;
             }
 
@@ -95,24 +96,20 @@ class ProcessPlagiarismCheckJob implements ShouldQueue
 
             $detailedReport = $reportResponse['data'] ?? null;
 
-            // 6. Store results
-            $this->detectionRequest->results()->create([
-                'similarity_score' => $status['report']['percent'] ?? 0,
-                'ai_probability'   => null, // PlagiarismCheck.org does not detect AI
-                'raw_response'     => json_encode([
+            // 6. Complete request with results using service
+            $service->completeRequest(
+                $this->detectionRequest,
+                $status['report']['percent'] ?? 0,
+                null, // PlagiarismCheck.org does not detect AI
+                json_encode([
                     'status'          => $status,
                     'detailed_report' => $detailedReport,
                     'check_id'        => $checkId,
-                ]),
-            ]);
-
-            $this->detectionRequest->update([
-                'status_id'    => 3, // completed
-                'completed_at' => now(),
-            ]);
+                ])
+            );
 
         } catch (\Exception $e) {
-            $this->markFailed('Processing error: ' . $e->getMessage());
+            $service->markFailed($this->detectionRequest, 'Processing error: ' . $e->getMessage());
             \Illuminate\Support\Facades\Log::error("Plagiarism check background job failed for Request ID: {$this->detectionRequest->id}. Error: " . $e->getMessage());
         }
     }
@@ -157,18 +154,5 @@ class ProcessPlagiarismCheckJob implements ShouldQueue
             \Illuminate\Support\Facades\Log::error('PDF extraction failed: ' . $e->getMessage());
             return '';
         }
-    }
-
-    private function markFailed(string $reason): void
-    {
-        $this->detectionRequest->results()->create([
-            'similarity_score' => 0,
-            'ai_probability'   => null,
-            'raw_response'     => ['error' => $reason],
-        ]);
-
-        $this->detectionRequest->update([
-            'status_id' => 4, // failed
-        ]);
     }
 }

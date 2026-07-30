@@ -88,8 +88,8 @@ class ReviewerModuleTest extends TestCase
             $this->validReviewPayload()
         );
 
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['review']);
+        // Authorization fails at FormRequest level, returning 403 Forbidden
+        $response->assertStatus(403);
     }
 
     public function test_research_admin_can_reopen_locked_review(): void
@@ -153,7 +153,8 @@ class ReviewerModuleTest extends TestCase
         $response = $this->getJson("/api/reviewer/proposals/{$this->proposal->id}");
 
         $response->assertOk()
-            ->assertJsonPath('submitted_by', null)
+            ->assertJsonPath('submitted_by.id', null)
+            ->assertJsonPath('submitted_by.name', null)
             ->assertJsonPath('is_locked', false)
             ->assertJsonStructure(['reviewPivot' => ['submitted_at', 'scores']]);
     }

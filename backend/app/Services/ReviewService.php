@@ -104,15 +104,33 @@ class ReviewService
                 ]);
             }
 
+            // BUSINESS RULE: Enforce deadline
+            if ($pivot->deadline_at && now()->isAfter($pivot->deadline_at)) {
+                throw ValidationException::withMessages([
+                    'review' => ['Review deadline has passed on ' . $pivot->deadline_at->format('Y-m-d H:i') . '.'],
+                ]);
+            }
+
+            // BUSINESS RULE: Optimistic locking to prevent race conditions
+            $currentVersion = $pivot->version ?? 1;
+            $checkPivot = ProposalReviewer::where('id', $pivot->id)->lockForUpdate()->first();
+            
+            if (!$checkPivot || $checkPivot->version != $currentVersion) {
+                throw ValidationException::withMessages([
+                    'review' => ['This review was modified by another process. Please refresh and try again.'],
+                ]);
+            }
+
             $this->validateScores($scores);
             $this->saveScores($pivot, $scores);
 
-            $pivot->update([
-                'overall_score' => $overallScore,
-                'overall_comments' => $overallComments,
-                'decision_id' => $decisionId,
-                'submitted_at' => now(),
-            ]);
+            // Use direct assignment for submitted_at since it's removed from fillable for security
+            $pivot->overall_score = $overallScore;
+            $pivot->overall_comments = $overallComments;
+            $pivot->decision_id = $decisionId;
+            $pivot->submitted_at = now();
+            $pivot->version = $currentVersion + 1;  // Increment version
+            $pivot->save();
         });
     }
 
@@ -132,7 +150,9 @@ class ReviewService
 
         $oldSubmittedAt = $pivot->submitted_at;
 
-        $pivot->update(['submitted_at' => null]);
+        // Use direct assignment since submitted_at is not in fillable
+        $pivot->submitted_at = null;
+        $pivot->save();
 
         $this->logAction('reviewer_review_reopened', $pivot->proposal, $actor, [
             'proposal_reviewer_id' => $pivot->id,

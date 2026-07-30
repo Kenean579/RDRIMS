@@ -10,7 +10,18 @@ class SubmitReviewRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        return true;
+        // SECURITY: Only assigned reviewers can submit reviews
+        $proposal = $this->route('proposal');
+        $user = $this->user();
+
+        if (!$proposal || !$user) {
+            return false;
+        }
+
+        // Verify user is actually assigned as a reviewer for this proposal
+        return \App\Models\ProposalReviewer::where('proposal_id', $proposal->id)
+            ->where('reviewer_id', $user->id)
+            ->exists();
     }
 
     public function rules(): array

@@ -8,6 +8,7 @@ use App\Services\UserService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
@@ -15,7 +16,8 @@ class AuthController extends Controller
 {
     public function __construct(
         private UserService $userService
-    ) {}
+    ) {
+    }
 
     public function register(RegisterRequest $request): JsonResponse
     {
@@ -29,14 +31,14 @@ class AuthController extends Controller
         ], 201);
     }
 
-    public function login(LoginRequest $request): JsonResponse
+    public function login(LoginRequest $request)
     {
         $request->authenticate();
 
         $user = Auth::user();
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        return response()->json([
+        $response = response()->json([
             'user' => $user->load(
                 'roles.permissions',
                 'department.faculty.campus.university',
@@ -48,6 +50,11 @@ class AuthController extends Controller
             'access_token' => $token,
             'token_type' => 'Bearer',
         ]);
+
+        Log::info('login response:', [
+            'data' => $response->getData(true)
+        ]);
+        return $response;
     }
 
     public function logout(Request $request): JsonResponse
@@ -60,19 +67,19 @@ class AuthController extends Controller
     {
         $user = $request->user();
         $validated = $request->validate([
-            'name'               => 'sometimes|string|max:255',
-            'email'              => 'sometimes|email|unique:users,email,' . $user->getKey(),
-            'bio'                => 'nullable|string',
-            'linkedin_url'       => 'nullable|url',
-            'orcid_id'           => 'nullable|string',
-            'google_scholar_id'  => 'nullable|string',
-            'scopus_id'          => 'nullable|string',
-            'profile_image_id'   => 'nullable|exists:files,id',
-            'expertise'          => 'nullable|array',
-            'expertise.*'        => 'exists:expertises,id',
-            'email_notifications'=> 'sometimes|boolean',
-            'email_important'    => 'sometimes|boolean',
-            'email_informational'=> 'sometimes|boolean',
+            'name' => 'sometimes|string|max:255',
+            'email' => 'sometimes|email|unique:users,email,' . $user->getKey(),
+            'bio' => 'nullable|string',
+            'linkedin_url' => 'nullable|url',
+            'orcid_id' => 'nullable|string',
+            'google_scholar_id' => 'nullable|string',
+            'scopus_id' => 'nullable|string',
+            'profile_image_id' => 'nullable|exists:files,id',
+            'expertise' => 'nullable|array',
+            'expertise.*' => 'exists:expertises,id',
+            'email_notifications' => 'sometimes|boolean',
+            'email_important' => 'sometimes|boolean',
+            'email_informational' => 'sometimes|boolean',
         ]);
 
         $user->update($validated);
@@ -105,7 +112,7 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Profile marked as complete.',
-            'user'    => $request->user()->load('roles.permissions', 'department.faculty.campus.university', 'university', 'researchCenter', 'profileImage', 'expertise'),
+            'user' => $request->user()->load('roles.permissions', 'department.faculty.campus.university', 'university', 'researchCenter', 'profileImage', 'expertise'),
         ]);
     }
 

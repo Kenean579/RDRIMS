@@ -7,6 +7,7 @@ use App\Models\Proposal;
 use App\Models\ProposalReviewer;
 use App\Models\ReviewCriterion;
 use App\Models\ReviewDecision;
+use App\Models\User;
 use App\Services\ReviewService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -63,9 +64,22 @@ class ReviewerProposalController extends Controller
 
     public function show(Proposal $proposal, Request $request): JsonResponse
     {
-        $pivot = $this->reviewService->getAssignment($proposal, $request->user()->id);
+        try {
+            $pivot = $this->reviewService->getAssignment($proposal, $request->user()->id);
+        } catch (ValidationException $e) {
+            // User is not assigned as reviewer
+            abort(403, 'Not assigned as reviewer for this proposal');
+        }
 
-        $proposal->load('status', 'type', 'file');
+        // SECURITY: Verify tenant scope - prevent IDOR
+        if (!$this->authorizedForProposal($proposal, $request->user())) {
+            abort(403, 'Unauthorized access to this proposal');
+        }
+
+        // PERFORMANCE: Load with explicit eager loading to prevent N+1
+        $proposal->load('status', 'type', 'file', 'call', 'academicYear');
+        
+        // SECURITY: Hide submitter information (blind review)
         $proposal->setRelation('submittedBy', null);
         $proposal->setRelation('investigators', collect([]));
         $proposal->submitted_by = null;
@@ -74,7 +88,7 @@ class ReviewerProposalController extends Controller
         $proposal->reviewPivot = $pivot;
         $proposal->is_locked = $pivot->submitted_at !== null;
 
-        return response()->json($proposal);
+        return response()->json(new \App\Http\Resources\ProposalResource($proposal));
     }
 
     public function storeReview(SubmitReviewRequest $request, Proposal $proposal): JsonResponse
@@ -348,5 +362,33 @@ class ReviewerProposalController extends Controller
                 'trace' => config('app.debug') ? $e->getTraceAsString() : null,
             ], 500);
         }
+    }
+
+    /**
+     * SECURITY: Verify user has authorization to access this proposal.
+     */
+    private function authorizedForProposal(Proposal $proposal, User $user): bool
+    {
+        // Only assigned reviewers or admins can access
+        if ($proposal->reviewers()->where('reviewer_id', $user->id)->exists()) {
+            return true;
+        }
+
+        if ($user->hasRole('super_admin')) {
+            return true;
+        }
+
+        // Research admin can access proposals in their institution
+        if ($user->isAdmin()) {
+            $submittedBy = $proposal->relationLoaded('submittedBy')
+                ? $proposal->getRelation('submittedBy')
+                : $proposal->submittedBy;
+
+            if ($submittedBy instanceof User) {
+                return $user->sharesInstitutionWith($submittedBy);
+            }
+        }
+
+        return false;
     }
 }

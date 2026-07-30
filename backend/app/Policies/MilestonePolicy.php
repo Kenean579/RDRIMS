@@ -4,63 +4,101 @@ namespace App\Policies;
 
 use App\Models\Milestone;
 use App\Models\User;
-use Illuminate\Auth\Access\Response;
 
 class MilestonePolicy
 {
     /**
-     * Determine whether the user can view any models.
-     */
-    public function viewAny(User $user): bool
-    {
-        return false;
-    }
-
-    /**
-     * Determine whether the user can view the model.
+     * Determine if user can view milestone
      */
     public function view(User $user, Milestone $milestone): bool
     {
+        $project = $milestone->project;
+        
+        if ($user->hasRole('super_admin')) {
+            return true;
+        }
+
+        // Project members can view
+        if ($project->isMember($user->id)) {
+            return true;
+        }
+
+        // Admin within same institution can view
+        if ($user->isAdmin() && $project->pi) {
+            return $user->sharesInstitutionWith($project->pi);
+        }
+
         return false;
     }
 
     /**
-     * Determine whether the user can create models.
+     * Determine if user can create milestones
      */
-    public function create(User $user): bool
+    public function create(User $user, $project): bool
     {
+        if ($user->hasRole('super_admin')) {
+            return true;
+        }
+
+        // PI can create milestones
+        if ($project->pi_id === $user->id) {
+            return true;
+        }
+
+        // Admin within same institution can create
+        if ($user->isAdmin() && $project->pi) {
+            return $user->sharesInstitutionWith($project->pi);
+        }
+
         return false;
     }
 
     /**
-     * Determine whether the user can update the model.
+     * Determine if user can update milestone
      */
     public function update(User $user, Milestone $milestone): bool
     {
+        $project = $milestone->project;
+        
+        // Cannot update completed milestones
+        if ($milestone->status?->name === 'completed') {
+            return false;
+        }
+
+        if ($user->hasRole('super_admin')) {
+            return true;
+        }
+
+        // PI can update
+        if ($project->pi_id === $user->id) {
+            return true;
+        }
+
+        // Admin within same institution can update
+        if ($user->isAdmin() && $project->pi) {
+            return $user->sharesInstitutionWith($project->pi);
+        }
+
         return false;
     }
 
     /**
-     * Determine whether the user can delete the model.
+     * Determine if user can delete milestone
      */
     public function delete(User $user, Milestone $milestone): bool
     {
-        return false;
-    }
+        $project = $milestone->project;
+        
+        // Cannot delete completed milestones
+        if ($milestone->status?->name === 'completed') {
+            return false;
+        }
 
-    /**
-     * Determine whether the user can restore the model.
-     */
-    public function restore(User $user, Milestone $milestone): bool
-    {
-        return false;
-    }
+        if ($user->hasRole('super_admin')) {
+            return true;
+        }
 
-    /**
-     * Determine whether the user can permanently delete the model.
-     */
-    public function forceDelete(User $user, Milestone $milestone): bool
-    {
-        return false;
+        // Only PI can delete
+        return $project->pi_id === $user->id;
     }
 }

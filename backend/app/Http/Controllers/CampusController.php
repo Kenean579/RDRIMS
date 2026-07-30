@@ -21,7 +21,9 @@ class CampusController extends Controller
         $query = Campus::with('university', 'logoFile');
 
         // Super admin is denied by policy, but keep the filter for others
-        $query->where('university_id', $user->university_id);
+        if ($user && $user->university_id) {
+            $query->where('university_id', $user->university_id);
+        }
 
         return response()->json($query->get());
     }

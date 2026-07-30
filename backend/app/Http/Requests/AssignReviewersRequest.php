@@ -30,6 +30,23 @@ class AssignReviewersRequest extends FormRequest
                         return;
                     }
 
+                    // SECURITY: Explicit tenant scope verification
+                    $submittedBy = $proposal->relationLoaded('submittedBy')
+                        ? $proposal->getRelation('submittedBy')
+                        : $proposal->submittedBy;
+
+                    if (!$submittedBy) {
+                        $fail('Proposal has no submitter information.');
+                        return;
+                    }
+
+                    // Verify reviewer is in same institution as proposal submitter
+                    $reviewer = \App\Models\User::find($value);
+                    if (!$reviewer || !$actor->sharesInstitutionWith($submittedBy) || !$reviewer->sharesInstitutionWith($submittedBy)) {
+                        $fail('Reviewer must be from the same institution as the proposal submitter.');
+                        return;
+                    }
+
                     $isEligible = User::query()
                         ->whereKey($value)
                         ->whereHas('roles', fn ($q) => $q->where('name', 'reviewer'))
