@@ -9,8 +9,19 @@ return new class extends Migration
 {
     public function up(): void
     {
-        if (DB::getDriverName() === 'sqlite') {
+        $driver = DB::getDriverName();
+
+        if ($driver === 'sqlite') {
             // SQLite does not support MySQL-style MODIFY COLUMN syntax.
+            return;
+        }
+
+        if ($driver === 'pgsql') {
+            DB::statement("ALTER TABLE notifications ALTER COLUMN priority SET DEFAULT 'medium'");
+            DB::statement('ALTER TABLE notifications ALTER COLUMN priority SET NOT NULL');
+            DB::statement('ALTER TABLE notifications ALTER COLUMN keywords DROP NOT NULL');
+            DB::statement("ALTER TABLE notifications ALTER COLUMN keywords SET DEFAULT ''");
+
             return;
         }
 
@@ -22,7 +33,15 @@ return new class extends Migration
 
     public function down(): void
     {
-        if (DB::getDriverName() === 'sqlite') {
+        $driver = DB::getDriverName();
+
+        if ($driver === 'sqlite') {
+            return;
+        }
+
+        if ($driver === 'pgsql') {
+            DB::statement('ALTER TABLE notifications ALTER COLUMN keywords DROP DEFAULT');
+
             return;
         }
 

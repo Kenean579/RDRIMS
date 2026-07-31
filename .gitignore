@@ -1,36 +1,66 @@
-# Dependencies
-node_modules/
+# Environment files and local secrets
+.env
+.env.*
+!.env.example
+!**/.env.example
+auth.json
+
+# Installed dependencies
 /backend/vendor/
+/backend/node_modules/
 /frontend/node_modules/
 
-# Environment
-.env
-/backend/.env
-/frontend/.env
-
-# Build outputs
+# Generated frontend/backend assets
 /frontend/dist/
+/frontend/dist-ssr/
+/frontend/coverage/
 /backend/public/build/
+/backend/public/hot
 /backend/public/storage
-/backend/storage/*.key
 
-# IDEs
-.vscode/
-.idea/
-
-# OS files
-.DS_Store
-Thumbs.db
-
-# Laravel Specific
-/backend/storage/*.key
+# Runtime data, caches, and logs
+*.log
+*.pid
+*.key
+.phpunit.cache/
+.phpunit.result.cache
 /backend/storage/framework/cache/data/*
 /backend/storage/framework/sessions/*
 /backend/storage/framework/testing/*
 /backend/storage/framework/views/*
 /backend/storage/logs/*
+
+# Keep Laravel runtime directory placeholders
 !/backend/storage/framework/cache/data/.gitignore
 !/backend/storage/framework/sessions/.gitignore
 !/backend/storage/framework/testing/.gitignore
 !/backend/storage/framework/views/.gitignore
 !/backend/storage/logs/.gitignore
+
+# Package-manager and tool logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+.eslintcache
+*.tsbuildinfo
+*.timestamp-*-*.mjs
+
+# IDE and operating-system files
+.idea/
+.vscode/*
+!.vscode/extensions.json
+.DS_Store
+Thumbs.db
+Desktop.ini
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Test artifacts
+/frontend/cypress/videos/
+/frontend/cypress/screenshots/
+/frontend/__screenshots__/
