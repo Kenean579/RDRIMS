@@ -39,6 +39,8 @@ class DatabaseSeeder extends Seeder
             PatentStatusSeeder::class,
             CommunityProblemStatusSeeder::class,
             ProjectStatusSeeder::class,
+            PublicationStatusSeeder::class,
+            PublicationTypeSeeder::class,
             MilestoneStatusSeeder::class,
             TaskStatusSeeder::class,
             InvestigatorRoleSeeder::class,

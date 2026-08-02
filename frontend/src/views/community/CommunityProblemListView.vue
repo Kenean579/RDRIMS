@@ -9,7 +9,7 @@
           Report a problem or help solve existing ones
         </p>
       </div>
-      <button @click="showCreate = true" class="btn btn-primary h-11 px-6 text-xs font-bold gap-2 shrink-0">
+      <button @click="openCreate" class="btn btn-primary h-11 px-6 text-xs font-bold gap-2 shrink-0">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M12 4v16m8-8H4" /></svg>
         Report Issue
       </button>
@@ -45,7 +45,7 @@
       <div class="w-20 h-20 bg-slate-50 rounded-3xl flex items-center justify-center mx-auto mb-6 text-4xl border border-slate-100">🏘️</div>
       <h3 class="text-lg font-bold text-slate-800 mb-2">No issues reported</h3>
       <p class="text-sm text-slate-500 font-medium mb-8">Know about a problem in your area? Let us know so we can help.</p>
-      <button @click="showCreate = true" class="btn btn-primary px-8 h-11 text-xs font-bold shadow-lg shadow-brand/20">Report First Issue</button>
+      <button @click="openCreate" class="btn btn-primary px-8 h-11 text-xs font-bold shadow-lg shadow-brand/20">Report First Issue</button>
     </div>
 
     <!-- Problem Cards -->
@@ -117,7 +117,7 @@
       <form @submit.prevent="submitProblem" class="space-y-5">
         <div>
           <label class="block text-xs text-slate-500 font-bold mb-2 ml-1">Problem Title *</label>
-          <input v-model="form.title" type="text" required class="input h-12 font-bold" placeholder="Give it a clear, specific title..." />
+          <input v-model.trim="form.title" type="text" required maxlength="255" class="input h-12 font-bold" placeholder="Give it a clear, specific title..." />
         </div>
         <div>
           <label class="block text-xs text-slate-500 font-bold mb-2 ml-1">Description *</label>
@@ -126,19 +126,22 @@
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
             <label class="block text-xs text-slate-500 font-bold mb-2 ml-1">Research Centre *</label>
-            <select v-model="form.research_center_id" required class="input h-12 font-bold appearance-none bg-white">
-              <option value="" disabled>Select handling centre...</option>
-              <option v-for="rc in researchCentres" :key="rc.id" :value="rc.id">{{ rc.name }}</option>
+            <select v-model="form.research_center_id" required class="input h-12 font-bold appearance-none bg-white" :disabled="researchCentresLoading || researchCentres.length === 0">
+              <option value="" disabled>{{ researchCentresLoading ? 'Loading centres...' : 'Select handling centre...' }}</option>
+              <option v-for="rc in researchCentres" :key="rc.id" :value="rc.id">
+                {{ rc.name }}{{ rc.university?.name ? ` — ${rc.university.name}` : '' }}
+              </option>
             </select>
+            <p v-if="researchCentresError" class="mt-2 text-xs font-medium text-rose-600">{{ researchCentresError }}</p>
           </div>
           <div>
             <label class="block text-xs text-slate-500 font-bold mb-2 ml-1">Location *</label>
-            <input v-model="form.location" type="text" required class="input h-12 font-bold" placeholder="e.g. Zone 4, Addis Ababa" />
+            <input v-model.trim="form.location" type="text" required maxlength="255" class="input h-12 font-bold" placeholder="e.g. Zone 4, Addis Ababa" />
           </div>
         </div>
         <div>
           <label class="block text-xs text-slate-500 font-bold mb-2 ml-1">Contact Info</label>
-          <input v-model="form.contact_info" type="text" class="input h-12 font-bold" placeholder="Phone or email" />
+          <input v-model.trim="form.contact_info" type="text" maxlength="255" class="input h-12 font-bold" placeholder="Phone or email" />
         </div>
         <div class="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100">
           <input id="anonymous" v-model="form.is_anonymous" type="checkbox" class="w-4 h-4 accent-brand rounded" />
@@ -146,7 +149,9 @@
         </div>
         <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
           <button type="button" @click="closeCreate" class="btn btn-secondary px-6 h-11 text-xs font-bold">Cancel</button>
-          <button type="submit" class="btn btn-primary px-8 h-11 text-xs font-bold shadow-lg shadow-brand/20">Submit Report</button>
+          <button type="submit" class="btn btn-primary px-8 h-11 text-xs font-bold shadow-lg shadow-brand/20" :disabled="submittingProblem || researchCentres.length === 0">
+            {{ submittingProblem ? 'Submitting...' : 'Submit Report' }}
+          </button>
         </div>
       </form>
     </Modal>
@@ -225,6 +230,9 @@ const form = reactive({
 })
 
 const researchCentres = ref([])
+const researchCentresLoading = ref(false)
+const researchCentresError = ref('')
+const submittingProblem = ref(false)
 
 const feedbackForm = reactive({
   rating: 3,
@@ -257,14 +265,30 @@ function closeCreate() {
   Object.assign(form, { title: '', description: '', location: '', contact_info: '', is_anonymous: false, research_center_id: '' })
 }
 
+function openCreate() {
+  showCreate.value = true
+  if (researchCentres.value.length === 0) fetchResearchCentres()
+}
+
 async function submitProblem() {
+  submittingProblem.value = true
   try {
-    await api.post('/community-problems', form)
+    await api.post('/community-problems', {
+      title: form.title,
+      description: form.description,
+      location: form.location,
+      contact_info: form.contact_info || null,
+      is_anonymous: form.is_anonymous,
+      research_center_id: form.research_center_id,
+    })
     notif.success('Issue reported successfully!')
     closeCreate()
     fetchProblems()
   } catch (err) {
-    notif.error(err.response?.data?.message || 'Failed to submit')
+    const firstError = Object.values(err.response?.data?.errors || {}).flat()[0]
+    notif.error(firstError || err.response?.data?.message || 'Failed to submit issue.')
+  } finally {
+    submittingProblem.value = false
   }
 }
 
@@ -332,10 +356,21 @@ async function deleteProblem() {
 }
 
 async function fetchResearchCentres() {
+  researchCentresLoading.value = true
+  researchCentresError.value = ''
   try {
-    const { data } = await api.get('/research-centers')
-    researchCentres.value = data.data || data
-  } catch (err) {}
+    const { data } = await api.get('/public/research-centers')
+    researchCentres.value = Array.isArray(data) ? data : []
+    if (researchCentres.value.length === 0) {
+      researchCentresError.value = 'No research centers are currently available.'
+    }
+  } catch (err) {
+    researchCentres.value = []
+    researchCentresError.value = err.response?.data?.message || 'Failed to load research centers.'
+    console.error('Failed to load research centers:', err)
+  } finally {
+    researchCentresLoading.value = false
+  }
 }
 
 onMounted(() => {

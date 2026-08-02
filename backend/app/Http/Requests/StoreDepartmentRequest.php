@@ -51,7 +51,7 @@ class StoreDepartmentRequest extends FormRequest
             $user = $this->user();
             $facultyId = $this->input('faculty_id');
 
-            if ($facultyId && $user) {
+            if ($facultyId && $user && ! $user->hasRole('super_admin')) {
                 $faculty = Faculty::find($facultyId);
 
                 // Ensure the faculty belongs to the user's university (tenant isolation)

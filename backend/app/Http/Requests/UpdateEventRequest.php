@@ -19,9 +19,10 @@ class UpdateEventRequest extends FormRequest
             'venue' => 'sometimes|string|max:255',
             'start_date' => 'sometimes|date',
             'end_date' => 'sometimes|date|after_or_equal:start_date',
+            'type' => 'sometimes|string|max:100',
             'capacity' => 'nullable|integer|min:1',
             'registration_deadline' => 'nullable|date|before_or_equal:start_date',
-            'image_file_id' => 'nullable|exists:files,id',
+            'image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'research_center_id' => 'nullable|exists:research_centers,id',
         ];
     }

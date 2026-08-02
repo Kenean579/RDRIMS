@@ -16,17 +16,8 @@ class FacultyController extends Controller
     {
         //c$this->authorize('viewAny', Faculty::class);
 
-        $user = auth()->user();
-
         $query = Faculty::with(['campus', 'logoFile']);
-
-        // Filter by user's university (tenant isolation)
-        // Faculty -> Campus -> University
-        $query->whereHas('campus', function ($q) use ($user) {
-            $q->where('university_id', $user->university_id);
-        });
-
-        return response()->json($query->get());
+        return response()->json($query->orderBy('name')->get());
     }
 
     /**

@@ -132,7 +132,7 @@ const users = ref([])
 
 async function fetchPub() {
   loading.value = true
-  try { const { data } = await api.get(`/publications/${route.params.id}`); pub.value = data }
+  try { const { data } = await api.get(`/management/publications/${route.params.id}`); pub.value = data }
   catch (e) {} finally { loading.value = false }
 }
 

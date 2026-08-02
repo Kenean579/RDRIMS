@@ -216,7 +216,12 @@
         <h2 class="text-lg font-bold text-slate-800 mb-6">Required Documents</h2>
         <div class="space-y-8">
           <div class="p-6 bg-slate-50/50 border border-slate-200 rounded-2xl">
-            <FileUpload v-model="form.proposal_file" label="Proposal Core Document" :required="true" />
+            <FileUpload
+              v-model="form.proposal_file"
+              label="Proposal Core Document"
+              accept=".pdf,.doc,.docx"
+              :required="true"
+            />
             <p class="text-xs text-slate-500 mt-2 font-medium">Upload the full research proposal including literature review and detailed methodology. (PDF, DOC/DOCX, max 10MB)</p>
           </div>
           <div class="p-6 bg-slate-50/50 border border-slate-200 rounded-2xl">
@@ -437,7 +442,7 @@ onMounted(async () => {
   }
 
   try {
-    const cr = await api.get('/calls', { params: { status: 'open' } })
+    const cr = await api.get('/management/calls', { params: { status: 'open' } })
     const yr = await api.get('/academic-years')
     const ur = await api.get('/users', { params: { per_page: 100 } })
     openCalls.value = cr.data.data || cr.data

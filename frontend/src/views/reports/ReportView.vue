@@ -35,7 +35,7 @@
             <label class="block text-xs text-slate-500 font-medium  tracking-wider mb-1.5">Report Type *</label>
             <select v-model="reportForm.type" required class="input">
               <option value="">Select report type...</option>
-              <option v-for="t in reportTypes" :key="t.id" :value="t.name">{{ formatStatusName(t.name) }}</option>
+              <option v-for="t in reportTypes" :key="t.value" :value="t.value">{{ t.label }}</option>
             </select>
           </div>
           <button type="submit" :disabled="generating" class="btn btn-primary w-full justify-center">
@@ -125,13 +125,16 @@ import { useNotificationStore } from '@/stores/notification'
 import ConfirmDialog from '@/components/ConfirmDialog.vue'
 import api from '@/services/api'
 import { formatDateTime } from '@/utils/formatters'
-import { formatStatusName } from '@/utils/colors'
 
 const notif      = useNotificationStore()
 const reports    = ref([])
 const generating = ref(false)
 const reportForm = reactive({ name: '', type: '' })
-const reportTypes = ref([])
+// These values must match GenerateReportRequest and ReportService.
+// Keep them local so the form remains usable even if lookup requests fail.
+const reportTypes = [
+  { value: 'projects', label: 'Projects Summary' },
+]
 const showDelete = ref(false)
 const deletingReport = ref(null)
 
@@ -161,7 +164,7 @@ async function deleteReport() {
 async function generateReport() {
   generating.value = true
   try {
-    await api.post('/reports/generate', { name: reportForm.name, type: reportForm.type, filters: '{}' })
+    await api.post('/reports/generate', { name: reportForm.name, type: reportForm.type, parameters: {} })
     notif.success('Report generated successfully!')
     reportForm.name = ''
     reportForm.type = ''
@@ -187,6 +190,5 @@ async function downloadReport(report) {
 
 onMounted(async () => {
   fetchReports()
-  try { const { data } = await api.get('/lookups/report_types'); reportTypes.value = data } catch (e) {}
 })
 </script>

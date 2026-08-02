@@ -8,9 +8,9 @@ use Illuminate\Support\Facades\Storage;
 
 class ReportService
 {
-    public function generate(string $reportName, array $parameters = []): Report
+    public function generate(string $reportName, string $reportType, array $parameters = []): Report
     {
-        $html = $this->renderHtml($reportName, $parameters);
+        $html = $this->renderHtml($reportType, $parameters);
         $pdf  = Pdf::loadHTML($html);
 
         $fileName = 'reports/' . uniqid() . '.pdf';
@@ -25,12 +25,11 @@ class ReportService
         ]);
     }
 
-    private function renderHtml(string $reportName, array $parameters): string
+    private function renderHtml(string $reportType, array $parameters): string
     {
-        return match($reportName) {
-            'projects_summary' => view('reports.projects_summary', $parameters)->render(),
-            'outputs_summary'  => view('reports.outputs_summary',  $parameters)->render(),
-            default            => '<h1>No template found for ' . $reportName . '</h1>',
+        return match($reportType) {
+            'projects' => view('reports.projects', $parameters)->render(),
+            default => throw new \InvalidArgumentException('Unsupported report type.'),
         };
     }
 }

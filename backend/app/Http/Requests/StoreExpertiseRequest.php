@@ -14,7 +14,7 @@ class StoreExpertiseRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'required|unique:expertises',
+            'name' => ['required', 'string', 'max:255', 'unique:expertises,name'],
         ];
     }
 }

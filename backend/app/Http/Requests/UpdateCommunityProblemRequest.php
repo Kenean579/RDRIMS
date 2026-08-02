@@ -8,7 +8,7 @@ class UpdateCommunityProblemRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        $problem = $this->route('problem');
+        $problem = $this->route('community_problem');
         return $this->user()->can('update', $problem);
     }
 

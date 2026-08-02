@@ -299,13 +299,6 @@ const icons = {
   audit:    `<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>`,
 }
 
-const isSuperAdminOnly = computed(() => {
-  if (!auth.userRoles) return false
-  return auth.userRoles.includes('super_admin') &&
-    !['research_admin','campus_admin','faculty_admin','department_head','director',
-      'researcher','reviewer','student','finance_officer','ethics_officer'].some(r => auth.userRoles.includes(r))
-})
-
 const isGuestOnly = computed(() => {
   if (!auth.userRoles || auth.userRoles.length === 0) return true
   return auth.userRoles.length === 1 && auth.userRoles[0] === 'guest'
@@ -331,6 +324,8 @@ const navigation = computed(() => {
       items: [
         { name: 'Universities',  path: '/app/universities', icon: icons.academic },
         { name: 'System Settings', path: '/app/settings',   icon: icons.perms },
+        { name: 'Email Configuration', path: '/app/email-config', icon: icons.events },
+        { name: 'Lookup Manager', path: '/app/settings/lookups', icon: icons.criteria },
       ]
     })
     nav.push({
@@ -343,11 +338,10 @@ const navigation = computed(() => {
     nav.push({
       title: 'Administration',
       items: [
+        { name: 'Users', path: '/app/users', icon: icons.users },
         { name: 'System Logs', path: '/app/audit-logs',  icon: icons.audit },
       ]
     })
-
-    if (isSuperAdminOnly.value) return nav
   }
 
   if (isGuestOnly.value) {
@@ -415,7 +409,7 @@ const navigation = computed(() => {
     }
   }
   
-  if (auth.userRoles?.some(r => ['research_admin', 'campus_admin', 'faculty_admin', 'ethics_officer'].includes(r))) {
+  if (isSuper || auth.userRoles?.some(r => ['research_admin', 'campus_admin', 'faculty_admin', 'ethics_officer'].includes(r))) {
     finalNav.push({
       title: 'Rules',
       items: [
@@ -425,7 +419,7 @@ const navigation = computed(() => {
     })
   }
 
-  if (auth.userRoles?.some(r => ['research_admin', 'campus_admin', 'faculty_admin', 'finance_officer'].includes(r))) {
+  if (isSuper || auth.userRoles?.some(r => ['research_admin', 'campus_admin', 'faculty_admin', 'finance_officer'].includes(r))) {
     finalNav.push({
       title: 'Finance',
       items: [
@@ -434,7 +428,7 @@ const navigation = computed(() => {
     })
   }
 
-  if (auth.userRoles?.some(r => ['research_admin', 'campus_admin', 'faculty_admin', 'director', 'department_head', 'finance_officer'].includes(r))) {
+  if (isSuper || auth.userRoles?.some(r => ['research_admin', 'campus_admin', 'faculty_admin', 'director', 'department_head', 'finance_officer'].includes(r))) {
     finalNav.push({
       title: 'Reports',
       items: [
@@ -443,7 +437,7 @@ const navigation = computed(() => {
     })
   }
 
-  if (auth.userRoles?.some(r => ['research_admin', 'campus_admin', 'faculty_admin', 'department_head', 'director'].includes(r))) {
+  if (!isSuper && auth.userRoles?.some(r => ['research_admin', 'campus_admin', 'faculty_admin', 'department_head', 'director'].includes(r))) {
     finalNav.push({
       title: 'Administration',
       items: [
@@ -454,7 +448,7 @@ const navigation = computed(() => {
     })
   }
     
-  if (auth.userRoles?.some(r => ['research_admin'].includes(r))) {
+  if (isSuper || auth.userRoles?.some(r => ['research_admin'].includes(r))) {
     finalNav.push({
       title: 'Settings',
       items: [

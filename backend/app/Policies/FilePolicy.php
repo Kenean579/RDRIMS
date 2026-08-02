@@ -33,6 +33,21 @@ class FilePolicy
         return $this->view($user, $file);
     }
 
+    public function update(User $user, File $file): bool
+    {
+        if ($file->uploaded_by === $user->id || $user->hasRole('super_admin')) {
+            return true;
+        }
+
+        $uploader = $file->relationLoaded('uploader')
+            ? $file->getRelation('uploader')
+            : $file->uploader;
+
+        return $uploader instanceof User
+            && $user->isAdmin()
+            && $user->sharesInstitutionWith($uploader);
+    }
+
     public function delete(User $user, File $file): bool
     {
         if ($file->uploaded_by === $user->id) {

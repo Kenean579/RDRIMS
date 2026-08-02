@@ -39,7 +39,7 @@ class StoreFacultyRequest extends FormRequest
             $user = $this->user();
             $campusId = $this->input('campus_id');
 
-            if ($campusId && $user) {
+            if ($campusId && $user && ! $user->hasRole('super_admin')) {
                 $campus = Campus::find($campusId);
 
                 // Ensure the campus belongs to the user's university (tenant isolation)

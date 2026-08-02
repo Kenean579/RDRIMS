@@ -36,12 +36,19 @@ class ReportController extends Controller
         return response()->json($reports);
     }
 
+    public function types(): JsonResponse
+    {
+        return response()->json([
+            ['value' => 'projects', 'label' => 'Projects Summary'],
+        ]);
+    }
+
     public function generate(GenerateReportRequest $request): JsonResponse
     {
-        $filters = $request->parameters ?? [];
+        $filters = $request->validated('parameters') ?? [];
         $data = $this->getReportData($request->type, $filters, $request->user());
 
-        $report = $this->reportService->generate($request->name, $data);
+        $report = $this->reportService->generate($request->name, $request->type, $data);
 
         return response()->json($report, 201);
     }
@@ -50,11 +57,21 @@ class ReportController extends Controller
     {
         $this->authorize('view', $report);
 
-        if (! Storage::disk('local')->exists($report->file_path)) {
+        if (! Storage::disk('public')->exists($report->file_path)) {
             abort(404, 'Report file not found.');
         }
 
-        return Storage::disk('local')->download($report->file_path);
+        return Storage::disk('public')->download($report->file_path, $report->name . '.pdf');
+    }
+
+    public function destroy(Report $report): JsonResponse
+    {
+        $this->authorize('delete', $report);
+
+        Storage::disk('public')->delete($report->file_path);
+        $report->delete();
+
+        return response()->json(['message' => 'Report deleted.']);
     }
 
     /**

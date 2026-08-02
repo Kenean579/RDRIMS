@@ -26,7 +26,7 @@
         </div>
         <div class="w-full sm:w-56">
           <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Role Filter</label>
-          <select v-model="roleFilter" @change="fetchUsers(1)" class="input font-bold">
+          <select v-model="roleFilter" @change="refreshUsers(1)" class="input font-bold">
             <option value="">All Roles</option>
             <option v-for="r in roles" :key="r.id" :value="r.name">{{ r.name }}</option>
           </select>
@@ -38,7 +38,10 @@
     <div v-if="loading" class="card p-8 flex justify-center items-center">
       <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-brand"></div>
     </div>
-    <div v-else-if="error" class="card p-8 text-center text-rose-500 text-xs">{{ error }}</div>
+    <div v-else-if="error" class="card p-8 text-center">
+      <p class="text-rose-600 text-sm font-semibold mb-4">{{ error }}</p>
+      <button type="button" class="btn btn-secondary" @click="fetchData">Retry</button>
+    </div>
     <div v-else-if="!users || users.length === 0" class="card">
       <EmptyState icon="👥" title="No users found" description="Add researchers or admins to give them access." action-label="Add First Person" action-icon="add" @action="showCreate = true" />
     </div>
@@ -113,21 +116,21 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div class="space-y-2">
               <label class="block text-xs text-slate-400 font-medium ml-1">University</label>
-              <select v-model="form.university_id" class="input h-11 text-sm font-bold text-slate-700" :disabled="auth.hierarchicalLevel > 0">
+              <select v-model="form.university_id" class="input h-11 text-sm font-bold text-slate-700" :disabled="auth.hierarchicalLevel > 0" @change="onUniversityChange">
                 <option value="">Select University</option>
                 <option v-for="u in universities" :key="u.id" :value="u.id">{{ u.name }}</option>
               </select>
             </div>
             <div class="space-y-2">
               <label class="block text-xs text-slate-400 font-medium ml-1">Campus</label>
-              <select v-model="form.campus_id" class="input h-11 text-sm font-bold text-slate-700" :disabled="auth.hierarchicalLevel > 1">
+              <select v-model="form.campus_id" class="input h-11 text-sm font-bold text-slate-700" :disabled="auth.hierarchicalLevel > 1" @change="onCampusChange">
                 <option value="">Select Campus</option>
                 <option v-for="c in filteredCampuses" :key="c.id" :value="c.id">{{ c.name }}</option>
               </select>
             </div>
             <div class="space-y-2">
               <label class="block text-xs text-slate-400 font-medium ml-1">Faculty</label>
-              <select v-model="form.faculty_id" class="input h-11 text-sm font-bold text-slate-700" :disabled="auth.hierarchicalLevel > 2">
+              <select v-model="form.faculty_id" class="input h-11 text-sm font-bold text-slate-700" :disabled="auth.hierarchicalLevel > 2" @change="onFacultyChange">
                 <option value="">Select Faculty</option>
                 <option v-for="f in filteredFaculties" :key="f.id" :value="f.id">{{ f.name }}</option>
               </select>
@@ -178,7 +181,7 @@ import ActionMenu from '@/components/ActionMenu.vue'
 const notif = useNotificationStore()
 const auth = useAuthStore()
 
-const users = ref([]); const loading = ref(true)
+const users = ref([]); const loading = ref(true); const error = ref('')
 const universities = ref([]); const campuses = ref([]); const faculties = ref([]); const departments = ref([]); const roles = ref([])
 
 const showCreate = ref(false); const editingUser = ref(null)
@@ -190,41 +193,97 @@ const form = reactive({ name: '', email: '', university_id: '', campus_id: '', f
 
 const filteredCampuses = computed(() => {
   if (!form.university_id) return []
-  return campuses.value.filter(c => c.university_id === form.university_id)
+  return campuses.value.filter(c => Number(c.university_id) === Number(form.university_id))
 })
 
 const filteredFaculties = computed(() => {
   if (!form.campus_id) return []
-  return faculties.value.filter(f => f.campus_id === form.campus_id)
+  return faculties.value.filter(f => Number(f.campus_id) === Number(form.campus_id))
 })
 
 const filteredDepartments = computed(() => {
   if (!form.faculty_id) return []
-  return departments.value.filter(d => d.faculty_id === form.faculty_id)
+  return departments.value.filter(d => Number(d.faculty_id) === Number(form.faculty_id))
 })
 
+function onUniversityChange() {
+  form.campus_id = ''
+  form.faculty_id = ''
+  form.department_id = ''
+}
+
+function onCampusChange() {
+  form.faculty_id = ''
+  form.department_id = ''
+}
+
+function onFacultyChange() {
+  form.department_id = ''
+}
+
 async function fetchUsers(page = 1) {
-  try { const params = { page }; if (search.value) params.search = search.value; if (roleFilter.value) params.role = roleFilter.value; const { data } = await api.get('/users', { params }); users.value = data.data; Object.assign(pagination, { current_page: data.current_page, last_page: data.last_page, total: data.total }) } catch (e) {}
+  const params = { page }
+  if (search.value) params.search = search.value
+  if (roleFilter.value) params.role = roleFilter.value
+
+  const { data } = await api.get('/users', { params, timeout: 15000 })
+  users.value = Array.isArray(data) ? data : (data.data || [])
+  Object.assign(pagination, {
+    current_page: data.current_page || 1,
+    last_page: data.last_page || 1,
+    total: data.total ?? users.value.length,
+  })
+}
+
+async function refreshUsers(page = 1) {
+  error.value = ''
+  try {
+    await fetchUsers(page)
+  } catch (err) {
+    error.value = err.response?.data?.message || 'Failed to load users. Please try again.'
+  }
+}
+
+let searchTimer
+function debounceSearch() {
+  clearTimeout(searchTimer)
+  searchTimer = setTimeout(() => refreshUsers(1), 350)
 }
 
 async function fetchHierarchies() {
-  try {
-    const [u, c, f, d, r] = await Promise.all([
-      api.get('/universities'),
-      api.get('/campuses'),
-      api.get('/faculties'),
-      api.get('/departments'),
-      api.get('/roles')
-    ])
-    universities.value = u.data; campuses.value = c.data; faculties.value = f.data; departments.value = d.data
-    roles.value = Array.isArray(r.data) ? r.data : (r.data.data || [])
-  } catch (e) {}
+  const [u, c, f, d, r] = await Promise.all([
+    api.get('/universities', { timeout: 15000 }),
+    api.get('/campuses', { timeout: 15000 }),
+    api.get('/faculties', { timeout: 15000 }),
+    api.get('/departments', { timeout: 15000 }),
+    api.get('/roles', { timeout: 15000 }),
+  ])
+  const rows = response => Array.isArray(response.data) ? response.data : (response.data.data || [])
+  universities.value = rows(u)
+  campuses.value = rows(c)
+  faculties.value = rows(f)
+  departments.value = rows(d)
+  roles.value = rows(r)
 }
 
 async function fetchData() {
   loading.value = true
-  await Promise.all([fetchUsers(), fetchHierarchies()])
-  loading.value = false
+  error.value = ''
+  try {
+    await fetchUsers()
+  } catch (err) {
+    error.value = err.response?.data?.message || 'Failed to load users. Please try again.'
+  } finally {
+    loading.value = false
+  }
+
+  // Hierarchy choices are needed only by the create/edit form. A forbidden or
+  // unavailable optional lookup must not hide an otherwise valid user list.
+  try {
+    await fetchHierarchies()
+  } catch (err) {
+    notif.error(err.response?.data?.message || 'Some user form options could not be loaded.')
+  }
 }
 
 function openCreate() {
@@ -281,16 +340,5 @@ async function deactivateUser() {
   catch (err) { notif.error(err.response?.data?.message || 'Failed') }
 }
 
-onMounted(async () => {
-  await fetchUsers()
-  try { 
-    const rolesPath = auth.hasRole('super_admin') ? '/roles' : '/institution/roles'
-    const rr = await api.get(rolesPath)
-    const dr = await api.get('/departments')
-    const ur = await api.get('/universities')
-    const cr = await api.get('/campuses')
-    const fr = await api.get('/faculties')
-    roles.value = rr.data; departments.value = dr.data; universities.value = ur.data; campuses.value = cr.data; faculties.value = fr.data
-  } catch (e) {}
-})
+onMounted(fetchData)
 </script>

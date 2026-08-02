@@ -28,7 +28,9 @@
           <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Category</label>
           <select v-model="filters.type" @change="fetchPublications(1)" class="input font-bold">
             <option value="">All Categories</option>
-            <option v-for="t in types" :key="t" :value="t">{{ t }}</option>
+            <option v-for="type in typeOptions" :key="type.id" :value="type.id">
+              {{ formatTypeName(type.name) }}
+            </option>
           </select>
         </div>
       </div>
@@ -111,8 +113,8 @@
         </div>
         
         <div>
-          <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Journal</label>
-          <input v-model="form.journal" type="text" class="input h-12 font-bold" placeholder="e.g. International Science Journal" />
+          <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Journal *</label>
+          <input v-model="form.journal" type="text" required class="input h-12 font-bold" placeholder="e.g. International Science Journal" />
         </div>
         
         <div class="flex justify-end gap-3 pt-6 mt-6 border-t border-slate-100">
@@ -134,14 +136,55 @@ import ActionMenu from '@/components/ActionMenu.vue'
 import { useNotificationStore } from '@/stores/notification'
 const notif = useNotificationStore()
 const loading = ref(true); const publications = ref([]); const showAdd = ref(false)
-const types = ref(['Journal Article', 'Conference Paper', 'Book Chapter', 'Book', 'Other'])
 const typeOptions = ref([])
 const filters = reactive({ search: '', type: '' })
 const pagination = reactive({ current_page: 1, last_page: 1, total: 0 })
-const form = reactive({ title: '', journal: '', publication_date: new Date().toISOString().split('T')[0], doi: '' })
+const form = reactive({ title: '', abstract: '', journal: '', publication_date: new Date().toISOString().split('T')[0], doi: '' })
 let timer = null
-async function fetchPublications(page = 1) { loading.value = true; try { const { data } = await api.get('/publications', { params: { page, ...filters } }); publications.value = data.data; Object.assign(pagination, { current_page: data.current_page, last_page: data.last_page, total: data.total }) } catch (e) {} finally { loading.value = false } }
+async function fetchPublications(page = 1) {
+  loading.value = true
+  try {
+    const { data } = await api.get('/management/publications', { params: { page, ...filters } })
+    publications.value = Array.isArray(data?.data) ? data.data : []
+    Object.assign(pagination, {
+      current_page: data?.meta?.current_page ?? data?.current_page ?? 1,
+      last_page: data?.meta?.last_page ?? data?.last_page ?? 1,
+      total: data?.meta?.total ?? data?.total ?? publications.value.length
+    })
+  } catch (error) {
+    publications.value = []
+    notif.error(error.response?.data?.message || 'Failed to load publications.')
+    console.error('Failed to load publications:', error)
+  } finally {
+    loading.value = false
+  }
+}
 function debounceSearch() { clearTimeout(timer); timer = setTimeout(() => fetchPublications(1), 400) }
-async function savePublication() { try { await api.post('/publications', form); notif.success('Publication added!'); showAdd.value = false; fetchPublications(1) } catch (e) { notif.error('Failed to save.') } }
-onMounted(async () => { fetchPublications(); })
+function formatTypeName(name) {
+  return String(name || '')
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, letter => letter.toUpperCase())
+}
+async function savePublication() {
+  try {
+    await api.post('/publications', form)
+    notif.success('Publication added!')
+    showAdd.value = false
+    fetchPublications(1)
+  } catch (error) {
+    const validationErrors = error.response?.data?.errors
+    const firstValidationError = validationErrors
+      ? Object.values(validationErrors).flat()[0]
+      : null
+
+    notif.error(firstValidationError || error.response?.data?.message || 'Failed to save publication.')
+    console.error('Failed to save publication:', error)
+  }
+}
+onMounted(() => {
+  fetchPublications()
+  api.get('/lookups/publication_types')
+    .then(({ data }) => { typeOptions.value = Array.isArray(data) ? data : [] })
+    .catch(error => console.error('Failed to load publication types:', error))
+})
 </script>

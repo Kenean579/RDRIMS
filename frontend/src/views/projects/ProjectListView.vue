@@ -41,6 +41,11 @@
       <div class="animate-spin rounded-full h-10 w-10 border-b-2 border-brand"></div>
       <p class="text-xs font-medium text-slate-400">Loading projects...</p>
     </div>
+
+    <div v-else-if="loadError" class="card p-8 flex flex-col justify-center items-center gap-4 text-center">
+      <p class="text-sm font-semibold text-rose-600">{{ loadError }}</p>
+      <button type="button" class="btn btn-secondary" @click="fetchProjects(1)">Try again</button>
+    </div>
     
     <div v-else-if="projects.length === 0" class="card">
        <EmptyState icon="📁" title="No projects found" description="There are no research projects matching your search." />
@@ -100,14 +105,42 @@ import EmptyState from '@/components/EmptyState.vue'
 import { formatDate, getInitials, imageUrl } from '@/utils/formatters'
 import { formatStatusName } from '@/utils/colors'
 const loading = ref(true); const projects = ref([]); const search = ref(''); const status = ref('')
+const loadError = ref('')
 const pagination = reactive({ current_page: 1, last_page: 1, total: 0 })
 const projectStatuses = ref([])
 let timer = null
-async function fetchProjects(page = 1) { loading.value = true; try { const params = { page, search: search.value }; if (status.value) params.status = status.value; const { data } = await api.get('/projects', { params }); projects.value = data.data; Object.assign(pagination, { current_page: data.current_page, last_page: data.last_page, total: data.total }) } catch (e) {} finally { loading.value = false } }
+async function fetchProjects(page = 1) {
+  loading.value = true
+  loadError.value = ''
+
+  try {
+    const params = { page, search: search.value }
+    if (status.value) params.status = status.value
+
+    const { data } = await api.get('/projects', { params, timeout: 15000 })
+    projects.value = Array.isArray(data?.data) ? data.data : []
+    Object.assign(pagination, {
+      current_page: data?.meta?.current_page ?? data?.current_page ?? 1,
+      last_page: data?.meta?.last_page ?? data?.last_page ?? 1,
+      total: data?.meta?.total ?? data?.total ?? projects.value.length
+    })
+  } catch (error) {
+    projects.value = []
+    loadError.value = error.code === 'ECONNABORTED'
+      ? 'The projects request timed out. Please verify that the backend and database are running.'
+      : (error.response?.data?.message || 'Failed to load research projects.')
+    console.error('Failed to load projects:', error)
+  } finally {
+    loading.value = false
+  }
+}
 function calculateProgress(p) { if (!p.milestones || p.milestones.length === 0) return 0; const comp = p.milestones.filter(m => m.status === 'completed').length; return Math.round((comp / p.milestones.length) * 100) }
 function debounceFetch() { clearTimeout(timer); timer = setTimeout(() => fetchProjects(1), 400) }
-onMounted(async () => {
-  try { const { data } = await api.get('/lookups/project_statuses'); projectStatuses.value = data } catch (e) {}
+onMounted(() => {
   fetchProjects()
+
+  api.get('/lookups/project_statuses', { timeout: 10000 })
+    .then(({ data }) => { projectStatuses.value = Array.isArray(data) ? data : [] })
+    .catch(error => console.error('Failed to load project statuses:', error))
 })
 </script>

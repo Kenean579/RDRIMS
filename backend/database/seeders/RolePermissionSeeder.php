@@ -11,37 +11,7 @@ class RolePermissionSeeder extends Seeder
     public function run(): void
     {
         $superAdmin = Role::where('name', 'super_admin')->first();
-        // Campus, Faculty, Department, Research Center, and Call permissions are tenant-resource abilities.
-        // Platform administrators must not receive them through the global Super Admin role.
-        $superAdmin->permissions()->sync(
-            Permission::whereNotIn('name', [
-                'campus.viewAny',
-                'campus.view',
-                'campus.create',
-                'campus.update',
-                'campus.delete',
-                'faculty.viewAny',
-                'faculty.view',
-                'faculty.create',
-                'faculty.update',
-                'faculty.delete',
-                'department.viewAny',
-                'department.view',
-                'department.create',
-                'department.update',
-                'department.delete',
-                'research_center.viewAny',
-                'research_center.view',
-                'research_center.create',
-                'research_center.update',
-                'research_center.delete',
-                'call.viewAny',
-                'call.view',
-                'call.create',
-                'call.update',
-                'call.delete',
-            ])->pluck('id')->toArray()
-        );
+        $superAdmin->permissions()->sync(Permission::pluck('id')->all());
 
         $researchAdmin = Role::where('name', 'research_admin')->first();
         $researchAdmin->permissions()->sync(

@@ -29,7 +29,7 @@ class StoreResearchCenterRequest extends FormRequest
             'code' => 'required|string|max:50|unique:research_centers,code',
             'description' => 'nullable|string',
             'director_id' => 'nullable|exists:users,id',
-            'logo_file_id' => 'nullable|exists:files,id',
+            'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'parent_university_id' => 'required|exists:universities,id',
             'parent_campus_id' => 'nullable|exists:campuses,id',
             'parent_faculty_id' => 'nullable|exists:faculties,id',

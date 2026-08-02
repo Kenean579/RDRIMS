@@ -16,17 +16,11 @@ class DepartmentController extends Controller
     {
 //$this->authorize('viewAny', Department::class);
 
-        $user = auth()->user();
-
         $query = Department::with(['faculty', 'logoFile']);
 
         // Filter by user's university (tenant isolation)
         // Department → Faculty → Campus → University
-        $query->whereHas('faculty.campus', function ($q) use ($user) {
-            $q->where('university_id', $user->university_id);
-        });
-
-        return response()->json($query->get());
+        return response()->json($query->orderBy('name')->get());
     }
 
     /**

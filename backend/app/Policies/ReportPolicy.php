@@ -14,7 +14,7 @@ class ReportPolicy
 
     public function view(User $user, Report $report): bool
     {
-        return $user->isAdmin() || $report->project->pi_id === $user->id;
+        return $user->isAdmin() || $report->generated_by === $user->id;
     }
 
     public function create(User $user): bool
@@ -24,11 +24,11 @@ class ReportPolicy
 
     public function update(User $user, Report $report): bool
     {
-        return $user->isAdmin() || $report->project->pi_id === $user->id;
+        return $user->isAdmin() || $report->generated_by === $user->id;
     }
 
     public function delete(User $user, Report $report): bool
     {
-        return $user->isAdmin();
+        return $user->isAdmin() || $report->generated_by === $user->id;
     }
 }

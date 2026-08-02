@@ -40,7 +40,7 @@
           <div v-else class="w-full h-full bg-linear-to-br from-slate-800 to-slate-900 flex items-center justify-center p-4">
             <p class="text-white/30 text-xs font-bold text-center line-clamp-2">{{ event.title }}</p>
           </div>
-          <span class="absolute top-3 left-3 px-3 py-1 bg-brand text-white text-xs font-bold rounded-md shadow-lg">{{ event.type?.name || 'Academic' }}</span>
+          <span class="absolute top-3 left-3 px-3 py-1 bg-brand text-white text-xs font-bold rounded-md shadow-lg">{{ event.type || 'Announcement' }}</span>
           
           <!-- Admin Quick Actions -->
           <div v-if="auth.hasRole('super_admin', 'research_admin', 'campus_admin', 'faculty_admin', 'director', 'department_head')" class="absolute top-3 right-3 bg-white rounded-full shadow-md z-10">
@@ -72,7 +72,7 @@
                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
               </div>
               <div class="flex flex-col">
-                <span class="text-slate-500 truncate max-w-[150px]">{{ event.location || 'Online' }}</span>
+                <span class="text-slate-500 truncate max-w-[150px]">{{ event.venue || 'Online' }}</span>
                 <span class="text-[8px] opacity-70">Deployment Location</span>
               </div>
             </div>
@@ -101,14 +101,16 @@
             </div>
             <div>
               <label class="block text-xs text-slate-500 font-bold mb-2 ml-1">Event Type</label>
-              <select v-model="form.type_id" class="input h-12 font-bold">
-                <option value="">General Announcement</option>
-                <option v-for="t in types" :key="t.id" :value="t.id">{{ t.name }}</option>
+              <select v-model="form.type" class="input h-12 font-bold">
+                <option value="announcement">General Announcement</option>
+                <option value="conference">Conference</option>
+                <option value="seminar">Seminar</option>
+                <option value="workshop">Workshop</option>
               </select>
             </div>
             <div>
-              <label class="block text-xs text-slate-500 font-bold mb-2 ml-1">Location / Platform</label>
-              <input v-model="form.location" type="text" class="input h-12 font-bold" placeholder="e.g. Main Hall or Zoom Link" />
+              <label class="block text-xs text-slate-500 font-bold mb-2 ml-1">Venue / Platform *</label>
+              <input v-model="form.venue" type="text" required class="input h-12 font-bold" placeholder="e.g. Main Hall or Zoom Link" />
             </div>
           </div>
           
@@ -119,25 +121,25 @@
                   <input v-model="form.start_date" type="date" required class="input h-12 font-bold" />
                 </div>
                 <div>
-                  <label class="block text-xs text-slate-500 font-bold mb-2 ml-1">End Date</label>
-                  <input v-model="form.end_date" type="date" class="input h-12 font-bold" />
+                  <label class="block text-xs text-slate-500 font-bold mb-2 ml-1">End Date *</label>
+                  <input v-model="form.end_date" type="date" required class="input h-12 font-bold" />
                 </div>
              </div>
              <div>
               <label class="block text-xs text-slate-500 font-bold mb-2 ml-1">Max Participants</label>
-              <input v-model.number="form.max_participants" type="number" class="input h-12 font-bold" placeholder="0 for unlimited" />
+              <input v-model.number="form.capacity" type="number" min="1" class="input h-12 font-bold" placeholder="Leave empty for unlimited" />
              </div>
              <div>
                 <label class="block text-xs text-slate-500 font-bold mb-2 ml-1">Banner Image</label>
                 <div class="flex items-center gap-4 p-4 bg-slate-50 rounded-2xl border border-slate-100">
                   <div class="w-16 h-10 rounded-lg bg-white border border-slate-200 flex items-center justify-center overflow-hidden shrink-0">
-                    <img v-if="imageUrl(form.image_file)" :src="imageUrl(form.image_file)" class="w-full h-full object-cover" />
+                    <img v-if="imagePreview || imageUrl(form.image_file)" :src="imagePreview || imageUrl(form.image_file)" class="w-full h-full object-cover" />
                     <span v-else class="text-[10px] text-slate-300 font-bold">BANNER</span>
                   </div>
                   <div class="flex-1">
-                    <input type="file" accept="image/*" class="hidden" id="event-banner-input" @change="uploadBanner" />
+                    <input type="file" accept="image/png,image/jpeg,image/webp" class="hidden" id="event-banner-input" @change="selectBanner" />
                     <label for="event-banner-input" class="btn btn-secondary h-9 px-4 text-xs font-bold cursor-pointer">
-                       {{ uploadingImage ? 'Processing...' : 'Upload Image' }}
+                       {{ form.image ? 'Change Image' : 'Choose Image' }}
                     </label>
                   </div>
                 </div>
@@ -152,8 +154,8 @@
 
         <div class="flex justify-end gap-3 pt-6 border-t border-slate-100">
           <button type="button" @click="closeUpsert" class="btn btn-secondary px-6 font-bold text-xs">Discard</button>
-          <button type="submit" class="btn btn-primary px-8 font-bold text-xs h-12 shadow-xl shadow-brand/20">
-            {{ editingEvent ? 'Update Announcement' : 'Publish to Feed' }}
+          <button type="submit" :disabled="saving" class="btn btn-primary px-8 font-bold text-xs h-12 shadow-xl shadow-brand/20 disabled:opacity-60">
+            {{ saving ? 'Saving...' : editingEvent ? 'Update Announcement' : 'Publish to Feed' }}
           </button>
         </div>
       </form>
@@ -184,11 +186,11 @@
           </div>
           <div class="relative z-10">
             <p class="text-xs font-bold text-slate-500 mb-2  tracking-widest">Where</p>
-            <p class="text-sm font-bold text-white tracking-tight">{{ selectedEvent.location || 'Online / Remote' }}</p>
+            <p class="text-sm font-bold text-white tracking-tight">{{ selectedEvent.venue || 'Online / Remote' }}</p>
           </div>
           <div class="relative z-10">
             <p class="text-xs font-bold text-slate-500 mb-2  tracking-widest">Max Capacity</p>
-            <p class="text-sm font-bold text-white tracking-tight">{{ selectedEvent.max_participants || 'Unlimited' }}</p>
+            <p class="text-sm font-bold text-white tracking-tight">{{ selectedEvent.capacity || 'Unlimited' }}</p>
           </div>
         </div>
 
@@ -228,7 +230,6 @@ const auth = useAuthStore()
 
 const loading = ref(true)
 const events = ref([])
-const types = ref([])
 const selectedEvent = ref(null)
 const showAdd = ref(false)
 const editingEvent = ref(null)
@@ -238,16 +239,17 @@ const deletingEvent = ref(null)
 const form = reactive({
   title: '',
   description: '',
-  type_id: '',
-  location: '',
+  type: 'announcement',
+  venue: '',
   start_date: '',
   end_date: '',
-  max_participants: 0,
+  capacity: null,
   image_file: null,
-  image_file_id: null
+  image: null
 })
 
-const uploadingImage = ref(false)
+const imagePreview = ref('')
+const saving = ref(false)
 
 async function fetchEvents() { 
   loading.value = true
@@ -261,13 +263,6 @@ async function fetchEvents() {
   } 
 }
 
-async function fetchTypes() {
-  try {
-    const { data } = await api.get('/lookups/event_types')
-    types.value = data
-  } catch (e) {}
-}
-
 function viewEvent(event) { selectedEvent.value = event }
 
 function editEvent(event) {
@@ -275,27 +270,34 @@ function editEvent(event) {
   Object.assign(form, {
     title: event.title,
     description: event.description,
-    type_id: event.type_id || '',
-    location: event.location || '',
+    type: event.type || 'announcement',
+    venue: event.venue || '',
     start_date: event.start_date?.split('T')[0] || '',
     end_date: event.end_date?.split('T')[0] || '',
-    max_participants: event.max_participants || 0,
+    capacity: event.capacity || null,
     image_file: event.image_file || event.banner_file || null,
-    image_file_id: event.image_file_id || event.banner_file_id || null
+    image: null
   })
 }
 
 function closeUpsert() {
+  if (imagePreview.value) URL.revokeObjectURL(imagePreview.value)
+  imagePreview.value = ''
   showAdd.value = false
   editingEvent.value = null
-  Object.assign(form, { title: '', description: '', type_id: '', location: '', start_date: '', end_date: '', max_participants: 0, image_file: null, image_file_id: null })
+  Object.assign(form, { title: '', description: '', type: 'announcement', venue: '', start_date: '', end_date: '', capacity: null, image_file: null, image: null })
 }
 
 async function saveEvent() {
+  saving.value = true
   try {
-    const payload = { ...form }
+    const payload = new FormData()
+    ;['title', 'description', 'type', 'venue', 'start_date', 'end_date'].forEach(key => payload.append(key, form[key]))
+    if (form.capacity) payload.append('capacity', String(form.capacity))
+    if (form.image) payload.append('image', form.image)
     if (editingEvent.value) {
-      await api.put(`/events/${editingEvent.value.id}`, payload)
+      payload.append('_method', 'PUT')
+      await api.post(`/events/${editingEvent.value.id}`, payload)
       notif.success('Event updated')
     } else {
       await api.post('/events', payload)
@@ -304,27 +306,24 @@ async function saveEvent() {
     closeUpsert()
     fetchEvents()
   } catch (e) {
-    notif.error(e.response?.data?.message || 'Failed to save announcement')
+    const errors = e.response?.data?.errors
+    notif.error(errors ? Object.values(errors).flat()[0] : (e.response?.data?.message || 'Failed to save announcement'))
+  } finally {
+    saving.value = false
   }
 }
 
-async function uploadBanner(event) {
+function selectBanner(event) {
   const file = event.target.files?.[0]
   if (!file) return
-  uploadingImage.value = true
-  try {
-    const fd = new FormData()
-    fd.append('file', file)
-    fd.append('is_public', '1')
-    const { data } = await api.post('/files', fd)
-    form.image_file_id = data.id
-    form.image_file = data
-    notif.success('Banner uploaded successfully')
-  } catch (e) {
-    notif.error('Failed to upload image')
-  } finally {
-    uploadingImage.value = false
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 5 * 1024 * 1024) {
+    notif.error('Banner must be a PNG, JPG, or WebP image up to 5 MB.')
+    event.target.value = ''
+    return
   }
+  if (imagePreview.value) URL.revokeObjectURL(imagePreview.value)
+  form.image = file
+  imagePreview.value = URL.createObjectURL(file)
 }
 
 function confirmDelete(event) {
@@ -356,7 +355,6 @@ async function registerForEvent(event) {
 
 onMounted(() => {
   fetchEvents()
-  if (auth.hasRole('super_admin', 'research_admin')) fetchTypes()
 })
 </script>
 

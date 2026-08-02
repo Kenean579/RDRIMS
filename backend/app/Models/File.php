@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Support\Facades\Storage;
 
 class File extends Model
 {
@@ -35,6 +36,20 @@ class File extends Model
         'created_at' => 'datetime',
         'metadata'   => 'array',
     ];
+
+    protected $appends = ['url'];
+
+    /**
+     * Canonical browser URL for files explicitly marked public.
+     */
+    public function getUrlAttribute(): ?string
+    {
+        if (! $this->is_public || ! $this->file_path) {
+            return null;
+        }
+
+        return url(Storage::disk('public')->url($this->file_path));
+    }
 
     public function uploader(): BelongsTo
     {

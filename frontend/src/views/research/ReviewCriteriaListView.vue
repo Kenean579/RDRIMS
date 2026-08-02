@@ -5,7 +5,7 @@
         <h1 class="text-xl font-bold text-slate-900 tracking-tight">Review Criteria</h1>
         <p class="text-slate-500 font-medium mt-1">Define evaluation metrics and scoring weights for research proposals.</p>
       </div>
-      <button @click="showAdd = true" class="btn btn-primary h-11 px-5 text-xs font-medium">
+      <button @click="openCreate" class="btn btn-primary h-11 px-5 text-xs font-medium">
         Add Criterion
       </button>
     </div>
@@ -42,20 +42,22 @@
       <form @submit.prevent="saveItem" class="space-y-6">
         <div>
           <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Criterion Name *</label>
-          <input v-model="form.name" type="text" required class="input h-12 font-bold" placeholder="e.g. Scientific Innovation" />
+          <input v-model.trim="form.name" type="text" required maxlength="255" class="input h-12 font-bold" placeholder="e.g. Scientific Innovation" />
         </div>
         <div>
           <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Max Score (Weight) *</label>
-          <input v-model.number="form.max_score" type="number" required class="input h-12 font-bold" placeholder="e.g. 20" />
+          <input v-model.number="form.max_score" type="number" required min="1" max="100" step="1" class="input h-12 font-bold" placeholder="e.g. 20" />
         </div>
         <div>
-          <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Description</label>
-          <textarea v-model="form.description" rows="3" class="input pt-3 font-medium" placeholder="Evaluation guidance for reviewers..."></textarea>
+          <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Description *</label>
+          <textarea v-model.trim="form.description" required maxlength="5000" rows="3" class="input pt-3 font-medium" placeholder="Evaluation guidance for reviewers..."></textarea>
         </div>
         
         <div class="flex justify-end gap-3 pt-6 border-t border-slate-100">
            <button type="button" @click="closeModal" class="btn btn-secondary px-6">Cancel</button>
-           <button type="submit" class="btn btn-primary px-5">Save Criterion</button>
+           <button type="submit" :disabled="submitting" class="btn btn-primary px-5 disabled:opacity-60">
+             {{ submitting ? 'Saving...' : 'Save Criterion' }}
+           </button>
         </div>
       </form>
     </Modal>
@@ -74,6 +76,7 @@ import ActionMenu from '@/components/ActionMenu.vue'
 
 const notif = useNotificationStore()
 const criteria = ref([]); const loading = ref(true)
+const submitting = ref(false)
 const showAdd = ref(false); const editingItem = ref(null); const showDelete = ref(false); const deletingItem = ref(null)
 const form = reactive({ name: '', max_score: 5, description: '' })
 
@@ -90,6 +93,12 @@ function closeModal() {
   Object.assign(form, { name: '', max_score: 5, description: '' })
 }
 
+function openCreate() {
+  editingItem.value = null
+  Object.assign(form, { name: '', max_score: 5, description: '' })
+  showAdd.value = true
+}
+
 function editItem(item) {
   editingItem.value = item
   Object.assign(form, { name: item.name, max_score: item.max_score, description: item.description })
@@ -101,17 +110,26 @@ function confirmDelete(item) {
 }
 
 async function saveItem() {
+  submitting.value = true
   try {
+    const payload = {
+      name: form.name,
+      max_score: form.max_score,
+      description: form.description,
+    }
     if (editingItem.value) {
-      await api.put(`/review-criteria/${editingItem.value.id}`, form)
+      await api.put(`/review-criteria/${editingItem.value.id}`, payload)
       notif.success('Criterion updated!')
     } else {
-      await api.post('/review-criteria', form)
+      await api.post('/review-criteria', payload)
       notif.success('Criterion added!')
     }
     closeModal(); fetchCriteria()
   } catch (err) {
-    notif.error('Failed to save criterion')
+    const errors = err.response?.data?.errors
+    notif.error(errors ? Object.values(errors).flat()[0] : (err.response?.data?.message || 'Failed to save criterion'))
+  } finally {
+    submitting.value = false
   }
 }
 

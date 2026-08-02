@@ -381,9 +381,8 @@ async function fetchDashboard() {
   loadingStats.value = true
   try {
     // Fetch dashboard data and essential counts in parallel
-    const [dashRes, centersRes, callsRes] = await Promise.all([
+    const [dashRes, callsRes] = await Promise.all([
       api.get('/dashboard'),
-      api.get('/research-centers'),
       api.get('/calls', { params: { status: 'open' } })
     ])
 
@@ -392,7 +391,7 @@ async function fetchDashboard() {
     // Use counts from dashboard API where possible, fallback to actual lists
     const actualCounts = {
       universities: d.universities_count || (d.university_stats?.length) || 0,
-      researchCenters: centersRes.data?.data?.length || centersRes.data?.length || 0,
+      researchCenters: d.centers_count || d.centers_managed || 0,
       campuses: d.campuses_count || 0,
       faculties: d.faculties_count || 0
     }

@@ -15,17 +15,8 @@ class CampusController extends Controller
      */
     public function index(): JsonResponse
     {
-        $this->authorize('viewAny', Campus::class);
-        $user = auth()->user();
-
         $query = Campus::with('university', 'logoFile');
-
-        // Super admin is denied by policy, but keep the filter for others
-        if ($user && $user->university_id) {
-            $query->where('university_id', $user->university_id);
-        }
-
-        return response()->json($query->get());
+        return response()->json($query->orderBy('name')->get());
     }
 
     /**
@@ -38,8 +29,11 @@ class CampusController extends Controller
         $user = auth()->user();
         $data = $request->validated();
 
-        // Ensure campus is created under the authenticated user's university
-        $data['university_id'] = $user->university_id;
+        // Tenant admins create only within their university. A platform super
+        // admin explicitly selects the target university in the request.
+        if (! $user->hasRole('super_admin')) {
+            $data['university_id'] = $user->resolvedUniversityId();
+        }
 
         $campus = Campus::create($data);
 

@@ -79,8 +79,8 @@
             <input v-model="form.filing_date" type="date" required class="input h-12 font-bold" />
           </div>
           <div>
-            <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Patent Number</label>
-            <input v-model="form.patent_number" type="text" class="input h-12 font-bold" placeholder="e.g. PAT-12345" />
+            <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Patent Number *</label>
+            <input v-model="form.patent_number" type="text" required class="input h-12 font-bold" placeholder="e.g. PAT-12345" />
           </div>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -91,7 +91,7 @@
             </select>
           </div>
           <div>
-            <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Project</label>
+            <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Project (Optional)</label>
             <select v-model="form.project_id" class="input h-12 font-bold">
               <option value="">None</option>
               <option v-for="p in projects" :key="p.id" :value="p.id">{{ p.title }}</option>

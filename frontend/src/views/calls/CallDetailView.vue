@@ -122,7 +122,7 @@ const canEditCall = computed(() => {
 async function fetchCall() {
   loading.value = true
   try {
-    const { data } = await api.get(`/calls/${route.params.id}`)
+    const { data } = await api.get(`/management/calls/${route.params.id}`)
     call.value = data
     proposals.value = data.proposals || []
   } catch (e) {} finally {

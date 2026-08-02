@@ -6,6 +6,7 @@ const STORAGE_BASE = (import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:800
  * @param {string} fallback   - Fallback URL when no image is present
  */
 export function imageUrl(file, fallback = '/fallback_profile_image.png') {
+  if (file?.url) return file.url
   if (!file?.file_path) return fallback
   // If it's already an absolute URL pass it through
   if (file.file_path.startsWith('http')) return file.file_path

@@ -172,6 +172,7 @@ Route::get('student-outputs', [OutputController::class, 'publicIndex']);     // 
 Route::get('community-problems', [CommunityProblemController::class, 'index']); // List community problems
 Route::get('community-problems/{community_problem}', [CommunityProblemController::class, 'show']); // Show a problem
 Route::post('community-problems', [CommunityProblemController::class, 'store']); // Submit a new community problem (public)
+Route::get('public/research-centers', [ResearchCenterController::class, 'publicOptions']); // Safe options for public forms
 
 // ---------------------------------------------------------------------------
 // Public Researchers Directory
@@ -192,11 +193,21 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
     Route::post('profile/complete', [AuthController::class, 'completeProfile']); // Complete profile (onboarding)
     Route::post('logout', [AuthController::class, 'logout']);                // Invalidate current token
 
+    // Authenticated call views. Public GET /calls remains limited to
+    // published public calls, while these endpoints use tenant visibility.
+    Route::get('management/calls', [CallController::class, 'index']);
+    Route::get('management/calls/{call}', [CallController::class, 'show']);
+    Route::get('management/publications', [PublicationController::class, 'index']);
+    Route::get('management/publications/{publication}', [PublicationController::class, 'show']);
+    Route::get('management/research-centers/options', [ResearchCenterController::class, 'hierarchyOptions']);
+    Route::get('management/research-centers', [ResearchCenterController::class, 'index']);
+
     // -----------------------------------------------------------------------
     // File Management (Central Repository)
     // -----------------------------------------------------------------------
     Route::post('files', [FileController::class, 'upload']);                 // Upload a new file
     Route::get('files', [FileController::class, 'index']);                   // List uploaded files (filterable)
+    Route::put('files/{file}', [FileController::class, 'update']);           // Update file metadata/visibility
     Route::get('files/{file}/download', [FileController::class, 'download'])->name('files.download'); // Download a file
     Route::delete('files/{file}', [FileController::class, 'destroy']);       // Delete a file
     Route::get('files/{file}/versions', [FileController::class, 'versions']); // List all versions of a file
@@ -596,8 +607,10 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
     // REPORTING
     // ========================================================================
     Route::get('reports', [ReportController::class, 'index']);              // List generated reports
+    Route::get('reports/types', [ReportController::class, 'types']);        // Supported report types
     Route::post('reports/generate', [ReportController::class, 'generate']); // Generate new report
     Route::get('reports/{report}/download', [ReportController::class, 'download']); // Download report PDF
+    Route::delete('reports/{report}', [ReportController::class, 'destroy']); // Delete generated report
 
     // ========================================================================
     // GLOBAL SEARCH
@@ -609,4 +622,3 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
     // ========================================================================
     Route::get('dashboard', [DashboardController::class, 'index']);         // Get role-based dashboard stats
 });
-

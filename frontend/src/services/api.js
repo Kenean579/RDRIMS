@@ -32,8 +32,29 @@ const AUTH_FREE_ENDPOINTS = ['/forgot-password', '/reset-password', '/login', '/
 // Endpoints that are public only for GET reads
 const PUBLIC_READ_ENDPOINTS = ['/settings', '/lookups', '/universities', '/campuses', '/faculties', '/departments', '/calls', '/publications', '/community-problems', '/events', '/public'];
 
+function matchesEndpoint(url, endpoints) {
+  const pathname = new URL(String(url || ''), 'http://localhost').pathname
+    .replace(/^\/api(?=\/)/, '')
+    .replace(/\/+$/, '') || '/'
+
+  return endpoints.some(endpoint =>
+    pathname === endpoint || pathname.startsWith(`${endpoint}/`)
+  )
+}
+
 // Add response caching interceptor for GET requests
 api.interceptors.request.use(config => {
+  // Let the browser generate the multipart Content-Type header, including its
+  // required boundary. The client's JSON default would otherwise make PHP
+  // treat uploaded files as ordinary request data.
+  if (config.data instanceof FormData) {
+    if (typeof config.headers?.delete === 'function') {
+      config.headers.delete('Content-Type')
+    } else if (config.headers) {
+      delete config.headers['Content-Type']
+    }
+  }
+
   // Check cache for GET requests
   if (config.method === 'get' || config.method === 'GET') {
     const cacheKey = `${config.url}_${JSON.stringify(config.params || {})}`
@@ -49,8 +70,8 @@ api.interceptors.request.use(config => {
   }
 
   const method = String(config.method || 'get').toLowerCase()
-  const isAuthFree = AUTH_FREE_ENDPOINTS.some(p => config.url?.includes(p))
-  const isPublicRead = method === 'get' && PUBLIC_READ_ENDPOINTS.some(p => config.url?.includes(p))
+  const isAuthFree = matchesEndpoint(config.url, AUTH_FREE_ENDPOINTS)
+  const isPublicRead = method === 'get' && matchesEndpoint(config.url, PUBLIC_READ_ENDPOINTS)
   const isPublic = isAuthFree || isPublicRead
   const token = localStorage.getItem('rdrims_token')
   if (token && !isPublic) config.headers.Authorization = `Bearer ${token}`
@@ -91,8 +112,8 @@ api.interceptors.response.use(
     if (error.response?.status === 401) {
       const url = error.config?.url || ''
       const method = String(error.config?.method || 'get').toLowerCase()
-      const isAuthFree = AUTH_FREE_ENDPOINTS.some(p => url.includes(p))
-      const isPublicRead = method === 'get' && PUBLIC_READ_ENDPOINTS.some(p => url.includes(p))
+      const isAuthFree = matchesEndpoint(url, AUTH_FREE_ENDPOINTS)
+      const isPublicRead = method === 'get' && matchesEndpoint(url, PUBLIC_READ_ENDPOINTS)
       const isPublic = isAuthFree || isPublicRead
       if (!isPublic) {
         localStorage.removeItem('rdrims_token')

@@ -29,8 +29,10 @@ class CommunityProblemController extends Controller
 
     public function store(StoreCommunityProblemRequest $request): JsonResponse
     {
+        $data = $request->safe()->except(['status_id', 'linked_project_id']);
+
         $problem = CommunityProblem::create([
-            ...$request->validated(),
+            ...$data,
             'submitted_by' => auth('sanctum')->user()?->id,
             'status_id' => CommunityProblem::getStatusId('open'),
         ]);

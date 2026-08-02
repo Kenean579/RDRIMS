@@ -64,7 +64,8 @@ const props = defineProps({
   label: { type: String, default: '' },
   required: { type: Boolean, default: false },
   disabled: { type: Boolean, default: false },
-  error: { type: String, default: '' }
+  error: { type: String, default: '' },
+  accept: { type: String, default: '' }
 })
 
 const emit = defineEmits(['update:modelValue'])
@@ -75,7 +76,9 @@ const selectedFile = ref(props.modelValue)
 const internalError = ref('')
 
 const maxSizeMb = computed(() => Number(lookupStore.getSetting('max_file_upload_size_mb', 10)))
-const allowedExtensions = computed(() => lookupStore.getSetting('allowed_file_types', '.pdf,.doc,.docx'))
+const allowedExtensions = computed(() =>
+  props.accept || lookupStore.getSetting('allowed_file_types', '.pdf,.doc,.docx')
+)
 
 watch(() => props.modelValue, (newVal) => {
   if (newVal !== selectedFile.value) {

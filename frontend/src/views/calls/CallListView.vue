@@ -382,7 +382,7 @@ const filteredResearchCenters = computed(() => {
 async function fetchCalls() {
   loading.value = true
   try {
-    const { data } = await api.get('/calls')
+    const { data } = await api.get('/management/calls')
     calls.value = data.data || data
   } catch (e) {
     console.error('Failed to fetch calls:', e)

@@ -118,14 +118,6 @@ class AuthServiceProvider extends ServiceProvider
         */
         Gate::before(function (User $user, string $ability) {
             if ($user->hasRole('super_admin')) {
-                // Deny super admin for campus, faculty, department, research_center, and call related abilities (tenant resources)
-                if (str_starts_with($ability, 'campus.') 
-                    || str_starts_with($ability, 'faculty.') 
-                    || str_starts_with($ability, 'department.')
-                    || str_starts_with($ability, 'research_center.')
-                    || str_starts_with($ability, 'call.')) {
-                    return false;
-                }
                 return true;
             }
 

@@ -6,7 +6,7 @@
         <h1 class="text-xl font-bold text-slate-900 tracking-tight">Research Centers</h1>
         <p class="text-slate-500 font-medium mt-1">Manage research institutes, labs, and hubs.</p>
       </div>
-      <button v-if="auth.hasRole('super_admin', 'research_admin')" @click="showCreate = true" class="btn btn-primary h-11 px-6">
+      <button v-if="canManageCenters" @click="openCreate" class="btn btn-primary h-11 px-6">
         <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" /></svg>
         Add New Center
       </button>
@@ -19,7 +19,7 @@
     </div>
     
     <div v-else-if="centers.length === 0" class="card">
-       <EmptyState icon="🔬" title="No centers found" description="Add research centers to organize projects and budget." action-label="Add First Center" :show-action="auth.hasRole('super_admin', 'research_admin')" @action="showCreate = true" />
+       <EmptyState icon="🔬" title="No centers found" description="Add research centers to organize projects and budget." action-label="Add First Center" :show-action="canManageCenters" @action="openCreate" />
     </div>
 
     <div v-else class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -56,7 +56,7 @@
           </div>
         </div>
 
-        <div v-if="auth.hasRole('super_admin', 'research_admin')" class="flex items-center justify-between bg-slate-50/50 p-1 gap-1" style="border-radius: 1rem">
+        <div v-if="canManageCenters" class="flex items-center justify-between bg-slate-50/50 p-1 gap-1" style="border-radius: 1rem">
           <button @click="openSetUpAdmin(center)" class="btn btn-ghost border border-brand/20 text-brand hover:bg-brand hover:text-white flex-1 justify-center text-xs font-bold py-2">
             Set Up Admin
           </button>
@@ -83,35 +83,42 @@
             <input v-model="form.code" type="text" required class="input h-12 font-bold" placeholder="e.g. CAIR-01" />
           </div>
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div class="rounded-2xl border border-slate-200 bg-slate-50/60 p-5">
+          <div class="mb-4">
+            <h3 class="text-sm font-bold text-slate-800">Institutional placement</h3>
+            <p class="mt-1 text-xs text-slate-500">Choose the most specific level that owns this center.</p>
+          </div>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
           <div>
-            <label class="block text-xs font-semibold text-slate-400 mb-2 ml-1">University (Optional)</label>
-            <select v-model="form.parent_university_id" class="input h-11 font-bold text-xs">
-              <option value="">Independent</option>
+            <label class="block text-xs font-semibold text-slate-400 mb-2 ml-1">University *</label>
+            <select v-model="form.parent_university_id" required class="input h-11 font-bold text-xs" :disabled="editingCenter || universities.length === 1" @change="onUniversityChange">
+              <option value="" disabled>Select university</option>
               <option v-for="u in universities" :key="u.id" :value="u.id">{{ u.name }}</option>
             </select>
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-400 mb-2 ml-1">Campus</label>
-            <select v-model="form.parent_campus_id" class="input h-11 font-bold text-xs" :disabled="!form.parent_university_id">
+            <select v-model="form.parent_campus_id" class="input h-11 font-bold text-xs" :disabled="editingCenter || !form.parent_university_id" @change="onCampusChange">
               <option value="">University Wide</option>
               <option v-for="c in campuses" :key="c.id" :value="c.id">{{ c.name }}</option>
             </select>
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-400 mb-2 ml-1">Faculty</label>
-            <select v-model="form.parent_faculty_id" class="input h-11 font-bold text-xs" :disabled="!form.parent_campus_id">
+            <select v-model="form.parent_faculty_id" class="input h-11 font-bold text-xs" :disabled="editingCenter || !form.parent_campus_id" @change="onFacultyChange">
               <option value="">Campus Wide</option>
               <option v-for="f in faculties" :key="f.id" :value="f.id">{{ f.name }}</option>
             </select>
           </div>
           <div>
             <label class="block text-xs font-semibold text-slate-400 mb-2 ml-1">Department</label>
-            <select v-model="form.parent_department_id" class="input h-11 font-bold text-xs" :disabled="!form.parent_faculty_id">
+            <select v-model="form.parent_department_id" class="input h-11 font-bold text-xs" :disabled="editingCenter || !form.parent_faculty_id">
               <option value="">Faculty Wide</option>
               <option v-for="d in departments" :key="d.id" :value="d.id">{{ d.name }}</option>
             </select>
           </div>
+        </div>
+          <p v-if="editingCenter" class="mt-3 text-xs font-medium text-amber-700">Institutional placement cannot be changed after creation.</p>
         </div>
         
         <div>
@@ -123,25 +130,25 @@
           <label class="block text-xs font-bold text-slate-900  tracking-widest mb-3 ml-1">Branding</label>
           <div class="flex items-center gap-6 p-6 bg-slate-50/50 rounded-3xl border border-dashed border-slate-200">
             <div class="w-20 h-20 rounded-2xl bg-white border border-slate-100 flex items-center justify-center overflow-hidden shrink-0 shadow-sm transition-transform hover:scale-105">
-               <img v-if="imageUrl(form.logo_file)" :src="imageUrl(form.logo_file)" class="w-full h-full object-contain" />
+               <img v-if="logoPreviewUrl || imageUrl(form.logo_file)" :src="logoPreviewUrl || imageUrl(form.logo_file)" class="w-full h-full object-contain" />
                <div v-else class="flex flex-col items-center gap-1 opacity-20">
                   <i class="fas fa-microscope text-xl"></i>
                   <span class="text-xs font-bold tracking-tighter">NO LOGO</span>
                </div>
             </div>
             <div class="flex-1">
-              <input type="file" accept="image/*" class="hidden" id="center-logo-input" @change="uploadLogo" />
+              <input type="file" accept="image/png,image/jpeg,image/webp" class="hidden" id="center-logo-input" @change="selectLogo" />
               <label for="center-logo-input" class="bg-white hover:bg-slate-50 text-slate-700 px-5 py-2.5 rounded-xl border border-slate-200 shadow-sm text-xs font-bold  tracking-widest cursor-pointer transition-all active:scale-95 inline-block">
-                 {{ uploadingLogo ? 'Syncing...' : 'Upload Center Logo' }}
+                 {{ logoFile ? 'Change Selected Logo' : 'Select Center Logo' }}
               </label>
-              <p class="text-[10px] text-slate-400 mt-3 font-medium">SVG, PNG or JPG (min. 400x400px recommended)</p>
+              <p class="text-[10px] text-slate-400 mt-3 font-medium">PNG, JPG or WebP, up to 5 MB. Upload begins only when you save.</p>
             </div>
           </div>
         </div>
 
         <div class="flex justify-end gap-3 pt-6 mt-6 border-t border-slate-100">
           <button type="button" @click="closeModal" class="btn btn-secondary px-6">Cancel</button>
-          <button type="submit" class="btn btn-primary px-5">{{ editingCenter ? 'Save Changes' : 'Save Center' }}</button>
+          <button type="submit" class="btn btn-primary px-5" :disabled="savingCenter">{{ savingCenter ? 'Saving...' : (editingCenter ? 'Save Changes' : 'Save Center') }}</button>
         </div>
       </form>
     </Modal>
@@ -191,7 +198,7 @@
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch, onMounted } from 'vue'
+import { ref, reactive, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationStore } from '@/stores/notification'
 import { imageUrl } from '@/utils/formatters'
@@ -206,6 +213,8 @@ const auth = useAuthStore()
 const notif = useNotificationStore()
 const centers = ref([]); const loading = ref(true)
 const showCreate = ref(false); const editingCenter = ref(null); const showDelete = ref(false); const deletingCenter = ref(null)
+const savingCenter = ref(false)
+const canManageCenters = computed(() => !auth.hasRole('super_admin') && auth.hasPermission('research_center.create'))
 
 // Admin setup state
 const showSetUpAdmin = ref(false); const targetCenter = ref(null); const submittingAdmin = ref(false)
@@ -223,71 +232,96 @@ const form = reactive({
   parent_university_id: '', parent_campus_id: '', parent_faculty_id: '', parent_department_id: '',
   logo_file_id: null, logo_file: null 
 })
-const uploadingLogo = ref(false)
+const logoFile = ref(null)
+const logoPreviewUrl = ref('')
 
 // Filtered lists based on parent selection
 const campuses = computed(() => {
   if (!form.parent_university_id) return []
-  return allCampuses.value.filter(c => c.university_id === form.parent_university_id)
+  return allCampuses.value.filter(c => String(c.university_id) === String(form.parent_university_id))
 })
 
 const faculties = computed(() => {
   if (!form.parent_campus_id) return []
-  return allFaculties.value.filter(f => f.campus_id === form.parent_campus_id)
+  return allFaculties.value.filter(f => String(f.campus_id) === String(form.parent_campus_id))
 })
 
 const departments = computed(() => {
   if (!form.parent_faculty_id) return []
-  return allDepartments.value.filter(d => d.faculty_id === form.parent_faculty_id)
+  return allDepartments.value.filter(d => String(d.faculty_id) === String(form.parent_faculty_id))
 })
 
-// Reset children when parents change
-watch(() => form.parent_university_id, (v) => { if(!v) { form.parent_campus_id = ''; form.parent_faculty_id = ''; form.parent_department_id = '' } })
-watch(() => form.parent_campus_id, (v) => { if(!v) { form.parent_faculty_id = ''; form.parent_department_id = '' } })
-watch(() => form.parent_faculty_id, (v) => { if(!v) { form.parent_department_id = '' } })
+function onUniversityChange() {
+  form.parent_campus_id = ''
+  form.parent_faculty_id = ''
+  form.parent_department_id = ''
+}
+
+function onCampusChange() {
+  form.parent_faculty_id = ''
+  form.parent_department_id = ''
+}
+
+function onFacultyChange() {
+  form.parent_department_id = ''
+}
 
 async function fetchCenters() {
   loading.value = true
   try {
-    const [centersRes, uniRes, campRes, facRes, deptRes] = await Promise.all([
-      api.get('/research-centers'),
-      api.get('/lookups/universities'),
-      api.get('/lookups/campuses'),
-      api.get('/lookups/faculties'),
-      api.get('/lookups/departments')
+    const [centersRes, optionsRes] = await Promise.all([
+      api.get('/management/research-centers'),
+      api.get('/management/research-centers/options')
     ])
     
     centers.value = (centersRes.data.data || centersRes.data).map(c => ({
       ...c,
       logo_file: c.logo_file || c.logoFile
     }))
-    universities.value = uniRes.data
-    allCampuses.value = campRes.data
-    allFaculties.value = facRes.data
-    allDepartments.value = deptRes.data
+    universities.value = optionsRes.data.universities || []
+    allCampuses.value = optionsRes.data.campuses || []
+    allFaculties.value = optionsRes.data.faculties || []
+    allDepartments.value = optionsRes.data.departments || []
   } catch (err) {
-    notif.error('Failed to sync hierarchy data')
+    notif.error(err.response?.data?.message || 'Failed to load research centers and hierarchy data.')
+    console.error('Failed to load research centers:', err)
   } finally {
     loading.value = false
   }
 }
 
-async function uploadLogo(event) {
+function openCreate() {
+  closeModal()
+  form.parent_university_id = universities.value.length === 1 ? universities.value[0].id : ''
+  showCreate.value = true
+}
+
+function clearLogoSelection() {
+  if (logoPreviewUrl.value) URL.revokeObjectURL(logoPreviewUrl.value)
+  logoPreviewUrl.value = ''
+  logoFile.value = null
+}
+
+function selectLogo(event) {
   const file = event.target.files?.[0]
   if (!file) return
-  uploadingLogo.value = true
-  try {
-    const fd = new FormData()
-    fd.append('file', file)
-    fd.append('is_public', '1')
-    const { data } = await api.post('/files', fd)
-    form.logo_file_id = data.id; form.logo_file = data
-    notif.success('Logo uploaded')
-  } catch (e) {
-    notif.error('Logo upload failed')
-  } finally {
-    uploadingLogo.value = false
+
+  if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+    notif.error('Logo must be a PNG, JPG, or WebP image.')
+    event.target.value = ''
+    return
   }
+
+  if (file.size > 5 * 1024 * 1024) {
+    notif.error('Logo must not exceed 5 MB.')
+    event.target.value = ''
+    return
+  }
+
+  clearLogoSelection()
+  logoFile.value = file
+  logoPreviewUrl.value = URL.createObjectURL(file)
+  event.target.value = ''
 }
 
 function editCenter(c) { 
@@ -306,6 +340,7 @@ function editCenter(c) {
 }
 
 function closeModal() { 
+  clearLogoSelection()
   showCreate.value = false; 
   editingCenter.value = null; 
   Object.assign(form, { 
@@ -318,15 +353,36 @@ function closeModal() {
 function confirmDelete(c) { deletingCenter.value = c; showDelete.value = true }
 
 async function saveCenter() {
+  savingCenter.value = true
   try {
-    const payload = { ...form }
-    // Convert empty strings to null for backend
-    for(let key in payload) if(payload[key] === '') payload[key] = null
-    
-    if (editingCenter.value) { await api.put(`/research-centers/${editingCenter.value.id}`, payload); notif.success('Updated!') }
-    else { await api.post('/research-centers', payload); notif.success('Created!') }
+    const payload = new FormData()
+    payload.append('name', form.name)
+    payload.append('code', form.code)
+    payload.append('description', form.description || '')
+    if (logoFile.value) payload.append('logo', logoFile.value)
+
+    if (editingCenter.value) {
+      // PHP reliably parses multipart bodies sent as POST; Laravel handles the
+      // method override and dispatches this to the update action.
+      payload.append('_method', 'PUT')
+      await api.post(`/research-centers/${editingCenter.value.id}`, payload)
+      notif.success('Updated!')
+    } else {
+      payload.append('parent_university_id', form.parent_university_id)
+      if (form.parent_campus_id) payload.append('parent_campus_id', form.parent_campus_id)
+      if (form.parent_faculty_id) payload.append('parent_faculty_id', form.parent_faculty_id)
+      if (form.parent_department_id) payload.append('parent_department_id', form.parent_department_id)
+      await api.post('/research-centers', payload)
+      notif.success('Created!')
+    }
+
     closeModal(); fetchCenters()
-  } catch (err) { notif.error(err.response?.data?.message || 'Failed') }
+  } catch (err) {
+    const firstError = Object.values(err.response?.data?.errors || {}).flat()[0]
+    notif.error(firstError || err.response?.data?.message || 'Failed to save research center.')
+  } finally {
+    savingCenter.value = false
+  }
 }
 
 async function deleteCenter() {
@@ -387,6 +443,7 @@ async function saveAdmin() {
 }
 
 onMounted(() => fetchCenters())
+onBeforeUnmount(clearLogoSelection)
 </script>
 
 <style scoped>

@@ -14,7 +14,7 @@ class UpdatePatentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'project_id' => 'sometimes|exists:projects,id',
+            'project_id' => 'sometimes|nullable|exists:projects,id',
             'title' => 'sometimes|string|max:255',
             'inventors' => 'nullable|string',
             'filing_date' => 'nullable|date',

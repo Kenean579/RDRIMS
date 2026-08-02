@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class StoreCampusRequest extends FormRequest
 {
@@ -18,7 +19,12 @@ class StoreCampusRequest extends FormRequest
         return [
             'name' => 'required|string|max:255',
             'code' => 'required|string|max:50|unique:campuses,code',
-                // university_id is immutable and set server-side; no user input allowed
+            'university_id' => [
+                Rule::requiredIf(fn () => $this->user()?->hasRole('super_admin')),
+                'nullable',
+                'integer',
+                'exists:universities,id',
+            ],
             'logo_file_id' => 'nullable|exists:files,id',
         ];
     }

@@ -25,9 +25,7 @@ class StoreCommunityProblemRequest extends FormRequest
             'description' => 'required|string',
             'location' => 'required|string|max:255',
             'contact_info' => 'nullable|string|max:255',
-            'status_id' => 'nullable|exists:community_problem_statuses,id',
             'is_anonymous' => 'sometimes|boolean',
-            'linked_project_id' => 'nullable|exists:projects,id',
             'research_center_id' => 'required|exists:research_centers,id',
         ];
     }

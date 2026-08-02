@@ -19,7 +19,7 @@ class StorePublicationRequest extends FormRequest
             'title' => 'required|string|max:255',
             'abstract' => 'nullable|string',
             'keywords' => 'nullable|string',
-            'journal' => 'nullable|string|max:255',
+            'journal' => 'required|string|max:255',
             'volume' => 'nullable|string|max:50',
             'issue' => 'nullable|string|max:50',
             'pages' => 'nullable|string|max:50',

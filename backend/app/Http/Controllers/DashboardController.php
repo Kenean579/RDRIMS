@@ -59,6 +59,7 @@ class DashboardController extends Controller
             'universities_count' => University::count(),
             'campuses_count' => Campus::count(),
             'faculties_count' => Faculty::count(),
+            'centers_count' => ResearchCenter::count(),
             'users_count' => User::count(),
             'university_stats' => University::withCount('campuses')->get()->map(function($u) {
                 return [
@@ -114,7 +115,7 @@ class DashboardController extends Controller
             ->getInstitutionalReviewProgress($proposalIds);
 
         // Centers, campuses, faculties scoped to user's university only
-        $centersCount    = \App\Models\ResearchCenter::where('university_id', $userUniversityId)->count();
+        $centersCount    = \App\Models\ResearchCenter::where('parent_university_id', $userUniversityId)->count();
         $campusesCount   = \App\Models\Campus::where('university_id', $userUniversityId)->count();
         $facultiesCount  = \App\Models\Faculty::whereHas('campus', fn($q) => $q->where('university_id', $userUniversityId))->count();
 
@@ -148,9 +149,9 @@ class DashboardController extends Controller
             'status_breakdown' => $statusBreakdown,
             'monthly_trend'    => Proposal::hierarchical($user, 'submitted_by')
                 ->where('created_at', '>=', now()->subMonths(6))
-                ->select(\Illuminate\Support\Facades\DB::raw('DATE_FORMAT(created_at, "%b") as month'), \Illuminate\Support\Facades\DB::raw('count(*) as count'), \Illuminate\Support\Facades\DB::raw('MONTH(created_at) as month_num'))
-                ->groupBy('month', 'month_num')
-                ->orderBy('month_num')
+                ->selectRaw("TO_CHAR(created_at, 'Mon') as month, count(*) as count, EXTRACT(MONTH FROM created_at) as month_num")
+                ->groupByRaw("DATE_TRUNC('month', created_at), TO_CHAR(created_at, 'Mon'), EXTRACT(MONTH FROM created_at)")
+                ->orderByRaw("DATE_TRUNC('month', created_at)")
                 ->get(),
             'recent_proposals' => Proposal::hierarchical($user, 'submitted_by')
                 ->with(['submittedBy', 'status'])
@@ -307,9 +308,9 @@ private function userDashboard(User $user): JsonResponse
             'status_breakdown' => $statusBreakdown,
             'monthly_trend' => Proposal::where('submitted_by', $user->getKey())
                 ->where('created_at', '>=', now()->subMonths(6))
-                ->select(DB::raw('DATE_FORMAT(created_at, "%b") as month'), DB::raw('count(*) as count'), DB::raw('MONTH(created_at) as month_num'))
-                ->groupBy('month', 'month_num')
-                ->orderBy('month_num')
+                ->selectRaw("TO_CHAR(created_at, 'Mon') as month, count(*) as count, EXTRACT(MONTH FROM created_at) as month_num")
+                ->groupByRaw("DATE_TRUNC('month', created_at), TO_CHAR(created_at, 'Mon'), EXTRACT(MONTH FROM created_at)")
+                ->orderByRaw("DATE_TRUNC('month', created_at)")
                 ->get(),
             'recent_proposals' => $user->submittedProposals()->with('status')->latest()->limit(8)->get(),
         ]);

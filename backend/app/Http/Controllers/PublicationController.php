@@ -29,14 +29,32 @@ class PublicationController extends Controller
             ->when($request->search, fn($q) => $q->where('title', 'LIKE', '%' . $request->search . '%')
                 ->orWhere('journal', 'LIKE', '%' . $request->search . '%'))
             ->when($request->year, fn($q) => $q->byYear($request->year))
-            ->when($request->type, fn($q) => $q->where('type_id', $request->type))
+            ->when($request->type, function ($query, $type) {
+                if (filter_var($type, FILTER_VALIDATE_INT) !== false) {
+                    $query->where('type_id', (int) $type);
+                    return;
+                }
+
+                // Backward compatibility for clients that send labels such 
+                // as "Book Chapter" instead of the lookup table ID.
+                $typeName = strtolower(str_replace([' ', '-'], '_', trim($type)));
+                $query->whereHas('type', fn($typeQuery) =>
+                    $typeQuery->where('name', $typeName)
+                );
+            })
             ->when($request->status, fn($q) => $q->where('status_id', $request->status))
             ->when($request->author_id, fn($q) => $q->byAuthor($request->author_id));
 
         // Tenant isolation: scope to the user's institution hierarchy via project.pi_id
         if ($user && !$user->hasRole('super_admin')) {
-            $query->whereHas('project', function ($pq) use ($user) {
-                $pq->hierarchical($user, 'pi_id');
+            $query->where(function ($visible) use ($user) {
+                // Publications may be recorded before they are linked to a
+                // project. Keep those visible within the creator's tenant.
+                $visible->whereHas('createdBy', function ($creatorQuery) use ($user) {
+                    $creatorQuery->where('university_id', $user->resolvedUniversityId());
+                })->orWhereHas('project', function ($projectQuery) use ($user) {
+                    $projectQuery->hierarchical($user, 'pi_id');
+                });
             });
         }
 

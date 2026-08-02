@@ -74,7 +74,7 @@ class FileController extends Controller
     {
         $this->authorizeTenantResource($file, 'update');
         $file->update($request->validated());
-        return response()->json($file);
+        return response()->json($file->fresh()->load('uploader'));
     }
 
     public function destroy(File $file): JsonResponse

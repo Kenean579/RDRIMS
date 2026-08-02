@@ -71,8 +71,8 @@
               </td>
               <td class="py-4 text-xs font-medium text-slate-400">{{ formatDate(file.created_at) }}</td>
               <td class="py-4">
-                <button @click="toggleVisibility(file)" class="px-3 py-1 rounded-lg text-xs font-bold border transition-all" :class="file.is_public ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-600 border-slate-200'">
-                  {{ file.is_public ? 'Public' : 'Private' }}
+                <button @click="toggleVisibility(file)" :disabled="visibilityUpdating === file.id" class="px-3 py-1 rounded-lg text-xs font-bold border transition-all disabled:opacity-60 disabled:cursor-wait" :class="file.is_public ? 'bg-emerald-50 text-emerald-700 border-emerald-200' : 'bg-slate-100 text-slate-600 border-slate-200'">
+                  {{ visibilityUpdating === file.id ? 'Updating...' : file.is_public ? 'Public' : 'Private' }}
                 </button>
               </td>
               <td class="pr-8 py-4 text-right">
@@ -118,6 +118,7 @@ const notif = useNotificationStore()
 const files = ref([]); const loading = ref(true)
 const searchQuery = ref(''); const fileFilter = ref('all')
 const dragOver = ref(false)
+const visibilityUpdating = ref(null)
 const showDelete = ref(false); const deletingFile = ref(null)
 
 const fileFilters = [
@@ -184,11 +185,18 @@ function handleDrop(e) {
 }
 
 async function toggleVisibility(file) {
+  if (visibilityUpdating.value) return
+  visibilityUpdating.value = file.id
   try {
-    await api.put(`/files/${file.id}`, { is_public: !file.is_public })
-    file.is_public = !file.is_public
+    const { data } = await api.put(`/files/${file.id}`, { is_public: !file.is_public })
+    file.is_public = data.is_public
     notif.success('Visibility updated')
-  } catch (e) { notif.error('Failed to update') }
+  } catch (e) {
+    const errors = e.response?.data?.errors
+    notif.error(errors ? Object.values(errors).flat()[0] : (e.response?.data?.message || 'Failed to update visibility'))
+  } finally {
+    visibilityUpdating.value = null
+  }
 }
 
 function confirmDelete(file) {

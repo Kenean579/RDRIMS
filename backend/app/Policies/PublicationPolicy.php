@@ -29,6 +29,16 @@ class PublicationPolicy
         if ($user->hasRole('super_admin')) {
             return true;
         }
+        if ($publication->created_by === $user->id) {
+            return true;
+        }
+        if (
+            $user->hasPermission('manage_publications')
+            && $publication->createdBy
+            && $user->sharesInstitutionWith($publication->createdBy)
+        ) {
+            return true;
+        }
         // Check if publication belongs to user's institution via project
         if ($publication->project) {
             if ($user->sharesInstitutionWith($publication->project->pi)) {
@@ -47,8 +57,8 @@ class PublicationPolicy
      */
     public function create(User $user): bool
     {
-        // Must have researcher or admin role
-        return $user->hasAnyRole(['super_admin', 'admin', 'pi_role', 'researcher']);
+        return $user->hasPermission('manage_publications')
+            || $user->hasAnyRole(['super_admin', 'admin', 'pi_role', 'researcher']);
     }
 
     /**
@@ -64,6 +74,18 @@ class PublicationPolicy
         // Cannot update published publications (except super admin)
         if ($publication->isPublished()) {
             return false;
+        }
+
+        if ($publication->created_by === $user->id) {
+            return true;
+        }
+
+        if (
+            $user->hasPermission('manage_publications')
+            && $publication->createdBy
+            && $user->sharesInstitutionWith($publication->createdBy)
+        ) {
+            return true;
         }
 
         // Check tenant isolation via project
@@ -99,6 +121,18 @@ class PublicationPolicy
         // Cannot delete published publications
         if ($publication->isPublished()) {
             return false;
+        }
+
+        if ($publication->created_by === $user->id) {
+            return true;
+        }
+
+        if (
+            $user->hasPermission('manage_publications')
+            && $publication->createdBy
+            && $user->sharesInstitutionWith($publication->createdBy)
+        ) {
+            return true;
         }
 
         // Check tenant isolation

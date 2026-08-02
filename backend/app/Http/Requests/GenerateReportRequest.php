@@ -3,6 +3,7 @@
 namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
 class GenerateReportRequest extends FormRequest
 {
@@ -15,6 +16,7 @@ class GenerateReportRequest extends FormRequest
     {
         return [
             'name' => 'required|string|max:255',
+            'type' => ['required', Rule::in(['projects'])],
             'parameters'  => 'nullable|array',
         ];
     }

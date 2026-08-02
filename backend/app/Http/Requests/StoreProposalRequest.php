@@ -41,4 +41,13 @@ class StoreProposalRequest extends FormRequest
             'investigators.*.role_id'  => 'required_with:investigators|exists:investigator_roles,id',
         ];
     }
+
+    public function messages(): array
+    {
+        return [
+            'proposal_file.file' => 'The proposal document must be uploaded as a file.',
+            'proposal_file.mimes' => 'The proposal document must be a PDF, DOC, or DOCX file.',
+            'proposal_file.max' => 'The proposal document must not exceed 20 MB.',
+        ];
+    }
 }

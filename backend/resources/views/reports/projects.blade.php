@@ -28,11 +28,11 @@
             @foreach($projects as $project)
             <tr>
                 <td>{{ $project->title }}</td>
-                <td>{{ $project->status->name }}</td>
+                <td>{{ $project->status->name ?? 'N/A' }}</td>
                 <td>{{ $project->pi->name ?? 'N/A' }}</td>
-                <td>{{ $project->start_date->format('Y-m-d') }}</td>
-                <td>{{ $project->end_date->format('Y-m-d') }}</td>
-                <td>{{ number_format($project->total_budget, 2) }}</td>
+                <td>{{ $project->start_date?->format('Y-m-d') ?? 'N/A' }}</td>
+                <td>{{ $project->end_date?->format('Y-m-d') ?? 'N/A' }}</td>
+                <td>{{ number_format($project->total_budget ?? 0, 2) }}</td>
             </tr>
             @endforeach
         </tbody>

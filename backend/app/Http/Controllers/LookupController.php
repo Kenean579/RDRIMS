@@ -13,6 +13,7 @@ class LookupController extends Controller
         'community_problem_statuses', 'project_statuses', 'milestone_statuses',
         'task_statuses', 'investigator_roles', 'invitation_statuses', 'agreement_types',
         'output_categories', 'output_statuses', 'output_subtypes', 'center_roles',
+        'publication_statuses', 'publication_types',
         'thematic_areas', 'academic_years',
         'student_levels', 'participant_types',
     ];

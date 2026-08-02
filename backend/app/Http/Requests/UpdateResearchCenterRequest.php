@@ -27,7 +27,7 @@ class UpdateResearchCenterRequest extends FormRequest
             'code' => 'sometimes|required|string|max:50|unique:research_centers,code,' . $centerid,
             'description' => 'nullable|string',
             'director_id' => 'nullable|exists:users,id',
-            'logo_file_id' => 'nullable|exists:files,id',
+            'logo' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp', 'max:5120'],
             'parent_university_id' => 'sometimes|exists:universities,id',
             'parent_campus_id' => 'nullable|sometimes|exists:campuses,id',
             'parent_faculty_id' => 'nullable|sometimes|exists:faculties,id',

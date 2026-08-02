@@ -14,12 +14,12 @@ class StorePatentRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'project_id' => 'required|exists:projects,id',
+            'project_id' => 'nullable|exists:projects,id',
             'title' => 'required|string|max:255',
-            'inventors' => 'nullable|string',
-            'filing_date' => 'nullable|date',
+            'inventors' => 'required|string',
+            'filing_date' => 'required|date',
             'patent_number' => 'required|string|max:100',
-            'status_id' => 'nullable|exists:patent_statuses,id',
+            'status_id' => 'required|exists:patent_statuses,id',
         ];
     }
 }

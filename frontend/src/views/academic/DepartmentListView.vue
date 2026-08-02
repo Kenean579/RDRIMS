@@ -1,150 +1,266 @@
 <template>
-  <div class="flex flex-col gap-6 card">
-    <!-- Header -->
-    <div class="section-header">
+  <div class="flex flex-col gap-5 pb-6 animate-fade">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
-        <h1 class="section-title">Academic Departments</h1>
-        <p class="section-subtitle">Manage departmental structure and faculty alignment</p>
+        <h1 class="text-xl font-bold text-slate-900">Departments</h1>
+        <p class="text-sm text-slate-500 mt-1">Manage academic departments and their faculty placement.</p>
       </div>
-      <button @click="showCreate = true" class="btn btn-primary">
-        <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" /></svg>
+      <button type="button" class="btn btn-primary h-11 px-5" @click="openCreate">
+        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" /></svg>
         Add Department
       </button>
     </div>
 
-    <!-- Content Wrapper -->
-    <div v-if="loading" class="grid grid-cols-1 gap-4">
-      <div v-for="i in 3" :key="i" class="card h-24 animate-pulse bg-slate-50/50"></div>
-    </div>
-    <div v-else-if="departments.length === 0" class="card">
-      <EmptyState icon="🏛️" title="No departments found" description="Add academic departments to organize your institution's structure." action-label="Add First Department" action-icon="add" @action="showCreate = true" />
-    </div>
-
-    <div v-else class="grid grid-cols-1 lg:grid-cols-2 gap-5">
-      <div v-for="dept in departments" :key="dept.id" class="card p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-6 card-hover transition-all">
-        <div class="flex items-center gap-4">
-          <div class="w-12 h-12 rounded-2xl bg-slate-100 text-white flex items-center justify-center font-bold text-xl">
-            {{ dept.name.charAt(0) }}
-          </div>
-          <div>
-            <h3 class="font-bold text-slate-800 text-lg leading-tight mb-1">{{ dept.name }}</h3>
-            <div class="flex items-center gap-2">
-              <span class="inline-block px-2.5 py-0.5 bg-slate-100 text-slate-500 text-xs font-medium rounded-md border border-slate-100">CODE: {{ dept.code }}</span>
-              <span class="inline-block px-2 py-0.5 bg-fuchsia-50 text-fuchsia-600 text-xs font-medium rounded-md border border-fuchsia-100"><i class="fas fa-building mr-1"></i>{{ dept.faculty?.name || 'N/A' }}</span>
-            </div>
+    <div class="grid grid-cols-1 sm:grid-cols-[180px_1fr] gap-4">
+      <div class="card p-5">
+        <p class="text-xs font-semibold text-slate-500">Total departments</p>
+        <p class="text-3xl font-bold text-slate-900 mt-1">{{ departments.length }}</p>
+      </div>
+      <div class="card p-5 flex items-end">
+        <div class="w-full">
+          <label for="department-search" class="block text-xs font-semibold text-slate-500 mb-2">Search</label>
+          <div class="relative">
+            <svg class="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8" stroke-width="2"/><path d="m21 21-4.35-4.35" stroke-width="2"/></svg>
+            <input id="department-search" v-model.trim="searchQuery" class="input pl-10" placeholder="Search by department, code, or faculty..." />
           </div>
         </div>
-        <ActionMenu :actions="[
-          { key: 'edit', label: 'Edit', handler: () => editDept(dept) },
-          { separator: true },
-          { key: 'delete', label: 'Delete', handler: () => confirmDelete(dept) }
-        ]" />
       </div>
     </div>
 
-    <Modal :show="showCreate || !!editingDept" :title="editingDept ? 'Edit Department Details' : 'Add New Department'" @close="closeModal">
-      <form @submit.prevent="saveDept" class="space-y-4 p-1">
-        <div class="space-y-1.5">
-          <label class="block text-sm font-semibold text-slate-700">Department Name *</label>
-          <input v-model="form.name" type="text" required placeholder="e.g. Computer Science" class="input" />
+    <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div v-for="item in 4" :key="item" class="card h-28 animate-pulse bg-slate-50"></div>
+    </div>
+
+    <div v-else-if="error" class="card p-10 text-center">
+      <p class="text-sm font-semibold text-rose-600">{{ error }}</p>
+      <button type="button" class="btn btn-secondary mt-4" @click="fetchData">Retry</button>
+    </div>
+
+    <EmptyState
+      v-else-if="filteredDepartments.length === 0"
+      icon="building"
+      :title="searchQuery ? 'No matching departments' : 'No departments found'"
+      :description="searchQuery ? 'Try a different department, code, or faculty.' : 'Add a department to organize the academic structure.'"
+      :action-label="searchQuery ? '' : 'Add First Department'"
+      @action="openCreate"
+    />
+
+    <div v-else class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div v-for="dept in filteredDepartments" :key="dept.id" class="card p-5 flex items-start gap-4 hover:border-brand/30 transition-colors">
+        <div class="w-11 h-11 rounded-xl bg-brand/10 text-brand flex items-center justify-center font-bold shrink-0">
+          {{ dept.name.charAt(0).toUpperCase() }}
         </div>
-        <div class="space-y-1.5">
-          <label class="block text-sm font-semibold text-slate-700">Department Code *</label>
-          <input v-model="form.code" type="text" required placeholder="CS" class="input" />
+        <div class="flex-1 min-w-0">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0">
+              <h2 class="text-sm font-bold text-slate-900 truncate" :title="dept.name">{{ dept.name }}</h2>
+              <p class="text-xs text-slate-500 mt-1 truncate">{{ dept.faculty?.name || 'Faculty not assigned' }}</p>
+            </div>
+            <ActionMenu :actions="[
+              { key: 'edit', label: 'Edit', handler: () => editDept(dept) },
+              { separator: true },
+              { key: 'delete', label: 'Delete', handler: () => confirmDelete(dept) }
+            ]" />
+          </div>
+          <div class="flex flex-wrap gap-2 mt-3">
+            <span class="px-2.5 py-1 rounded-md bg-slate-100 text-slate-600 text-xs font-semibold">{{ dept.code }}</span>
+            <span v-if="placementLabel(dept)" class="px-2.5 py-1 rounded-md bg-blue-50 text-blue-700 text-xs font-medium">{{ placementLabel(dept) }}</span>
+          </div>
         </div>
-        <div class="space-y-1.5">
-          <label class="block text-sm font-semibold text-slate-700">University</label>
-          <select v-model="form.university_id" class="input">
-            <option value="">Select University</option>
-            <option v-for="u in universities" :key="u.id" :value="u.id">{{ u.name }}</option>
-          </select>
+      </div>
+    </div>
+
+    <Modal :show="showCreate || !!editingDept" :title="editingDept ? 'Edit Department' : 'Add Department'" size="md" @close="closeModal">
+      <form class="space-y-5" @submit.prevent="saveDept">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-semibold text-slate-600 mb-2">Department name *</label>
+            <input v-model.trim="form.name" required maxlength="255" class="input" placeholder="e.g. Computer Science" />
+          </div>
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-semibold text-slate-600 mb-2">Department code *</label>
+            <input v-model.trim="form.code" required maxlength="50" class="input uppercase" placeholder="e.g. CS" />
+          </div>
         </div>
-        <div class="space-y-1.5">
-          <label class="block text-sm font-semibold text-slate-700">Campus</label>
-          <select v-model="form.campus_id" class="input" :disabled="!form.university_id">
-            <option value="">Select Campus</option>
-            <option v-for="c in filteredCampuses" :key="c.id" :value="c.id">{{ c.name }}</option>
-          </select>
+
+        <div class="pt-1">
+          <div class="flex items-center justify-between mb-3">
+            <p class="text-xs font-semibold text-slate-600">Academic placement *</p>
+            <span v-if="editingDept" class="text-xs text-slate-400">Placement cannot be changed after creation</span>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4" :class="{ 'opacity-60': editingDept }">
+            <div>
+              <label class="block text-xs text-slate-500 mb-2">University</label>
+              <select v-model="form.university_id" required class="input" :disabled="!!editingDept" @change="onUniversityChange">
+                <option value="">Select university</option>
+                <option v-for="item in universities" :key="item.id" :value="item.id">{{ item.name }}</option>
+              </select>
+            </div>
+            <div>
+              <label class="block text-xs text-slate-500 mb-2">Campus</label>
+              <select v-model="form.campus_id" required class="input" :disabled="!!editingDept || !form.university_id" @change="onCampusChange">
+                <option value="">Select campus</option>
+                <option v-for="item in filteredCampuses" :key="item.id" :value="item.id">{{ item.name }}</option>
+              </select>
+            </div>
+            <div class="sm:col-span-2">
+              <label class="block text-xs text-slate-500 mb-2">Faculty</label>
+              <select v-model="form.faculty_id" required class="input" :disabled="!!editingDept || !form.campus_id">
+                <option value="">Select faculty</option>
+                <option v-for="item in filteredFaculties" :key="item.id" :value="item.id">{{ item.name }}</option>
+              </select>
+            </div>
+          </div>
         </div>
-        <div class="space-y-1.5">
-          <label class="block text-sm font-semibold text-slate-700">Parent Faculty</label>
-          <select v-model="form.faculty_id" class="input" :disabled="!form.campus_id">
-            <option value="">Select Faculty</option>
-            <option v-for="f in filteredFaculties" :key="f.id" :value="f.id">{{ f.name }}</option>
-          </select>
-        </div>
-        <div class="flex justify-end gap-3 pt-4 border-t border-slate-100">
-          <button type="button" @click="closeModal" class="btn btn-secondary">Discard</button>
-          <button type="submit" class="btn btn-primary">{{ editingDept ? 'Update' : 'Add' }}</button>
+
+        <div class="flex justify-end gap-3 pt-5 border-t border-slate-100">
+          <button type="button" class="btn btn-secondary" @click="closeModal">Cancel</button>
+          <button type="submit" class="btn btn-primary" :disabled="saving">
+            {{ saving ? 'Saving...' : editingDept ? 'Save Changes' : 'Add Department' }}
+          </button>
         </div>
       </form>
     </Modal>
 
-    <ConfirmDialog :show="showDelete" title="Delete Department" message="Delete this department?" confirmText="Delete" variant="danger" @confirm="deleteDept" @cancel="showDelete = false" />
+    <ConfirmDialog :show="showDelete" title="Delete Department" :message="`Delete '${deletingDept?.name || ''}'? This action may fail if the department is still in use.`" confirmText="Delete Department" variant="danger" @confirm="deleteDept" @cancel="closeDelete" />
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, computed, watch, onMounted } from 'vue'
-import { useNotificationStore } from '@/stores/notification'
+import { computed, onMounted, reactive, ref } from 'vue'
 import api from '@/services/api'
-import Modal from '@/components/Modal.vue'
-import ConfirmDialog from '@/components/ConfirmDialog.vue'
-import LoadingSkeleton from '@/components/LoadingSkeleton.vue'
-import EmptyState from '@/components/EmptyState.vue'
+import { useNotificationStore } from '@/stores/notification'
 import ActionMenu from '@/components/ActionMenu.vue'
+import ConfirmDialog from '@/components/ConfirmDialog.vue'
+import EmptyState from '@/components/EmptyState.vue'
+import Modal from '@/components/Modal.vue'
 
 const notif = useNotificationStore()
-const departments = ref([]); const loading = ref(true); const faculties = ref([]); const campuses = ref([]); const universities = ref([])
-const showCreate = ref(false); const editingDept = ref(null); const showDelete = ref(false); const deletingDept = ref(null)
+const departments = ref([])
+const faculties = ref([])
+const campuses = ref([])
+const universities = ref([])
+const loading = ref(true)
+const saving = ref(false)
+const error = ref('')
+const searchQuery = ref('')
+const showCreate = ref(false)
+const editingDept = ref(null)
+const showDelete = ref(false)
+const deletingDept = ref(null)
 const form = reactive({ name: '', code: '', university_id: '', campus_id: '', faculty_id: '' })
 
-// Computed
-const filteredCampuses = computed(() => campuses.value.filter(c => c.university_id === form.university_id))
-const filteredFaculties = computed(() => faculties.value.filter(f => f.campus_id === form.campus_id))
+const filteredCampuses = computed(() => campuses.value.filter(item => Number(item.university_id) === Number(form.university_id)))
+const filteredFaculties = computed(() => faculties.value.filter(item => Number(item.campus_id) === Number(form.campus_id)))
+const filteredDepartments = computed(() => {
+  const query = searchQuery.value.toLocaleLowerCase()
+  return departments.value.filter(item => !query || [item.name, item.code, item.faculty?.name].some(value => value?.toLocaleLowerCase().includes(query)))
+})
 
-// Watchers
-watch(() => form.university_id, () => { form.campus_id = ''; form.faculty_id = '' })
-watch(() => form.campus_id, () => { form.faculty_id = '' })
+const rows = response => Array.isArray(response.data) ? response.data : (response.data.data || [])
 
 async function fetchData() {
   loading.value = true
-  try { 
-    const dRes = await api.get('/departments')
-    const fRes = await api.get('/faculties')
-    const cRes = await api.get('/campuses')
-    const uRes = await api.get('/universities')
-    departments.value = dRes.data; faculties.value = fRes.data; campuses.value = cRes.data; universities.value = uRes.data 
+  error.value = ''
+  try {
+    const [departmentResponse, facultyResponse, campusResponse, universityResponse] = await Promise.all([
+      api.get('/departments', { timeout: 15000 }),
+      api.get('/faculties', { timeout: 15000 }),
+      api.get('/campuses', { timeout: 15000 }),
+      api.get('/universities', { timeout: 15000 }),
+    ])
+    departments.value = rows(departmentResponse)
+    faculties.value = rows(facultyResponse)
+    campuses.value = rows(campusResponse)
+    universities.value = rows(universityResponse)
+  } catch (err) {
+    error.value = err.response?.data?.message || 'Failed to load departments.'
+  } finally {
+    loading.value = false
   }
-  catch (e) {} finally { loading.value = false }
 }
 
-function editDept(d) {
-  let uid = '', cid = ''
-  if (d.faculty_id) {
-    const fac = faculties.value.find(f => f.id === d.faculty_id)
-    if (fac) {
-      cid = fac.campus_id; const camp = campuses.value.find(c => c.id === cid)
-      if (camp) uid = camp.university_id
-    }
-  }
-  editingDept.value = d; Object.assign(form, { name: d.name, code: d.code, university_id: uid, campus_id: cid, faculty_id: d.faculty_id || '' }) 
+function placementLabel(department) {
+  const faculty = faculties.value.find(item => Number(item.id) === Number(department.faculty_id))
+  const campus = campuses.value.find(item => Number(item.id) === Number(faculty?.campus_id))
+  return campus?.name || ''
 }
-function closeModal() { showCreate.value = false; editingDept.value = null; Object.assign(form, { name: '', code: '', university_id: '', campus_id: '', faculty_id: '' }) }
-function confirmDelete(d) { deletingDept.value = d; showDelete.value = true }
+
+function openCreate() {
+  editingDept.value = null
+  Object.assign(form, { name: '', code: '', university_id: '', campus_id: '', faculty_id: '' })
+  showCreate.value = true
+}
+
+function editDept(department) {
+  const faculty = faculties.value.find(item => Number(item.id) === Number(department.faculty_id))
+  const campus = campuses.value.find(item => Number(item.id) === Number(faculty?.campus_id))
+  editingDept.value = department
+  Object.assign(form, {
+    name: department.name,
+    code: department.code,
+    university_id: campus?.university_id || '',
+    campus_id: faculty?.campus_id || '',
+    faculty_id: department.faculty_id || '',
+  })
+}
+
+function onUniversityChange() {
+  form.campus_id = ''
+  form.faculty_id = ''
+}
+
+function onCampusChange() {
+  form.faculty_id = ''
+}
+
+function closeModal() {
+  showCreate.value = false
+  editingDept.value = null
+  Object.assign(form, { name: '', code: '', university_id: '', campus_id: '', faculty_id: '' })
+}
+
+function confirmDelete(department) {
+  deletingDept.value = department
+  showDelete.value = true
+}
+
+function closeDelete() {
+  deletingDept.value = null
+  showDelete.value = false
+}
 
 async function saveDept() {
+  saving.value = true
   try {
-    const payload = { ...form, faculty_id: form.faculty_id || null }
-    if (editingDept.value) { await api.put(`/departments/${editingDept.value.id}`, payload); notif.success('Updated!') }
-    else { await api.post('/departments', payload); notif.success('Added!') }
-    closeModal(); fetchData()
-  } catch (err) { notif.error('Failed') }
+    const payload = { name: form.name, code: form.code.toUpperCase() }
+    if (editingDept.value) {
+      await api.put(`/departments/${editingDept.value.id}`, payload)
+      notif.success('Department updated.')
+    } else {
+      payload.faculty_id = form.faculty_id
+      await api.post('/departments', payload)
+      notif.success('Department added.')
+    }
+    closeModal()
+    await fetchData()
+  } catch (err) {
+    const errors = err.response?.data?.errors
+    notif.error(errors ? Object.values(errors).flat()[0] : (err.response?.data?.message || 'Failed to save department.'))
+  } finally {
+    saving.value = false
+  }
 }
 
 async function deleteDept() {
-  try { await api.delete(`/departments/${deletingDept.value.id}`); notif.success('Deleted!'); showDelete.value = false; fetchData() }
-  catch (err) { notif.error('Failed') }
+  try {
+    await api.delete(`/departments/${deletingDept.value.id}`)
+    notif.success('Department deleted.')
+    closeDelete()
+    await fetchData()
+  } catch (err) {
+    notif.error(err.response?.data?.message || 'Failed to delete department.')
+  }
 }
 
 onMounted(fetchData)
