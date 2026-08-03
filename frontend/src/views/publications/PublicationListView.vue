@@ -51,6 +51,7 @@
           <div class="flex-1 pr-4 min-w-0">
             <div class="flex items-center gap-3 mb-2.5">
               <span class="px-2.5 py-0.5 bg-indigo-50 text-indigo-600 border border-indigo-100 text-xs font-medium rounded-md">{{ pub.type?.name || 'Journal Article' }}</span>
+              <span class="px-2.5 py-0.5 text-xs font-medium rounded-md border" :class="statusClass(pub.status?.name)">{{ formatTypeName(pub.status?.name || 'draft') }}</span>
               <span v-if="pub.doi" class="text-xs text-slate-400 font-medium tracking-widest  truncate max-w-[150px]">DOI: {{ pub.doi }}</span>
             </div>
             <h3 class="text-base font-bold text-slate-900 mb-2 leading-tight group-hover:text-brand transition-colors line-clamp-2 min-h-10">{{ pub.title }}</h3>
@@ -78,7 +79,9 @@
            <div class="flex gap-2 items-center">
              <ActionMenu :actions="[
                { key: 'view', label: 'View Details', handler: () => $router.push(`/app/publications/${pub.id}`) },
-               { key: 'link', label: 'Open Link', show: !!pub.url, handler: () => window.open(pub.url, '_blank') }
+               { key: 'link', label: 'Open Link', show: !!pub.url, handler: () => window.open(pub.url, '_blank') },
+               { separator: true, show: workflowActions(pub).length > 0 },
+               ...workflowActions(pub)
              ]" @click.stop />
            </div>
         </div>
@@ -102,6 +105,13 @@
         </div>
         
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div>
+            <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Publication Type *</label>
+            <select v-model="form.type_id" required class="input h-12 font-bold">
+              <option value="" disabled>Select a type</option>
+              <option v-for="type in typeOptions" :key="type.id" :value="type.id">{{ formatTypeName(type.name) }}</option>
+            </select>
+          </div>
           <div>
             <label class="block text-xs text-slate-500 font-medium mb-2 ml-1">Publication Date *</label>
             <input v-model="form.publication_date" type="date" required class="input h-12 font-bold" />
@@ -134,12 +144,15 @@ import Modal from '@/components/Modal.vue'
 import EmptyState from '@/components/EmptyState.vue'
 import ActionMenu from '@/components/ActionMenu.vue'
 import { useNotificationStore } from '@/stores/notification'
+import { useAuthStore } from '@/stores/auth'
 const notif = useNotificationStore()
+const auth = useAuthStore()
 const loading = ref(true); const publications = ref([]); const showAdd = ref(false)
+const processingId = ref(null)
 const typeOptions = ref([])
 const filters = reactive({ search: '', type: '' })
 const pagination = reactive({ current_page: 1, last_page: 1, total: 0 })
-const form = reactive({ title: '', abstract: '', journal: '', publication_date: new Date().toISOString().split('T')[0], doi: '' })
+const form = reactive({ type_id: '', title: '', abstract: '', journal: '', publication_date: new Date().toISOString().split('T')[0], doi: '' })
 let timer = null
 async function fetchPublications(page = 1) {
   loading.value = true
@@ -165,11 +178,64 @@ function formatTypeName(name) {
     .replace(/_/g, ' ')
     .replace(/\b\w/g, letter => letter.toUpperCase())
 }
+function statusClass(status) {
+  return {
+    published: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    accepted: 'bg-blue-50 text-blue-700 border-blue-200',
+    submitted: 'bg-amber-50 text-amber-700 border-amber-200',
+    under_review: 'bg-violet-50 text-violet-700 border-violet-200',
+    rejected: 'bg-rose-50 text-rose-700 border-rose-200'
+  }[status] || 'bg-slate-50 text-slate-600 border-slate-200'
+}
+const approverRoles = ['research_admin', 'campus_admin', 'faculty_admin', 'department_head', 'director']
+function isApprover() {
+  return auth.userRoles.some(role => approverRoles.includes(role))
+}
+function workflowActions(pub) {
+  const status = pub.status?.name
+  const busy = processingId.value === pub.id
+  const actions = []
+
+  if (status === 'draft') {
+    actions.push({ key: 'submit', label: 'Submit for Review', disabled: busy, handler: () => runWorkflow(pub, 'submit') })
+  }
+  if (isApprover() && ['submitted', 'under_review', 'accepted'].includes(status) && !pub.is_verified) {
+    actions.push({ key: 'verify', label: 'Verify Publication', disabled: busy, handler: () => runWorkflow(pub, 'verify') })
+  }
+  if (isApprover() && ['submitted', 'under_review'].includes(status)) {
+    actions.push({ key: 'approve', label: 'Approve', disabled: busy, handler: () => runWorkflow(pub, 'approve') })
+    actions.push({ key: 'reject', label: 'Reject', disabled: busy, handler: () => rejectPublication(pub) })
+  }
+  if (isApprover() && status === 'accepted' && pub.is_verified) {
+    actions.push({ key: 'publish', label: 'Publish', disabled: busy, handler: () => runWorkflow(pub, 'publish') })
+  }
+  return actions
+}
+async function runWorkflow(pub, action, payload = {}) {
+  if (!window.confirm(`${formatTypeName(action)} “${pub.title}”?`)) return
+  processingId.value = pub.id
+  try {
+    await api.post(`/publications/${pub.id}/${action}`, payload)
+    const completedAction = { submit: 'submitted', verify: 'verified', approve: 'approved', publish: 'published', reject: 'rejected' }[action]
+    notif.success(`Publication ${completedAction} successfully.`)
+    await fetchPublications(pagination.current_page)
+  } catch (error) {
+    notif.error(error.response?.data?.message || `Failed to ${action} publication.`)
+  } finally {
+    processingId.value = null
+  }
+}
+function rejectPublication(pub) {
+  const reason = window.prompt('Enter the reason for rejection:')
+  if (!reason?.trim()) return
+  runWorkflow(pub, 'reject', { reason: reason.trim() })
+}
 async function savePublication() {
   try {
     await api.post('/publications', form)
     notif.success('Publication added!')
     showAdd.value = false
+    Object.assign(form, { type_id: '', title: '', abstract: '', journal: '', publication_date: new Date().toISOString().split('T')[0], doi: '' })
     fetchPublications(1)
   } catch (error) {
     const validationErrors = error.response?.data?.errors
@@ -184,7 +250,7 @@ async function savePublication() {
 onMounted(() => {
   fetchPublications()
   api.get('/lookups/publication_types')
-    .then(({ data }) => { typeOptions.value = Array.isArray(data) ? data : [] })
+    .then(({ data }) => { typeOptions.value = Array.isArray(data) ? data : (data?.data || []) })
     .catch(error => console.error('Failed to load publication types:', error))
 })
 </script>

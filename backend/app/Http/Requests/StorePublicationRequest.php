@@ -15,7 +15,7 @@ class StorePublicationRequest extends FormRequest
     {
         return [
             'project_id' => 'nullable|exists:projects,id',
-            'type_id' => 'nullable|exists:publication_types,id',
+            'type_id' => 'required|exists:publication_types,id',
             'title' => 'required|string|max:255',
             'abstract' => 'nullable|string',
             'keywords' => 'nullable|string',

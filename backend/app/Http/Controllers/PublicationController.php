@@ -21,9 +21,12 @@ class PublicationController extends Controller
      */
     public function index(Request $request): JsonResponse
     {
-        $this->authorize('viewAny', Publication::class);
-
         $user = $request->user();
+        $isManagementRequest = $request->is('api/management/publications*');
+
+        if ($isManagementRequest) {
+            $this->authorize('viewAny', Publication::class);
+        }
 
         $query = Publication::with('status', 'type', 'project', 'authors.user', 'researchCenter')
             ->when($request->search, fn($q) => $q->where('title', 'LIKE', '%' . $request->search . '%')
@@ -45,8 +48,14 @@ class PublicationController extends Controller
             ->when($request->status, fn($q) => $q->where('status_id', $request->status))
             ->when($request->author_id, fn($q) => $q->byAuthor($request->author_id));
 
+        // The public endpoint must never expose workflow records such as drafts,
+        // submissions, rejected publications, or accepted-but-unpublished records.
+        if (!$isManagementRequest) {
+            $query->published();
+        }
+
         // Tenant isolation: scope to the user's institution hierarchy via project.pi_id
-        if ($user && !$user->hasRole('super_admin')) {
+        if ($isManagementRequest && $user && !$user->hasRole('super_admin')) {
             $query->where(function ($visible) use ($user) {
                 // Publications may be recorded before they are linked to a
                 // project. Keep those visible within the creator's tenant.
@@ -91,9 +100,13 @@ class PublicationController extends Controller
     /**
      * Show a single publication
      */
-    public function show(Publication $publication): JsonResponse
+    public function show(Request $request, Publication $publication): JsonResponse
     {
-        $this->authorize('view', $publication);
+        if ($request->is('api/management/publications*')) {
+            $this->authorize('view', $publication);
+        } elseif (!$publication->isPublished()) {
+            abort(404);
+        }
         
         $publication->load([
             'status',

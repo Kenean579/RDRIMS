@@ -30,6 +30,15 @@ class PublicationService
             $publication = Publication::create($data);
             Publication::reguard();
 
+            // The creator is the first internal author by default. This ensures a
+            // newly recorded publication can enter the submission workflow.
+            $publication->authors()->create([
+                'user_id' => $userId,
+                'author_order' => 1,
+                'contribution_role' => 'first_author',
+                'is_corresponding' => true,
+            ]);
+
             // Log creation
             $this->logHistory(
                 $publication,

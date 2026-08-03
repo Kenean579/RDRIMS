@@ -39,36 +39,36 @@ class PublicationResource extends JsonResource
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
             
             // Relationships
-            'project' => $this->whenLoaded('project', fn() => [
+            'project' => $this->whenLoaded('project', fn() => $this->project ? [
                 'id' => $this->project->id,
                 'title' => $this->project->title,
-            ]),
-            'status' => $this->whenLoaded('status', fn() => [
+            ] : null),
+            'status' => $this->whenLoaded('status', fn() => $this->status ? [
                 'id' => $this->status->id,
                 'name' => $this->status->name,
-            ]),
-            'type' => $this->whenLoaded('type', fn() => [
+            ] : null),
+            'type' => $this->whenLoaded('type', fn() => $this->type ? [
                 'id' => $this->type->id,
                 'name' => $this->type->name,
-            ]),
+            ] : null),
             'authors' => PublicationAuthorResource::collection($this->whenLoaded('authors')),
             'file' => $this->whenLoaded('file', fn() => [
                 'id' => $this->file->id,
                 'name' => $this->file->name,
                 'path' => $this->file->path,
             ]),
-            'research_center' => $this->whenLoaded('researchCenter', fn() => [
+            'research_center' => $this->whenLoaded('researchCenter', fn() => $this->researchCenter ? [
                 'id' => $this->researchCenter->id,
                 'name' => $this->researchCenter->name,
-            ]),
-            'created_by' => $this->whenLoaded('createdBy', fn() => [
+            ] : null),
+            'created_by' => $this->whenLoaded('createdBy', fn() => $this->createdBy ? [
                 'id' => $this->createdBy->id,
                 'name' => $this->createdBy->name,
-            ]),
-            'verified_by' => $this->whenLoaded('verifiedBy', fn() => [
+            ] : null),
+            'verified_by' => $this->whenLoaded('verifiedBy', fn() => $this->verifiedBy ? [
                 'id' => $this->verifiedBy->id,
                 'name' => $this->verifiedBy->name,
-            ]),
+            ] : null),
             
             // Computed attributes
             'author_names' => $this->when($this->relationLoaded('authors'), $this->author_names),

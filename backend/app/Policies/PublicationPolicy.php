@@ -175,8 +175,19 @@ class PublicationPolicy
      */
     public function verify(User $user, Publication $publication): bool
     {
-        // Only admin or super admin can verify
-        if (!$user->hasAnyRole(['super_admin', 'admin'])) {
+        // Institutional publication approvers.
+        if (!$user->hasAnyRole([
+            'research_admin',
+            'campus_admin',
+            'faculty_admin',
+            'department_head',
+            'director',
+        ])) {
+            return false;
+        }
+
+        if ($publication->createdBy
+            && !$user->sharesInstitutionWith($publication->createdBy)) {
             return false;
         }
 

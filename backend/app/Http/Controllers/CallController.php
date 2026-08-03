@@ -152,11 +152,11 @@ class CallController extends Controller
                 ->where('published_at', '<=', now());
         }
 
-        return response()->json(
-            CallResource::collection(
-                $query->orderBy('deadline', 'desc')->paginate(20)
+        return CallResource::collection(
+            $query->orderBy('deadline', 'desc')->paginate(
+                $request->integer('per_page', 20)
             )
-        );
+        )->response();
     }
 
     /**
@@ -190,6 +190,15 @@ class CallController extends Controller
         if (empty($validated['status_id'])) {
             $defaultStatus = CallStatus::where('name', 'open')->first();
             $validated['status_id'] = $defaultStatus ? $defaultStatus->id : 2;
+        }
+
+        // An open, public call should be visible on public pages immediately unless
+        // the client supplied an explicit publication date.
+        $statusName = CallStatus::whereKey($validated['status_id'])->value('name');
+        if ($statusName === 'open'
+            && ($validated['is_public'] ?? true)
+            && empty($validated['published_at'])) {
+            $validated['published_at'] = now();
         }
 
         // --- Handle budget_limit in metadata ---
@@ -253,7 +262,7 @@ class CallController extends Controller
     public function update(UpdateCallRequest $request, Call $call): JsonResponse
     {
         // Bypass global scopes for update (admin operation)
-        $call = $call->withoutGlobalScopes();
+        $call = Call::withoutGlobalScopes()->findOrFail($call->getKey());
 
         $this->authorize('update', $call);
 
@@ -261,6 +270,17 @@ class CallController extends Controller
 
         // Enforce immutability: university_id cannot change (defensive, validation blocks this)
         unset($validated['university_id']);
+
+        $targetStatusId = $validated['status_id'] ?? $call->status_id;
+        $targetStatusName = CallStatus::whereKey($targetStatusId)->value('name');
+        $willBePublic = $validated['is_public'] ?? $call->is_public;
+
+        if ($targetStatusName === 'open'
+            && $willBePublic
+            && !$call->published_at
+            && !array_key_exists('published_at', $validated)) {
+            $validated['published_at'] = now();
+        }
 
         $call->update($validated);
 

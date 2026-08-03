@@ -29,6 +29,7 @@ class StoreCallRequest extends FormRequest
             'title' => 'required|string|max:255',
             'description' => 'required|string',
             'deadline' => 'required|date|after:today',
+            'published_at' => 'nullable|date',
             'thematic_areas' => 'required|string',
             'budget_limit' => 'nullable|numeric|min:0',
 
