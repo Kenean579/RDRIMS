@@ -251,7 +251,7 @@ const baseStats = [
     svgIcon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>`,
     iconBg: '#10b981', iconColor: '#10b981'
   },
-  // 14 (for finance_officer)
+  // 14 (for finance_officer)ca
   {
     label: 'Pending Checks', value: '0', sub: 'Finance',
     svgIcon: `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>`,

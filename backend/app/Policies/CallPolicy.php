@@ -51,27 +51,38 @@ class CallPolicy
      * Private calls: Require authentication + permission + tenant ownership
      */
     public function view(?User $user, Call $call): bool
-    {
-        // Unauthenticated: only public, published calls
-        if (!$user) {
-            return $call->is_public
-                && $call->published_at !== null
-                && $call->published_at <= now();
-        }
+{
+    /*
+    |--------------------------------------------------------------------------
+    | Public published calls
+    |--------------------------------------------------------------------------
+    */
 
-        // Deny super_admin (tenant resources only)
-        if ($user->hasRole('super_admin')) {
-            return false;
-        }
-
-        // Check permission
-        if (!$user->hasPermission('call.view')) {
-            return false;
-        }
-
-        // Enforce tenant ownership
-        return $this->sameUniversity($user, $call);
+    if (
+        $call->is_public &&
+        $call->published_at !== null &&
+        $call->published_at <= now()
+    ) {
+        return true;
     }
+
+    /*
+    |--------------------------------------------------------------------------
+    | Guests cannot access private calls
+    |--------------------------------------------------------------------------
+    */
+
+    if (!$user) {
+        return false;
+    }
+
+    if ($user->hasRole('super_admin')) {
+        return false;
+    }
+
+    return $user->hasPermission('call.view')
+        && $this->sameUniversity($user, $call);
+}
 
     /**
      * Determine whether the user can create calls.
@@ -148,7 +159,7 @@ class CallPolicy
         return false;
     }
 
-    /**c
+    /**
      * Verify tenant ownership.
      *
      * Ensures the call belongs to the same university as the user.

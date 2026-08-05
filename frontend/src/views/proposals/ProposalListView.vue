@@ -130,26 +130,75 @@ const auth = useAuthStore()
 const notif = useNotificationStore()
 const loading = ref(true); const error = ref(null); const proposals = ref([])
 const pagination = reactive({ current_page: 1, last_page: 1, total: 0 })
-const filters = reactive({ search: '', status: [], type: '' })
+const filters = reactive({
+    search: '',
+    status: '',
+    type: ''
+})
 const proposalStatuses = ref([]); const proposalTypes = ref([])
 let searchTimer = null
-const hasActiveFilters = computed(() => filters.search || filters.status.length > 0 || filters.type)
+const hasActiveFilters = computed(() =>
+    !!filters.search ||
+    !!filters.status ||
+    !!filters.type
+)
 
 async function fetchProposals(page = 1) {
-  loading.value = true; error.value = null
-  try {
-    const params = { page }
-    if (filters.search) params.search = filters.search
-    if (filters.status.length) params.status = filters.status
-    if (filters.type) params.type = filters.type
-    const { data } = await api.get('/proposals', { params })
-    proposals.value = data.data
-    Object.assign(pagination, { current_page: data.current_page, last_page: data.last_page, total: data.total })
-  }
-  catch (err) { error.value = err.response?.data?.message || 'Failed' } finally { loading.value = false }
+    loading.value = true
+    error.value = null
+
+    try {
+        const params = { page }
+
+        if (filters.search) {
+            params.search = filters.search
+        }
+
+        if (filters.status) {
+            params.status = filters.status
+        }
+
+        if (filters.type) {
+            params.type = filters.type
+        }
+
+        const response = await api.get('/proposals', { params })
+
+        const result = response.data
+
+        if (Array.isArray(result)) {
+
+            proposals.value = result
+
+            Object.assign(pagination, {
+                current_page: 1,
+                last_page: 1,
+                total: result.length,
+            })
+
+        } else {
+
+            proposals.value = result.data ?? []
+
+            Object.assign(pagination, {
+                current_page: result.meta?.current_page ?? result.current_page ?? 1,
+                last_page: result.meta?.last_page ?? result.last_page ?? 1,
+                total: result.meta?.total ?? result.total ?? 0,
+            })
+        }
+
+    } catch (err) {
+
+        error.value = err.response?.data?.message || 'Failed to load proposals'
+
+    } finally {
+
+        loading.value = false
+
+    }
 }
 function debounceSearch() { clearTimeout(searchTimer); searchTimer = setTimeout(() => fetchProposals(1), 400) }
-function clearFilters() { filters.search = ''; filters.status = []; filters.type = ''; fetchProposals(1) }
+function clearFilters() { filters.search = ''; filters.status = ''; filters.type = ''; fetchProposals(1) }
 
 async function deleteProposal(id) {
   if (!confirm('Are you sure you want to delete this proposal? This action cannot be undone.')) return

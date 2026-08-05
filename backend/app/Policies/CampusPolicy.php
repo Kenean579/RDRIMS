@@ -13,6 +13,7 @@ class CampusPolicy
     public function viewAny(User $user): bool
     {
         if ($user->hasRole('super_admin')) return false;
+        
         return $user->hasPermission('campus.viewAny');
     }
 

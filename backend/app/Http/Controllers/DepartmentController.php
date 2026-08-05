@@ -14,7 +14,7 @@ class DepartmentController extends Controller
      */
     public function index(): JsonResponse
     {
-//$this->authorize('viewAny', Department::class);
+  //$this->authorize('viewAny', Department::class);
 
         $query = Department::with(['faculty', 'logoFile']);
 
