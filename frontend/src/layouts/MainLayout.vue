@@ -429,7 +429,7 @@ const navigation = computed(() => {
     finalNav.push({
       title: 'Finance',
       items: [
-        { name: 'Funding Check', path: '/app/finance-checks', icon: icons.finance },
+        { name: 'Finance Checks', path: '/app/finance-checks', icon: icons.finance },
       ]
     })
   }

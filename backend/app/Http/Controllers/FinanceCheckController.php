@@ -92,32 +92,40 @@ class FinanceCheckController extends Controller
     public function approve(Request $request, FinanceCheck $financeCheck): JsonResponse
     {
         $this->authorize('update', $financeCheck);
-        
-        $request->validate([
-            'comments' => 'nullable|string',
+
+        $validated = $request->validate([
+            'comments' => 'nullable|string|max:1000',
         ]);
 
-        $this->financeService->approve($financeCheck, $request->user(), $request->comments);
+        $this->financeService->approve(
+            $financeCheck,
+            $request->user(),
+            $validated['comments'] ?? null
+        );
 
         return response()->json([
-            'message' => 'Budget check approved successfully.',
-            'data' => $financeCheck->fresh(['proposal', 'status', 'checker'])
+            'message' => 'Finance check approved.',
+            'data' => $financeCheck->fresh(['proposal', 'status', 'checker']),
         ]);
     }
 
     public function reject(Request $request, FinanceCheck $financeCheck): JsonResponse
     {
         $this->authorize('update', $financeCheck);
-        
-        $request->validate([
-            'comments' => 'required|string',
+
+        $validated = $request->validate([
+            'comments' => 'required|string|max:1000',
         ]);
 
-        $this->financeService->reject($financeCheck, $request->user(), $request->comments);
+        $this->financeService->reject(
+            $financeCheck,
+            $request->user(),
+            $validated['comments']
+        );
 
         return response()->json([
-            'message' => 'Budget check rejected.',
-            'data' => $financeCheck->fresh(['proposal', 'status', 'checker'])
+            'message' => 'Finance check rejected.',
+            'data' => $financeCheck->fresh(['proposal', 'status', 'checker']),
         ]);
     }
 
