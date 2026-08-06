@@ -1,0 +1,36 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::table('proposals', function (Blueprint $table) {
+
+            $table->decimal('originality_score', 5, 2)
+                ->nullable()
+                ->after('status_id');
+
+            $table->string('plagiarism_report_url')
+                ->nullable()
+                ->after('originality_score');
+
+        });
+    }
+
+
+    public function down(): void
+    {
+        Schema::table('proposals', function (Blueprint $table) {
+
+            $table->dropColumn([
+                'originality_score',
+                'plagiarism_report_url'
+            ]);
+
+        });
+    }
+};

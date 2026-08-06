@@ -118,13 +118,13 @@ class ProcessPlagiarismCheckJob implements ShouldQueue
     {
         try {
             $filePath = $file->file_path;
-            
+
             if (!Storage::exists($filePath)) {
                 return '';
             }
 
             $content = Storage::get($filePath);
-            
+
             // If it's a PDF, we would need to extract text using a PDF library
             // For now, assuming plain text or simple extraction
             if (str_ends_with($filePath, '.pdf')) {
@@ -144,7 +144,7 @@ class ProcessPlagiarismCheckJob implements ShouldQueue
     {
         try {
             $parser = new \Smalot\PdfParser\Parser();
-            
+
             // To parse from byte content instead of reading from file:
             // Write to a temporary file because some versions of Smalot might prefer
             // parsing file paths. However, parseContent is available.

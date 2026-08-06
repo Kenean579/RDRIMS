@@ -79,6 +79,15 @@
           class="bg-white rounded-2xl border border-slate-100 p-4 flex flex-col group hover:shadow-md transition-all cursor-pointer"
           @click="$router.push(`/app/proposals/${p.id}`)"
         >
+        <a
+    v-if="p.file"
+    :href="p.file.url"
+    target="_blank"
+    class="text-sm text-blue-600 hover:underline"
+    @click.stop
+>
+    📄 Download Proposal 
+</a>
           <div class="flex items-start justify-between mb-4">
             <div class="flex-1 pr-4">
               <h3 class="text-base font-bold text-slate-800 leading-tight group-hover:text-brand transition-colors line-clamp-2 min-h-10">{{ p.title }}</h3>

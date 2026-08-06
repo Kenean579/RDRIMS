@@ -96,6 +96,10 @@ class ProposalController extends Controller
             ->orderBy('created_at', 'desc')
             ->paginate(20);
 
+        // return response()->json([
+        //     "message"=>"Proposals retrieved successfully.",
+        // ]);
+
         return response()->json(\App\Http\Resources\ProposalResource::collection($proposals));
     }
 
@@ -174,7 +178,7 @@ class ProposalController extends Controller
 
             // SECURITY FIX: Use ProposalResource to prevent data leakage
             return response()->json(
-                new \App\Http\Resources\ProposalResource($proposal->load('investigators', 'file', 'status', 'type')), 
+                new \App\Http\Resources\ProposalResource($proposal->load('investigators', 'file', 'status', 'type')),
                 201
             );
         });
@@ -210,6 +214,7 @@ class ProposalController extends Controller
         $proposal->review_progress = app(\App\Services\ReviewService::class)
             ->getProposalReviewProgress($proposal);
 
+            //  return response()->json($proposal);
         // SECURITY FIX: Use ProposalResource to prevent data leakage
         return response()->json(new \App\Http\Resources\ProposalResource($proposal));
     }

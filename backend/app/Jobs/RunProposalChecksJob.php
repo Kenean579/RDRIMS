@@ -28,7 +28,7 @@ class RunProposalChecksJob implements ShouldQueue
     public function handle(): void
     {
         Log::info("Running plagiarism and automated background checks for Proposal ID: {$this->proposal->id}");
-        
+
         // Mocking an external API call delay
         sleep(2);
 

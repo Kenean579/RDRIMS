@@ -69,7 +69,7 @@ class DetectionService
             $request->update([
                 'status_id' => $completedStatus->id,
                 'completed_at' => now(),
-                'completed_by' => $completedBy->id,
+                'completed_by' => $completedBy?->id,
             ]);
 
             // Create result record

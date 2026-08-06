@@ -35,4 +35,11 @@ return [
         ],
     ],
 
+    'plagiarismcheck' => [
+
+    'base_url' => env(
+        'PLAGIARISMCHECK_BASE_URL'
+    ),
+
+],
 ];

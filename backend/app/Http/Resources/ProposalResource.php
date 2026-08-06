@@ -45,12 +45,15 @@ class ProposalResource extends JsonResource
                 'name' => $this->academicYear->name,
             ]),
             'file' => $this->whenLoaded('file', fn() => [
-                'id'      => $this->file->id,
-                'url'     => route('files.download', $this->file->id),
+                 'id'   => $this->file->id,
+    'name' => $this->file->original_filename,
+    'url'  => route('files.download', $this->file->id),
             ]),
             'ethics_file' => $this->whenLoaded('ethicsFile', fn() => [
-                'id'  => $this->ethicsFile->id,
-                'url' => route('files.download', $this->ethicsFile->id),
+                 'id'   => $this->ethicsFile->id,
+    'name' => $this->ethicsFile->original_name,
+    'url'  => route('files.download', $this->ethicsFile->id),
+    'url'  => route('files.download', $this->file->id),
             ]),
             'ethics_approval_status' => $this->whenLoaded('ethicsApprovalStatus', fn() => [
                 'id'   => $this->ethics_approval_status_id,
@@ -65,7 +68,7 @@ class ProposalResource extends JsonResource
             'ethics_requests'=> $this->whenLoaded('ethicsRequests'),
             'detection'     => $this->whenLoaded('detectionRequests'),
             'project'       => $this->whenLoaded('project', fn() => ['id' => $this->project->id]),
-            'ethics_status' => $this->relationLoaded('ethicsRequests') 
+            'ethics_status' => $this->relationLoaded('ethicsRequests')
                 ? ($this->ethicsRequests->sortByDesc('created_at')->first()?->approvalStatus?->name ?? 'not_requested')
                 : 'not_requested',
             'finance_status' => $this->relationLoaded('financeChecks')
@@ -75,7 +78,7 @@ class ProposalResource extends JsonResource
             'approved_at'   => $this->approved_at?->toISOString(),
             'created_at'    => $this->created_at->toISOString(),
             'updated_at'    => $this->updated_at->toISOString(),
-            
+
             // REVIEWER: Add dynamic attributes if set by controller
             'reviewPivot' => $this->when(isset($this->reviewPivot), $this->reviewPivot),
             'is_locked' => $this->when(isset($this->is_locked), $this->is_locked),

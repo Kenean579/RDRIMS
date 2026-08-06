@@ -39,33 +39,37 @@ class Proposal extends Model
      * @property float|null $originality_score
      * @property string|null $plagiarism_report_url
      */
-    protected $fillable = [
-        'call_id',
-        'type_id',
-        'title',
-        'abstract',
-        'objectives',
-        'methodology',
-        'keywords',
-        'budget',
-        'budget_allocation',
-        'status_change_comment',
-        'academic_year_id',
-        'file_id',
-        'ethics_file_id',
-        'research_center_id',
-    ];
+protected $fillable = [
+    'call_id',
+    'type_id',
+    'title',
+    'abstract',
+    'objectives',
+    'methodology',
+    'keywords',
+    'budget',
+    'budget_allocation',
+    'status_change_comment',
+    'academic_year_id',
+    'file_id',
+    'ethics_file_id',
+    'research_center_id',
+
+    'status_id',
+    'originality_score',
+    'plagiarism_report_url',
+];
 
     // PROTECTED: Only updated by services/admin actions - prevents mass assignment attacks
     protected $guarded = [
-        'status_id',
+        //'status_id',
         'submitted_by',
         'submitted_at',
         'approved_by',
         'approved_at',
         'ethics_approval_status_id',
-        'originality_score',
-        'plagiarism_report_url'
+        //'originality_score',
+        //'plagiarism_report_url'
     ];
 
     protected $casts = [

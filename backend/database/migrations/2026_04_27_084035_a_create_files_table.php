@@ -19,7 +19,6 @@ return new class extends Migration
             $table->json('metadata')->nullable();
             $table->string('original_filename', 255)->nullable();
             $table->timestamp('created_at')->useCurrent();
-
             $table->index('uploaded_by');
             $table->index('is_public');
         });
