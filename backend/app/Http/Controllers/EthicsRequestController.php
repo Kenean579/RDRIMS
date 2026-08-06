@@ -59,7 +59,7 @@ class EthicsRequestController extends Controller
     public function store(Request $request, Proposal $proposal): JsonResponse
     {
         $this->authorize('view', $proposal);
-        $this->authorize('create');
+        $this->authorize('create', EthicsRequest::class);
 
         // Validate that reviewers have submitted their reviews
         $reviewers = $proposal->reviewers;

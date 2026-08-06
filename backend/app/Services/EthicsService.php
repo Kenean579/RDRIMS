@@ -45,7 +45,9 @@ class EthicsService
             return EthicsRequest::create([
                 'proposal_id' => $proposal->id,
                 'generated_pdf_path' => $filename,
-                'submitted_to_irb' => false,
+                // The workflow action both generates and submits the request to
+                // the institutional Ethics/IRB review queue.
+                'submitted_to_irb' => true,
                 'approval_status_id' => $pendingStatusId,
                 'version' => $lastVersion + 1,
                 'created_by' => $user->id,

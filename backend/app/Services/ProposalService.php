@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Models\Proposal;
 use App\Models\ProposalStatus;
+use App\Models\ProjectStatus;
 use App\Models\User;
 use Illuminate\Validation\ValidationException;
 
@@ -35,6 +36,12 @@ class ProposalService
         if ($proposal->investigators()->count() === 0) {
             throw ValidationException::withMessages([
                 'investigators' => 'At least one investigator is required.',
+            ]);
+        }
+
+        if (!$proposal->file_id) {
+            throw ValidationException::withMessages([
+                'file' => 'A proposal document is required before submission.',
             ]);
         }
 
@@ -88,6 +95,9 @@ class ProposalService
                 'status' => 'Only proposals under review, finance check, or ethics pending can be approved.',
             ]);
         }
+
+
+        $this->assertOriginalityPassed($proposal);
 
         // 1. All reviews must be completed
         $reviewers = $proposal->reviewers;
@@ -144,16 +154,30 @@ class ProposalService
         $proposal->approved_at = now();
         $proposal->save();
 
-        // Automatically create a project from approved proposal
-        $project = $proposal->project()->create([
+        // Automatically create an active project from the approved proposal.
+        // status_id is guarded on Project, so it must be assigned explicitly.
+        $activeProjectStatusId = ProjectStatus::where('name', 'active')->value('id');
+        if (!$activeProjectStatusId) {
+            throw ValidationException::withMessages([
+                'status' => 'Active project status not found. Please seed project statuses.',
+            ]);
+        }
+
+        $project = $proposal->project()->make([
             'title' => $proposal->title,
+            'description' => $proposal->abstract,
             'start_date' => now(),
             'end_date' => now()->addYear(),
             'total_budget' => $proposal->budget,
-            'status_id' => 1, // active
+            'budget_allocation' => $proposal->budget_allocation,
             'pi_id' => $proposal->submitted_by,
             'academic_year_id' => $proposal->academic_year_id,
+            'research_center_id' => $proposal->research_center_id,
+            'created_by' => $approvedBy->id,
+            'updated_by' => $approvedBy->id,
         ]);
+        $project->status_id = $activeProjectStatusId;
+        $project->save();
 
         $this->auditLogService->log('approved', 'proposals', $proposal->id, request());
 
@@ -197,11 +221,7 @@ class ProposalService
 
     public function assignReviewers(Proposal $proposal, array $reviewerIds, User $assignedBy): void
     {
-        if (is_null($proposal->originality_score)) {
-            throw ValidationException::withMessages([
-                'status' => 'Originality/plagiarism check must be completed before assigning reviewers.',
-            ]);
-        }
+        $this->assertOriginalityPassed($proposal);
 
         $proposal->reviewers()->syncWithoutDetaching(array_fill_keys($reviewerIds, [
             'assigned_by' => $assignedBy->id,
@@ -223,6 +243,24 @@ class ProposalService
 
     public function runChecks(Proposal $proposal, User $user): void
     {
+        if ($proposal->status_id !== $this->statusId('submitted')) {
+            throw ValidationException::withMessages([
+                'status' => 'Originality checks can only be run for submitted proposals.',
+            ]);
+        }
+
+        if (!$proposal->file_id) {
+            throw ValidationException::withMessages([
+                'file' => 'A proposal document is required before running originality checks.',
+            ]);
+        }
+
+        if ($proposal->originality_score !== null) {
+            throw ValidationException::withMessages([
+                'status' => 'The originality check has already been completed.',
+            ]);
+        }
+
         // SECURITY FIX: Use explicit assignment for protected field
         $proposal->status_id = $this->statusId('checking');
         $proposal->save();
@@ -232,5 +270,22 @@ class ProposalService
 
         $this->auditLogService->log('checks_initiated', 'proposals', $proposal->id, request());
     }
-}
 
+    private function assertOriginalityPassed(Proposal $proposal): void
+    {
+        if ($proposal->originality_score === null) {
+            throw ValidationException::withMessages([
+                'status' => 'Originality/plagiarism check must be completed first.',
+            ]);
+        }
+
+        $threshold = (float) (\App\Models\Setting::where('key', 'plagiarism_threshold')->value('value') ?? 20);
+        $similarity = 100 - (float) $proposal->originality_score;
+
+        if ($similarity > $threshold) {
+            throw ValidationException::withMessages([
+                'status' => "Proposal similarity is {$similarity}% and exceeds the allowed {$threshold}% threshold.",
+            ]);
+        }
+    }
+}

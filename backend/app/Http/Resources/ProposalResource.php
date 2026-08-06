@@ -19,6 +19,11 @@ class ProposalResource extends JsonResource
             'budget'                => $this->budget,
             'budget_allocation'     => $this->budget_allocation,
             'status_change_comment' => $this->status_change_comment,
+            'file_id'               => $this->file_id,
+            'originality_score'      => $this->originality_score !== null
+                ? (float) $this->originality_score
+                : null,
+            'plagiarism_report_url' => $this->plagiarism_report_url,
 
             'type' => [
                 'id'   => $this->type_id,
@@ -60,14 +65,39 @@ class ProposalResource extends JsonResource
                 'name' => $this->ethicsApprovalStatus->name,
             ]),
             'investigators' => $this->whenLoaded('investigators'),
-            'reviewers'     => $this->whenLoaded('reviewers', function() {
-                // SECURITY: Use ProposalReviewerResource to control data exposure
-                return \App\Http\Resources\ProposalReviewerResource::collection($this->reviewers);
+            'reviewers'     => $this->whenLoaded('reviewers', function () use ($request) {
+                $viewer = $request->user();
+                $canSeeReviewerIdentity = $viewer?->isAdmin() ?? false;
+
+                return $this->reviewers->map(function ($reviewer) use ($viewer, $canSeeReviewerIdentity) {
+                    $pivot = $reviewer->pivot;
+                    $canSeeDetails = $canSeeReviewerIdentity || $viewer?->id === $reviewer->id;
+
+                    return [
+                        'id' => $reviewer->id,
+                        'name' => $canSeeDetails ? $reviewer->name : null,
+                        'email' => $canSeeDetails ? $reviewer->email : null,
+                        'pivot' => [
+                            'id' => $pivot->id,
+                            'assigned_at' => $pivot->assigned_at?->toISOString(),
+                            'submitted_at' => $pivot->submitted_at?->toISOString(),
+                            'overall_score' => $canSeeDetails ? $pivot->overall_score : null,
+                            'overall_comments' => $canSeeDetails ? $pivot->overall_comments : null,
+                            'decision_id' => $canSeeDetails ? $pivot->decision_id : null,
+                        ],
+                    ];
+                })->values();
             }),
+            'review_progress' => $this->when(
+                isset($this->review_progress),
+                fn () => $this->review_progress
+            ),
             'finance_checks'=> $this->whenLoaded('financeChecks'),
             'ethics_requests'=> $this->whenLoaded('ethicsRequests'),
             'detection'     => $this->whenLoaded('detectionRequests'),
-            'project'       => $this->whenLoaded('project', fn() => ['id' => $this->project->id]),
+            'project'       => $this->whenLoaded('project', fn() => $this->project
+                ? ['id' => $this->project->id]
+                : null),
             'ethics_status' => $this->relationLoaded('ethicsRequests')
                 ? ($this->ethicsRequests->sortByDesc('created_at')->first()?->approvalStatus?->name ?? 'not_requested')
                 : 'not_requested',

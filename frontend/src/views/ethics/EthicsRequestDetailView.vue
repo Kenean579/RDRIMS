@@ -149,10 +149,15 @@ async function fetchRequest() {
 async function submitDecision(status) {
   if (!decisionNote.value && status !== 'approved') return notif.warning('Please provide a note for this decision')
   try {
-    await api.post(`/ethics-requests/${request.value.id}/decision`, { status, note: decisionNote.value })
+    const action = status === 'needs_revision' ? 'request-revision' : status
+    await api.post(`/ethics-requests/${request.value.id}/${action}`, {
+      comments: decisionNote.value || null,
+    })
     notif.success('Decision submitted successfully!')
     fetchRequest()
-  } catch (err) { notif.error('Failed to submit decision') }
+  } catch (err) {
+    notif.error(err.response?.data?.message || 'Failed to submit decision')
+  }
 }
 
 async function downloadFile(f) {

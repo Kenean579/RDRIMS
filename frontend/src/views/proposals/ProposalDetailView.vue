@@ -63,7 +63,7 @@
               <svg v-if="proposal.status?.name === 'checking' || isChecking" class="w-4 h-4 mr-1.5 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg>
               <svg v-else-if="wf.originality.done" class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 13l4 4L19 7"/></svg>
               <svg v-else class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
-              {{ proposal.status?.name === 'checking' ? 'Running Checks...' : (wf.originality.done ? 'Originality: ✓ Done' : '1. Originality Check') }}
+              {{ proposal.status?.name === 'checking' ? 'Running Checks...' : (wf.originality.done ? `Originality: ${proposal.originality_score}%` : '1. Originality Check') }}
             </button>
             <div v-if="!wf.originality.enabled && wf.originality.tooltip" class="absolute bottom-full left-0 mb-2 w-56 px-3 py-2 bg-slate-800 text-white text-xs rounded-xl shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-20">
               {{ wf.originality.tooltip }}
@@ -341,12 +341,12 @@
                        Automated Checks Running...
                     </span>
                  </div>
-                 <div v-if="proposal.originality_score" class="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-100">
+                 <div v-if="originality_done" class="flex items-center justify-between p-3 rounded-2xl bg-slate-50 border border-slate-100">
                     <span class="text-xs font-medium text-slate-600">Originality Score</span>
-                    <a v-if="proposal.plagiarism_report_url" :href="proposal.plagiarism_report_url" target="_blank" class="text-xs font-bold px-3 py-1 rounded-lg hover:underline transition-colors cursor-pointer" :class="proposal.originality_score > 90 ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'">
+                    <a v-if="proposal.plagiarism_report_url" :href="proposal.plagiarism_report_url" target="_blank" class="text-xs font-bold px-3 py-1 rounded-lg hover:underline transition-colors cursor-pointer" :class="originalityScoreClass">
                       {{ proposal.originality_score }}% (View)
                     </a>
-                    <span v-else class="text-xs font-bold px-3 py-1 rounded-lg" :class="proposal.originality_score > 90 ? 'bg-emerald-50 text-emerald-600' : 'bg-rose-50 text-rose-600'">
+                    <span v-else class="text-xs font-bold px-3 py-1 rounded-lg" :class="originalityScoreClass">
                       {{ proposal.originality_score }}%
                     </span>
                  </div>
@@ -404,7 +404,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useNotificationStore } from '@/stores/notification'
@@ -450,7 +450,7 @@ const tabs = ref([
 ])
 
 const canConvertToProject = computed(() => {
-  return canManageProposal.value && proposal.value.status?.name === 'approved'
+  return canManageProposal.value && proposal.value.status?.name === 'approved' && !proposal.value.project?.id
 })
 
 // ============================================================
@@ -458,7 +458,15 @@ const canConvertToProject = computed(() => {
 // ============================================================
 
 // Derived booleans used across workflow steps
-const originality_done = computed(() => !!proposal.value.originality_score)
+const originality_done = computed(() => proposal.value.originality_score !== null && proposal.value.originality_score !== undefined)
+const originality_passed = computed(() => {
+  if (!originality_done.value) return false
+  const threshold = parseFloat(getSetting('plagiarism_threshold', '20'))
+  return (100 - Number(proposal.value.originality_score)) <= threshold
+})
+const originalityScoreClass = computed(() => originality_passed.value
+  ? 'bg-emerald-50 text-emerald-600'
+  : 'bg-rose-50 text-rose-600')
 const reviewers_assigned = computed(() => (proposal.value.reviewers?.length || 0) > 0)
 const all_reviews_done = computed(() => {
   const reviewers = proposal.value.reviewers || []
@@ -485,8 +493,10 @@ const wf = computed(() => {
 
   // STEP 2: Assign Reviewers
   const revDone = reviewers_assigned.value
-  const revEnabled = inWorkflow && !revDone && origDone && ['submitted', 'under_review'].includes(status)
-  const revTooltip = origDone ? null : 'Complete the originality check first before assigning reviewers.'
+  const revEnabled = inWorkflow && !revDone && origDone && originality_passed.value && ['submitted', 'under_review'].includes(status)
+  const revTooltip = !origDone
+    ? 'Complete the originality check first before assigning reviewers.'
+    : (!originality_passed.value ? 'The plagiarism similarity exceeds the configured threshold.' : null)
 
   // STEP 3: Review completion tracker
   const reviewers = proposal.value.reviewers || []
@@ -556,12 +566,17 @@ function wfBtnClass(step) {
 }
 
 const canApprove = computed(() => wf.value.approve.enabled)
+let proposalPollTimer = null
 
 async function fetchProposal() {
   loading.value = true; error.value = null
   try {
     const { data } = await api.get(`/proposals/${route.params.id}`)
     proposal.value = data
+    clearTimeout(proposalPollTimer)
+    if (proposal.value.status?.name === 'checking') {
+      proposalPollTimer = setTimeout(() => fetchProposal(), 2000)
+    }
   } catch (err) {
     error.value = err.response?.data?.message || 'Unauthorized access or network failure'
   } finally {
@@ -599,6 +614,10 @@ function getServiceDescription(serviceName) {
 const isChecking = ref(false)
 
 async function runChecks() {
+  if (!proposal.value.file_id && !proposal.value.file?.id) {
+    notif.error('A proposal document is required before running originality checks.')
+    return
+  }
   isChecking.value = true
   try {
     const { data } = await api.post(`/proposals/${proposal.value.id}/check`)
@@ -647,7 +666,7 @@ async function rejectProposal() {
      } else if (rejectSource.value === 'ethics') {
         const req = proposal.value.ethics_requests?.find(r => r.status?.name === 'pending')
         if (!req) return
-        await api.post(`/ethics-requests/${req.id}/decision`, { decision: 'rejected', comments: rejectComment.value })
+        await api.post(`/ethics-requests/${req.id}/reject`, { comments: rejectComment.value })
      } else {
         await api.post(`/proposals/${proposal.value.id}/reject`, { comment: rejectComment.value })
      }
@@ -672,7 +691,7 @@ async function verifyEthics() {
   try {
     const req = proposal.value.ethics_requests?.find(r => r.status?.name === 'pending')
     if (!req) return
-    await api.post(`/ethics-requests/${req.id}/decision`, { decision: 'approved' })
+    await api.post(`/ethics-requests/${req.id}/approve`, { comments: null })
     notif.success('Ethical clearance granted')
     fetchProposal()
   } catch(e) { notif.error('Clearance failed') }
@@ -694,7 +713,9 @@ async function sendToFinance() {
     await api.post(`/proposals/${proposal.value.id}/finance-checks`)
     notif.success('Budget evaluation requested')
     fetchProposal()
-  } catch (e) { notif.error('Request failed') }
+  } catch (e) {
+    notif.error(e.response?.data?.message || 'Finance check request failed')
+  }
 }
 
 async function generateEthics() {
@@ -702,7 +723,9 @@ async function generateEthics() {
     await api.post(`/proposals/${proposal.value.id}/ethics-requests`)
     notif.success('IRB Ethics PDF auto-generated')
     fetchProposal()
-  } catch (e) { notif.error('Generation failed') }
+  } catch (e) {
+    notif.error(e.response?.data?.message || 'Ethics request generation failed')
+  }
 }
 
 
@@ -748,4 +771,6 @@ onMounted(async () => {
     }
   } catch (e) {}
 })
+
+onUnmounted(() => clearTimeout(proposalPollTimer))
 </script>

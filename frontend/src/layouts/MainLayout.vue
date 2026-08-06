@@ -361,10 +361,10 @@ const navigation = computed(() => {
       {
         title: 'Community & Public',
         items: [
-          { name: 'Call for Proposals', path: '/app/calls', icon: icons.calls },
-          { name: 'Publications', path: '/app/publications', icon: icons.publications },
-          { name: 'Events', path: '/app/events', icon: icons.events },
-          { name: 'Community Problems', path: '/app/community-problems', icon: icons.community },
+          { name: 'Call for Proposals', path: '/calls', icon: icons.calls },
+          { name: 'Publications', path: '/publications', icon: icons.publications },
+          { name: 'Events', path: '/events', icon: icons.events },
+          { name: 'Community Problems', path: '/community', icon: icons.community },
         ]
       }
     ]

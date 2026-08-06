@@ -50,9 +50,11 @@ class CallController extends Controller
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
+        $isManagementRequest = $request->is('api/management/calls*');
 
-        // Authorization: handled by policy (allows unauthenticated for public portal)
-        if ($user) {
+        // Management and public routes intentionally have different visibility.
+        // A logged-in guest may still browse the public endpoint.
+        if ($isManagementRequest) {
             $this->authorize('viewAny', Call::class);
         }
 
@@ -142,11 +144,12 @@ class CallController extends Controller
         |--------------------------------------------------------------------------
         */
 
-        if ($user) {
+        if ($isManagementRequest) {
             // Authenticated: use visibleTo() scope for tenant filtering
             $query->visibleTo($user);
         } else {
-            // Unauthenticated: only public, published calls
+            // Public route: only public, published calls, even when a guest token
+            // is attached to the request.
             $query->where('is_public', true)
                 ->whereNotNull('published_at')
                 ->where('published_at', '<=', now());

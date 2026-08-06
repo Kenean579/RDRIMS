@@ -6,7 +6,7 @@
         <h1 class="text-xl font-bold text-slate-900 tracking-tight">Users</h1>
         <p class="text-slate-500 font-medium mt-1">People with access to the system.</p>
       </div>
-      <button @click="showCreate = true" class="btn btn-primary h-11 px-6">
+      <button @click="openCreate" class="btn btn-primary h-11 px-6">
         <svg class="w-4 h-4 mr-1.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 4v16m8-8H4" /></svg>
         Add Person
       </button>
@@ -43,7 +43,7 @@
       <button type="button" class="btn btn-secondary" @click="fetchData">Retry</button>
     </div>
     <div v-else-if="!users || users.length === 0" class="card">
-      <EmptyState icon="👥" title="No users found" description="Add researchers or admins to give them access." action-label="Add First Person" action-icon="add" @action="showCreate = true" />
+      <EmptyState icon="👥" title="No users found" description="Add researchers or admins to give them access." action-label="Add First Person" action-icon="add" @action="openCreate" />
     </div>
 
     <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -116,28 +116,28 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div class="space-y-2">
               <label class="block text-xs text-slate-400 font-medium ml-1">University</label>
-              <select v-model="form.university_id" class="input h-11 text-sm font-bold text-slate-700" :disabled="auth.hierarchicalLevel > 0" @change="onUniversityChange">
+              <select v-model="form.university_id" class="input h-11 text-sm font-bold text-slate-700" :disabled="auth.hierarchicalLevel < 6" @change="onUniversityChange">
                 <option value="">Select University</option>
                 <option v-for="u in universities" :key="u.id" :value="u.id">{{ u.name }}</option>
               </select>
             </div>
             <div class="space-y-2">
               <label class="block text-xs text-slate-400 font-medium ml-1">Campus</label>
-              <select v-model="form.campus_id" class="input h-11 text-sm font-bold text-slate-700" :disabled="auth.hierarchicalLevel > 1" @change="onCampusChange">
+              <select v-model="form.campus_id" class="input h-11 text-sm font-bold text-slate-700" :disabled="auth.hierarchicalLevel < 5" @change="onCampusChange">
                 <option value="">Select Campus</option>
                 <option v-for="c in filteredCampuses" :key="c.id" :value="c.id">{{ c.name }}</option>
               </select>
             </div>
             <div class="space-y-2">
               <label class="block text-xs text-slate-400 font-medium ml-1">Faculty</label>
-              <select v-model="form.faculty_id" class="input h-11 text-sm font-bold text-slate-700" :disabled="auth.hierarchicalLevel > 2" @change="onFacultyChange">
+              <select v-model="form.faculty_id" class="input h-11 text-sm font-bold text-slate-700" :disabled="auth.hierarchicalLevel < 4" @change="onFacultyChange">
                 <option value="">Select Faculty</option>
                 <option v-for="f in filteredFaculties" :key="f.id" :value="f.id">{{ f.name }}</option>
               </select>
             </div>
             <div class="space-y-2">
               <label class="block text-xs text-slate-400 font-medium ml-1">Department</label>
-              <select v-model="form.department_id" class="input h-11 text-sm font-bold text-slate-700" :disabled="auth.hierarchicalLevel > 3">
+              <select v-model="form.department_id" class="input h-11 text-sm font-bold text-slate-700" :disabled="auth.hierarchicalLevel < 3">
                 <option value="">Select Department</option>
                 <option v-for="d in filteredDepartments" :key="d.id" :value="d.id">{{ d.name }}</option>
               </select>
@@ -251,7 +251,7 @@ function debounceSearch() {
 }
 
 async function fetchHierarchies() {
-  const [u, c, f, d, r] = await Promise.all([
+  const requests = await Promise.allSettled([
     api.get('/universities', { timeout: 15000 }),
     api.get('/campuses', { timeout: 15000 }),
     api.get('/faculties', { timeout: 15000 }),
@@ -259,11 +259,14 @@ async function fetchHierarchies() {
     api.get('/roles', { timeout: 15000 }),
   ])
   const rows = response => Array.isArray(response.data) ? response.data : (response.data.data || [])
-  universities.value = rows(u)
-  campuses.value = rows(c)
-  faculties.value = rows(f)
-  departments.value = rows(d)
-  roles.value = rows(r)
+  const targetRefs = [universities, campuses, faculties, departments, roles]
+  requests.forEach((result, index) => {
+    targetRefs[index].value = result.status === 'fulfilled' ? rows(result.value) : []
+  })
+
+  if (requests.some(result => result.status === 'rejected')) {
+    throw new Error('One or more hierarchy lookups failed.')
+  }
 }
 
 async function fetchData() {
@@ -288,7 +291,20 @@ async function fetchData() {
 
 function openCreate() {
   editingUser.value = null
-  Object.assign(form, { name: '', email: '', university_id: '', campus_id: '', faculty_id: '', department_id: '', role_ids: [] })
+  const department = auth.user?.department
+  const faculty = department?.faculty
+  const campus = faculty?.campus
+  Object.assign(form, {
+    name: '',
+    email: '',
+    university_id: auth.hierarchicalLevel < 6
+      ? (auth.user?.university_id || campus?.university_id || '')
+      : '',
+    campus_id: auth.hierarchicalLevel < 5 ? (campus?.id || '') : '',
+    faculty_id: auth.hierarchicalLevel < 4 ? (faculty?.id || '') : '',
+    department_id: auth.hierarchicalLevel < 3 ? (department?.id || '') : '',
+    role_ids: []
+  })
   showCreate.value = true
 }
 

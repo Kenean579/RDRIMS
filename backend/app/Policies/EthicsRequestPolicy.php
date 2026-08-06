@@ -12,7 +12,7 @@ class EthicsRequestPolicy
      */
     public function viewAny(User $user): bool
     {
-        return $user->hasAnyRole(['super_admin', 'admin', 'ethics_officer', 'researcher']);
+        return $user->isAdmin() || $user->hasRole('researcher');
     }
 
     /**
@@ -33,7 +33,7 @@ class EthicsRequestPolicy
         }
 
         // Ethics officer or admin from same institution can view
-        if ($user->hasAnyRole(['ethics_officer', 'admin'])) {
+        if ($user->isAdmin()) {
             return $submitter ? $user->sharesInstitutionWith($submitter) : false;
         }
 
@@ -46,7 +46,7 @@ class EthicsRequestPolicy
     public function create(User $user): bool
     {
         // Researchers can create ethics requests for their proposals
-        return $user->hasAnyRole(['researcher', 'admin', 'super_admin']);
+        return $user->isAdmin() || $user->hasRole('researcher');
     }
 
     /**
@@ -72,7 +72,7 @@ class EthicsRequestPolicy
         }
 
         // Admin from same institution can update
-        if ($user->hasRole('admin')) {
+        if ($user->isAdmin()) {
             return $submitter ? $user->sharesInstitutionWith($submitter) : false;
         }
 
@@ -102,7 +102,7 @@ class EthicsRequestPolicy
         }
 
         // Admin from same institution can delete draft/revision
-        if ($user->hasRole('admin')) {
+        if ($user->isAdmin()) {
             return $submitter ? $user->sharesInstitutionWith($submitter) : false;
         }
 
@@ -122,7 +122,7 @@ class EthicsRequestPolicy
         }
 
         // Admin from same institution can submit on behalf
-        if ($user->hasRole('admin')) {
+        if ($user->isAdmin()) {
             return $submitter ? $user->sharesInstitutionWith($submitter) : false;
         }
 
@@ -143,7 +143,7 @@ class EthicsRequestPolicy
         }
 
         // Admin or ethics officer from same institution can mark
-        if ($user->hasAnyRole(['admin', 'ethics_officer'])) {
+        if ($user->isAdmin()) {
             return $submitter ? $user->sharesInstitutionWith($submitter) : false;
         }
 
@@ -156,7 +156,7 @@ class EthicsRequestPolicy
     public function decide(User $user, EthicsRequest $ethicsRequest): bool
     {
         // Only ethics officers or admins can make decisions
-        if (!$user->hasAnyRole(['ethics_officer', 'admin', 'super_admin'])) {
+        if (!$user->isAdmin()) {
             return false;
         }
 
@@ -168,8 +168,12 @@ class EthicsRequestPolicy
             }
         }
 
-        // Can only decide if submitted and not yet reviewed
-        return $ethicsRequest->submitted_to_irb && !$ethicsRequest->isReviewed();
+        // Older generated requests were left with submitted_to_irb=false even
+        // though their PDF had already been placed in the Ethics review queue.
+        $isReadyForReview = $ethicsRequest->submitted_to_irb
+            || filled($ethicsRequest->generated_pdf_path);
+
+        return $isReadyForReview && !$ethicsRequest->isReviewed();
     }
 
     /**

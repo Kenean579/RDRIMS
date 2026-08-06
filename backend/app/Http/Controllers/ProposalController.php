@@ -196,7 +196,8 @@ class ProposalController extends Controller
             'status', 'type', 'submittedBy.department', 'approvedBy', 'call',
             'reviewers.profileImage',
             'financeChecks', 'ethicsRequests', 'file', 'ethicsFile',
-            'investigators.user.profileImage', 'investigators.role', 'academicYear'
+            'investigators.user.profileImage', 'investigators.role', 'academicYear',
+            'project'
         ]);
 
         // ENFORCE BLIND REVIEW
@@ -309,7 +310,7 @@ class ProposalController extends Controller
     public function approve(Proposal $proposal, Request $request): JsonResponse
     {
         $this->authorize('update', $proposal);
-        $this->proposalService->approve($proposal, $request->user());
+        DB::transaction(fn() => $this->proposalService->approve($proposal, $request->user()));
         return response()->json(['message' => 'Proposal approved. Project created.']);
     }
 

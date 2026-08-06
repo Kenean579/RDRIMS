@@ -127,17 +127,21 @@ const router = createRouter({
 router.beforeEach((to, from) => {
   const auth = useAuthStore()
 
-  console.log('Navigating to:', to.fullPath)
-  console.log('Authenticated:', auth.isAuthenticated)
-  console.log('Token:', auth.token)
-
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
-    console.log('Redirecting to login')
     return '/login'
   }
 
+  // Guest accounts browse public content only. Redirect stale bookmarks and
+  // manually entered management URLs before their components can call a
+  // protected /api/management endpoint.
+  if (auth.userRoles.includes('guest')) {
+    if (to.name === 'Calls') return { name: 'PublicCalls', query: to.query }
+    if (to.name === 'CallDetail') {
+      return { name: 'PublicCallDetail', params: { id: to.params.id } }
+    }
+  }
+
   if (to.meta.guest && auth.isAuthenticated && to.name !== 'ActivateAccount') {
-    console.log('Redirecting to dashboard')
     return '/dashboard'
   }
 

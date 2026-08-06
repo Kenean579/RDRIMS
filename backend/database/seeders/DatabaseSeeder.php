@@ -94,6 +94,8 @@ class DatabaseSeeder extends Seeder
             */
 
             ExpertiseSeeder::class,
+            AauReviewerSeeder::class,
+            AauEthicsOfficerSeeder::class,
             ReviewCriteriaSeeder::class,
             SettingSeeder::class,
 

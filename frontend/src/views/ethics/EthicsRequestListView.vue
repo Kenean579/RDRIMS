@@ -86,20 +86,24 @@ async function fetchRequests() {
 
 async function approveRequest(req) {
   try {
-    await api.post(`/ethics-requests/${req.id}/decision`, { status: 'approved', note: '' })
+    await api.post(`/ethics-requests/${req.id}/approve`, { comments: null })
     notif.success('Ethics approved!')
     fetchRequests()
-  } catch (err) { notif.error('Failed to update ethics request') }
+  } catch (err) {
+    notif.error(err.response?.data?.message || 'Failed to update ethics request')
+  }
 }
 
 function rejectRequest(req) { rejectingReq.value = req; showReject.value = true }
 
 async function confirmReject() {
   try {
-    await api.post(`/ethics-requests/${rejectingReq.value.id}/decision`, { status: 'rejected', note: rejectComment.value })
+    await api.post(`/ethics-requests/${rejectingReq.value.id}/reject`, { comments: rejectComment.value })
     notif.success('Ethics rejected!')
     showReject.value = false; fetchRequests()
-  } catch (err) { notif.error('Failed to reject ethics request') }
+  } catch (err) {
+    notif.error(err.response?.data?.message || 'Failed to reject ethics request')
+  }
 }
 
 onMounted(fetchRequests)
