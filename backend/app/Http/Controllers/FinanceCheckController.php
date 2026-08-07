@@ -14,8 +14,9 @@ class FinanceCheckController extends Controller
 
     public function index(Request $request): JsonResponse
     {
-        $checks = FinanceCheck::with(['proposal', 'status', 'checker'])
+        $checks = FinanceCheck::with(['proposal.submittedBy', 'status', 'checker'])
             ->whereHas('proposal', fn($q) => $q->hierarchical($request->user(), 'submitted_by'))
+            ->when($request->status, fn($q) => $q->whereHas('status', fn($sq) => $sq->where('name', $request->status)))
             ->latest()
             ->paginate(20);
         return response()->json($checks);
@@ -86,6 +87,38 @@ class FinanceCheckController extends Controller
         ]);
 
         return response()->json($financeCheck);
+    }
+
+    public function approve(Request $request, FinanceCheck $financeCheck): JsonResponse
+    {
+        $this->authorize('update', $financeCheck);
+        
+        $request->validate([
+            'comments' => 'nullable|string',
+        ]);
+
+        $this->financeService->approve($financeCheck, $request->user(), $request->comments);
+
+        return response()->json([
+            'message' => 'Budget check approved successfully.',
+            'data' => $financeCheck->fresh(['proposal', 'status', 'checker'])
+        ]);
+    }
+
+    public function reject(Request $request, FinanceCheck $financeCheck): JsonResponse
+    {
+        $this->authorize('update', $financeCheck);
+        
+        $request->validate([
+            'comments' => 'required|string',
+        ]);
+
+        $this->financeService->reject($financeCheck, $request->user(), $request->comments);
+
+        return response()->json([
+            'message' => 'Budget check rejected.',
+            'data' => $financeCheck->fresh(['proposal', 'status', 'checker'])
+        ]);
     }
 
     public function show(FinanceCheck $financeCheck): JsonResponse

@@ -102,8 +102,8 @@ class ProposalResource extends JsonResource
                 ? ($this->ethicsRequests->sortByDesc('created_at')->first()?->approvalStatus?->name ?? 'not_requested')
                 : 'not_requested',
             'finance_status' => $this->relationLoaded('financeChecks')
-                ? ($this->financeChecks->sortByDesc('created_at')->first()?->status?->name ?? 'pending')
-                : 'pending',
+                ? ($this->financeChecks->sortByDesc('created_at')->first()?->status?->name ?? 'not_requested')
+                : 'not_requested',
             'submitted_at'  => $this->submitted_at?->toISOString(),
             'approved_at'   => $this->approved_at?->toISOString(),
             'created_at'    => $this->created_at->toISOString(),

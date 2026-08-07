@@ -434,6 +434,8 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
     Route::post('proposals/{proposal}/finance-checks', [FinanceCheckController::class, 'store']); // Submit for finance check
     Route::apiResource('finance-checks', FinanceCheckController::class)
         ->only(['index', 'show', 'update']);                                // Manage finance checks
+    Route::post('finance-checks/{financeCheck}/approve', [FinanceCheckController::class, 'approve']);
+    Route::post('finance-checks/{financeCheck}/reject', [FinanceCheckController::class, 'reject']);
 
     // -----------------------------------------------------------------------
     // Ethics Requests
