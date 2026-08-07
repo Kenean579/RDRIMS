@@ -126,13 +126,21 @@
                <div class="flex items-center gap-3 min-w-0">
                   <div class="w-10 h-10 bg-brand text-white rounded-xl flex items-center justify-center text-xl shadow-lg transition-transform group-hover:rotate-6">📄</div>
                   <div class="min-w-0">
-                    <p class="text-xs font-bold text-slate-800 truncate">ANONYMIZED_MS.pdf</p>
+<p class="text-xs font-bold text-slate-800 truncate">
+  <!-- {{ proposal.file.name }} -->
+Anonymous proposal</p>
                     <p class="text-xs font-bold text-brand  tracking-tighter">Verified Protocol</p>
                   </div>
                </div>
-               <a :href="`/api/files/${proposal.file.id}/download`" target="_blank" class="p-2.5 text-brand bg-white border border-brand/20 rounded-xl hover:shadow-brand/5 transition-all">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" stroke-width="2.5"/></svg>
-               </a>
+               <button 
+  @click="downloadFile"
+  type="button"
+  class="p-2.5 text-brand bg-white border border-brand/20 rounded-xl hover:shadow-brand/5 transition-all"
+>
+   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path d="M4 16v1a2 2 0 002 2h12a2 2 0 002-2v-1m-4-4l-4 4m0 0l-4-4m4 4V4" stroke-width="2.5"/>
+   </svg>
+</button>
              </div>
              <div v-else class="text-center py-4">
                 <p class="text-xs font-bold text-rose-400 italic">No manuscript attached.</p>
@@ -240,7 +248,34 @@ const keywordsList = computed(() => {
 
 const alreadyReviewed = computed(() => !!proposal.value.reviewPivot?.submitted_at || proposal.value.is_locked)
 const existingScore = computed(() => proposal.value.reviewPivot?.overall_score)
+async function downloadFile() {
+  try {
+    const response = await api.get(
+      `/files/${proposal.value.file.id}/download`,
+      {
+        responseType: 'blob'
+      }
+    )
 
+    const blob = new Blob([response.data])
+
+    const url = window.URL.createObjectURL(blob)
+
+    const link = document.createElement('a')
+    link.href = url
+    link.download = proposal.value.file.name || 'proposal.pdf'
+
+    document.body.appendChild(link)
+    link.click()
+
+    document.body.removeChild(link)
+    window.URL.revokeObjectURL(url)
+
+  } catch (error) {
+    console.error('Download failed:', error)
+    notif.error('Failed to download file')
+  }
+}
 async function fetchProposal() {
   loading.value = true; error.value = null
   try {

@@ -442,7 +442,7 @@ onMounted(async () => {
   }
 
   try {
-    const cr = await api.get('/management/calls', { params: { status: 'open' } })
+    const cr = await api.get('/calls', { params: { status: 'open' } })
     const yr = await api.get('/academic-years')
     const ur = await api.get('/users', { params: { per_page: 100 } })
     openCalls.value = cr.data.data || cr.data
