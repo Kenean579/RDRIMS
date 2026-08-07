@@ -76,6 +76,7 @@ class DatabaseSeeder extends Seeder
 
             SuperAdminSeeder::class,
             SampleUserSeeder::class,
+            FinanceOfficerSeeder::class,
 
 
             /*
