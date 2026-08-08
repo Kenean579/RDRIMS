@@ -29,6 +29,12 @@ class TaskController extends Controller
         $this->authorize('create', [Task::class, $milestone]);
         
         $data = $request->validated();
+        if (empty($data['description'])) {
+            $data['description'] = $data['title'] ?? '';
+        }
+        if (empty($data['due_date'])) {
+            $data['due_date'] = $milestone->due_date ? $milestone->due_date->toDateString() : now()->toDateString();
+        }
         if (empty($data['status_id'])) {
             $notStarted = \App\Models\TaskStatus::where('name', 'not_started')->first();
             $data['status_id'] = $notStarted ? $notStarted->id : (\App\Models\TaskStatus::first()?->id ?? 1);
@@ -62,10 +68,10 @@ class TaskController extends Controller
 
         $task = $milestone->tasks()->create([
             'title' => $request->title,
-            'description' => $request->description,
+            'description' => $request->description ?? $request->title,
             'status_id' => $statusId,
             'assigned_to' => $request->assigned_to,
-            'due_date' => $request->due_date,
+            'due_date' => $request->due_date ?? ($milestone->due_date ? $milestone->due_date->toDateString() : now()->toDateString()),
         ]);
         
         return response()->json(new TaskResource($task), 201);
@@ -80,21 +86,60 @@ class TaskController extends Controller
         return response()->json(new TaskResource($task));
     }
 
-    public function update(UpdateTaskRequest $request, Milestone $milestone, Task $task): JsonResponse
+    public function update(UpdateTaskRequest $request, ...$args): JsonResponse
     {
+        $task = null;
+        foreach ($args as $arg) {
+            if ($arg instanceof Task) {
+                $task = $arg;
+            }
+        }
+        if (!$task) {
+            $routeTask = $request->route('task');
+            $task = $routeTask instanceof Task ? $routeTask : Task::findOrFail($routeTask);
+        }
+
         $this->authorize('update', $task);
-        
-        $task->update($request->validated());
-        
-        return response()->json(new TaskResource($task));
+
+        $validated = $request->validated();
+
+        if (!empty($validated['status'])) {
+            $statusObj = \App\Models\TaskStatus::where('name', $validated['status'])->first();
+            if ($statusObj) {
+                $validated['status_id'] = $statusObj->id;
+            }
+            unset($validated['status']);
+        } elseif (isset($validated['status_id'])) {
+            if (!is_numeric($validated['status_id'])) {
+                $statusObj = \App\Models\TaskStatus::where('name', $validated['status_id'])->first();
+                if ($statusObj) {
+                    $validated['status_id'] = $statusObj->id;
+                }
+            }
+        }
+
+        $task->update($validated);
+
+        return response()->json(new TaskResource($task->fresh('status')));
     }
 
-    public function destroy(Milestone $milestone, Task $task): JsonResponse
+    public function destroy(...$args): JsonResponse
     {
+        $task = null;
+        foreach ($args as $arg) {
+            if ($arg instanceof Task) {
+                $task = $arg;
+            }
+        }
+        if (!$task) {
+            $routeTask = request()->route('task');
+            $task = $routeTask instanceof Task ? $routeTask : Task::findOrFail($routeTask);
+        }
+
         $this->authorize('delete', $task);
-        
+
         $task->delete();
-        
+
         return response()->json(['message' => 'Task deleted successfully.']);
     }
 }

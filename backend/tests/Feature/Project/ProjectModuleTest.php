@@ -358,4 +358,49 @@ class ProjectModuleTest extends TestCase
         $response->assertOk();
         $this->assertSoftDeleted('projects', ['id' => $project->id]);
     }
+
+    public function test_milestone_status_updates_automatically_when_tasks_are_done(): void
+    {
+        $project = Project::factory()
+            ->create([
+                'pi_id' => $this->pi->id,
+                'status_id' => ProjectStatus::where('name', 'active')->first()->id,
+            ]);
+
+        $milestone = $project->milestones()->create([
+            'title' => 'Milestone Test',
+            'due_date' => now()->addMonth(),
+            'status_id' => MilestoneStatus::where('name', 'pending')->first()->id,
+        ]);
+
+        $task1 = $milestone->tasks()->create([
+            'title' => 'Task 1',
+            'description' => 'Test task 1',
+            'status_id' => \App\Models\TaskStatus::where('name', 'not_started')->first()->id,
+            'due_date' => now()->addMonth(),
+        ]);
+
+        $task2 = $milestone->tasks()->create([
+            'title' => 'Task 2',
+            'description' => 'Test task 2',
+            'status_id' => \App\Models\TaskStatus::where('name', 'not_started')->first()->id,
+            'due_date' => now()->addMonth(),
+        ]);
+
+        $this->assertEquals('pending', $milestone->fresh()->status->name);
+
+        // Update task1 to done
+        $task1->update([
+            'status_id' => \App\Models\TaskStatus::where('name', 'done')->first()->id,
+        ]);
+
+        // Update task2 to done
+        $task2->update([
+            'status_id' => \App\Models\TaskStatus::where('name', 'done')->first()->id,
+        ]);
+
+        // Milestone status should now be completed or done
+        $statusName = $milestone->fresh()->status->name;
+        $this->assertTrue(in_array($statusName, ['completed', 'done']));
+    }
 }

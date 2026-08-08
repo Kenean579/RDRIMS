@@ -33,4 +33,19 @@ class Task extends Model
     {
         return $this->belongsTo(TaskStatus::class, 'status_id');
     }
+
+    protected static function booted()
+    {
+        static::saved(function ($task) {
+            if ($task->milestone) {
+                $task->milestone->updateStatusFromTasks();
+            }
+        });
+
+        static::deleted(function ($task) {
+            if ($task->milestone) {
+                $task->milestone->updateStatusFromTasks();
+            }
+        });
+    }
 }

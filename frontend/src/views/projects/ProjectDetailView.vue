@@ -483,10 +483,10 @@ async function deleteMilestone() {
 async function cycleTaskStatus(task) {
   try {
     // Cycle through: not_started → in_progress → done → not_started
-    const statusMap = { 'not_started': 7, 'in_progress': 8, 'done': 6 };
+    const statusCycle = { 'not_started': 'in_progress', 'in_progress': 'done', 'done': 'not_started' };
     const currentStatus = task.status?.name || 'not_started';
-    const newStatusId = statusMap[currentStatus] || 7;
-    await api.put(`/tasks/${task.id}`, { status_id: newStatusId });
+    const nextStatus = statusCycle[currentStatus] || 'in_progress';
+    await api.put(`/tasks/${task.id}`, { status: nextStatus });
     fetchProject();
   } catch(e) { notif.error('Synchronization failed'); }
 }
