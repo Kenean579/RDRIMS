@@ -539,7 +539,7 @@ function editTask(task) {
 async function addTask(m) {
   if (!newTaskTitles[m.id]) return;
   try {
-    await api.post('/tasks', { milestone_id: m.id, title: newTaskTitles[m.id], status_id: 6 });
+    await api.post('/tasks', { milestone_id: m.id, title: newTaskTitles[m.id] });
     newTaskTitles[m.id] = '';
     fetchProject();
   } catch(e) { notif.error('Task generation failed'); }

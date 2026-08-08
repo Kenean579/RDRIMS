@@ -20,13 +20,13 @@ class ProjectService
         return DB::transaction(function () use ($data, $userId) {
             $data['created_by'] = $userId;
             $data['updated_by'] = $userId;
-            
+
             // Get draft status
             $draftStatus = ProjectStatus::where('name', 'draft')->first();
             if (!$draftStatus) {
                 throw new \Exception('Draft status not found. Please seed project statuses.');
             }
-            
+
             // Temporarily unguard to set status_id
             Project::unguard();
             $data['status_id'] = $draftStatus->id;
@@ -53,7 +53,7 @@ class ProjectService
         return DB::transaction(function () use ($project, $data, $userId) {
             $oldData = $project->only(['title', 'description', 'start_date', 'end_date', 'total_budget']);
             $data['updated_by'] = $userId;
-            
+
             $project->update($data);
 
             // Log update
@@ -86,7 +86,7 @@ class ProjectService
             }
 
             $planningStatus = ProjectStatus::where('name', 'planning')->first();
-            
+
             // Unguard to update status_id
             Project::unguard();
             $project->update([
@@ -118,7 +118,7 @@ class ProjectService
             }
 
             $activeStatus = ProjectStatus::where('name', 'active')->first();
-            
+
             // Unguard to update status_id
             Project::unguard();
             $project->update([
@@ -150,7 +150,7 @@ class ProjectService
             }
 
             $draftStatus = ProjectStatus::where('name', 'draft')->first();
-            
+
             // Unguard to update status_id
             Project::unguard();
             $project->update([
@@ -182,7 +182,7 @@ class ProjectService
             }
 
             $suspendedStatus = ProjectStatus::where('name', 'suspended')->first();
-            
+
             // Unguard to update status_id
             Project::unguard();
             $project->update([
@@ -214,7 +214,7 @@ class ProjectService
             }
 
             $activeStatus = ProjectStatus::where('name', 'active')->first();
-            
+
             // Unguard to update status_id
             Project::unguard();
             $project->update([
@@ -251,7 +251,7 @@ class ProjectService
             }
 
             $completedStatus = ProjectStatus::where('name', 'completed')->first();
-            
+
             // Unguard to update status_id
             Project::unguard();
             $project->update([
@@ -335,22 +335,24 @@ class ProjectService
     /**
      * Remove an investigator from the project
      */
-    public function removeInvestigator(Project $project, int $investigatorId, int $performedBy): void
-    {
-        DB::transaction(function () use ($project, $investigatorId, $performedBy) {
-            $investigator = $project->investigators()->findOrFail($investigatorId);
-            $userName = $investigator->user->name;
+public function removeInvestigator(Project $project, int $investigatorId, int $performedBy): void
+{
+    DB::transaction(function () use ($project, $investigatorId, $performedBy) {
+        $investigator = $project->investigators()->findOrFail($investigatorId);
 
-            $investigator->delete();
+        // Store user name BEFORE deletion
+        $userName = $investigator->user?->name ?? 'Unknown User';
 
-            $this->logHistory(
-                $project,
-                'investigator_removed',
-                $performedBy,
-                "Investigator '{$userName}' removed from project"
-            );
-        });
-    }
+        $investigator->delete();
+
+        $this->logHistory(
+            $project,
+            'investigator_removed',
+            $performedBy,
+            "Investigator '{$userName}' removed from project"
+        );
+    });
+}
 
     /**
      * Calculate project progress statistics
@@ -359,7 +361,7 @@ class ProjectService
     {
         $milestones = $project->milestones()->with('status')->get();
         $totalMilestones = $milestones->count();
-        
+
         if ($totalMilestones === 0) {
             return [
                 'total_milestones' => 0,
@@ -392,8 +394,8 @@ class ProjectService
         $totalFunding = $project->getTotalFundingAmount();
         $totalExpenses = $project->getTotalExpenses();
         $remainingBudget = $project->getRemainingBudget();
-        $budgetUtilization = $project->total_budget > 0 
-            ? round(($totalExpenses / $project->total_budget) * 100, 2) 
+        $budgetUtilization = $project->total_budget > 0
+            ? round(($totalExpenses / $project->total_budget) * 100, 2)
             : 0;
 
         return [
@@ -446,7 +448,7 @@ class ProjectService
      */
     public function createFromProposal(Proposal $proposal, User $creator): Project
     {
-        if ($proposal->status_id !== 5) { // approved
+        if ($proposal->status?->name !== 'approved') {
             abort(422, 'Only approved proposals can be converted to projects.');
         }
 

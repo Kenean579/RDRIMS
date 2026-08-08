@@ -3,23 +3,38 @@ import { useAuthStore } from '@/stores/auth'
 
 const routes = [
   {
-    path: '/',
-    component: () => import('@/layouts/PublicLayout.vue'),
-    children: [
-      { path: '', name: 'Home', component: () => import('@/views/public/HomeView.vue'), meta: { title: 'Home' } },
-      { path: 'calls', name: 'PublicCalls', component: () => import('@/views/public/PublicCallsView.vue'), meta: { title: 'Call for Proposals' } },
-      { path: 'calls/:id', name: 'PublicCallDetail', component: () => import('@/views/public/PublicCallDetailView.vue'), meta: { title: 'Call Details' } },
-      { path: 'publications', name: 'PublicPublications', component: () => import('@/views/public/PublicPublicationsView.vue'), meta: { title: 'Repository' } },
-      { path: 'publications/:id', name: 'PublicPublicationDetail', component: () => import('@/views/publications/PublicationDetailView.vue'), meta: { title: 'Publication Detail' } },
-      { path: 'student-research', name: 'PublicStudentResearch', component: () => import('@/views/public/PublicStudentResearchView.vue'), meta: { title: 'Student Research' } },
-      { path: 'researchers', name: 'PublicResearchers', component: () => import('@/views/public/PublicResearchersView.vue'), meta: { title: 'Researcher Directory' } },
-      { path: 'researchers/:id', name: 'PublicResearcherDetail', component: () => import('@/views/public/PublicResearcherDetailView.vue'), meta: { title: 'Researcher Profile' } },
-      { path: 'events', name: 'PublicEvents', component: () => import('@/views/public/PublicEventsView.vue'), meta: { title: 'Upcoming Events' } },
-      { path: 'events/:id', name: 'PublicEventDetail', component: () => import('@/views/events/EventDetailView.vue'), meta: { title: 'Event Details' } },
-      { path: 'community', name: 'PublicCommunity', component: () => import('@/views/public/PublicCommunityView.vue'), meta: { title: 'Community' } },
-      { path: 'about', name: 'About', component: () => import('@/views/public/AboutView.vue'), meta: { title: 'About' } }
-    ]
-  },
+  path: '/',
+  component: () => import('@/layouts/PublicLayout.vue'),
+  children: [
+    { path: '', name: 'Home', component: () => import('@/views/public/HomeView.vue'), meta: { title: 'Home' } },
+    { path: 'calls', name: 'PublicCalls', component: () => import('@/views/public/PublicCallsView.vue'), meta: { title: 'Call for Proposals' } },
+    { path: 'calls/:id', name: 'PublicCallDetail', component: () => import('@/views/public/PublicCallDetailView.vue'), meta: { title: 'Call Details' } },
+    { path: 'publications', name: 'PublicPublications', component: () => import('@/views/public/PublicPublicationsView.vue'), meta: { title: 'Repository' } },
+    { path: 'publications/:id', name: 'PublicPublicationDetail', component: () => import('@/views/publications/PublicationDetailView.vue'), meta: { title: 'Publication Detail' } },
+    { path: 'student-research', name: 'PublicStudentResearch', component: () => import('@/views/public/PublicStudentResearchView.vue'), meta: { title: 'Student Research' } },
+    { path: 'researchers', name: 'PublicResearchers', component: () => import('@/views/public/PublicResearchersView.vue'), meta: { title: 'Researcher Directory' } },
+    { path: 'researchers/:id', name: 'PublicResearcherDetail', component: () => import('@/views/public/PublicResearcherDetailView.vue'), meta: { title: 'Researcher Profile' } },
+    { path: 'events', name: 'PublicEvents', component: () => import('@/views/public/PublicEventsView.vue'), meta: { title: 'Upcoming Events' } },
+    { path: 'events/:id', name: 'PublicEventDetail', component: () => import('@/views/events/EventDetailView.vue'), meta: { title: 'Event Details' } },
+    { path: 'community', name: 'PublicCommunity', component: () => import('@/views/public/PublicCommunityView.vue'), meta: { title: 'Community' } },
+
+    // NEW
+    {
+      path: 'proposals',
+      name: 'PublicProposals',
+      component: () => import('@/views/proposals/ProposalListView.vue'),
+      meta: { title: 'Proposals' }
+    },
+    {
+      path: 'projects',
+      name: 'PublicProjects',
+      component: () => import('@/views/projects/ProjectListView.vue'),
+      meta: { title: 'Projects' }
+    },
+
+    { path: 'about', name: 'About', component: () => import('@/views/public/AboutView.vue'), meta: { title: 'About' } }
+  ]
+},
   { path: '/login', name: 'Login', component: () => import('@/views/auth/LoginView.vue'), meta: { guest: true, title: 'Login' } },
   { path: '/register', name: 'Register', component: () => import('@/views/auth/RegisterView.vue'), meta: { guest: true, title: 'Create Account' } },
   { path: '/forgot-password', name: 'ForgotPassword', component: () => import('@/views/auth/ForgotPasswordView.vue'), meta: { guest: true, title: 'Forgot Password' } },

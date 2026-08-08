@@ -36,6 +36,7 @@
         />
         <kbd class="search-kbd">⌵</kbd>
       </div>
+       
 
       <div class="topbar-right">
         <!-- Notifications -->
@@ -46,7 +47,25 @@
           </svg>
           <span v-if="unreadCount > 0" class="notif-dot">{{ unreadCount > 9 ? '9+' : unreadCount }}</span>
         </router-link>
-
+<button
+        @click="toggleFullscreen"
+        class="hidden lg:flex p-2 rounded-lg items-center justify-center text-gray-500 dark:text-slate-400 hover:bg-gray-100 dark:hover:bg-slate-800 transition"
+        :aria-label="isFullscreen ? 'Exit fullscreen' : 'Enter fullscreen'"
+      >
+        <Minimize v-if="isFullscreen" class="w-5 h-5" />
+        <Maximize v-else class="w-4 h-4" />
+      </button>
+      <button
+  class="icon-btn"
+  @click="refreshPage"
+  title="Refresh Page"
+  :disabled="isRefreshing"
+>
+  <RefreshCw
+    :size="18"
+    :class="{ 'animate-spin': isRefreshing }"
+  />
+</button>
         <!-- Divider -->
         <div class="topbar-divider"></div>
 
@@ -61,6 +80,7 @@
             <span class="profile-role">{{ displayRole }}</span>
           </div>
         </router-link>
+        
 
         <!-- Logout -->
         <button class="icon-btn text-red-400 hover:text-red-300" @click="logout" title="Sign out">
@@ -168,6 +188,7 @@ import { useAuthStore } from '@/stores/auth'
 import { useLookupStore } from '@/stores/lookup'
 import { getInitials, imageUrl } from '@/utils/formatters'
 import api from '@/services/api'
+import { Maximize, Minimize } from "lucide-vue-next";
 
 const router  = useRouter()
 const route   = useRoute()
@@ -176,13 +197,16 @@ const formatImageUrl = imageUrl
 const getAvatarInitials = getInitials
 const lookupStore = useLookupStore()
 const appName = computed(() => lookupStore.getSetting('app_name', 'Research Portal'))
-
+const isFullscreen = ref(false)
 const sidebarOpen  = ref(true)
 const unreadCount  = ref(0)
 const searchQuery  = ref('')
 const isMobile     = ref(false)
 const openGroups   = reactive({})
 const smtpWarning  = ref(false)
+import { RefreshCw } from 'lucide-vue-next'
+import { usePageRefresh } from '@/composables/usePageRefresh'
+const { refreshPage, isRefreshing } = usePageRefresh()
 
 // ── Role Display Name Mapping ──────────────────────────────
 const roleDisplayMap = {
@@ -200,7 +224,25 @@ const roleDisplayMap = {
   'ethics_officer': 'Ethics Officer',
 }
 
-// Computed property that returns the user-friendly role name
+function toggleFullscreen() {
+  if (!document.fullscreenElement) {
+    document.documentElement.requestFullscreen()
+  } else {
+    document.exitFullscreen()
+  }
+}
+
+function updateFullscreenState() {
+  isFullscreen.value = !!document.fullscreenElement
+}
+
+onMounted(() => {
+  document.addEventListener('fullscreenchange', updateFullscreenState)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('fullscreenchange', updateFullscreenState)
+})
 const displayRole = computed(() => {
   // Get the primary role from the auth store
   const role = auth.primaryRole
@@ -221,8 +263,11 @@ function toggleGroup(title) {
 
 function checkMobile() {
   isMobile.value = window.innerWidth < 768
-  if (isMobile.value) sidebarOpen.value = false
-  else sidebarOpen.value = true
+
+  if (isMobile.value)
+    sidebarOpen.value = false
+  else
+    sidebarOpen.value = true
 }
 
 function goSearch() {
@@ -350,25 +395,27 @@ const navigation = computed(() => {
     if (isSuperAdminOnly.value) return nav
   }
 
-  if (isGuestOnly.value) {
-    return [
-      {
-        items: [
-          { name: 'Dashboard', path: '/app/dashboard', icon: icons.home },
-          { name: 'Notifications', path: '/app/notifications', icon: icons.events },
-        ]
-      },
-      {
-        title: 'Community & Public',
-        items: [
-          { name: 'Call for Proposals', path: '/calls', icon: icons.calls },
-          { name: 'Publications', path: '/publications', icon: icons.publications },
-          { name: 'Events', path: '/events', icon: icons.events },
-          { name: 'Community Problems', path: '/community', icon: icons.community },
-        ]
-      }
-    ]
-  }
+if (isGuestOnly.value) {
+  return [
+    {
+      items: [
+        { name: 'Dashboard', path: '/app/dashboard', icon: icons.home },
+        { name: 'Notifications', path: '/app/notifications', icon: icons.events },
+      ]
+    },
+    {
+      title: 'Community & Public',
+      items: [
+        { name: 'Call for Proposals', path: '/calls', icon: icons.calls },
+        { name: 'Proposals', path: '/proposals', icon: icons.proposals },
+        { name: 'Projects', path: '/projects', icon: icons.projects },
+        { name: 'Publications', path: '/publications', icon: icons.publications },
+        { name: 'Events', path: '/events', icon: icons.events },
+        { name: 'Community Problems', path: '/community', icon: icons.community },
+      ]
+    }
+  ]
+}
 
   const isSuper = auth.hasRole('super_admin')
   const instNav = [
@@ -648,10 +695,14 @@ const navigation = computed(() => {
   border-right: 1px solid var(--color-border);
   display: flex;
   flex-direction: column;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+
+  transform: translateX(0);
+  transition:
+    transform .3s ease,
+    width .3s ease;
 }
+
 .sidebar-closed {
-  width: 0;
   transform: translateX(-100%);
 }
 
@@ -739,17 +790,18 @@ const navigation = computed(() => {
   100% { opacity: 0.7; transform: scale(0.9); }
 }
 
-/* ── Main Content ─────────────────────────────── */
 .main-content {
   flex: 1;
   margin-left: var(--sidebar-w);
   padding: 40px;
   min-height: calc(100vh - var(--topbar-h));
   background: var(--color-surface-2);
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  min-width: 0;
+  transition: margin-left .3s ease;
 }
-.main-expanded { margin-left: 0; }
+
+.main-expanded {
+  margin-left: 0;
+}
 
 /* ── Page Transition ──────────────────────────── */
 .fade-enter-active, .fade-leave-active { transition: all 0.2s ease; }

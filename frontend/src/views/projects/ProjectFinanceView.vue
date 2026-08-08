@@ -137,18 +137,22 @@ async function fetchProjectData() {
 }
 
 async function addExpense() {
-  submitting.value = true
-  try {
-    // In our backend, there's usually an expenses endpoint like POST /projects/{id}/expenses.
-    // If not, it will 404, but we implement this to match system specs.
-    await api.post(`/projects/${project.value.id}/expenses`, expenseForm)
-    notif.success('Expense recorded successfully')
-    showAddExpense.value = false
-    Object.assign(expenseForm, { title: '', amount: 0, expense_date: new Date().toISOString().split('T')[0] })
-    fetchProjectData()
-  } catch (err) {
-    notif.error('Failed to save expense. You might lack permissions or the endpoint needs adjustment.')
-  } finally { submitting.value = false }
+    submitting.value = true;
+    try {
+        await api.post(`/projects/${project.value.id}/expenses`, {
+            title: expenseForm.title,
+            amount: expenseForm.amount,
+            expense_date: expenseForm.expense_date,
+        });
+        notif.success('Expense recorded successfully');
+        showAddExpense.value = false;
+        Object.assign(expenseForm, { title: '', amount: 0, expense_date: new Date().toISOString().split('T')[0] });
+        await fetchProjectData();
+    } catch (err) {
+        notif.error('Failed to save expense.');
+    } finally {
+        submitting.value = false;
+    }
 }
 
 onMounted(fetchProjectData)

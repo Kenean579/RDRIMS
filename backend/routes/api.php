@@ -104,6 +104,7 @@ use App\Http\Controllers\UserExpertiseController;
 use App\Http\Controllers\UserResearchCenterController;
 use App\Http\Controllers\UserRoleController;
 use App\Http\Controllers\HealthController;
+use App\Http\Controllers\ProjectExpenseController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -114,71 +115,69 @@ use Illuminate\Support\Facades\Route;
 // ---------------------------------------------------------------------------
 // Authentication (public entry points)
 // ---------------------------------------------------------------------------
-Route::post('register', [AuthController::class, 'register']);                // Create a new user account
-Route::post('login', [AuthController::class, 'login']);                      // Authenticate and receive token
-Route::post('forgot-password', [AuthController::class, 'forgotPassword']);   // Request password reset link
-Route::post('reset-password', [AuthController::class, 'resetPassword']);     // Reset password using token
+Route::post('register', [AuthController::class, 'register']);
+Route::post('login', [AuthController::class, 'login']);
+Route::post('forgot-password', [AuthController::class, 'forgotPassword']);
+Route::post('reset-password', [AuthController::class, 'resetPassword']);
 
 // ---------------------------------------------------------------------------
 // System Health (monitoring)
 // ---------------------------------------------------------------------------
-Route::get('system/health', [HealthController::class, 'ping']);              // Simple ping to verify API is running
+Route::get('system/health', [HealthController::class, 'ping']);
 
 // ---------------------------------------------------------------------------
 // Public Settings & Lookup Data
 // ---------------------------------------------------------------------------
-Route::get('lookups/{table}', [LookupController::class, 'index']);           // Get values from any lookup table by name
-Route::get('settings', [SettingController::class, 'index']);                 // List all public system settings
-Route::post('email-config/test', [\App\Http\Controllers\EmailConfigurationController::class, 'testEmail']); // Test email configuration (public for testing)
+Route::get('lookups/{table}', [LookupController::class, 'index']);
+Route::get('settings', [SettingController::class, 'index']);
+Route::post('email-config/test', [\App\Http\Controllers\EmailConfigurationController::class, 'testEmail']);
 
 // ---------------------------------------------------------------------------
 // Public Academic Organization Data
 // ---------------------------------------------------------------------------
-Route::get('universities', [UniversityController::class, 'index']);          // List all universities
-Route::get('universities/{university}', [UniversityController::class, 'show']); // Show a single university
-
-// Hierarchy: Campus → Faculty → Department → Research Center
-Route::get('campuses', [CampusController::class, 'index']);                  // List all campuses
-Route::get('faculties', [FacultyController::class, 'index']);                // List all faculties
-Route::get('departments', [DepartmentController::class, 'index']);           // List all departments
-Route::get('departments/{department}', [DepartmentController::class, 'show']); // Show a single department
-Route::get('research-centers', [ResearchCenterController::class, 'index']);  // List all research centers
-Route::get('research-centers/{research_center}', [ResearchCenterController::class, 'show']); // Show a single research center
+Route::get('universities', [UniversityController::class, 'index']);
+Route::get('universities/{university}', [UniversityController::class, 'show']);
+Route::get('campuses', [CampusController::class, 'index']);
+Route::get('faculties', [FacultyController::class, 'index']);
+Route::get('departments', [DepartmentController::class, 'index']);
+Route::get('departments/{department}', [DepartmentController::class, 'show']);
+Route::get('research-centers', [ResearchCenterController::class, 'index']);
+Route::get('research-centers/{research_center}', [ResearchCenterController::class, 'show']);
 
 // ---------------------------------------------------------------------------
 // Public Calls (Research Funding Announcements)
 // ---------------------------------------------------------------------------
-Route::get('calls', [CallController::class, 'index']);                       // List all public calls
-Route::get('calls/{call}', [CallController::class, 'show']);                 // Show a single call (public)
+Route::get('calls', [CallController::class, 'index']);
+Route::get('calls/{call}', [CallController::class, 'show']);
 
 // ---------------------------------------------------------------------------
 // Public Events (Conferences, Workshops)
 // ---------------------------------------------------------------------------
-Route::get('events', [EventController::class, 'index']);                     // List all upcoming public events
-Route::get('events/{event}', [EventController::class, 'show']);              // Show a single event
+Route::get('events', [EventController::class, 'index']);
+Route::get('events/{event}', [EventController::class, 'show']);
 
 // ---------------------------------------------------------------------------
 // Public Publications
 // ---------------------------------------------------------------------------
-Route::get('publications', [PublicationController::class, 'index']);         // List all public publications
+Route::get('publications', [PublicationController::class, 'index']);
 Route::get('publications/statistics', [PublicationController::class, 'statistics'])
-    ->middleware(['auth:sanctum', 'tenant']);                                // Get publication statistics (requires auth)
-Route::get('publications/{publication}', [PublicationController::class, 'show']); // Show a single publication
-Route::get('student-outputs', [OutputController::class, 'publicIndex']);     // List student research outputs (public)
+    ->middleware(['auth:sanctum', 'tenant']);
+Route::get('publications/{publication}', [PublicationController::class, 'show']);
+Route::get('student-outputs', [OutputController::class, 'publicIndex']);
 
 // ---------------------------------------------------------------------------
 // Community Problems (Public Submission)
 // ---------------------------------------------------------------------------
-Route::get('community-problems', [CommunityProblemController::class, 'index']); // List community problems
-Route::get('community-problems/{community_problem}', [CommunityProblemController::class, 'show']); // Show a problem
-Route::post('community-problems', [CommunityProblemController::class, 'store']); // Submit a new community problem (public)
-Route::get('public/research-centers', [ResearchCenterController::class, 'publicOptions']); // Safe options for public forms
+Route::get('community-problems', [CommunityProblemController::class, 'index']);
+Route::get('community-problems/{community_problem}', [CommunityProblemController::class, 'show']);
+Route::post('community-problems', [CommunityProblemController::class, 'store']);
+Route::get('public/research-centers', [ResearchCenterController::class, 'publicOptions']);
 
 // ---------------------------------------------------------------------------
 // Public Researchers Directory
 // ---------------------------------------------------------------------------
-Route::get('public/researchers', [UserController::class, 'publicIndex']);    // List researchers (public)
-Route::get('public/researchers/{user}', [UserController::class, 'publicShow']); // Show researcher profile (public)
+Route::get('public/researchers', [UserController::class, 'publicIndex']);
+Route::get('public/researchers/{user}', [UserController::class, 'publicShow']);
 
 // ============================================================================
 // AUTHENTICATED ROUTES (Require auth:sanctum + tenant middleware)
@@ -188,13 +187,12 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
     // -----------------------------------------------------------------------
     // Authentication & User Profile
     // -----------------------------------------------------------------------
-    Route::get('user', [AuthController::class, 'user']);                     // Get authenticated user details
-    Route::put('profile', [AuthController::class, 'updateProfile']);         // Update user profile
-    Route::post('profile/complete', [AuthController::class, 'completeProfile']); // Complete profile (onboarding)
-    Route::post('logout', [AuthController::class, 'logout']);                // Invalidate current token
+    Route::get('user', [AuthController::class, 'user']);
+    Route::put('profile', [AuthController::class, 'updateProfile']);
+    Route::post('profile/complete', [AuthController::class, 'completeProfile']);
+    Route::post('logout', [AuthController::class, 'logout']);
 
-    // Authenticated call views. Public GET /calls remains limited to
-    // published public calls, while these endpoints use tenant visibility.
+    // Authenticated call/publication views (tenant‑aware)
     Route::get('management/calls', [CallController::class, 'index']);
     Route::get('management/calls/{call}', [CallController::class, 'show']);
     Route::get('management/publications', [PublicationController::class, 'index']);
@@ -205,104 +203,98 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
     // -----------------------------------------------------------------------
     // File Management (Central Repository)
     // -----------------------------------------------------------------------
-    Route::post('files', [FileController::class, 'upload']);                 // Upload a new file
-    Route::get('files', [FileController::class, 'index']);                   // List uploaded files (filterable)
-    Route::put('files/{file}', [FileController::class, 'update']);           // Update file metadata/visibility
-    Route::get('files/{file}/download', [FileController::class, 'download'])->name('files.download'); // Download a file
-    Route::delete('files/{file}', [FileController::class, 'destroy']);       // Delete a file
-    Route::get('files/{file}/versions', [FileController::class, 'versions']); // List all versions of a file
-    Route::post('files/{file}/versions', [FileController::class, 'uploadNewVersion']); // Upload a new version
+    Route::post('files', [FileController::class, 'upload']);
+    Route::get('files', [FileController::class, 'index']);
+    Route::put('files/{file}', [FileController::class, 'update']);
+    Route::get('files/{file}/download', [FileController::class, 'download'])->name('files.download');
+    Route::delete('files/{file}', [FileController::class, 'destroy']);
+    Route::get('files/{file}/versions', [FileController::class, 'versions']);
+    Route::post('files/{file}/versions', [FileController::class, 'uploadNewVersion']);
 
     // -----------------------------------------------------------------------
     // Language Preference
     // -----------------------------------------------------------------------
-    Route::get('language-preference', [LanguagePreferenceController::class, 'show']); // Get user's language preference
-    Route::put('language-preference', [LanguagePreferenceController::class, 'update']); // Update language preference
+    Route::get('language-preference', [LanguagePreferenceController::class, 'show']);
+    Route::put('language-preference', [LanguagePreferenceController::class, 'update']);
 
     // -----------------------------------------------------------------------
     // Notifications
     // -----------------------------------------------------------------------
-    Route::get('notifications', [NotificationController::class, 'index']);   // List user notifications
-    Route::put('notifications/read-all', [NotificationController::class, 'markAllAsRead']); // Mark all as read
-    Route::put('notifications/{id}/read', [NotificationController::class, 'markAsRead']); // Mark single as read
+    Route::get('notifications', [NotificationController::class, 'index']);
+    Route::put('notifications/read-all', [NotificationController::class, 'markAllAsRead']);
+    Route::put('notifications/{id}/read', [NotificationController::class, 'markAsRead']);
 
     // -----------------------------------------------------------------------
     // Audit Logs (Only for privileged roles)
     // -----------------------------------------------------------------------
     Route::get('audit-logs', [AuditLogController::class, 'index'])
-        ->middleware('role:super_admin,research_admin,campus_admin,faculty_admin,department_head,director'); // View system audit logs
+        ->middleware('role:super_admin,research_admin,campus_admin,faculty_admin,department_head,director');
 
     // -----------------------------------------------------------------------
     // Super Admin System Management
     // -----------------------------------------------------------------------
     Route::middleware('role:super_admin')->group(function () {
-        Route::get('system-health', [HealthController::class, 'index']);     // Detailed system health status
-        Route::get('email-config', [\App\Http\Controllers\EmailConfigurationController::class, 'show']); // Get email config
-        Route::post('email-config', [\App\Http\Controllers\EmailConfigurationController::class, 'update']); // Update email config
+        Route::get('system-health', [HealthController::class, 'index']);
+        Route::get('email-config', [\App\Http\Controllers\EmailConfigurationController::class, 'show']);
+        Route::post('email-config', [\App\Http\Controllers\EmailConfigurationController::class, 'update']);
     });
 
     // -----------------------------------------------------------------------
     // Roles Listing (for frontend role selection)
     // -----------------------------------------------------------------------
-    Route::get('roles', [RoleController::class, 'index']);                   // List all available system roles
+    Route::get('roles', [RoleController::class, 'index']);
 
     // -----------------------------------------------------------------------
     // Academic Hierarchy Management (CRUD – protected by roles)
     // -----------------------------------------------------------------------
-    // Hierarchy: University → Campus → Faculty → Department → Research Center
-    // Public GET endpoints are outside this group; protected methods require admin roles.
-
     Route::apiResource('universities', UniversityController::class)
         ->except(['index', 'show'])
-        ->middleware('role:super_admin');                                    // Only super_admin can create/update/delete universities
+        ->middleware('role:super_admin');
 
     Route::apiResource('campuses', CampusController::class)
         ->except(['index'])
-        ->middleware('role:super_admin,research_admin,campus_admin');        // Manage campuses
+        ->middleware('role:super_admin,research_admin,campus_admin');
 
     Route::apiResource('faculties', FacultyController::class)
         ->except(['index'])
-        ->middleware('role:super_admin,research_admin,campus_admin,faculty_admin'); // Manage faculties
+        ->middleware('role:super_admin,research_admin,campus_admin,faculty_admin');
 
     Route::apiResource('departments', DepartmentController::class)
         ->except(['index', 'show'])
-        ->middleware('role:super_admin,research_admin,campus_admin,faculty_admin'); // Manage departments
+        ->middleware('role:super_admin,research_admin,campus_admin,faculty_admin');
 
     Route::apiResource('research-centers', ResearchCenterController::class)
         ->except(['index', 'show'])
-        ->middleware('role:super_admin,research_admin,campus_admin,faculty_admin'); // Manage research centers
+        ->middleware('role:super_admin,research_admin,campus_admin,faculty_admin');
 
     // Academic Years
-    Route::get('academic-years', [AcademicYearController::class, 'index']);  // List academic years (authenticated)
+    Route::get('academic-years', [AcademicYearController::class, 'index']);
     Route::apiResource('academic-years', AcademicYearController::class)
         ->except(['index'])
-        ->middleware('role:super_admin,research_admin');                    // Manage academic years
+        ->middleware('role:super_admin,research_admin');
     Route::post('academic-years/{academic_year}/set-current', [AcademicYearController::class, 'setCurrent'])
-        ->middleware('role:super_admin,research_admin');                    // Set current academic year
+        ->middleware('role:super_admin,research_admin');
 
     // -----------------------------------------------------------------------
     // User Management
     // -----------------------------------------------------------------------
-    Route::apiResource('users', UserController::class);                      // Full CRUD for users
-    Route::post('users/{user}/roles', [UserRoleController::class, 'assign']);   // Assign role to user
-    Route::delete('users/{user}/roles/{role}', [UserRoleController::class, 'revoke']); // Remove role from user
-    Route::post('users/{user}/research-centers', [UserResearchCenterController::class, 'attach']); // Assign research center
-    Route::delete('users/{user}/research-centers/{research_center}', [UserResearchCenterController::class, 'detach']); // Remove research center
-    Route::post('users/{user}/expertise', [UserExpertiseController::class, 'attach']); // Add expertise
-    Route::delete('users/{user}/expertise/{expertise}', [UserExpertiseController::class, 'detach']); // Remove expertise
+    Route::apiResource('users', UserController::class);
+    Route::post('users/{user}/roles', [UserRoleController::class, 'assign']);
+    Route::delete('users/{user}/roles/{role}', [UserRoleController::class, 'revoke']);
+    Route::post('users/{user}/research-centers', [UserResearchCenterController::class, 'attach']);
+    Route::delete('users/{user}/research-centers/{research_center}', [UserResearchCenterController::class, 'detach']);
+    Route::post('users/{user}/expertise', [UserExpertiseController::class, 'attach']);
+    Route::delete('users/{user}/expertise/{expertise}', [UserExpertiseController::class, 'detach']);
 
     // -----------------------------------------------------------------------
     // Platform Roles & Permissions (Super Admin only)
     // -----------------------------------------------------------------------
     Route::prefix('admin')->middleware('role:super_admin')->group(function () {
-        // Global Roles
         Route::get('roles', [\App\Http\Controllers\Admin\RoleController::class, 'index']);
         Route::post('roles', [\App\Http\Controllers\Admin\RoleController::class, 'store']);
         Route::put('roles/{role}', [\App\Http\Controllers\Admin\RoleController::class, 'update']);
         Route::delete('roles/{role}', [\App\Http\Controllers\Admin\RoleController::class, 'destroy']);
         Route::post('roles/{role}/permissions', [\App\Http\Controllers\Admin\RoleController::class, 'syncPermissions']);
-
-        // Global Permissions
         Route::get('permissions', [\App\Http\Controllers\Admin\PermissionController::class, 'index']);
         Route::post('permissions', [\App\Http\Controllers\Admin\PermissionController::class, 'store']);
         Route::put('permissions/{permission}', [\App\Http\Controllers\Admin\PermissionController::class, 'update']);
@@ -310,7 +302,7 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
     });
 
     // -----------------------------------------------------------------------
-    // Institution Role Overrides (Research/Campus/Faculty Admin)
+    // Institution Role Overrides
     // -----------------------------------------------------------------------
     Route::prefix('institution')
         ->middleware('role:research_admin,campus_admin,faculty_admin')
@@ -325,141 +317,109 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
     // -----------------------------------------------------------------------
     // System Settings (Super Admin)
     // -----------------------------------------------------------------------
-    Route::post('settings/bulk', [SettingController::class, 'bulk'])->middleware('role:super_admin'); // Bulk update settings
-    Route::post('settings', [SettingController::class, 'store'])->middleware('role:super_admin'); // Create setting
-    Route::put('settings/{setting}', [SettingController::class, 'update'])->middleware('role:super_admin'); // Update setting
-    Route::delete('settings/{setting}', [SettingController::class, 'destroy'])->middleware('role:super_admin'); // Delete setting
+    Route::post('settings/bulk', [SettingController::class, 'bulk'])->middleware('role:super_admin');
+    Route::post('settings', [SettingController::class, 'store'])->middleware('role:super_admin');
+    Route::put('settings/{setting}', [SettingController::class, 'update'])->middleware('role:super_admin');
+    Route::delete('settings/{setting}', [SettingController::class, 'destroy'])->middleware('role:super_admin');
 
     // -----------------------------------------------------------------------
-    // Institution Settings (Multi-tenant)
+    // Institution Settings
     // -----------------------------------------------------------------------
     Route::apiResource('institution-settings', InstitutionSettingController::class)
-        ->middleware('role:research_admin,campus_admin,faculty_admin,department_head,director'); // Manage institution-level settings
+        ->middleware('role:research_admin,campus_admin,faculty_admin,department_head,director');
 
     // -----------------------------------------------------------------------
-    // Thematic Areas (Research classification)
+    // Thematic Areas
     // -----------------------------------------------------------------------
-    Route::get('thematic-areas', [ThematicAreaController::class, 'index']); // List thematic areas
-    Route::post('thematic-areas', [ThematicAreaController::class, 'store'])
-        ->middleware('role:research_admin'); // Create thematic area
-    Route::get('thematic-areas/{thematic_area}', [ThematicAreaController::class, 'show']); // Show thematic area
-    Route::put('thematic-areas/{thematic_area}', [ThematicAreaController::class, 'update'])
-        ->middleware('role:research_admin'); // Update
-    Route::delete('thematic-areas/{thematic_area}', [ThematicAreaController::class, 'destroy'])
-        ->middleware('role:research_admin'); // Delete
+    Route::get('thematic-areas', [ThematicAreaController::class, 'index']);
+    Route::post('thematic-areas', [ThematicAreaController::class, 'store'])->middleware('role:research_admin');
+    Route::get('thematic-areas/{thematic_area}', [ThematicAreaController::class, 'show']);
+    Route::put('thematic-areas/{thematic_area}', [ThematicAreaController::class, 'update'])->middleware('role:research_admin');
+    Route::delete('thematic-areas/{thematic_area}', [ThematicAreaController::class, 'destroy'])->middleware('role:research_admin');
 
     // -----------------------------------------------------------------------
-    // Expertise Management (Researcher skills)
+    // Expertise Management
     // -----------------------------------------------------------------------
-    Route::get('expertise', [ExpertiseController::class, 'index']);          // List expertise areas
-    Route::post('expertise', [ExpertiseController::class, 'store'])
-        ->middleware('role:super_admin,research_admin');                    // Create expertise
-    Route::put('expertise/{expertise}', [ExpertiseController::class, 'update'])
-        ->middleware('role:super_admin,research_admin');                    // Update
-    Route::delete('expertise/{expertise}', [ExpertiseController::class, 'destroy'])
-        ->middleware('role:super_admin,research_admin');                    // Delete
+    Route::get('expertise', [ExpertiseController::class, 'index']);
+    Route::post('expertise', [ExpertiseController::class, 'store'])->middleware('role:super_admin,research_admin');
+    Route::put('expertise/{expertise}', [ExpertiseController::class, 'update'])->middleware('role:super_admin,research_admin');
+    Route::delete('expertise/{expertise}', [ExpertiseController::class, 'destroy'])->middleware('role:super_admin,research_admin');
 
     // -----------------------------------------------------------------------
-    // Review Criteria (Proposal evaluation rubrics)
+    // Review Criteria
     // -----------------------------------------------------------------------
-    Route::get('review-criteria', [ReviewCriterionController::class, 'index']); // List criteria
-    Route::post('review-criteria', [ReviewCriterionController::class, 'store'])
-        ->middleware('role:super_admin,research_admin');                    // Create
-    Route::put('review-criteria/{review_criterion}', [ReviewCriterionController::class, 'update'])
-        ->middleware('role:super_admin,research_admin');                    // Update
-    Route::delete('review-criteria/{review_criterion}', [ReviewCriterionController::class, 'destroy'])
-        ->middleware('role:super_admin,research_admin');                    // Delete
+    Route::get('review-criteria', [ReviewCriterionController::class, 'index']);
+    Route::post('review-criteria', [ReviewCriterionController::class, 'store'])->middleware('role:super_admin,research_admin');
+    Route::put('review-criteria/{review_criterion}', [ReviewCriterionController::class, 'update'])->middleware('role:super_admin,research_admin');
+    Route::delete('review-criteria/{review_criterion}', [ReviewCriterionController::class, 'destroy'])->middleware('role:super_admin,research_admin');
 
     // ========================================================================
-    // RESEARCH MANAGEMENT MODULES (Full Lifecycle)
+    // RESEARCH MANAGEMENT MODULES
     // ========================================================================
 
     // -----------------------------------------------------------------------
-    // Calls (Protected CRUD – public GET already defined)
+    // Calls (Protected CRUD)
     // -----------------------------------------------------------------------
-    Route::apiResource('calls', CallController::class)
-        ->except(['index', 'show']);                                        // Create, update, delete calls
+    Route::apiResource('calls', CallController::class)->except(['index', 'show']);
 
     // -----------------------------------------------------------------------
     // Proposals
     // -----------------------------------------------------------------------
-    Route::apiResource('proposals', ProposalController::class);              // Full proposal CRUD
+    Route::apiResource('proposals', ProposalController::class);
+    Route::post('proposals/{proposal}/submit', [ProposalController::class, 'submit']);
+    Route::post('proposals/{proposal}/check', [ProposalController::class, 'runChecks']);
+    Route::post('proposals/{proposal}/approve', [ProposalController::class, 'approve']);
+    Route::post('proposals/{proposal}/reject', [ProposalController::class, 'reject']);
+    Route::post('proposals/{proposal}/assign-reviewers', [ProposalController::class, 'assignReviewers']);
+    Route::get('proposals/{proposal}/suggest-reviewers', [ProposalController::class, 'suggestReviewers']);
+    Route::post('proposals/{proposal}/upload-document', [ProposalController::class, 'uploadDocument']);
 
-    // Workflow endpoints
-    Route::post('proposals/{proposal}/submit', [ProposalController::class, 'submit']); // Submit proposal for review
-    Route::post('proposals/{proposal}/check', [ProposalController::class, 'runChecks']); // Run validation checks
-    Route::post('proposals/{proposal}/approve', [ProposalController::class, 'approve']); // Approve proposal
-    Route::post('proposals/{proposal}/reject', [ProposalController::class, 'reject']);   // Reject proposal
-
-    // Reviewer management
-    Route::post('proposals/{proposal}/assign-reviewers', [ProposalController::class, 'assignReviewers']); // Assign reviewers
-    Route::get('proposals/{proposal}/suggest-reviewers', [ProposalController::class, 'suggestReviewers']); // Auto-suggest reviewers
-
-    // Document upload
-    Route::post('proposals/{proposal}/upload-document', [ProposalController::class, 'uploadDocument']); // Upload proposal doc
-
-    // -----------------------------------------------------------------------
     // Proposal Files
-    // -----------------------------------------------------------------------
-    Route::post('proposals/{proposal}/files', [ProposalFileController::class, 'attach']);   // Attach file to proposal
-    Route::delete('proposals/{proposal}/files/{file}', [ProposalFileController::class, 'detach']); // Remove file
+    Route::post('proposals/{proposal}/files', [ProposalFileController::class, 'attach']);
+    Route::delete('proposals/{proposal}/files/{file}', [ProposalFileController::class, 'detach']);
 
-    // -----------------------------------------------------------------------
     // Proposal Investigators
-    // -----------------------------------------------------------------------
     Route::apiResource('proposals.investigators', ProposalInvestigatorController::class)
-        ->only(['index', 'store', 'destroy']);                              // Manage co-investigators
+        ->only(['index', 'store', 'destroy']);
 
-    // -----------------------------------------------------------------------
-    // Proposal Reviewers (Assignment)
-    // -----------------------------------------------------------------------
+    // Proposal Reviewers
     Route::get('proposals/{proposal}/reviewers/recommendations', [ProposalReviewerController::class, 'recommendations']);
     Route::post('proposals/{proposal}/reviewers/{reviewer}/reopen', [ProposalReviewerController::class, 'reopen'])
-        ->middleware('role:super_admin,research_admin');                    // Reopen a completed review
+        ->middleware('role:super_admin,research_admin');
     Route::apiResource('proposals.reviewers', ProposalReviewerController::class)
-        ->only(['index', 'store', 'destroy']);                              // Assign/unassign reviewers
+        ->only(['index', 'store', 'destroy']);
 
-    // -----------------------------------------------------------------------
-    // Reviewer Workspace (for assigned reviewers)
-    // -----------------------------------------------------------------------
-    Route::get('reviewer/proposals', [ReviewerProposalController::class, 'index']); // List assigned proposals
-    Route::get('reviewer/proposals/{proposal}', [ReviewerProposalController::class, 'show']); // View anonymised proposal
-    Route::get('reviewer/proposals/{proposal}/template', [ReviewerProposalController::class, 'downloadTemplate']); // Download review template
-    Route::post('reviewer/proposals/{proposal}/import', [ReviewerProposalController::class, 'importReview']); // Import review
-    Route::post('reviewer/proposals/{proposal}/review', [ReviewerProposalController::class, 'storeReview']); // Submit review
+    // Reviewer Workspace
+    Route::get('reviewer/proposals', [ReviewerProposalController::class, 'index']);
+    Route::get('reviewer/proposals/{proposal}', [ReviewerProposalController::class, 'show']);
+    Route::get('reviewer/proposals/{proposal}/template', [ReviewerProposalController::class, 'downloadTemplate']);
+    Route::post('reviewer/proposals/{proposal}/import', [ReviewerProposalController::class, 'importReview']);
+    Route::post('reviewer/proposals/{proposal}/review', [ReviewerProposalController::class, 'storeReview']);
 
-    // -----------------------------------------------------------------------
     // Finance Checks
-    // -----------------------------------------------------------------------
-    Route::post('proposals/{proposal}/finance-checks', [FinanceCheckController::class, 'store']); // Submit for finance check
-    Route::apiResource('finance-checks', FinanceCheckController::class)
-        ->only(['index', 'show', 'update']);                                // Manage finance checks
+    Route::post('proposals/{proposal}/finance-checks', [FinanceCheckController::class, 'store']);
+    Route::apiResource('finance-checks', FinanceCheckController::class)->only(['index', 'show', 'update']);
     Route::post('finance-checks/{financeCheck}/approve', [FinanceCheckController::class, 'approve']);
     Route::post('finance-checks/{financeCheck}/reject', [FinanceCheckController::class, 'reject']);
 
-    // -----------------------------------------------------------------------
     // Ethics Requests
-    // -----------------------------------------------------------------------
-    Route::post('proposals/{proposal}/ethics-requests', [EthicsRequestController::class, 'store']); // Submit ethics request
-    Route::apiResource('ethics-requests', EthicsRequestController::class)
-        ->only(['index', 'show', 'update', 'destroy']);                    // Manage ethics requests
+    Route::post('proposals/{proposal}/ethics-requests', [EthicsRequestController::class, 'store']);
+    Route::apiResource('ethics-requests', EthicsRequestController::class)->only(['index', 'show', 'update', 'destroy']);
     Route::post('ethics-requests/{ethicsRequest}/mark-submitted', [EthicsRequestController::class, 'markSubmitted']);
     Route::post('ethics-requests/{ethicsRequest}/approve', [EthicsRequestController::class, 'approve']);
     Route::post('ethics-requests/{ethicsRequest}/reject', [EthicsRequestController::class, 'reject']);
     Route::post('ethics-requests/{ethicsRequest}/request-revision', [EthicsRequestController::class, 'requestRevision']);
 
-    // -----------------------------------------------------------------------
-    // AI Detection Services (Plagiarism, AI)
-    // -----------------------------------------------------------------------
-    Route::get('detection/requests', [DetectionController::class, 'index']); // List detection requests
-    Route::post('detection/requests', [DetectionController::class, 'store']); // Submit detection request
-    Route::get('detection/requests/{id}', [DetectionController::class, 'show']); // Get detection result
+    // Detection Services
+    Route::get('detection/requests', [DetectionController::class, 'index']);
+    Route::post('detection/requests', [DetectionController::class, 'store']);
+    Route::get('detection/requests/{id}', [DetectionController::class, 'show']);
     Route::post('detection/requests/{id}/complete', [DetectionController::class, 'complete']);
     Route::post('detection/requests/{id}/mark-reviewed', [DetectionController::class, 'markReviewed']);
     Route::post('detection/requests/{id}/retry', [DetectionController::class, 'retry']);
     Route::delete('detection/requests/{id}', [DetectionController::class, 'destroy']);
     Route::post('detection/requests/{id}/restore', [DetectionController::class, 'restore']);
-    Route::get('detection/services', [DetectionController::class, 'services']); // List available detection services
+    Route::get('detection/services', [DetectionController::class, 'services']);
 
     // ========================================================================
     // PROJECT MANAGEMENT
@@ -469,7 +429,10 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
     // Projects (Full CRUD + Workflow)
     // -----------------------------------------------------------------------
     Route::apiResource('projects', ProjectController::class);
-    Route::post('projects/create-from-proposal/{proposal}', [ProjectController::class, 'createFromProposal']); // Create project from approved proposal
+
+    // Create project from approved proposal (two aliases for compatibility)
+    Route::post('projects/create-from-proposal/{proposal}', [ProjectController::class, 'createFromProposal']);
+    Route::post('proposals/{proposal}/create-project', [ProjectController::class, 'createFromProposal']);
 
     // Workflow endpoints
     Route::post('projects/{project}/submit', [ProjectController::class, 'submit']);
@@ -478,6 +441,8 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
     Route::post('projects/{project}/suspend', [ProjectController::class, 'suspend']);
     Route::post('projects/{project}/reactivate', [ProjectController::class, 'reactivate']);
     Route::post('projects/{project}/complete', [ProjectController::class, 'complete']);
+    // Legacy status change (kept for compatibility)
+    Route::put('projects/{project}/status', [ProjectController::class, 'changeStatus']);
 
     // Analytics
     Route::get('projects/{project}/progress', [ProjectController::class, 'progress']);
@@ -488,28 +453,13 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
     Route::post('projects/{project}/investigators', [ProjectController::class, 'addInvestigator']);
     Route::delete('projects/{project}/investigators/{investigatorId}', [ProjectController::class, 'removeInvestigator']);
 
-    // Deprecated status endpoint (kept for compatibility)
-    Route::put('projects/{project}/status', [ProjectController::class, 'changeStatus']);
-
-    // -----------------------------------------------------------------------
-    // Funding Management (Grants & Budgets)
-    // -----------------------------------------------------------------------
-    Route::apiResource('fundings', FundingController::class);
-    Route::post('fundings/{funding}/submit', [FundingController::class, 'submit']);
-    Route::post('fundings/{funding}/approve', [FundingController::class, 'approve']);
-    Route::post('fundings/{funding}/reject', [FundingController::class, 'reject']);
-    Route::get('fundings/{funding}/budget-stats', [FundingController::class, 'budgetStats']);
-    Route::apiResource('fundings.expenses', FundingExpenseController::class);
-    Route::post('fundings/{funding}/expenses/{expense}/approve', [FundingExpenseController::class, 'approve']);
-    Route::post('fundings/{funding}/expenses/{expense}/reject', [FundingExpenseController::class, 'reject']);
-
     // -----------------------------------------------------------------------
     // Project Milestones & Tasks
     // -----------------------------------------------------------------------
     Route::apiResource('projects.milestones', MilestoneController::class);
     Route::apiResource('milestones.tasks', TaskController::class);
-    Route::post('tasks', [TaskController::class, 'storeStandalone']);       // Create standalone task
-    Route::put('tasks/{task}', [TaskController::class, 'update']);          // Update task
+    Route::post('tasks', [TaskController::class, 'storeStandalone']);
+    Route::put('tasks/{task}', [TaskController::class, 'update']);
 
     // -----------------------------------------------------------------------
     // Project Files
@@ -524,18 +474,27 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
     Route::post('projects/{project}/expenses/{expense}/approve', [ExpenseController::class, 'approve']);
 
     // -----------------------------------------------------------------------
-    // Project Investigators
+    // Project Investigators (dedicated resource)
     // -----------------------------------------------------------------------
     Route::apiResource('projects.investigators', ProjectInvestigatorController::class)
         ->only(['index', 'store', 'destroy']);
+
+    // -----------------------------------------------------------------------
+    // Funding Management (Grants & Budgets)
+    // -----------------------------------------------------------------------
+    Route::apiResource('fundings', FundingController::class);
+    Route::post('fundings/{funding}/submit', [FundingController::class, 'submit']);
+    Route::post('fundings/{funding}/approve', [FundingController::class, 'approve']);
+    Route::post('fundings/{funding}/reject', [FundingController::class, 'reject']);
+    Route::get('fundings/{funding}/budget-stats', [FundingController::class, 'budgetStats']);
+    Route::apiResource('fundings.expenses', FundingExpenseController::class);
+    Route::post('fundings/{funding}/expenses/{expense}/approve', [FundingExpenseController::class, 'approve']);
+    Route::post('fundings/{funding}/expenses/{expense}/reject', [FundingExpenseController::class, 'reject']);
 
     // ========================================================================
     // RESEARCH OUTPUTS
     // ========================================================================
 
-    // -----------------------------------------------------------------------
-    // Outputs (Unified research outputs: publications, patents, theses, etc.)
-    // -----------------------------------------------------------------------
     Route::apiResource('outputs', OutputController::class);
     Route::post('outputs/{output}/submit', [OutputController::class, 'submit']);
     Route::post('outputs/{output}/verify', [OutputController::class, 'verify']);
@@ -543,13 +502,11 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
     Route::post('outputs/{output}/reject', [OutputController::class, 'reject']);
     Route::post('outputs/{output}/publish', [OutputController::class, 'publish']);
     Route::post('outputs/{output}/status', [OutputController::class, 'changeStatus']);
-    Route::get('outputs/subtypes-by-level', [OutputController::class, 'getSubtypesByLevel']); // Get subtypes by student level
+    Route::get('outputs/subtypes-by-level', [OutputController::class, 'getSubtypesByLevel']);
 
-    // Output participants (multi-student/supervisor)
     Route::apiResource('outputs.participants', OutputParticipantController::class)
         ->only(['index', 'store', 'destroy']);
 
-    // Output files
     Route::post('outputs/{output}/files', [OutputFileController::class, 'attach']);
     Route::delete('outputs/{output}/files/{file}', [OutputFileController::class, 'detach']);
 
@@ -578,49 +535,50 @@ Route::middleware(['auth:sanctum', 'tenant'])->group(function () {
     // EVENTS
     // ========================================================================
     Route::apiResource('events', EventController::class)->except(['index', 'show']);
-    Route::post('events/{event}/register', [EventRegistrationController::class, 'register']); // Register for event
-    Route::delete('events/{event}/registrations/{registration}', [EventRegistrationController::class, 'destroy']); // Cancel registration
-    Route::put('events/{event}/attendance', [EventRegistrationController::class, 'markAttendance']); // Mark attendance
-    Route::post('events/{event}/certificates', [EventRegistrationController::class, 'generateCertificate']); // Generate certificates
+    Route::post('events/{event}/register', [EventRegistrationController::class, 'register']);
+    Route::delete('events/{event}/registrations/{registration}', [EventRegistrationController::class, 'destroy']);
+    Route::put('events/{event}/attendance', [EventRegistrationController::class, 'markAttendance']);
+    Route::post('events/{event}/certificates', [EventRegistrationController::class, 'generateCertificate']);
 
     // ========================================================================
-    // PUBLICATIONS (Protected CRUD – public GET already defined)
+    // PUBLICATIONS (Protected CRUD)
     // ========================================================================
-    Route::apiResource('publications', PublicationController::class)->except(['index', 'show']); // Manage publications
+    Route::apiResource('publications', PublicationController::class)->except(['index', 'show']);
     Route::post('publications/{publication}/submit', [PublicationController::class, 'submit']);
     Route::post('publications/{publication}/verify', [PublicationController::class, 'verify']);
     Route::post('publications/{publication}/approve', [PublicationController::class, 'approve']);
     Route::post('publications/{publication}/reject', [PublicationController::class, 'reject']);
     Route::post('publications/{publication}/publish', [PublicationController::class, 'publish']);
-    Route::post('publications/{publication}/update-citations', [PublicationController::class, 'updateCitations']); // Refresh citation count
+    Route::post('publications/{publication}/update-citations', [PublicationController::class, 'updateCitations']);
+
     Route::apiResource('publications.authors', PublicationAuthorController::class)
-        ->only(['index', 'store', 'update', 'destroy']);                    // Manage publication authors
+        ->only(['index', 'store', 'update', 'destroy']);
 
     // ========================================================================
-    // COMMUNITY PROBLEMS (Protected CRUD – public GET/store already defined)
+    // COMMUNITY PROBLEMS (Protected CRUD)
     // ========================================================================
     Route::apiResource('community-problems', CommunityProblemController::class)
-        ->except(['index', 'show', 'store']);                               // Manage problems
-    Route::post('community-problems/{community_problem}/claim', [CommunityProblemController::class, 'claim']); // Claim a problem
-    Route::post('community-problems/{community_problem}/complete', [CommunityProblemController::class, 'complete']); // Mark as completed
-    Route::post('community-problems/{community_problem}/feedback', [CommunityProblemController::class, 'addFeedback']); // Add feedback
+        ->except(['index', 'show', 'store']);
+    Route::post('community-problems/{community_problem}/claim', [CommunityProblemController::class, 'claim']);
+    Route::post('community-problems/{community_problem}/complete', [CommunityProblemController::class, 'complete']);
+    Route::post('community-problems/{community_problem}/feedback', [CommunityProblemController::class, 'addFeedback']);
 
     // ========================================================================
     // REPORTING
     // ========================================================================
-    Route::get('reports', [ReportController::class, 'index']);              // List generated reports
-    Route::get('reports/types', [ReportController::class, 'types']);        // Supported report types
-    Route::post('reports/generate', [ReportController::class, 'generate']); // Generate new report
-    Route::get('reports/{report}/download', [ReportController::class, 'download']); // Download report PDF
-    Route::delete('reports/{report}', [ReportController::class, 'destroy']); // Delete generated report
+    Route::get('reports', [ReportController::class, 'index']);
+    Route::get('reports/types', [ReportController::class, 'types']);
+    Route::post('reports/generate', [ReportController::class, 'generate']);
+    Route::get('reports/{report}/download', [ReportController::class, 'download']);
+    Route::delete('reports/{report}', [ReportController::class, 'destroy']);
 
     // ========================================================================
     // GLOBAL SEARCH
     // ========================================================================
-    Route::get('search', [SearchController::class, 'search']);              // Unified search across resources
+    Route::get('search', [SearchController::class, 'search']);
 
     // ========================================================================
     // DASHBOARD (Authenticated user summary)
     // ========================================================================
-    Route::get('dashboard', [DashboardController::class, 'index']);         // Get role-based dashboard stats
+    Route::get('dashboard', [DashboardController::class, 'index']);
 });

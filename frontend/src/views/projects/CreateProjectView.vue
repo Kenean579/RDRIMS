@@ -123,7 +123,7 @@ onMounted(async () => {
 async function submit() {
   submitting.value = true
   try {
-    const { data } = await api.post(`/proposals/${proposal.value.id}/create-project`, form);
+    const { data } = await api.post(`/projects/create-from-proposals/${proposal.value.id}/create-project`, form);
     notif.success('Project successfully created from proposal!');
     router.push(`/app/projects/${data.id}`);
   } catch(e) {

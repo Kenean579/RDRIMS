@@ -70,7 +70,7 @@ class CallFactory extends Factory
             'closes_at' => now()->subDays(1),
         ]);
     }
-c
+
     /**
      * Indicate that the call belongs to a university.
      */

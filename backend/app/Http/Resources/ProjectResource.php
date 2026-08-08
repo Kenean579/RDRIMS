@@ -45,7 +45,7 @@ class ProjectResource extends JsonResource
                 'path' => $this->coverImage?->path,
                 'url' => $this->coverImage?->url,
             ]),
-            
+
             // Relationships
             'investigators' => ProjectInvestigatorResource::collection($this->whenLoaded('investigators')),
             'milestones' => MilestoneResource::collection($this->whenLoaded('milestones')),
@@ -55,13 +55,13 @@ class ProjectResource extends JsonResource
             'outputs' => $this->whenLoaded('outputs', fn() => $this->outputs),
             'fundings' => $this->whenLoaded('fundings', fn() => $this->fundings),
             'histories' => $this->whenLoaded('histories', fn() => $this->histories),
-            
+
             // Calculated fields
             'progress_percentage' => $this->when($request->include_stats, fn() => $this->getProgressPercentage()),
             'remaining_budget' => $this->when($request->include_stats, fn() => $this->getRemainingBudget()),
             'is_overdue' => $this->when($request->include_stats, fn() => $this->isOverdue()),
             'can_complete' => $this->when($request->include_stats, fn() => $this->canComplete()),
-            
+
             // Audit fields
             'created_by' => [
                 'id' => $this->created_by,

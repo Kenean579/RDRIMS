@@ -15,8 +15,11 @@ class UpdateMilestoneRequest extends FormRequest
     {
         return [
             'project_id' => 'sometimes|exists:projects,id',
-            'title' => 'sometimes',
+            'title' => 'sometimes|string|max:255',
             'due_date' => 'sometimes|date',
+            'description' => 'nullable|string',
+            'display_order' => 'nullable|integer',
+            'status_id' => 'nullable|exists:milestone_statuses,id',
         ];
     }
 }

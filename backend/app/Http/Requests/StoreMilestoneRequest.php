@@ -16,7 +16,9 @@ class StoreMilestoneRequest extends FormRequest
         return [
             'title' => 'required|string|max:255',
             'due_date' => 'required|date',
-            'status_id' => 'sometimes|exists:milestone_statuses,id',
+            'description' => 'nullable|string',
+            'display_order' => 'nullable|integer',
+            'status_id' => 'nullable|exists:milestone_statuses,id',
         ];
     }
 }

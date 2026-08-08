@@ -27,7 +27,13 @@ class MilestoneController extends Controller
     {
         $this->authorize('create', [Milestone::class, $project]);
         
-        $milestone = $project->milestones()->create($request->validated());
+        $data = $request->validated();
+        if (empty($data['status_id'])) {
+            $pendingStatus = \App\Models\MilestoneStatus::where('name', 'pending')->first();
+            $data['status_id'] = $pendingStatus ? $pendingStatus->id : (\App\Models\MilestoneStatus::first()?->id ?? 1);
+        }
+
+        $milestone = $project->milestones()->create($data);
         
         return response()->json(new MilestoneResource($milestone), 201);
     }

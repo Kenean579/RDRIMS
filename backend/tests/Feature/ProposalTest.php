@@ -265,6 +265,17 @@ class ProposalTest extends TestCase
             'status_id' => $this->draftStatus->id,
         ]);
 
+        $file = \App\Models\File::create([
+            'user_id' => $this->researcher->id,
+            'original_filename' => 'test.pdf',
+            'filename' => 'test.pdf',
+            'filepath' => 'proposals/test.pdf',
+            'mime_type' => 'application/pdf',
+            'file_size' => 1024,
+            'file_hash' => 'hash123',
+        ]);
+        $proposal->update(['file_id' => $file->id]);
+
         // Add at least one investigator
         $proposal->investigators()->create([
             'name' => 'Test Investigator',

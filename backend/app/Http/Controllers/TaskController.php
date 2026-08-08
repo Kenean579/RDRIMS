@@ -28,7 +28,13 @@ class TaskController extends Controller
     {
         $this->authorize('create', [Task::class, $milestone]);
         
-        $task = $milestone->tasks()->create($request->validated());
+        $data = $request->validated();
+        if (empty($data['status_id'])) {
+            $notStarted = \App\Models\TaskStatus::where('name', 'not_started')->first();
+            $data['status_id'] = $notStarted ? $notStarted->id : (\App\Models\TaskStatus::first()?->id ?? 1);
+        }
+
+        $task = $milestone->tasks()->create($data);
         
         return response()->json(new TaskResource($task), 201);
     }
@@ -39,7 +45,7 @@ class TaskController extends Controller
             'milestone_id' => 'required|exists:milestones,id',
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'status_id' => 'required|integer|exists:task_statuses,id',
+            'status_id' => 'nullable|integer',
             'assigned_to' => 'nullable|exists:users,id',
             'due_date' => 'nullable|date',
         ]);
@@ -48,13 +54,19 @@ class TaskController extends Controller
         
         $this->authorize('create', [Task::class, $milestone]);
         
-        $task = $milestone->tasks()->create($request->only([
-            'title', 
-            'description', 
-            'status_id', 
-            'assigned_to', 
-            'due_date'
-        ]));
+        $statusId = $request->status_id;
+        if (!$statusId || !\App\Models\TaskStatus::where('id', $statusId)->exists()) {
+            $notStarted = \App\Models\TaskStatus::where('name', 'not_started')->first();
+            $statusId = $notStarted ? $notStarted->id : (\App\Models\TaskStatus::first()?->id ?? 1);
+        }
+
+        $task = $milestone->tasks()->create([
+            'title' => $request->title,
+            'description' => $request->description,
+            'status_id' => $statusId,
+            'assigned_to' => $request->assigned_to,
+            'due_date' => $request->due_date,
+        ]);
         
         return response()->json(new TaskResource($task), 201);
     }

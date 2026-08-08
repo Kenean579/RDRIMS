@@ -15,7 +15,11 @@ class StoreTaskRequest extends FormRequest
     {
         return [
             'milestone_id' => 'required|exists:milestones,id',
-            'title' => 'required',
+            'title' => 'required|string|max:255',
+            'description' => 'nullable|string',
+            'status_id' => 'nullable|exists:task_statuses,id',
+            'assigned_to' => 'nullable|exists:users,id',
+            'due_date' => 'nullable|date',
         ];
     }
 }

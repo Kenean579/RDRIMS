@@ -34,7 +34,7 @@ class ProposalController extends Controller
         $proposals = Proposal::with([
                 'status', 'type', 'submittedBy.profileImage', 'call',
                 'financeChecks.status', 'ethicsRequests.approvalStatus',
-                'file', 'ethicsFile'
+                'file', 'ethicsFile', 'project'
             ])
             // The hierarchical scope already handles:
             //   super_admin    → empty result (platform only)
